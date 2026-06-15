@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Find A Grave Ambient Scraper
 // @namespace    http://tampermonkey.net/
-// @version      0.5
+// @version      0.6
 // @description  Manual scraper with safe export and clear functionality
 // @match        https://www.findagrave.com/memorial/*
 // @grant        GM_setValue
@@ -143,6 +143,35 @@
             box-shadow: 0 4px 6px rgba(0,0,0,0.3);
         `;
 
+        // Collapse/Expand Toggle Button
+        const toggleBtn = document.createElement('button');
+        toggleBtn.innerText = "▼ Scraper";
+        toggleBtn.style.cssText = `
+            padding: 4px 8px;
+            background: #333;
+            color: #fff;
+            border: 1px solid #555;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: left;
+        `;
+
+        // Container to hold action buttons for easy visibility toggling
+        const actionContainer = document.createElement('div');
+        actionContainer.style.cssText = `
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        `;
+
+        toggleBtn.onclick = () => {
+            const isCollapsed = actionContainer.style.display === 'none';
+            actionContainer.style.display = isCollapsed ? 'flex' : 'none';
+            toggleBtn.innerText = isCollapsed ? "▼ Scraper" : "▲ Scraper";
+        };
+
         const scrapeBtn = document.createElement('button');
         scrapeBtn.innerText = "Scrape Current Page";
         scrapeBtn.style.cssText = `
@@ -181,8 +210,11 @@
         `;
         exportBtn.onclick = exportLedger;
 
-        panel.appendChild(scrapeBtn);
-        panel.appendChild(exportBtn);
+        actionContainer.appendChild(scrapeBtn);
+        actionContainer.appendChild(exportBtn);
+        
+        panel.appendChild(toggleBtn);
+        panel.appendChild(actionContainer);
         document.body.appendChild(panel);
     }
 
