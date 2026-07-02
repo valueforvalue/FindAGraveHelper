@@ -1,12 +1,14 @@
 // ==UserScript==
 // @name         Find A Grave Ambient Scraper
 // @namespace    http://tampermonkey.net/
-// @version      0.6
+// @version      0.7
 // @description  Manual scraper with safe export and clear functionality
 // @match        https://www.findagrave.com/memorial/*
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @run-at       document-end
+// @updateURL    https://github.com/valueforvalue/FindAGraveHelper/raw/refs/heads/master/FindaGraveScraper.user.js
+// @downloadURL  https://github.com/valueforvalue/FindAGraveHelper/raw/refs/heads/master/FindaGraveScraper.user.js
 // ==/UserScript==
 
 (function() {
@@ -83,6 +85,7 @@
             ledger[index] = data;
             console.log(`[Scraper] Updated ${data.name}.`);
         } else {
+            ledger[index] = data; // Keep tracking clean
             ledger.push(data);
             console.log(`[Scraper] Saved ${data.name}. Total records: ${ledger.length}`);
         }
