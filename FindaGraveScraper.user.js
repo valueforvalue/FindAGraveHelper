@@ -16,7 +16,7 @@
     function extractMemorialData() {
         const url = window.location.href;
         const memorial_id = url.match(/\/memorial\/(\d+)\//)?.[1] || "Unknown";
-        
+
         const safeText = (selector, context = document) => {
             const el = context.querySelector(selector);
             return el ? el.innerText.trim() : "";
@@ -26,7 +26,7 @@
             const names = [];
             const headers = Array.from(document.querySelectorAll('h3, h4, b'));
             const header = headers.find(h => h.innerText && h.innerText.includes(relationshipText));
-            
+
             if (!header) return names;
 
             let nextEl = header.nextElementSibling;
@@ -45,14 +45,19 @@
 
         let rawDeathDate = safeText('[itemprop="deathDate"]') || safeText('.death-date');
         let deathDate = rawDeathDate.replace(/\(aged\s*\d+\)/i, '').trim();
-        
+
         let bio = safeText('[itemprop="description"]') || safeText('.bio-text');
         bio = bio.replace(/Read More$/i, '').trim();
         bio = bio.replace(/…$/, '').trim();
 
+        // Extract and clean the name
+        let rawName = document.querySelector('h1')?.innerText.trim() || "Unknown";
+        // Removes "V VETERAN" or just "VETERAN" from the end of the string, case-insensitive
+        let cleanName = rawName.replace(/\s*(?:V\s+)?VETERAN$/i, '').trim();
+
         return {
             memorial_id: memorial_id,
-            name: document.querySelector('h1')?.innerText.trim() || "Unknown",
+            name: cleanName,
             url: url,
             birth_date: safeText('[itemprop="birthDate"]') || safeText('.birth-date'),
             birth_location: safeText('[itemprop="birthPlace"]'),
@@ -63,7 +68,7 @@
             burial_location: safeText('.cemetery-location'),
             biography: bio,
             family_parents: extractFamilyLinks('Parents'),
-            family_spouse: extractFamilyLinks('Spouse').join(', '), 
+            family_spouse: extractFamilyLinks('Spouse').join(', '),
             family_children: extractFamilyLinks('Children'),
             scraped_at: new Date().toISOString()
         };
@@ -72,7 +77,7 @@
     // --- 2. Storage Logic: State Management ---
     function saveToLedger(data) {
         let ledger = GM_getValue('memorial_ledger', []);
-        
+
         const index = ledger.findIndex(entry => entry.memorial_id === data.memorial_id);
         if (index > -1) {
             ledger[index] = data;
@@ -81,25 +86,25 @@
             ledger.push(data);
             console.log(`[Scraper] Saved ${data.name}. Total records: ${ledger.length}`);
         }
-        
+
         GM_setValue('memorial_ledger', ledger);
         updateUI();
     }
 
     function exportLedger() {
         const ledger = GM_getValue('memorial_ledger', []);
-        
+
         if (ledger.length === 0) {
             alert("No data to export!");
             return;
         }
 
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(ledger, null, 2));
-        
+
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
         downloadAnchorNode.setAttribute("download", "memorials_archive.json");
-        document.body.appendChild(downloadAnchorNode); 
+        document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
 
@@ -128,12 +133,12 @@
         const panel = document.createElement('div');
         panel.id = 'fag-control-panel';
         panel.style.cssText = `
-            position: fixed; 
-            bottom: 20px; 
-            right: 20px; 
-            z-index: 999999; 
-            background: #1e1e1e; 
-            border: 1px solid #444; 
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 999999;
+            background: #1e1e1e;
+            border: 1px solid #444;
             border-radius: 6px;
             padding: 10px;
             display: flex;
@@ -175,10 +180,10 @@
         const scrapeBtn = document.createElement('button');
         scrapeBtn.innerText = "Scrape Current Page";
         scrapeBtn.style.cssText = `
-            padding: 8px 12px; 
-            background: #28a745; 
-            color: #fff; 
-            border: none; 
+            padding: 8px 12px;
+            background: #28a745;
+            color: #fff;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
@@ -201,10 +206,10 @@
         exportBtn.id = 'fag-export-btn';
         exportBtn.innerText = `Export Data (${currentCount})`;
         exportBtn.style.cssText = `
-            padding: 8px 12px; 
-            background: #495057; 
-            color: #fff; 
-            border: none; 
+            padding: 8px 12px;
+            background: #495057;
+            color: #fff;
+            border: none;
             border-radius: 4px;
             cursor: pointer;
         `;
@@ -212,7 +217,7 @@
 
         actionContainer.appendChild(scrapeBtn);
         actionContainer.appendChild(exportBtn);
-        
+
         panel.appendChild(toggleBtn);
         panel.appendChild(actionContainer);
         document.body.appendChild(panel);
