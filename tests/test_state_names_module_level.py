@@ -18,7 +18,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 def test_state_names_upper_is_module_level():
-    from scripts.fag.search import _STATE_NAMES_UPPER
+    from scripts.fag.filters import _STATE_NAMES_UPPER
     assert isinstance(_STATE_NAMES_UPPER, dict)
     assert len(_STATE_NAMES_UPPER) >= 50
     # Spot-check a few keys to catch accidental rename/drop
@@ -28,10 +28,10 @@ def test_state_names_upper_is_module_level():
 
 
 def test_state_names_lower_is_module_level():
-    from scripts.fag.search import _STATE_NAMES_LOWER
+    from scripts.fag.filters import _STATE_NAMES_LOWER
     assert isinstance(_STATE_NAMES_LOWER, dict)
     assert len(_STATE_NAMES_LOWER) == len(
-        __import__("scripts.fag.search", fromlist=["_STATE_NAMES_UPPER"])._STATE_NAMES_UPPER
+        __import__("scripts.fag.filters", fromlist=["_STATE_NAMES_UPPER"])._STATE_NAMES_UPPER
     )
     assert _STATE_NAMES_LOWER["alabama"] == "AL"
     assert _STATE_NAMES_LOWER["oklahoma"] == "OK"
@@ -110,7 +110,7 @@ class TestLouisianaTypo:
     """Bug 2.1: 'LOUISIANI' typo in module-level dict."""
 
     def test_louisiana_typo_removed(self):
-        from scripts.fag.search import _STATE_NAMES_UPPER
+        from scripts.fag.filters import _STATE_NAMES_UPPER
         assert "LOUISIANI" not in _STATE_NAMES_UPPER, (
             "Bug 2.1: 'LOUISIANI' typo present in _STATE_NAMES_UPPER."
         )

@@ -4,6 +4,41 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Fix #8: finish search_fag split (T008)
+
+scripts/fag/search.py was 1432 LoC after T017 strategies
+extracted. Split the rest into 5 private modules under
+scripts/fag/:
+
+  filters.py    (212 LoC) - location/regiment/slug parsers,
+                            state name lookups, FAG_STATE_IDS
+  parser.py     (301 LoC) - parse_results_page, merge_candidates
+  scoring.py    (216 LoC) - score_candidate, tag_candidates
+  state_io.py    (70 LoC) - load_processed_ids, append_state
+  inputs.py     (104 LoC) - load_unified_*, load_local_csv,
+                            load_input, load_ground_truth
+
+scripts/fag/search.py is now 631 LoC (the search_one_pensioner
+orchestrator + main() + setup_browser/warmup_session), down
+from 1432. 4 public symbols (≤6 deep-module rule met).
+
+The remaining bulk is search_one_pensioner's per-pensioner
+strategy orchestration; splitting it further would require
+breaking the strategy ladder boundary, which the v5 design
+docs explicitly endorse keeping unified.
+
+Side-effect cleanups:
+- FAG_STATE_IDS / FAG_COUNTRY_FILTER_US constants moved to
+  filters.py (where they belong with the location logic)
+- _STATE_NAMES_UPPER / _STATE_NAMES_LOWER moved to filters.py
+  (where they belong with the state extraction logic)
+- Fixed missing `import re` in scoring.py and parser.py
+  (original search.py had it; the split modules inherited
+  the references but not the import)
+- Fixed missing `import json` in state_io.py
+
+701 non-integration tests green.
+
 ### Fix #5: mark test_real_fag_memory.py as integration
 
 test_real_fag_memory.py opens a real Playwright browser mid-
