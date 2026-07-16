@@ -16,6 +16,7 @@ local-data mining, web research, and broadened dataset construction.
 | [`phonetic-algorithms/`](./phonetic-algorithms/) | Comparison of Soundex, Daitch-Mokotoff, Double Metaphone, Jaro-Winkler, Damerau-Levenshtein for matching historical name variants. |
 | [`naming-conventions/`](./naming-conventions/) | Southern naming traditions 1800–1860, Confederate Home population data, service-record naming quirks. |
 | [`broadened-set/`](./broadened-set/) | The 43,834-soldier Confederate + Union CW dataset pulled from `freecivilwarrecords.org`, with scripts to rebuild it. This is the expanded training set that supersedes the OK-CW-only local data. |
+| [`digitalprairie/`](./digitalprairie/) | **7,558 OK-associated Confederate pensioners** from the Oklahoma Digital Prairie. The canonical input list for batch FaG searching — every CW veteran (or widow) who applied for an OK state pension under the 1915 act. |
 
 ## Top-level research findings (TL;DR)
 
@@ -39,6 +40,11 @@ local-data mining, web research, and broadened dataset construction.
 5. **Cold-start hit-rate with the proposed v5 strategy ladder is
    ~99.5%** against the local 577-pair validation set, vs ~80% for
    the existing 5-strategy helper.
+
+6. **The OK Confederate pension list (`digitalprairie/`) is the
+   canonical input for finding the missing ~7,000 OK-associated CW
+   soldiers in FaG.** 7,558 unique pensioners indexed, each with
+   regiment/company metadata and backlinks to the original cards.
 
 ## How the research was done
 
@@ -91,6 +97,24 @@ cavalry underrepresented). Documents what the broadened set covers
 and what it doesn't.
 
 → Output: `broadened-set/match_results.md`
+
+### Phase 6: Oklahoma Digital Prairie pension records
+**Goal of the project** is to find Confederate soldiers associated
+with Oklahoma. The OK Board of Pension Commissioners (1915 act)
+documented every Confederate veteran (or widow) who applied for a
+state pension — a canonical list of OK-associated CW soldiers.
+
+Pulled both the `pensions` (application files) and `pensioncard`
+(index cards) collections from
+[digitalprairie.ok.gov](https://digitalprairie.ok.gov). The cards
+contain the regiment/company metadata that the application files
+lack. Merged into 7,558 unified records.
+
+Each record has backlinks to the source card on digitalprairie.ok.gov
+and IIIF image URLs for visual verification.
+
+→ Output: `digitalprairie/unified.json` (canonical list) + sample
+  of 50 records (`unified_sample_50.json`) for quick reference
 
 ## Next: Batch FaG search
 

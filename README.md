@@ -5,6 +5,16 @@ A pair of Tampermonkey/Greasemonkey userscripts for working with
 research workspace documenting Civil War genealogy patterns that
 inform future development.
 
+## Project goal
+
+The current focus is to find **Confederate soldiers associated with
+Oklahoma** who are not yet in Find a Grave. The Oklahoma Board of
+Pension Commissioners documented every Confederate veteran (or
+widow) who applied for an OK state pension under the 1915 act — a
+canonical list of OK-associated CW soldiers. See
+[`docs/research/digitalprairie/`](./docs/research/digitalprairie/) for
+the indexed 7,558-record list, the scraper, and the next-step plan.
+
 ## What's in this repo
 
 ### Userscripts
@@ -18,11 +28,26 @@ Both scripts work with Tampermonkey / Greasemonkey / Violentmonkey.
 
 ### Research workspace
 
-[`docs/research/`](./docs/research/) contains the full v5.0 design
-research — FaG URL parameters, Civil War genealogy tactics, phonetic
-matching algorithms, naming conventions, local DB analysis, and a
-broadened training set of 43,834 CW soldiers pulled from
-`freecivilwarrecords.org`.
+[`docs/research/`](./docs/research/) contains the research and data
+that informs the v5.0 search-helper design:
+
+- [`digitalprairie/`](./docs/research/digitalprairie/) — 7,558
+  OK-associated Confederate pensioners from digitalprairie.ok.gov.
+  Canonical input list for the next batch FaG search.
+- [`local-data/`](./docs/research/local-data/) — analysis of the
+  575 CW veterans in the user's dixiedata DB with attached FaG URLs.
+  Slug-shape patterns, name matches, date coverage.
+- [`findagrave-params/`](./docs/research/findagrave-params/) —
+  verified live parameter reference for `/memorial/search`.
+- [`cw-tactics/`](./docs/research/cw-tactics/) — practical CW
+  genealogy playbook.
+- [`phonetic-algorithms/`](./docs/research/phonetic-algorithms/) —
+  name-matching algorithm comparison with JS snippets.
+- [`naming-conventions/`](./docs/research/naming-conventions/) —
+  Southern 1800–1860 naming culture, Confederate Home populations.
+- [`broadened-set/`](./docs/research/broadened-set/) — 43,834-soldier
+  CW dataset pulled from `freecivilwarrecords.org` (Confederate +
+  Union, 11 states).
 
 [`docs/v5-design/`](./docs/v5-design/) contains the proposed v5.0
 strategy ladder and design playbook.
