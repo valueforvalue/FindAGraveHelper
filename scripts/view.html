@@ -23,6 +23,7 @@
   .stats .pill.auto-accept { background: #cce5ff; color: #004085; }
   .stats .pill.too-many { background: #e2d4f0; color: #5b2a85; }
   .stats .pill.captcha { background: #dee2e6; color: #495057; }
+  .stats .pill.skipped_cgr_strong { background: #cce5ff; color: #004085; }
 
   .pensioner { background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 12px;
                box-shadow: 0 1px 2px rgba(0,0,0,.08); }
@@ -38,6 +39,7 @@
   .status.captcha { background: #dee2e6; color: #495057; }
   .status.skip { background: #dee2e6; color: #495057; }
   .status.error { background: #f8d7da; color: #721c24; }
+  .status.skipped_cgr_strong { background: #cce5ff; color: #004085; }
 
   .candidates { margin: 12px 0 0; }
   .candidate { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-bottom: 8px;
@@ -91,6 +93,19 @@
                   padding: 4px 8px; margin-top: 4px; font-size: 11px;
                   color: #856404; }
   .cgr-conflict strong { color: #5d4500; }
+
+  /* BOTH MATCH banner (F6) */
+  .both-match-banner { padding: 10px 14px; margin: 8px 0; border-radius: 4px;
+                       font-size: 13px; }
+  .both-match-banner.direct { background: #d4edda; color: #155724;
+                              border: 1px solid #c3e6cb; border-left: 4px solid #28a745; }
+  .both-match-banner.corroborated { background: #cce5ff; color: #004085;
+                                    border: 1px solid #b8daff; border-left: 4px solid #0066cc; }
+  .both-match-banner .reason { font-size: 12px; margin-top: 4px; opacity: 0.85; }
+  .both-match-banner a { color: inherit; text-decoration: underline; }
+  .badge.skipped { background: #d1ecf1; color: #0c5460; padding: 2px 6px;
+                   border-radius: 3px; font-size: 11px; margin-left: 8px; }
+
   .candidate .pick { white-space: nowrap; }
   .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
@@ -165,7 +180,8 @@
 // ============================================================
 // State — pensioner records (loaded from JSONL file)
 // ============================================================
-let pensioners = [];
+let rawPensioners = [];   // original input
+let pensioners = [];      // after normalization (rendering)
 let decisions = {};      // {pensioner_id: {memorial_id, slug, by, at, notes}}
 let filteredIds = [];
 let currentPage = 1;
@@ -182,7 +198,8 @@ fileInput.addEventListener('change', async (e) => {
     document.getElementById('fileStatus').textContent = `Loading ${file.name}…`;
     const text = await file.text();
     try {
-        pensioners = parseInput(text);
+        rawPensioners = parseInput(text);
+        pensioners = rawPensioners.map(normalizeStateRecord);
         document.getElementById('fileStatus').textContent =
             `Loaded ${pensioners.length} records from ${file.name}`;
         loadDecisionsFromLocalStorage();
@@ -208,6 +225,99 @@ function parseInput(text) {
     }
     return lines.map(l => JSON.parse(l));
 }
+
+// ============================================================
+// State normalization — unify FaG-only and unified state formats
+// ============================================================
+function isUnified(rec) {
+    // A unified record has fag_records OR cgr_records OR
+    // cgr_skipped_fag OR both_match. Pure legacy records only
+    // have ranked_candidates.
+    return ('fag_records' in rec) || ('cgr_records' in rec) ||
+           ('cgr_skipped_fag' in rec) || ('both_match' in rec);
+}
+
+function extractFagCandidates(rec) {
+    if (isUnified(rec)) {
+        return rec.fag_records || [];
+    }
+    return rec.ranked_candidates || [];
+}
+
+function extractCgrRecords(rec) {
+    if (isUnified(rec)) {
+        return rec.cgr_records || [];
+    }
+    return [];
+}
+
+function getStatus(rec) {
+    if (isUnified(rec)) {
+        if (rec.fag_status) return rec.fag_status;
+        if (rec.cgr_status) return rec.cgr_status;
+        return 'unknown';
+    }
+    return rec.status || 'unknown';
+}
+
+function getBothMatch(rec) {
+    return isUnified(rec) ? (rec.both_match || null) : null;
+}
+
+function normalizeStateRecord(rec) {
+    if (isUnified(rec)) {
+        const fag = rec.fag_records || [];
+        let best = 0, bestC = null;
+        for (const c of fag) {
+            if ((c.score || 0) > best) {
+                best = c.score || 0;
+                bestC = c;
+            }
+        }
+        return {
+            pensioner_id: rec.pensioner_id,
+            pensioner_name: rec.pensioner_name || '',
+            pensioner_first: rec.pensioner_first || '',
+            pensioner_middle: rec.pensioner_middle || '',
+            pensioner_last: rec.pensioner_last || '',
+            pensioner_app_number: rec.pensioner_app_number || '',
+            regiment: rec.regiment || '',
+            company: rec.company || '',
+            pensioncard_backlink: rec.pensioncard_backlink || '',
+            ranked_candidates: fag.slice(0, 20),
+            best_score: best,
+            best_candidate: bestC,
+            status: getStatus(rec),
+            strategies_run: rec.strategies_run || [],
+            cgr_records: rec.cgr_records || [],
+            cgr_status: rec.cgr_status || '',
+            cgr_skipped_fag: !!rec.cgr_skipped_fag,
+            both_match: rec.both_match || null,
+            timestamp: rec.timestamp || '',
+        };
+    }
+    return {
+        pensioner_id: rec.pensioner_id,
+        pensioner_name: rec.pensioner_name || '',
+        pensioner_first: rec.pensioner_first || '',
+        pensioner_last: '',
+        pensioner_app_number: rec.pensioner_app_number || '',
+        regiment: rec.regiment || '',
+        company: rec.company || '',
+        pensioncard_backlink: rec.pensioncard_backlink || '',
+        ranked_candidates: rec.ranked_candidates || [],
+        best_score: rec.best_score || 0,
+        best_candidate: rec.best_candidate || null,
+        status: rec.status || 'unknown',
+        strategies_run: rec.strategies_run || [],
+        cgr_records: [],
+        cgr_status: '',
+        cgr_skipped_fag: false,
+        both_match: null,
+        timestamp: rec.timestamp || '',
+    };
+}
+
 
 // ============================================================
 // Decisions — localStorage keyed by file content hash
@@ -472,7 +582,9 @@ function renderPensioner(p) {
                 ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
                 ${p.pensioncard_backlink ? `<a href="${escapeHtml(p.pensioncard_backlink)}" target="_blank">source card</a>` : ''}
+                ${p.cgr_skipped_fag ? '<span class="badge skipped">FaG skipped — CGR strong match</span>' : ''}
             </div>
+            ${renderBothMatchBanner(p)}
             <div class="candidates">${candsHtml}</div>
             ${renderCgrPanel(p)}
             <div class="actions">
@@ -484,6 +596,28 @@ function renderPensioner(p) {
                 <input data-action="notes" data-pid="${pid}" placeholder="notes…"
                        value="${escapeHtml(decision?.notes || '')}">
             </div>
+        </div>
+    `;
+}
+
+function renderBothMatchBanner(p) {
+    const bm = p.both_match;
+    if (!bm) return '';
+    const method = bm.method || 'unknown';
+    const cls = method === 'direct_link' ? 'direct' : (method === 'corroboration' ? 'corroborated' : '');
+    const label = method === 'direct_link'
+        ? '✓ BOTH MATCH (direct link)'
+        : '✓ BOTH MATCH (corroborated)';
+    const confidence = bm.confidence ? Math.round(bm.confidence * 100) + '%' : '';
+    const reason = bm.reason || '';
+    const fagMemId = bm.fag_memorial_id || '';
+    const fagLink = fagMemId ? ` · <a href="https://www.findagrave.com/memorial/${escapeHtml(fagMemId)}" target="_blank">open in FaG</a>` : '';
+    return `
+        <div class="both-match-banner ${cls}">
+            <strong>${escapeHtml(label)}</strong>
+            ${confidence ? ` (${escapeHtml(confidence)} confidence)` : ''}
+            ${reason ? `<div class="reason">${escapeHtml(reason)}</div>` : ''}
+            ${fagLink}
         </div>
     `;
 }
