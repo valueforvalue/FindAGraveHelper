@@ -171,6 +171,9 @@ docs/research/
     ├── README.md                        # (this file)
     ├── how-to-use.md                    # operational guide
     ├── strategy-tuning.md                # scoring iteration log
+    ├── 2026-07-16-run-1-learnings.md    # Run #1: DOM materialization crash
+    ├── 2026-07-16-run-2-learnings.md    # Run #2: memory-leak investigation
+    ├── run-plan-2026-07-16.md           # 7709-record batch plan
     └── future-work.md                   # spouse cross-ref + other ideas
 
 docs/v5-design/

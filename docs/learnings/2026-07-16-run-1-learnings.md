@@ -2,6 +2,13 @@
 
 Run started 2026-07-16 04:10:41, killed ~5h later.
 
+**Update**: After Run #1's DOM-crash bug was fixed (commit
+`f17b779`), the resumed Run #2 hit a different problem: the
+Python process + Chromium together grew pwsh.exe to ~7 GB over a
+few hours. See `[2026-07-16-run-2-learnings.md](./2026-07-16-run-2-learnings.md)`
+for the memory-leak investigation and the five fixes that
+brought per-record RSS growth under control.
+
 ## What happened
 
 | Phase | Records | Status |
