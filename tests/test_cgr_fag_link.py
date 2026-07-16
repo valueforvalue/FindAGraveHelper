@@ -55,6 +55,23 @@ def test_find_fag_url_handles_bare_id():
     assert link.memorial_id == "123456"
 
 
+def test_extract_fag_memorial_id_bare_memorial_pattern():
+    """Issue #10: 'Memorial NNNNN' (no 'Find a Grave' prefix) must match.
+
+    The third regex (_FAG_BARE_RE) catches the bare 'memorial NNNNN'
+    pattern that shows up in some CGR records. Regression guard so
+    the regex literal doesn't regress to the unterminated state
+    `r"memorial[:` that bit an earlier version of this module.
+    """
+    assert extract_fag_memorial_id("Memorial 12345").memorial_id == "12345"
+    assert extract_fag_memorial_id("memorial:99999").memorial_id == "99999"
+    assert extract_fag_memorial_id("memorial 88888").memorial_id == "88888"
+    # Must NOT match unrelated numbers (e.g. dates, app numbers).
+    assert extract_fag_memorial_id("Adair, R. W. 1844 1932") is None
+    # Must NOT match words that just contain "memorial".
+    assert extract_fag_memorial_id("memorial park") is None
+
+
 def test_find_fag_url_returns_none_for_no_fag():
     """No FaG reference → None."""
     text = "Source: Okla. SCV Archives"
