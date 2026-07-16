@@ -1,0 +1,42 @@
+2026-07-16 03:05:20,370 Input: C:\Development\FindAGraveHelper\docs\research\cgr\ok_cemeteries.jsonl
+2026-07-16 03:05:20,370 Output: C:\Development\FindAGraveHelper\docs\research\cgr\ok_vets_enriched.jsonl
+2026-07-16 03:05:20,375 Loaded 769 cemeteries
+2026-07-16 03:05:20,376 Expanded to 2593 vets
+2026-07-16 03:05:20,377 Resume: skipping 0 already-fetched
+2026-07-16 03:05:20,682 Progress: 1/2593 (0.0%); 3.3 req/s; ETA 13.2 min
+2026-07-16 03:05:23,425 Limit reached (n=5); stopping
+2026-07-16 03:05:23,426 Final: {"total": 2593, "fetched": 5, "errors": 0, "died_state_ok": 5, "vet_died_in_ok": 5, "progress_pct": 0.2}
+2026-07-16 03:05:23,436 Elapsed: 3.0 s (0.1 min)
+2026-07-16 03:05:38,805 Input: C:\Development\FindAGraveHelper\docs\research\cgr\ok_cemeteries.jsonl
+2026-07-16 03:05:38,805 Output: C:\Development\FindAGraveHelper\docs\research\cgr\ok_vets_enriched.jsonl
+2026-07-16 03:05:38,810 Loaded 769 cemeteries
+2026-07-16 03:05:38,812 Expanded to 2593 vets
+2026-07-16 03:05:38,812 Resume: skipping 0 already-fetched
+2026-07-16 03:05:39,047 Progress: 1/2593 (0.0%); 4.3 req/s; ETA 10.1 min
+2026-07-16 03:06:35,449 Progress: 101/2593 (3.9%); 1.8 req/s; ETA 23.3 min
+2026-07-16 03:07:32,788 Progress: 201/2593 (7.8%); 1.8 req/s; ETA 22.6 min
+2026-07-16 03:08:23,981 Progress: 301/2593 (11.6%); 1.8 req/s; ETA 21.0 min
+2026-07-16 03:09:14,370 Progress: 401/2593 (15.5%); 1.9 req/s; ETA 19.6 min
+2026-07-16 03:10:08,672 Progress: 501/2593 (19.3%); 1.9 req/s; ETA 18.8 min
+2026-07-16 03:11:06,007 Progress: 601/2593 (23.2%); 1.8 req/s; ETA 18.1 min
+2026-07-16 03:12:05,756 Progress: 701/2593 (27.0%); 1.8 req/s; ETA 17.4 min
+2026-07-16 03:13:11,422 Progress: 801/2593 (30.9%); 1.8 req/s; ETA 16.9 min
+2026-07-16 03:14:07,499 Progress: 901/2593 (34.7%); 1.8 req/s; ETA 15.9 min
+2026-07-16 03:15:02,065 Progress: 1001/2593 (38.6%); 1.8 req/s; ETA 14.9 min
+2026-07-16 03:16:01,569 Progress: 1101/2593 (42.5%); 1.8 req/s; ETA 14.1 min
+2026-07-16 03:17:03,503 Progress: 1201/2593 (46.3%); 1.8 req/s; ETA 13.2 min
+2026-07-16 03:18:05,683 Progress: 1301/2593 (50.2%); 1.7 req/s; ETA 12.4 min
+2026-07-16 03:19:05,822 Progress: 1401/2593 (54.0%); 1.7 req/s; ETA 11.4 min
+2026-07-16 03:20:09,396 Progress: 1501/2593 (57.9%); 1.7 req/s; ETA 10.6 min
+2026-07-16 03:21:05,205 Progress: 1601/2593 (61.7%); 1.7 req/s; ETA 9.6 min
+2026-07-16 03:22:01,005 Progress: 1701/2593 (65.6%); 1.7 req/s; ETA 8.6 min
+2026-07-16 03:22:55,027 Progress: 1801/2593 (69.5%); 1.7 req/s; ETA 7.6 min
+2026-07-16 03:23:52,813 Progress: 1901/2593 (73.3%); 1.7 req/s; ETA 6.6 min
+2026-07-16 03:24:50,782 Progress: 2001/2593 (77.2%); 1.7 req/s; ETA 5.7 min
+2026-07-16 03:25:41,153 Progress: 2101/2593 (81.0%); 1.7 req/s; ETA 4.7 min
+2026-07-16 03:26:30,342 Progress: 2201/2593 (84.9%); 1.8 req/s; ETA 3.7 min
+2026-07-16 03:27:19,031 Progress: 2301/2593 (88.7%); 1.8 req/s; ETA 2.7 min
+2026-07-16 03:28:08,352 Progress: 2401/2593 (92.6%); 1.8 req/s; ETA 1.8 min
+2026-07-16 03:28:57,753 Progress: 2501/2593 (96.5%); 1.8 req/s; ETA 0.9 min
+2026-07-16 03:29:47,613 Final: {"total": 2593, "fetched": 2593, "errors": 0, "died_state_ok": 2560, "vet_died_in_ok": 2523, "progress_pct": 100.0}
+2026-07-16 03:29:47,613 Elapsed: 1448.8 s (24.1 min)
