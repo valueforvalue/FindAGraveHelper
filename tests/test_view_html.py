@@ -90,3 +90,21 @@ def test_show_top_default_is_some_value():
     # Look for a default value in the JS (e.g. let showTop = 5)
     assert re.search(r"showTop\s*=\s*\d+", VIEW_HTML), \
         "expected showTop variable to have a numeric default"
+
+def test_dd_in_local_badge_present():
+    """view.html shows a badge for dd_in_local status."""
+    assert "dd-badge" in VIEW_HTML, "expected dd-badge class in view.html"
+    assert "in DD" in VIEW_HTML or "✓ in DD" in VIEW_HTML, \
+        "expected in-DD label"
+
+
+def test_dd_new_find_badge_present():
+    """view.html shows a NEW FIND badge for new finds (not in DD)."""
+    assert "NEW FIND" in VIEW_HTML, "expected 'NEW FIND' label"
+    assert "dd-badge.new" in VIEW_HTML, "expected dd-badge.new style"
+
+
+def test_dd_field_in_js():
+    """JS reads p.dd_in_local to render the badge."""
+    assert re.search(r"p\.dd_in_local", VIEW_HTML) or re.search(r"dd_in_local", VIEW_HTML), \
+        "expected dd_in_local referenced in view.html"

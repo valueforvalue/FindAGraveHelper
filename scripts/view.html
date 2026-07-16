@@ -106,6 +106,17 @@
   .badge.skipped { background: #d1ecf1; color: #0c5460; padding: 2px 6px;
                    border-radius: 3px; font-size: 11px; margin-left: 8px; }
 
+  /* DD (DixieData) badges (J8) */
+  .dd-badge { display: inline-block; padding: 2px 8px; border-radius: 10px;
+              font-size: 11px; font-weight: bold; margin-left: 8px; }
+  .dd-badge.in { background: #e2e3e5; color: #383d41; }
+  .dd-badge.new { background: #ffd700; color: #5d4e00;
+                  animation: pulse 2s ease-in-out infinite; }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+  }
+
   .candidate .pick { white-space: nowrap; }
   .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
@@ -576,6 +587,8 @@ function renderPensioner(p) {
             <h2>${escapeHtml(p.pensioner_name || '?')}
                 <span class="id">id=${pid}${p.pensioner_app_number ? ' &middot; app# ' + escapeHtml(p.pensioner_app_number) : ''}</span>
                 <span class="status ${statusClass}">${statusLabel}</span>
+                ${p.dd_in_local === true ? '<span class="dd-badge in">✓ in DD</span>'
+                  : p.dd_in_local === false ? '<span class="dd-badge new">★ NEW FIND</span>' : ''}
             </h2>
             <div class="meta">
                 ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
