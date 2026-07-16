@@ -4,11 +4,51 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
-### Added — Research workspace for v5.0 design
+### Added — Oklahoma Digital Prairie Confederate pension index
 
-This commit does **not change any userscript behavior**. It documents
-research conducted in July 2026 toward a v5.0 rewrite of
-`FindaGraveIterativeHelper.user.js`.
+**The goal of the project** is to find Confederate soldiers associated
+with Oklahoma. The 1915 Oklahoma Confederate Soldiers' Pension Act
+created a Board of Pension Commissioners that documented every
+Confederate veteran (or widow) who applied for a state pension — a
+canonical list of OK-associated CW soldiers.
+
+- **`docs/research/digitalprairie/`** — pulled 7,558 unique pensioners
+  from `digitalprairie.ok.gov` (both `pensions` and `pensioncard`
+  collections, merged on application #).
+  - 7,709 application files
+  - 11,987 index cards
+  - 7,558 unified records (canonical OK-associated CW pensioner list)
+  - Each record has: parsed name, app#, pension#, company, regiment,
+    spouse name, source URL, IIIF image URL, and a backlink to the
+    original card on digitalprairie.ok.gov
+- **`scripts/scrape_digitalprairie.py`** — the scraper. Iterates ID
+  range, hits the CONTENTdm v13 single-item JSON API, parses
+  structured metadata (no OCR needed), merges the two collections
+  on application #, outputs both per-collection and unified JSON+CSV.
+  Resume-safe. ~5 min for full run at concurrency 15.
+- A 50-record sample (`unified_sample_50.{json,csv}`) is committed
+  for quick reference. The full 30 MB unified.json is gitignored
+  (reproducible by re-running the script).
+
+### Top-level implication
+
+The 7,558 unified records are the canonical input for the next step:
+batch FaG searching. The local dixiedata DB has 575 soldiers
+already in FaG. Most of the ~7,000 not-yet-in-FaG OK-associated CW
+pensioners are the next batch to search. The next helper script
+should:
+
+1. Iterate `digitalprairie/unified.json`
+2. Build a search URL per soldier using the v5.0 strategy ladder
+3. Parse results, score, auto-flag high-confidence matches
+4. Output `digitalprairie/unified_with_fag.csv`
+
+### Previous: Research workspace for v5.0 design
+
+Earlier in the same session, this commit also added the v5.0
+research workspace. It does **not change any userscript behavior**.
+It documents research conducted in July 2026 toward a v5.0 rewrite
+of `FindaGraveIterativeHelper.user.js`.
 
 - **`docs/research/`** — five research documents:
   - `local-data/` — analysis of 575 CW veterans in the dixiedata DB
@@ -53,9 +93,11 @@ v5.0 strategy ladder reaches **100%** by adding:
 - Apostrophe and abbreviation variant generation
 - Civil War bio context filter as catch-all
 
-But before implementation, **Path B** is needed: pull NPS Soldiers &
+But before implementation, **Path B** was needed: pull NPS Soldiers &
 Sailors index data to broaden the training set beyond the NARA CMSR
-bias (enlisted-focused, surviving-regiment bias).
+bias (enlisted-focused, surviving-regiment bias). Path B has since
+been deferred — the immediate goal shifted to building the OK
+Confederate pensioner index (see above) for batch FaG searching.
 
 ## [0.7] — 2026-07-01
 

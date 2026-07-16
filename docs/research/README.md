@@ -92,16 +92,27 @@ and what it doesn't.
 
 → Output: `broadened-set/match_results.md`
 
-## Next: Path B
+## Next: Batch FaG search
 
-Confirmed with user: Path B (pull NPS Soldiers & Sailors index too)
-before building v5.0. The broadened CMSR set has known biases
-(enlisted-focused, regiment-organization biases, surviving-regiment
-biases). NPS data covers officers, alternate names, and units not
-in CMSR.
+With the canonical 7,558-OK-pensioner list, the next step is to
+build a batch FaG search harness:
 
-The artifacts here are committed so this work isn't lost between
-sessions. Future work continues with NPS scraping in a new branch.
+1. Iterate `digitalprairie/unified.json`
+2. For each pensioner, build a search URL using the v5.0 strategy
+   ladder
+3. Submit, parse results, score candidates
+4. Auto-flag high-confidence matches (≥0.85)
+5. Output `digitalprairie/unified_with_fag.csv` showing which
+   pensioners are already in FaG vs. which need to be found
+
+The local dixiedata DB has 575 soldiers already in FaG. The
+unified set has 7,558. Most of the ~7,000 not-yet-in-FaG soldiers
+are the next batch to search.
+
+Path B (NPS Soldiers & Sailors index) is still useful for
+broadening the strategy-ladder validation set, but is no longer a
+prerequisite for the immediate goal of finding OK-associated CW
+soldiers.
 
 ## Reproducing the analysis
 
@@ -114,6 +125,12 @@ python scripts/build_broadened_set.py
 
 # Phase 5 — match broadened to local
 python scripts/match_broadened_to_local.py
+
+# Phase 6 — pull OK Confederate pension records from Digital Prairie
+python scripts/scrape_digitalprairie.py \
+    --out-dir docs/research/digitalprairie \
+    --min-id 1 --max-id 13000 --no-probe \
+    --concurrency 15 --save-every 500
 ```
 
 ## Sources
