@@ -1,6 +1,6 @@
 """Tests for the pensioner-to-CGR matcher.
 
-Given a local pensioner (from unified.json or dixiedata) and one
+Given a local pensioner (from ok_pensioners.json or dixiedata) and one
 or more CGR records (from search results), decide whether they
 refer to the same person.
 
@@ -45,7 +45,7 @@ from scripts.cgr_matcher import (
 # ============================================================
 # Fixtures
 # ============================================================
-# A real OK pensioner from unified.json, in our standardized shape
+# A real OK pensioner from ok_pensioners.json, in our standardized shape
 PENSIONER_LOONEY = {
     "id": 7666,
     "name_raw": "Looney, Louis F",

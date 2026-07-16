@@ -1,7 +1,7 @@
 """Tests for the CGR cross-reference script logic.
 
 The cross-ref script:
-  1. Loads unified.json (or similar input)
+  1. Loads ok_pensioners.json (or similar input)
   2. For each pensioner, searches CGR by (first_name, last_name)
   3. For each CGR match, fetches vet details (and optionally cemetery)
   4. Annotates with match_strength + conflicts

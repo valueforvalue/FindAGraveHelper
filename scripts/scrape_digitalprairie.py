@@ -342,7 +342,7 @@ def scrape_range(
 
 
 def merge_collections(out_dir: Path) -> None:
-    """Merge pensions + pensioncard on application_number, output unified.json.
+    """Merge pensions + pensioncard on application_number, output ok_pensioners.json.
 
     The `pensions` collection has the application file. The `pensioncard`
     collection has the regiment/company metadata. Same person has the same
@@ -406,8 +406,8 @@ def merge_collections(out_dir: Path) -> None:
              len(merged), matched_card, unmatched)
 
     # Write merged output
-    out_json = out_dir / "unified.json"
-    out_csv = out_dir / "unified.csv"
+    out_json = out_dir / "ok_pensioners.json"
+    out_csv = out_dir / "ok_pensioners.csv"
     with out_json.open("w", encoding="utf-8") as f:
         json.dump(merged, f, indent=2, ensure_ascii=False)
 

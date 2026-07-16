@@ -1,0 +1,9 @@
+{
+  "_meta": {
+    "source_url": "https://digitalprairie.ok.gov/digital/collection/pensions",
+    "source_collection": "pensions + pensioncard (merged on application_number; 50-record sample)",
+    "pulled_at": "2026-07-16T19:28:26.984400+00:00",
+    "record_count": 50,
+    "schema_version": 1
+  }
+}

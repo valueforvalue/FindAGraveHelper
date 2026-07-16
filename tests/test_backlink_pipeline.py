@@ -1,6 +1,6 @@
 """Tests for backlink field carrying through the state.jsonl pipeline.
 
-The pensions-application digitalprairie URL is stored in unified.json
+The pensions-application digitalprairie URL is stored in ok_pensioners.json
 as `backlink` (distinct from `pensioncard_backlink` which is the
 pension card URL). State.jsonl must carry both so view.html and
 report.md can render both source links per pensioner.

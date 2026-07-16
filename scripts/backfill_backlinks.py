@@ -9,14 +9,14 @@ links per pensioner without waiting for a full pipeline rerun.
 Usage:
   python scripts/backfill_backlinks.py \\
       --state data/results/run_full_2026_07_16/state.jsonl \\
-      --unified docs/research/digitalprairie/unified.json \\
+      --unified docs/research/digitalprairie/ok_pensioners.json \\
       --output data/results/run_full_2026_07_16/state_enriched.jsonl
 
 If --output is omitted, writes in place (atomic via .tmp + rename).
 
 Backwards-safe:
   - Records already carrying a non-empty `backlink` are kept as-is.
-  - Records with no match in unified.json get `backlink: ""`.
+  - Records with no match in ok_pensioners.json get `backlink: ""`.
   - Atomic write: .tmp + rename, so a crash mid-write leaves the
     original state.jsonl intact.
 """
@@ -32,9 +32,9 @@ sys.path.insert(0, str(ROOT))
 
 
 def load_unified_index(unified_path: Path) -> dict[int, str]:
-    """Build {pensioner_id: backlink} from unified.json.
+    """Build {pensioner_id: backlink} from ok_pensioners.json.
 
-    unified.json is a JSON array (one record per pensioner, possibly
+    ok_pensioners.json is a JSON array (one record per pensioner, possibly
     multiple per pensioner_id). Pick the first record per id; the
     `backlink` field is the same across records for a given pensioner.
     """
@@ -96,7 +96,7 @@ def main() -> int:
     p.add_argument("--state", required=True, type=Path,
                    help="Path to existing state.jsonl")
     p.add_argument("--unified", required=True, type=Path,
-                   help="Path to unified.json (digitalprairie output)")
+                   help="Path to ok_pensioners.json (digitalprairie output)")
     p.add_argument("--output", type=Path, default=None,
                    help="Output path (default: overwrite --state)")
     args = p.parse_args()
@@ -110,7 +110,7 @@ def main() -> int:
 
     print(f"Loading unified index from {args.unified}...")
     unified_index = load_unified_index(args.unified)
-    print(f"  {len(unified_index)} pensioner IDs in unified.json")
+    print(f"  {len(unified_index)} pensioner IDs in ok_pensioners.json")
 
     print(f"Backfilling {args.state} -> {args.output or args.state}...")
     filled, skipped, missing = backfill(args.state, unified_index, args.output)

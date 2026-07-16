@@ -1,6 +1,6 @@
 """Match local pensioner records against CGR (Confederate Graves Registry) records.
 
-Given a local pensioner (from unified.json or dixiedata) and one
+Given a local pensioner (from ok_pensioners.json or dixiedata) and one
 or more CGR records (from search results), decide whether they
 refer to the same person.
 

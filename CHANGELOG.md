@@ -4,6 +4,28 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: rename data files + add provenance _meta (T015)
+
+The canonical OK pensioner file was called `unified.json`, which
+doesn't tell you the scope (OK-only) or the source. Renamed to
+`ok_pensioners.json` (reverting a historical rename; see
+`CONTEXT.md` §Historical). CGR input already used the `ok_` prefix;
+it gains a sibling `_meta.json` for parity.
+
+- `docs/research/digitalprairie/unified_sample_50.json` →
+  `ok_pensioners_sample_50.json`
+- `docs/research/digitalprairie/ok_pensioners.meta.json` (new)
+- `docs/research/cgr/ok_cemeteries.meta.json` (new)
+- 5 importers updated (`backfill_backlinks`, `cgr_matcher`,
+  `scrape_digitalprairie`, `spouse_cross_ref`, `spouse_prototype`)
+- `scripts/rename_to_ok_names.py` (new) — one-shot idempotent
+  migration script
+
+Provenance block (`_meta.json` siblings) carries: `source_url`,
+`source_collection`, `pulled_at`, `record_count`, `schema_version`.
+Sibling-file pattern chosen over embedding in the data array
+because every consumer iterates records assuming uniform shape.
+
 ### Pensions-application backlink end-to-end
 
 view.html and report.md now show the digitalprairie

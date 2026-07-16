@@ -3,7 +3,7 @@
 One-shot script that enriches existing state.jsonl files with the
 pensions-application backlink (the `backlink` field), which the
 pipeline historically dropped. Tests cover:
-  - JSON-array input (unified.json shape)
+  - JSON-array input (ok_pensioners.json shape)
   - JSONL input (state.jsonl shape)
   - Already-present backlink kept as-is (idempotency)
   - Missing-from-unified records get empty string

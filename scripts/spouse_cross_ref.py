@@ -1,6 +1,6 @@
 """Spouse cross-reference logic.
 
-Given a FaG spouse entry (from extract_spouse) and a unified.json
+Given a FaG spouse entry (from extract_spouse) and a ok_pensioners.json
 widow record, decide whether they describe the same family.
 
 The match is strong when:

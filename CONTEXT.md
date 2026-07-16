@@ -19,7 +19,7 @@ as the lookup target.
 **Pensioner**:
 A Confederate veteran (or widow) who applied for an Oklahoma
 state pension under the 1915 act. The canonical input record
-from `digitalprairie/unified.json`. Each pensioner has a
+from `digitalprairie/ok_pensioners.json`. Each pensioner has a
 `pensioner_id` (stable across runs) plus name, unit, and metadata.
 _Avoid_: applicant, claimant, file (the file is the source
 artifact, not the person).
@@ -92,8 +92,8 @@ query is the URL instance).
 **Pension card**:
 The source artifact on digitalprairie.ok.gov. Has both the
 soldier's name and (if the applicant is a widow) the widow's
-name, plus regiment/company metadata. The unified.json record
-combines the application file with the pension card.
+name, plus regiment/company metadata. The ok_pensioners.json
+record combines the application file with the pension card.
 _Avoid_: index card (the pension card is the *front*; the
 application file is the *back*).
 
@@ -138,11 +138,18 @@ application file is the *back*).
   per-pensioner) for resume-safety. The terms are not
   interchangeable; the state file has `pensioner_id` and
   `outcome`, the legacy export has `memorial_id` and no outcome.
-- **`ok_pensioners.json`** — earlier input list name
-  (7,758 records). Renamed to `unified.json` when we merged
-  the pensions + pensioncard collections into one canonical
-  list. The legacy term still appears in
-  [`docs/learnings/run-plan-2026-07-16.md`](docs/learnings/run-plan-2026-07-16.md).
+- **`ok_pensioners.json`** — canonical OK CW pensioner list
+  (~7,758 records after merging the pensions + pensioncard
+  collections on `application_number`). File renamed **twice**:
+  first called `ok_pensioners.json`, then `unified.json` when the
+  pipeline merged the two collections into one canonical list
+  (this rename made the source ambiguous: OK-only, but no
+  obvious name), then renamed **back** to `ok_pensioners.json`
+  in T015 (2026-07-16) with a sibling `ok_pensioners.meta.json`
+  carrying the provenance block (source URL, collection, pulled
+  date, record count). Legacy references to `unified.json`
+  remain in older run logs and design docs as historical
+  breadcrumbs.
 - **`findagrave-params/bio="..."`** — early v4.0 helper used
   Boolean operators in the bio field. FaG doesn't support them;
   the helper was rewritten to use a single narrowing term.
