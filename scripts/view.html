@@ -294,13 +294,7 @@ fileInput.addEventListener('change', async (e) => {
     document.getElementById('fileStatus').textContent = `Loading ${file.name}…`;
     const text = await file.text();
     try {
-        rawPensioners = parseInput(text);
-        pensioners = rawPensioners.map(normalizeStateRecord);
-        document.getElementById('fileStatus').textContent =
-            `Loaded ${pensioners.length} records from ${file.name}`;
-        loadDecisionsFromLocalStorage();
-        applyFilter();
-        updateStats();
+        applyLoaded(loadFromText(text, file.name));
     } catch (err) {
         document.getElementById('fileStatus').textContent = `Error: ${err.message}`;
     }
@@ -311,6 +305,22 @@ function parseInput(text) {
     // Single JSON array: starts with [
     if (text.startsWith('[')) {
         return JSON.parse(text);
+    }
+    // J10b: detect the rich export shape (single JSON object
+    // with a top-level 'version' + 'decisions' field). Return
+    // a {kind: 'export', ...} envelope so the file-input handler
+    // can switch into export-view mode.
+    if (text.startsWith('{')) {
+        try {
+            const obj = JSON.parse(text);
+            if (obj && typeof obj === 'object' && obj.decisions
+                && typeof obj.decisions === 'object'
+                && (obj.version != null || obj.exported_at != null)) {
+                return { kind: 'export', ...obj };
+            }
+        } catch (e) {
+            // fall through to JSONL
+        }
     }
     // JSONL: multiple lines, each a JSON object starting with {
     // (Don't try to parse whole file as JSON — multiple objects on separate
@@ -323,8 +333,128 @@ function parseInput(text) {
 }
 
 // ============================================================
-// State normalization — unify FaG-only and unified state formats
+// Load: unify raw records + export-view modes
 // ============================================================
+// J10b: loadFromText handles BOTH the raw results.jsonl (one
+// record per line OR a JSON array) and the rich fag-decisions
+// export (top-level {version, decisions, stats, ...}).
+//
+// Returns { mode: 'records' | 'export', records, source_label }.
+// The caller branches to either normal rendering (records) or
+// export-view mode (banner + readonly indicators).
+let isExportView = false;
+let exportMetadata = null;
+function loadFromText(text, sourceLabel) {
+    const parsed = parseInput(text);
+    if (parsed && parsed.kind === 'export') {
+        // J10b: export-view mode. Reconstruct the pensioner
+        // records from the export's per-pensioner `.pensioner`
+        // field, and surface the export's decisions as the
+        // local decision store so the picks/notes carry over.
+        const records = Object.entries(parsed.decisions).map(
+            ([pid, v]) => ({
+                ...(v.pensioner || {}),
+                pensioner_id: pid,
+                // Pull candidates out of the nested .candidates
+                // field if the export carried them (J10); fall
+                // back to the legacy top-level field.
+                ranked_candidates: v.candidates || v.pensioner?.ranked_candidates || [],
+            })
+        );
+        // Seed the decision store from the export so picks /
+        // notes appear in the UI without re-importing.
+        const seedDecisions = {};
+        for (const [pid, v] of Object.entries(parsed.decisions)) {
+            const d = v.decision || {};
+            if (d.memorial_id || d.notes || (d.removed_candidates && d.removed_candidates.length)
+                || (d.candidate_notes && Object.keys(d.candidate_notes).length)) {
+                seedDecisions[pid] = d;
+            }
+        }
+        decisions = seedDecisions;
+        saveDecisionsToLocalStorage();
+        return {
+            mode: 'export',
+            records: records,
+            sourceLabel: sourceLabel,
+            metadata: {
+                version: parsed.version,
+                exported_at: parsed.exported_at,
+                source_file: parsed.source_file,
+                stats: parsed.stats || null,
+            },
+        };
+    }
+    // Default: raw records (results.jsonl or JSON array).
+    const records = Array.isArray(parsed) ? parsed : [];
+    return { mode: 'records', records: records, sourceLabel: sourceLabel, metadata: null };
+}
+
+// applyLoaded: shared handler for the file-input + auto-load
+// paths. Sets the global state from the load result, updates
+// the file-status line, and (for export mode) shows the export
+// banner + flips the page into readonly-view mode.
+function applyLoaded(loadResult) {
+    isExportView = loadResult.mode === 'export';
+    exportMetadata = loadResult.metadata;
+    rawPensioners = loadResult.records;
+    pensioners = rawPensioners.map(normalizeStateRecord);
+    if (isExportView) {
+        const m = loadResult.metadata || {};
+        const stats = m.stats || {};
+        const decided = stats.decided != null
+            ? stats.decided : Object.keys(decisions).length;
+        document.getElementById('fileStatus').textContent =
+            `Loaded export v${m.version || '?'} (${m.exported_at || '?'}) — `
+            + `${pensioners.length} records, ${decided} decided.`;
+        showExportBanner(loadResult.metadata);
+    } else {
+        document.getElementById('fileStatus').textContent =
+            `Loaded ${pensioners.length} records from ${loadResult.sourceLabel}`;
+        hideExportBanner();
+    }
+    applyFilter();
+    updateStats();
+}
+
+// J10b: export-mode banner. Shows version + timestamp + stats so
+// the reviewer knows they're looking at a frozen snapshot, not
+// live results.
+function showExportBanner(meta) {
+    let banner = document.getElementById('exportBanner');
+    if (!banner) {
+        banner = document.createElement('div');
+        banner.id = 'exportBanner';
+        banner.style.cssText =
+            'background:#fff3cd;border:1px solid #ffeaa7;color:#856404;'
+            + 'padding:8px 12px;margin:8px 20px;border-radius:4px;'
+            + 'font-size:13px;';
+        const main = document.getElementById('results');
+        main.parentNode.insertBefore(banner, main);
+    }
+    const m = meta || {};
+    const stats = m.stats || {};
+    const cgrLine = stats.by_cgr_dedup
+        ? ` CGR: ${Object.entries(stats.by_cgr_dedup)
+              .map(([k,v]) => `${k}=${v}`).join(', ')}.`
+        : '';
+    banner.innerHTML =
+        `<strong>📦 View mode — export snapshot</strong> · `
+        + `version ${escapeHtml(String(m.version || '?'))} · `
+        + `exported ${escapeHtml(m.exported_at || '?')} · `
+        + `source ${escapeHtml(m.source_file || '?')}. `
+        + `Read-only; picks/notes are loaded from the export.`
+        + (stats.decided != null
+            ? ` ${stats.decided} decided of ${stats.total_pensioners || pensioners.length}.`
+            : '')
+        + cgrLine;
+    banner.style.display = 'block';
+}
+function hideExportBanner() {
+    const banner = document.getElementById('exportBanner');
+    if (banner) banner.style.display = 'none';
+    isExportView = false;
+}
 function isUnified(rec) {
     // A unified record has fag_records OR cgr_records OR
     // both_match. Pure legacy records only have ranked_candidates.
@@ -1092,44 +1222,75 @@ function flash(msg) {
 // ============================================================
 // Export / Import decisions
 // ============================================================
+// J10: rich JSON export. CSV was lossy — it dropped the full
+// pensioner record, the full FaG candidates reviewed, and the
+// CGR match summary. The reviewer needs a self-contained
+// export that can be reopened in a separate session without
+// losing context.
 document.getElementById('exportBtn').addEventListener('click', () => {
-    // Build CSV: pensioner_id, app_number, name, picked_memorial_id, picked_slug,
-    // decision_by, decision_at, notes, status, removed_candidates, candidate_notes
+    // Build a per-pensioner view: decision + full pensioner
+    // record + full candidates reviewed + cgr match summary.
+    // Then wrap with metadata (version, timestamp, source,
+    // stats).
     const byId = {};
     for (const p of pensioners) byId[p.pensioner_id] = p;
-    const lines = ['pensioner_id,application_number,name,picked_memorial_id,picked_slug,decision_by,decision_at,notes,status,removed_candidates,candidate_notes'];
+    const decisionsOut = {};
     for (const [pid, d] of Object.entries(decisions)) {
         const p = byId[pid];
         if (!p) continue;
-        const notes = (d.notes || '').replace(/"/g, '""');
-        const name = (p.pensioner_name || '').replace(/"/g, '""');
-        // J8: per-candidate state — semicolon-separated
-        // memorial_ids for removed, JSON for the notes map
-        const removed = (d.removed_candidates || []).join(';');
-        const candNotes = JSON.stringify(d.candidate_notes || {}).replace(/"/g, '""');
-        lines.push([
-            pid,
-            p.pensioner_app_number || '',
-            `"${name}"`,
-            d.memorial_id || '',
-            d.slug || '',
-            d.by || '',
-            d.at || '',
-            `"${notes}"`,
-            p.status || '',
-            `"${removed}"`,
-            `"${candNotes}"`,
-        ].join(','));
+        decisionsOut[pid] = {
+            decision: {
+                memorial_id: d.memorial_id || null,
+                slug: d.slug || null,
+                by: d.by || 'user',
+                at: d.at || new Date().toISOString(),
+                notes: d.notes || '',
+                // J8: per-candidate state
+                removed_candidates: d.removed_candidates || [],
+                candidate_notes: d.candidate_notes || {},
+            },
+            // Full pensioner record — name, regiment, year,
+            // backlink, both_match, etc. Self-contained export.
+            pensioner: p,
+            // Full FaG candidates the reviewer saw (so they can
+            // be reopened in another session without rerunning).
+            candidates: p.ranked_candidates || [],
+            // CGR dedup verdict from the post-run comparison.
+            cgr_dedup_status: p.cgr_dedup_status || null,
+            cgr_match_summary: p.cgr_match_summary || null,
+        };
     }
-    const csv = lines.join('\n');
-    const blob = new Blob([csv], { type: 'text/csv' });
+    // Stats: counts by status + dedup for the reviewer's reference.
+    const stats = {
+        total_pensioners: pensioners.length,
+        decided: Object.keys(decisions).length,
+        by_status: {},
+        by_cgr_dedup: {},
+    };
+    for (const p of pensioners) {
+        stats.by_status[p.status] = (stats.by_status[p.status] || 0) + 1;
+        if (p.cgr_dedup_status) {
+            stats.by_cgr_dedup[p.cgr_dedup_status] =
+                (stats.by_cgr_dedup[p.cgr_dedup_status] || 0) + 1;
+        }
+    }
+    const payload = {
+        version: 1,
+        exported_at: new Date().toISOString(),
+        source_file: window.location.pathname.split('/').pop()
+            .replace(/^view\.html$/, 'results.jsonl') || 'results.jsonl',
+        stats: stats,
+        decisions: decisionsOut,
+    };
+    const json = JSON.stringify(payload, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'fag-decisions-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.download = 'fag-decisions-' + new Date().toISOString().slice(0, 10) + '.json';
     a.click();
     URL.revokeObjectURL(url);
-    flash('Exported ' + Object.keys(decisions).length + ' decisions to CSV');
+    flash('Exported ' + Object.keys(decisions).length + ' decisions to JSON');
 });
 
 document.getElementById('importBtn').addEventListener('click', () => {
@@ -1140,10 +1301,27 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     if (!file) return;
     const text = await file.text();
     const data = JSON.parse(text);
-    // data is {pensioner_id: {memorial_id, slug, by, at, notes}}
+    // J10: accept both the new rich shape ({decisions: {pid: {decision: ...}}}),
+    // the J8 flat shape ({pid: {memorial_id, ...}}), and the
+    // pre-J8 shape ({pid: {memorial_id, slug, by, at, notes}}).
+    let entries;
+    if (data && data.decisions && typeof data.decisions === 'object') {
+        // Rich shape: extract .decision from each entry
+        entries = Object.entries(data.decisions).map(
+            ([pid, v]) => [pid, v.decision || v]
+        );
+    } else if (data && typeof data === 'object') {
+        // Flat shape: keys are pensioner_ids
+        entries = Object.entries(data);
+    } else {
+        entries = [];
+    }
     let count = 0;
-    for (const [pid, d] of Object.entries(data)) {
-        decisions[pid] = d;
+    for (const [pid, d] of entries) {
+        if (d == null) continue;
+        // Merge: existing decision wins on conflict (don't
+        // overwrite the reviewer's local edits with imported data).
+        decisions[pid] = { ...(d), ...(decisions[pid] || {}) };
         count++;
     }
     saveDecisionsToLocalStorage();
@@ -1165,13 +1343,7 @@ async function tryAutoLoad() {
     const embedded = document.getElementById('embedded-results-jsonl');
     if (embedded && embedded.textContent.trim()) {
         const text = embedded.textContent;
-        rawPensioners = parseInput(text);
-        pensioners = rawPensioners.map(normalizeStateRecord);
-        document.getElementById('fileStatus').textContent =
-            `Auto-loaded ${pensioners.length} records (embedded)`;
-        loadDecisionsFromLocalStorage();
-        applyFilter();
-        updateStats();
+        applyLoaded(loadFromText(text, 'embedded'));
         return;
     }
     // 2) Fetch from same dir (works under http://, not file://).
@@ -1179,19 +1351,16 @@ async function tryAutoLoad() {
     const candidates = [
         new URL('results.jsonl', here).toString(),
         new URL('./results.jsonl', here).toString(),
+        // J10b: also try a sibling export file
+        new URL('fag-decisions.json', here).toString(),
+        new URL('./fag-decisions.json', here).toString(),
     ];
     for (const url of candidates) {
         try {
             const r = await fetch(url);
             if (!r.ok) continue;
             const text = await r.text();
-            rawPensioners = parseInput(text);
-            pensioners = rawPensioners.map(normalizeStateRecord);
-            document.getElementById('fileStatus').textContent =
-                `Auto-loaded ${pensioners.length} records from ${url.split('/').pop()}`;
-            loadDecisionsFromLocalStorage();
-            applyFilter();
-            updateStats();
+            applyLoaded(loadFromText(text, url.split('/').pop()));
             return;
         } catch (e) {
             // try next candidate

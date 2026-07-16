@@ -4,6 +4,84 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J10: rich JSON export + view-mode for re-loading your own export
+
+User feedback after J9: the CSV export was lossy (didn't
+include the full FaG candidates reviewed, the full pensioner
+metadata, or the CGR match summary). Reviewer needs a
+self-contained export that can be reopened in a separate
+session without losing context.
+
+Two changes in one slice:
+
+1. **Switch export to rich JSON.** The export now emits a
+   self-contained payload per pensioner:
+
+   ```json
+   {
+     "version": 1,
+     "exported_at": "<iso8601>",
+     "source_file": "results.jsonl",
+     "stats": {
+       "total_pensioners": 25, "decided": 2,
+       "by_status": {"too_many": 14, ...},
+       "by_cgr_dedup": {"duplicate": 1, ...}
+     },
+     "decisions": {
+       "<pensioner_id>": {
+         "decision": {
+           "memorial_id": "...", "slug": "...", "by": "user",
+           "at": "...", "notes": "...",
+           "removed_candidates": ["..."],
+           "candidate_notes": {"<memorial_id>": "note"}
+         },
+         "pensioner": { ...full pensioner record... },
+         "candidates": [ ...full FaG candidates reviewed... ],
+         "cgr_dedup_status": "...",
+         "cgr_match_summary": {...} or null
+       }
+     }
+   }
+   ```
+
+   Downloads as `fag-decisions-YYYY-MM-DD.json`. Import accepts
+   both the new rich shape AND the old flat shape (back-compat)
+   AND the pre-J8 shape. The import merges into the local
+   decision store without clobbering existing edits.
+
+2. **view.html can load + view its own export.** A new
+   `loadFromText(text, sourceLabel)` helper detects the export
+   shape (top-level `version` + `decisions`) and switches the
+   page into a read-only "view mode" with a banner showing:
+   - version + exported_at + source_file
+   - stats (total pensioners, decided count, by status, by
+     CGR dedup)
+   - "Read-only; picks/notes are loaded from the export"
+
+   The pensioner records are reconstructed from
+   `decisions[pid].pensioner`; the picks/notes are seeded from
+   `decisions[pid].decision` so they appear in the UI. The
+   auto-load also tries `fag-decisions.json` in the same dir
+   in addition to `results.jsonl`, so an export placed beside
+   view.html loads on open.
+
+Files:
+- scripts/view.html: rewritten export (rich JSON, ~70 LOC),
+  `loadFromText` / `applyLoaded` helpers, `showExportBanner` /
+  `hideExportBanner`, export detection in `parseInput`,
+  import accepts all three shapes
+- tests/test_view_ux_j10.py (new): 11 tests covering the
+  export shape + view-mode detection + banner
+
+Tests: 11 new pass; 794 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Laws honored:
+  L4 stable key order: the export payload's per-decision
+    `decision` object preserves the order from before J8.
+  L7 docstrings: `loadFromText` + `applyLoaded` carry
+    contract docstrings.
+
 ### J9: layout fix + embedded JSONL for file:// auto-load
 
 Two bug fixes from user feedback after J8:

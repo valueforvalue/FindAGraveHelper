@@ -1,0 +1,3284 @@
+{
+  "version": 1,
+  "exported_at": "2026-07-16T17:00:00Z",
+  "source_file": "results.jsonl",
+  "stats": {
+    "total_pensioners": 25,
+    "decided": 2,
+    "by_status": {
+      "too_many": 21,
+      "auto_accept": 1,
+      "skip": 2,
+      "ambiguous": 1
+    },
+    "by_cgr_dedup": {
+      "clear": 23,
+      "duplicate": 1,
+      "follow_up_candidate": 1
+    }
+  },
+  "decisions": {
+    "5": {
+      "decision": {
+        "memorial_id": "40604786",
+        "slug": "james-s-alexander",
+        "by": "user",
+        "at": "2026-07-16T17:00:00Z",
+        "notes": "good match per CGR",
+        "removed_candidates": [
+          "999"
+        ],
+        "candidate_notes": {
+          "40604786": "this is the right one"
+        }
+      },
+      "pensioner": {
+        "pensioner_id": 5,
+        "pensioner_app_number": "A12",
+        "pensioner_name": "Hugh H. Akers",
+        "pensioner_first": "Hugh",
+        "pensioner_middle": "H.",
+        "pensioner_last": "Akers",
+        "pensioner_birth_year": "",
+        "pensioner_death_year": "",
+        "regiment": "4th Missouri Slaysback's Cavalry",
+        "company": "A & E <br>B & K",
+        "pensioncard_backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensioncard/id/2377",
+        "backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensions/id/5",
+        "cgr_records": [
+          {
+            "id": 108936,
+            "name": "Hugh W Adams",
+            "unit": "CSA",
+            "born": "",
+            "cemetery_id": 14378,
+            "cemetery_name": "Locke Cemetery (AKA: Locke Family Cemetery)",
+            "county": "Pushmataha",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "W",
+            "last_name": "Adams",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "CSA",
+            "company": "",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "Unmarked Grave obituary says CSA",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 108936,
+            "cgr_name": "Hugh W Adams",
+            "cgr_unit": "CSA",
+            "cgr_born": "",
+            "cgr_first": "Hugh",
+            "cgr_middle": "W",
+            "cgr_last": "Adams",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112585,
+            "name": "Wesley McKindree (W. N.) Akin",
+            "unit": "19 LA",
+            "born": "1840-10-17",
+            "cemetery_id": 12800,
+            "cemetery_name": "Francis Cedar Grove Cemetery",
+            "county": "Pontotoc",
+            "state": "OK",
+            "first_name": "Wesley",
+            "aka": "W. N.",
+            "middle_name": "McKindree",
+            "last_name": "Akin",
+            "suffix": "",
+            "enlisted": "1862-05-02",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "C",
+            "birth_city": "",
+            "cities": [
+              "",
+              "Francis"
+            ],
+            "birth_state": "LA",
+            "states": [
+              "LA",
+              "OK"
+            ],
+            "died": "1917-00-00",
+            "death_city": "Francis",
+            "died_state": "OK",
+            "spouse": "Sarah Ann (Faster)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112585,
+            "cgr_name": "Wesley McKindree (W. N.) Akin",
+            "cgr_unit": "19 LA",
+            "cgr_born": "1840-10-17",
+            "cgr_first": "Wesley",
+            "cgr_middle": "McKindree (W. N.)",
+            "cgr_last": "Akin",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 88210,
+            "name": "James T Akins",
+            "unit": "2 AR",
+            "born": "1839-00-00",
+            "cemetery_id": 12762,
+            "cemetery_name": "Old Enterprise",
+            "county": "Haskell",
+            "state": "OK",
+            "first_name": "James",
+            "aka": "",
+            "middle_name": "T",
+            "last_name": "Akins",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "G",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1886-00-00",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "Not on Cemetery Listing",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 88210,
+            "cgr_name": "James T Akins",
+            "cgr_unit": "2 AR",
+            "cgr_born": "1839-00-00",
+            "cgr_first": "James",
+            "cgr_middle": "T",
+            "cgr_last": "Akins",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 110552,
+            "name": "Hugh F Dix",
+            "unit": "3 NC",
+            "born": "1837-00-00",
+            "cemetery_id": 14735,
+            "cemetery_name": "May Cemetery",
+            "county": "Ellis",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "F",
+            "last_name": "Dix",
+            "suffix": "",
+            "enlisted": "1862-02-28",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "C",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1916-03-28",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Bettie A (Travis)",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 110552,
+            "cgr_name": "Hugh F Dix",
+            "cgr_unit": "3 NC",
+            "cgr_born": "1837-00-00",
+            "cgr_first": "Hugh",
+            "cgr_middle": "F",
+            "cgr_last": "Dix",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112600,
+            "name": "Hugh H Akers",
+            "unit": "4 MO",
+            "born": "1846-07-04",
+            "cemetery_id": 14512,
+            "cemetery_name": "Dougherty Cemetery",
+            "county": "Murray",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "H",
+            "last_name": "Akers",
+            "suffix": "",
+            "enlisted": "1863-00-00",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "A",
+            "birth_city": "",
+            "cities": [
+              "",
+              "Daugherty"
+            ],
+            "birth_state": "MO",
+            "states": [
+              "MO",
+              "OK"
+            ],
+            "died": "1924-04-29",
+            "death_city": "Daugherty",
+            "died_state": "OK",
+            "spouse": "Mary C (Netherland)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112600,
+            "cgr_name": "Hugh H Akers",
+            "cgr_unit": "4 MO",
+            "cgr_born": "1846-07-04",
+            "cgr_first": "Hugh",
+            "cgr_middle": "H",
+            "cgr_last": "Akers",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "medium",
+            "conflicts": {}
+          },
+          {
+            "id": 110489,
+            "name": "Hugh Weathersby Henry",
+            "unit": "21 TX",
+            "born": "1848-01-13",
+            "cemetery_id": 14703,
+            "cemetery_name": "Henry Family Cemetery",
+            "county": "Okmulgee",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "Weathersby",
+            "last_name": "Henry",
+            "suffix": "",
+            "enlisted": "1862-02-15",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "C",
+            "birth_city": "Nacogdoches",
+            "cities": [
+              "Nacogdoches",
+              "Henryetta"
+            ],
+            "birth_state": "TX",
+            "states": [
+              "TX",
+              "OK"
+            ],
+            "died": "1918-06-04",
+            "death_city": "Henryetta",
+            "died_state": "OK",
+            "spouse": "Arminta Jane (Exon)",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 110489,
+            "cgr_name": "Hugh Weathersby Henry",
+            "cgr_unit": "21 TX",
+            "cgr_born": "1848-01-13",
+            "cgr_first": "Hugh",
+            "cgr_middle": "Weathersby",
+            "cgr_last": "Henry",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 111203,
+            "name": "Hugh L W Johnson",
+            "unit": "1 MS",
+            "born": "1840-07-21",
+            "cemetery_id": 3392,
+            "cemetery_name": "Rose Hill Cemetery",
+            "county": "Carter",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "L W",
+            "last_name": "Johnson",
+            "suffix": "",
+            "enlisted": "1864-08-24",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "1st Bn. Inf.",
+            "company": "G",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "MS",
+            "states": [
+              "MS",
+              "OK"
+            ],
+            "died": "1923-01-24",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 111203,
+            "cgr_name": "Hugh L W Johnson",
+            "cgr_unit": "1 MS",
+            "cgr_born": "1840-07-21",
+            "cgr_first": "Hugh",
+            "cgr_middle": "L W",
+            "cgr_last": "Johnson",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 35496,
+            "name": "Johnson B Akers",
+            "unit": "37 NC",
+            "born": "1845",
+            "cemetery_id": 3392,
+            "cemetery_name": "Rose Hill Cemetery",
+            "county": "Carter",
+            "state": "OK",
+            "first_name": "Johnson",
+            "aka": "",
+            "middle_name": "B",
+            "last_name": "Akers",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Documents on file at SCV HQ",
+            "rank": "",
+            "unit_aka": "",
+            "company": "K",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              ""
+            ],
+            "died": "1935",
+            "death_city": "",
+            "died_state": "",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "All original submission documents are on file at SCV HQ Elm Springs",
+            "phone": "800-697-6884",
+            "vet_fetched_at": "now",
+            "cgr_id": 35496,
+            "cgr_name": "Johnson B Akers",
+            "cgr_unit": "37 NC",
+            "cgr_born": "1845",
+            "cgr_first": "Johnson",
+            "cgr_middle": "B",
+            "cgr_last": "Akers",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "medium",
+            "conflicts": {}
+          },
+          {
+            "id": 117225,
+            "name": "Hugh Sebastion Higginbotham",
+            "unit": "45 VA",
+            "born": "1837-07-07",
+            "cemetery_id": 15526,
+            "cemetery_name": "Eddy New Home Cemetery",
+            "county": "Grant",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "Sebastion",
+            "last_name": "Higginbotham",
+            "suffix": "",
+            "enlisted": "1861-05-29",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "2Lt",
+            "unit_aka": "",
+            "company": "A",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "VA",
+            "states": [
+              "VA",
+              "OK"
+            ],
+            "died": "1903-02-17",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Elizabeth (Prather)",
+            "mother_maiden": "",
+            "notes": "Okla. Widows Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 117225,
+            "cgr_name": "Hugh Sebastion Higginbotham",
+            "cgr_unit": "45 VA",
+            "cgr_born": "1837-07-07",
+            "cgr_first": "Hugh",
+            "cgr_middle": "Sebastion",
+            "cgr_last": "Higginbotham",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 88364,
+            "name": "Hugh Hightower",
+            "unit": "29 TX",
+            "born": "",
+            "cemetery_id": 12783,
+            "cemetery_name": "Honey Springs Battlefield Cemetery",
+            "county": "McIntosh",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Hightower",
+            "suffix": "",
+            "enlisted": "1862-10-30",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "E",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1863-07-17",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "Buried in Mass Grave",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 88364,
+            "cgr_name": "Hugh Hightower",
+            "cgr_unit": "29 TX",
+            "cgr_born": "",
+            "cgr_first": "Hugh",
+            "cgr_middle": "",
+            "cgr_last": "Hightower",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 88752,
+            "name": "Hugh T Blevins",
+            "unit": "3 TN",
+            "born": "1838-00-00",
+            "cemetery_id": 12823,
+            "cemetery_name": "Fairlawn Cemetery",
+            "county": "Oklahoma",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "T",
+            "last_name": "Blevins",
+            "suffix": "",
+            "enlisted": "1861-05-03",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "1Lt",
+            "unit_aka": "Lillard's",
+            "company": "I",
+            "birth_city": "",
+            "cities": [
+              "",
+              "Oklahoma City"
+            ],
+            "birth_state": "TN",
+            "states": [
+              "TN",
+              "OK"
+            ],
+            "died": "1919-02-09",
+            "death_city": "Oklahoma City",
+            "died_state": "OK",
+            "spouse": "Sarah (McCorkle)",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 88752,
+            "cgr_name": "Hugh T Blevins",
+            "cgr_unit": "3 TN",
+            "cgr_born": "1838-00-00",
+            "cgr_first": "Hugh",
+            "cgr_middle": "T",
+            "cgr_last": "Blevins",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 89651,
+            "name": "Hugh Dayton",
+            "unit": "42 AL",
+            "born": "1840-10-03",
+            "cemetery_id": 12908,
+            "cemetery_name": "Verden Cemetery",
+            "county": "Grady",
+            "state": "OK",
+            "first_name": "Hugh",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Dayton",
+            "suffix": "",
+            "enlisted": "1862-04-18",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "C",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1923-01-25",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Mary (Tenant)",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 89651,
+            "cgr_name": "Hugh Dayton",
+            "cgr_unit": "42 AL",
+            "cgr_born": "1840-10-03",
+            "cgr_first": "Hugh",
+            "cgr_middle": "",
+            "cgr_last": "Dayton",
+            "local_unit": "4th Missouri Slaysback's Cavalry",
+            "local_birth_year": "",
+            "local_middle": "H.",
+            "match_strength": "none",
+            "conflicts": {}
+          }
+        ],
+        "cgr_status": "cgr_found",
+        "fag_records": [
+          {
+            "memorial_id": "26716384",
+            "slug": "hugh-h-akers",
+            "name": "Rev Hugh H Akers V VETERAN Flowers have been left. 4 Jul 1846 – 29 Apr 1924",
+            "backlink": "https://www.findagrave.com/memorial/26716384/hugh-h-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:26716384/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1846",
+              "death_year": "1924",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Hugh",
+                "lastname": "Akers",
+                "exactspelling": "true",
+                "middlename": "H.",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.644,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 1.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "26418835",
+            "slug": "j-h-akers",
+            "name": "Corp J H Akers V VETERAN Flowers have been left. Birth and death dates unknown.",
+            "backlink": "https://www.findagrave.com/memorial/26418835/j-h-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:26418835/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": null,
+              "death_year": null,
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B4-fuzzy-last",
+              "params": {
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "middlename": "H.",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B4-fuzzy-last"
+            ],
+            "score": 0.474,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.0,
+              "middle": 1.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "13852106",
+            "slug": "harold-don-akers",
+            "name": "Harold Don Akers V VETERAN Flowers have been left. 3 Apr 1920 – 13 Apr 1977",
+            "backlink": "https://www.findagrave.com/memorial/13852106/harold-don-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:13852106/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1920",
+              "death_year": "1977",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "178796837",
+            "slug": "harold-t-akers",
+            "name": "Harold T. Akers V VETERAN 5 Oct 1919 – 22 Jun 1947",
+            "backlink": "https://www.findagrave.com/memorial/178796837/harold-t-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:178796837/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1919",
+              "death_year": "1947",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "270774342",
+            "slug": "harrel-akers",
+            "name": "No grave photo Harrel “Biggon” Akers V VETERAN Flowers have been left. 4 Oct 1934 – 27 May 2024",
+            "backlink": "https://www.findagrave.com/memorial/270774342/harrel-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:270774342/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1934",
+              "death_year": "2024",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "79971591",
+            "slug": "harry-m-akers",
+            "name": "Harry M. Akers V VETERAN Flowers have been left. 15 Aug 1872 – 25 Jul 1940",
+            "backlink": "https://www.findagrave.com/memorial/79971591/harry-m-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:79971591/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1872",
+              "death_year": "1940",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "104673243",
+            "slug": "harry-mitchell-akers",
+            "name": "Harry Mitchell Akers V VETERAN Flowers have been left. 3 Jan 1916 – 28 Feb 1977",
+            "backlink": "https://www.findagrave.com/memorial/104673243/harry-mitchell-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:104673243/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1916",
+              "death_year": "1977",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "120568162",
+            "slug": "henry-beecher-akers",
+            "name": "No grave photo Henry Beecher Akers Jr. V VETERAN Flowers have been left. 22 Jul 1925 – 14 Nov 2013",
+            "backlink": "https://www.findagrave.com/memorial/120568162/henry-beecher-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:120568162/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1925",
+              "death_year": "2013",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "25470940",
+            "slug": "henry-g-akers",
+            "name": "Henry G. Akers V VETERAN Flowers have been left. 21 Apr 1897 – 1 Jun 1925",
+            "backlink": "https://www.findagrave.com/memorial/25470940/henry-g-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:25470940/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1897",
+              "death_year": "1925",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.466,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "62068190",
+            "slug": "h-houston-akers",
+            "name": "H Houston Akers Flowers have been left. 1890 – 1937",
+            "backlink": "https://www.findagrave.com/memorial/62068190/h-houston-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:62068190/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1890",
+              "death_year": "1937",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Hugh",
+                "lastname": "Akers",
+                "exactspelling": "true",
+                "middlename": "H.",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact",
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "79971501",
+            "slug": "harold-henry-akers",
+            "name": "Harold Henry Akers 9 Jan 1909 – 6 May 1952",
+            "backlink": "https://www.findagrave.com/memorial/79971501/harold-henry-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:79971501/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1909",
+              "death_year": "1952",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "67175832",
+            "slug": "myrl-h-akers",
+            "name": "Myrl H. Hartwell Akers 24 Apr 1902 – 14 Jul 1989",
+            "backlink": "https://www.findagrave.com/memorial/67175832/myrl-h-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:67175832/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1902",
+              "death_year": "1989",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B4-fuzzy-last",
+              "params": {
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "middlename": "H.",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B4-fuzzy-last"
+            ],
+            "score": 0.33,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.0,
+              "middle": 1.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "76676714",
+            "slug": "eliza-h-akers",
+            "name": "Eliza H Dillard Akers Flowers have been left. 28 Sep 1858 – 21 Dec 1939",
+            "backlink": "https://www.findagrave.com/memorial/76676714/eliza-h-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:76676714/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1858",
+              "death_year": "1939",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B4-fuzzy-last",
+              "params": {
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "middlename": "H.",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B4-fuzzy-last"
+            ],
+            "score": 0.33,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.0,
+              "middle": 1.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "109017203",
+            "slug": "harold-r-akers",
+            "name": "Harold R. “Pete” Akers Flowers have been left. 2 Sep 1915 – 17 Apr 1979",
+            "backlink": "https://www.findagrave.com/memorial/109017203/harold-r-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:109017203/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1915",
+              "death_year": "1979",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "67572878",
+            "slug": "hattie-akers",
+            "name": "Hattie Maxey Akers Flowers have been left. 28 Jun 1897 – 22 Feb 1982",
+            "backlink": "https://www.findagrave.com/memorial/67572878/hattie-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:67572878/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1897",
+              "death_year": "1982",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "88161460",
+            "slug": "hattie-elmer-akers",
+            "name": "Hattie Elmer Griffin Akers Flowers have been left. 1 Dec 1901 – 8 Jun 1988",
+            "backlink": "https://www.findagrave.com/memorial/88161460/hattie-elmer-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:88161460/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1901",
+              "death_year": "1988",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "75144590",
+            "slug": "helen-carrie-akers",
+            "name": "Helen Carrie Elgin Akers 15 Oct 1887 – 2 Mar 1969",
+            "backlink": "https://www.findagrave.com/memorial/75144590/helen-carrie-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:75144590/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1887",
+              "death_year": "1969",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "16484360",
+            "slug": "helen-f-akers",
+            "name": "Helen F. Caudill Akers Flowers have been left. 22 Aug 1918 – 31 May 1988",
+            "backlink": "https://www.findagrave.com/memorial/16484360/helen-f-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:16484360/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1918",
+              "death_year": "1988",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "115804269",
+            "slug": "helen-ruth-akers",
+            "name": "Helen Ruth DeMontigny Akers Flowers have been left. 10 Apr 1918 – 18 Aug 2013",
+            "backlink": "https://www.findagrave.com/memorial/115804269/helen-ruth-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:115804269/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1918",
+              "death_year": "2013",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "19241086",
+            "slug": "henry-a-akers",
+            "name": "Henry A. Akers Flowers have been left. 13 Dec 1885 – 6 Sep 1913",
+            "backlink": "https://www.findagrave.com/memorial/19241086/henry-a-akers",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:19241086/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1885",
+              "death_year": "1913",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "H*",
+                "lastname": "Akers",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy"
+            ],
+            "score": 0.322,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.0,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          }
+        ],
+        "fag_status": "auto_accept",
+        "both_match": {
+          "method": "corroboration",
+          "cgr_cem_id": "14512",
+          "fag_memorial_id": "26716384",
+          "reason": "name + death year agree (burial state differs)",
+          "confidence": 0.8
+        },
+        "best_score": 0.644,
+        "status": "auto_accept",
+        "timestamp": "2026-07-16T17:37:17",
+        "error": null,
+        "pensioncard_pages": [
+          2375,
+          2376
+        ],
+        "cgr_dedup_status": "duplicate",
+        "cgr_match_summary": {
+          "cgr_id": 112600,
+          "cgr_name": "Hugh H Akers",
+          "cgr_cemetery": "Dougherty Cemetery",
+          "cgr_unit": "4 MO",
+          "cgr_birth_year": "1846",
+          "cgr_death_year": "1924",
+          "cgr_died_state": "OK",
+          "match_strength": "medium"
+        },
+        "cgr_candidates_count": 12
+      },
+      "candidates": [],
+      "cgr_dedup_status": "duplicate",
+      "cgr_match_summary": {
+        "cgr_id": 112600,
+        "cgr_name": "Hugh H Akers",
+        "cgr_cemetery": "Dougherty Cemetery",
+        "cgr_unit": "4 MO",
+        "cgr_birth_year": "1846",
+        "cgr_death_year": "1924",
+        "cgr_died_state": "OK",
+        "match_strength": "medium"
+      }
+    },
+    "25": {
+      "decision": {
+        "memorial_id": null,
+        "slug": null,
+        "by": "user",
+        "at": "2026-07-16T17:00:00Z",
+        "notes": "CGR follow-up: check Wards Grove Cemetery",
+        "removed_candidates": [],
+        "candidate_notes": {}
+      },
+      "pensioner": {
+        "pensioner_id": 25,
+        "pensioner_app_number": "A41",
+        "pensioner_name": "Alvin Andrews",
+        "pensioner_first": "Alvin",
+        "pensioner_middle": "",
+        "pensioner_last": "Andrews",
+        "pensioner_birth_year": "",
+        "pensioner_death_year": "",
+        "regiment": "28th Tennessee Infantry",
+        "company": "A",
+        "pensioncard_backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensioncard/id/1090",
+        "backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensions/id/25",
+        "cgr_records": [
+          {
+            "id": 88704,
+            "name": "Alvin Thane Hodge",
+            "unit": "1 OK",
+            "born": "1845-00-00",
+            "cemetery_id": 5553,
+            "cemetery_name": "Oaklawn Cemetery",
+            "county": "Tulsa",
+            "state": "OK",
+            "first_name": "Alvin",
+            "aka": "",
+            "middle_name": "Thane",
+            "last_name": "Hodge",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "Creek",
+            "company": "H",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1919-00-00",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Mary Jane (Burgess)",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 88704,
+            "cgr_name": "Alvin Thane Hodge",
+            "cgr_unit": "1 OK",
+            "cgr_born": "1845-00-00",
+            "cgr_first": "Alvin",
+            "cgr_middle": "Thane",
+            "cgr_last": "Hodge",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112778,
+            "name": "William C Anderson",
+            "unit": "6 MS",
+            "born": "1829-00-00",
+            "cemetery_id": 12911,
+            "cemetery_name": "Terral Cemetery",
+            "county": "Jefferson",
+            "state": "OK",
+            "first_name": "William",
+            "aka": "",
+            "middle_name": "C",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1861-00-00",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "A",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "AL",
+            "states": [
+              "AL",
+              "OK"
+            ],
+            "died": "1917-05-07",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Louvenia",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112778,
+            "cgr_name": "William C Anderson",
+            "cgr_unit": "6 MS",
+            "cgr_born": "1829-00-00",
+            "cgr_first": "William",
+            "cgr_middle": "C",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112779,
+            "name": "Outlaw V Anderson",
+            "unit": "TN",
+            "born": "1845-05-04",
+            "cemetery_id": 12786,
+            "cemetery_name": "West Lawn Cemetery",
+            "county": "Okmulgee",
+            "state": "OK",
+            "first_name": "Outlaw",
+            "aka": "",
+            "middle_name": "V",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1862-10-03",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "Huggin's Arty",
+            "company": "",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "TN",
+            "states": [
+              "TN",
+              "OK"
+            ],
+            "died": "1922-10-09",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Fannie O.",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112779,
+            "cgr_name": "Outlaw V Anderson",
+            "cgr_unit": "TN",
+            "cgr_born": "1845-05-04",
+            "cgr_first": "Outlaw",
+            "cgr_middle": "V",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 110870,
+            "name": "Anderson Randolph Angell",
+            "unit": "42 VA",
+            "born": "1840-09-10",
+            "cemetery_id": 14836,
+            "cemetery_name": "Pocasset Cemetery",
+            "county": "Grady",
+            "state": "OK",
+            "first_name": "Anderson",
+            "aka": "",
+            "middle_name": "Randolph",
+            "last_name": "Angell",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "1Lt",
+            "unit_aka": "",
+            "company": "C",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "VA",
+            "states": [
+              "VA",
+              "OK"
+            ],
+            "died": "1917-07-02",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Mary L (Kinsey)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 110870,
+            "cgr_name": "Anderson Randolph Angell",
+            "cgr_unit": "42 VA",
+            "cgr_born": "1840-09-10",
+            "cgr_first": "Anderson",
+            "cgr_middle": "Randolph",
+            "cgr_last": "Angell",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112791,
+            "name": "William W Anderson",
+            "unit": "2 TX",
+            "born": "1846-00-00",
+            "cemetery_id": 12785,
+            "cemetery_name": "Greenhill Cemetery",
+            "county": "Muskogee",
+            "state": "OK",
+            "first_name": "William",
+            "aka": "",
+            "middle_name": "W",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1863-12-16",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "F",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "MO",
+            "states": [
+              "MO",
+              "OK"
+            ],
+            "died": "1931-11-07",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "Okla. Pension No stone shown",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112791,
+            "cgr_name": "William W Anderson",
+            "cgr_unit": "2 TX",
+            "cgr_born": "1846-00-00",
+            "cgr_first": "William",
+            "cgr_middle": "W",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 88215,
+            "name": "Wesley Anderson",
+            "unit": "1 AR",
+            "born": "1849-00-00",
+            "cemetery_id": 12763,
+            "cemetery_name": "San Bois",
+            "county": "Haskell",
+            "state": "OK",
+            "first_name": "Wesley",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "B",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1922-00-00",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 88215,
+            "cgr_name": "Wesley Anderson",
+            "cgr_unit": "1 AR",
+            "cgr_born": "1849-00-00",
+            "cgr_first": "Wesley",
+            "cgr_middle": "",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112793,
+            "name": "Edward Andes",
+            "unit": "9 TX",
+            "born": "1838-04-03",
+            "cemetery_id": 12807,
+            "cemetery_name": "Wanette Cemetery",
+            "county": "Pottawatomie",
+            "state": "OK",
+            "first_name": "Edward",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Andes",
+            "suffix": "",
+            "enlisted": "1861-10-14",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Cpl",
+            "unit_aka": "",
+            "company": "D",
+            "birth_city": "",
+            "cities": [
+              "",
+              "Asher"
+            ],
+            "birth_state": "TN",
+            "states": [
+              "TN",
+              "OK"
+            ],
+            "died": "1901-10-28",
+            "death_city": "Asher",
+            "died_state": "OK",
+            "spouse": "Susann (Clark)",
+            "mother_maiden": "",
+            "notes": "Okla. Widow's Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112793,
+            "cgr_name": "Edward Andes",
+            "cgr_unit": "9 TX",
+            "cgr_born": "1838-04-03",
+            "cgr_first": "Edward",
+            "cgr_middle": "",
+            "cgr_last": "Andes",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112790,
+            "name": "John Henry Anderson",
+            "unit": "21 TX",
+            "born": "1839-02-15",
+            "cemetery_id": 13051,
+            "cemetery_name": "Cheyenne Cemetery",
+            "county": "Roger Mills",
+            "state": "OK",
+            "first_name": "John",
+            "aka": "",
+            "middle_name": "Henry",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "Spaight's Inf",
+            "company": "C",
+            "birth_city": "",
+            "cities": [
+              "",
+              "Foss"
+            ],
+            "birth_state": "AR",
+            "states": [
+              "AR",
+              "OK"
+            ],
+            "died": "1924-10-18",
+            "death_city": "Foss",
+            "died_state": "OK",
+            "spouse": "Martha E (Wilson)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112790,
+            "cgr_name": "John Henry Anderson",
+            "cgr_unit": "21 TX",
+            "cgr_born": "1839-02-15",
+            "cgr_first": "John",
+            "cgr_middle": "Henry",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112792,
+            "name": "William Riley Anderson",
+            "unit": "19 VA",
+            "born": "1849-00-00",
+            "cemetery_id": 14888,
+            "cemetery_name": "Kellerby Cemetery",
+            "county": "Lincoln",
+            "state": "OK",
+            "first_name": "William",
+            "aka": "",
+            "middle_name": "Riley",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "A",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1922-02-28",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Elsie J",
+            "mother_maiden": "",
+            "notes": "Okla. Widow's Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112792,
+            "cgr_name": "William Riley Anderson",
+            "cgr_unit": "19 VA",
+            "cgr_born": "1849-00-00",
+            "cgr_first": "William",
+            "cgr_middle": "Riley",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 110878,
+            "name": "Marion Francis Anderson",
+            "unit": "15 TX",
+            "born": "1840-07-05",
+            "cemetery_id": 14844,
+            "cemetery_name": "Pleasant Grove Cemetery",
+            "county": "Coal",
+            "state": "OK",
+            "first_name": "Marion",
+            "aka": "",
+            "middle_name": "Francis",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1862-02-18",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "B",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "MO",
+            "states": [
+              "MO",
+              "OK"
+            ],
+            "died": "1900-01-27",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Amanda (Whitehead)",
+            "mother_maiden": "",
+            "notes": "Okla. Widow's Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 110878,
+            "cgr_name": "Marion Francis Anderson",
+            "cgr_unit": "15 TX",
+            "cgr_born": "1840-07-05",
+            "cgr_first": "Marion",
+            "cgr_middle": "Francis",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 109598,
+            "name": "James Anderson",
+            "unit": "1 OK",
+            "born": "1841-01-15",
+            "cemetery_id": 14508,
+            "cemetery_name": "Cramp Cemetery",
+            "county": "Muskogee",
+            "state": "OK",
+            "first_name": "James",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1862-07-12",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "Cherokee",
+            "company": "F",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1908-04-18",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "",
+            "mother_maiden": "",
+            "notes": "No stone shown",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 109598,
+            "cgr_name": "James Anderson",
+            "cgr_unit": "1 OK",
+            "cgr_born": "1841-01-15",
+            "cgr_first": "James",
+            "cgr_middle": "",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 109854,
+            "name": "Alvin Ferris",
+            "unit": "MO",
+            "born": "1844-00-00",
+            "cemetery_id": 14553,
+            "cemetery_name": "Faxon Cemetery",
+            "county": "Comanche",
+            "state": "OK",
+            "first_name": "Alvin",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Ferris",
+            "suffix": "",
+            "enlisted": "1864-00-00",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "Cooper's",
+            "company": "E",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1921-12-26",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Nancy C",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 109854,
+            "cgr_name": "Alvin Ferris",
+            "cgr_unit": "MO",
+            "cgr_born": "1844-00-00",
+            "cgr_first": "Alvin",
+            "cgr_middle": "",
+            "cgr_last": "Ferris",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 107948,
+            "name": "Alvin Newton Andrews",
+            "unit": "28 TN",
+            "born": "1845-00-00",
+            "cemetery_id": 14200,
+            "cemetery_name": "Wards Grove Cemetery",
+            "county": "Rogers",
+            "state": "OK",
+            "first_name": "Alvin",
+            "aka": "",
+            "middle_name": "Newton",
+            "last_name": "Andrews",
+            "suffix": "",
+            "enlisted": "1861-11-08",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "A",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1935-06-29",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Bettie (Smith)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 107948,
+            "cgr_name": "Alvin Newton Andrews",
+            "cgr_unit": "28 TN",
+            "cgr_born": "1845-00-00",
+            "cgr_first": "Alvin",
+            "cgr_middle": "Newton",
+            "cgr_last": "Andrews",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "medium",
+            "conflicts": {}
+          },
+          {
+            "id": 112840,
+            "name": "William Thomas Anglin",
+            "unit": "13 TX",
+            "born": "1847-02-14",
+            "cemetery_id": 15077,
+            "cemetery_name": "Grandfield Memorial Cemetery",
+            "county": "Tillman",
+            "state": "OK",
+            "first_name": "William",
+            "aka": "",
+            "middle_name": "Thomas",
+            "last_name": "Anglin",
+            "suffix": "",
+            "enlisted": "1864-12-00",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "D",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "TN",
+            "states": [
+              "TN",
+              "OK"
+            ],
+            "died": "1930-12-21",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Sarah L (Phelps)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension no stone shown",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112840,
+            "cgr_name": "William Thomas Anglin",
+            "cgr_unit": "13 TX",
+            "cgr_born": "1847-02-14",
+            "cgr_first": "William",
+            "cgr_middle": "Thomas",
+            "cgr_last": "Anglin",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112841,
+            "name": "John Wesley Anglin",
+            "unit": "2 GA",
+            "born": "1843-00-00",
+            "cemetery_id": 12746,
+            "cemetery_name": "Fairview Cemetery",
+            "county": "Craig",
+            "state": "OK",
+            "first_name": "John",
+            "aka": "",
+            "middle_name": "Wesley",
+            "last_name": "Anglin",
+            "suffix": "",
+            "enlisted": "1862-04-20",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "H",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "GA",
+            "states": [
+              "GA",
+              "OK"
+            ],
+            "died": "1924-03-12",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Leatha U (Harris)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension no stone shown",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112841,
+            "cgr_name": "John Wesley Anglin",
+            "cgr_unit": "2 GA",
+            "cgr_born": "1843-00-00",
+            "cgr_first": "John",
+            "cgr_middle": "Wesley",
+            "cgr_last": "Anglin",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112842,
+            "name": "Lemuel L Ansley",
+            "unit": "TX",
+            "born": "1847-00-00",
+            "cemetery_id": 12860,
+            "cemetery_name": "Elmhurst Cemetery",
+            "county": "Texas",
+            "state": "OK",
+            "first_name": "Lemuel",
+            "aka": "",
+            "middle_name": "L",
+            "last_name": "Ansley",
+            "suffix": "",
+            "enlisted": "1864-01-00",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "G",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "GA",
+            "states": [
+              "GA",
+              "OK"
+            ],
+            "died": "1926-05-30",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Mary A",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112842,
+            "cgr_name": "Lemuel L Ansley",
+            "cgr_unit": "TX",
+            "cgr_born": "1847-00-00",
+            "cgr_first": "Lemuel",
+            "cgr_middle": "L",
+            "cgr_last": "Ansley",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 112843,
+            "name": "Amos Anson",
+            "unit": "MO",
+            "born": "1839-10-14",
+            "cemetery_id": 14387,
+            "cemetery_name": "Lawnview Cemetery (AKA: Cordell Cemetery)",
+            "county": "Washita",
+            "state": "OK",
+            "first_name": "Amos",
+            "aka": "",
+            "middle_name": "",
+            "last_name": "Anson",
+            "suffix": "",
+            "enlisted": "1862-06-30",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "2Lt",
+            "unit_aka": "Bledsoe's Arty",
+            "company": "",
+            "birth_city": "Higginsville",
+            "cities": [
+              "Higginsville",
+              "Cordell"
+            ],
+            "birth_state": "MO",
+            "states": [
+              "MO",
+              "OK"
+            ],
+            "died": "1931-12-07",
+            "death_city": "Cordell",
+            "died_state": "OK",
+            "spouse": "Emilene E (Anderson)",
+            "mother_maiden": "",
+            "notes": "Okla. Pension",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 112843,
+            "cgr_name": "Amos Anson",
+            "cgr_unit": "MO",
+            "cgr_born": "1839-10-14",
+            "cgr_first": "Amos",
+            "cgr_middle": "",
+            "cgr_last": "Anson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 136782,
+            "name": "George Washington Anderson",
+            "unit": "48 TN",
+            "born": "09/20/1840",
+            "cemetery_id": 14413,
+            "cemetery_name": "Green Hill Cemetery",
+            "county": "Murray",
+            "state": "OK",
+            "first_name": "George",
+            "aka": "",
+            "middle_name": "Washington",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "12/07/1861",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "D",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "TN",
+            "states": [
+              "TN",
+              "OK"
+            ],
+            "died": "03/26/1912",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Laura (Satterfield)",
+            "mother_maiden": "Berry",
+            "notes": "",
+            "phone": "9183572590",
+            "vet_fetched_at": "now",
+            "cgr_id": 136782,
+            "cgr_name": "George Washington Anderson",
+            "cgr_unit": "48 TN",
+            "cgr_born": "09/20/1840",
+            "cgr_first": "George",
+            "cgr_middle": "Washington",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 87764,
+            "name": "Marcus Calhoun Anderson",
+            "unit": "48 AL",
+            "born": "1841-11-07",
+            "cemetery_id": 12732,
+            "cemetery_name": "Alfalfa Cemetery",
+            "county": "Caddo",
+            "state": "OK",
+            "first_name": "Marcus",
+            "aka": "",
+            "middle_name": "Calhoun",
+            "last_name": "Anderson",
+            "suffix": "",
+            "enlisted": "1862-04-29",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Sgt",
+            "unit_aka": "",
+            "company": "H",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "",
+            "states": [
+              "",
+              "OK"
+            ],
+            "died": "1915-11-28",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Sarah",
+            "mother_maiden": "",
+            "notes": "",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 87764,
+            "cgr_name": "Marcus Calhoun Anderson",
+            "cgr_unit": "48 AL",
+            "cgr_born": "1841-11-07",
+            "cgr_first": "Marcus",
+            "cgr_middle": "Calhoun",
+            "cgr_last": "Anderson",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          },
+          {
+            "id": 87765,
+            "name": "John Thomas Anthony",
+            "unit": "1 SC",
+            "born": "1848-02-08",
+            "cemetery_id": 12732,
+            "cemetery_name": "Alfalfa Cemetery",
+            "county": "Caddo",
+            "state": "OK",
+            "first_name": "John",
+            "aka": "",
+            "middle_name": "Thomas",
+            "last_name": "Anthony",
+            "suffix": "",
+            "enlisted": "",
+            "discharged": "",
+            "source": "Okla. SCV Archives",
+            "rank": "Pvt",
+            "unit_aka": "",
+            "company": "D",
+            "birth_city": "",
+            "cities": [
+              "",
+              ""
+            ],
+            "birth_state": "SC",
+            "states": [
+              "SC",
+              "OK"
+            ],
+            "died": "1922-07-14",
+            "death_city": "",
+            "died_state": "OK",
+            "spouse": "Amanda E",
+            "mother_maiden": "",
+            "notes": "Okla. Pension & Widow's",
+            "phone": "918-357-2590",
+            "vet_fetched_at": "now",
+            "cgr_id": 87765,
+            "cgr_name": "John Thomas Anthony",
+            "cgr_unit": "1 SC",
+            "cgr_born": "1848-02-08",
+            "cgr_first": "John",
+            "cgr_middle": "Thomas",
+            "cgr_last": "Anthony",
+            "local_unit": "28th Tennessee Infantry",
+            "local_birth_year": "",
+            "local_middle": "",
+            "match_strength": "none",
+            "conflicts": {}
+          }
+        ],
+        "cgr_status": "cgr_found",
+        "fag_records": [
+          {
+            "memorial_id": "288971",
+            "slug": "alvin-franklin-andrews",
+            "name": "Alvin Franklin Andrews V VETERAN Flowers have been left. 27 Mar 1898 – 10 Nov 1969",
+            "backlink": "https://www.findagrave.com/memorial/288971/alvin-franklin-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:288971/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1898",
+              "death_year": "1969",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.589,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "5179320",
+            "slug": "alvin-newton-andrews",
+            "name": "Alvin Newton “Andy” Andrews V VETERAN Flowers have been left. 29 Jan 1845 – 29 Jun 1935",
+            "backlink": "https://www.findagrave.com/memorial/5179320/alvin-newton-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:5179320/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1845",
+              "death_year": "1935",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.589,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "92631811",
+            "slug": "adam-jackson-andrews",
+            "name": "Adam Jackson “Buddy” Andrews V VETERAN Flowers have been left. 1 Dec 1928 – 15 Jan 1989",
+            "backlink": "https://www.findagrave.com/memorial/92631811/adam-jackson-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:92631811/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": true,
+              "birth_year": "1928",
+              "death_year": "1989",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.521,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.8,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "110774968",
+            "slug": "alvin-floid-andrews",
+            "name": "Alvin Floid Andrews Flowers have been left. 6 Nov 1891 – 29 Jul 1966",
+            "backlink": "https://www.findagrave.com/memorial/110774968/alvin-floid-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:110774968/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1891",
+              "death_year": "1966",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "41617660",
+            "slug": "alvin-glenn-andrews",
+            "name": "Alvin Glenn “Andy” Andrews 28 Oct 1932 – 12 Sep 1997",
+            "backlink": "https://www.findagrave.com/memorial/41617660/alvin-glenn-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:41617660/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1932",
+              "death_year": "1997",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "5179107",
+            "slug": "alvin-lewis-andrews",
+            "name": "Alvin Lewis “Buster” Andrews Flowers have been left. Jun 1885 – 6 May 1963",
+            "backlink": "https://www.findagrave.com/memorial/5179107/alvin-lewis-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:5179107/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1885",
+              "death_year": "1963",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "185234118",
+            "slug": "alvin-o-andrews",
+            "name": "No grave photo Alvin O Andrews Jr. 19 Feb 1926 – 17 Mar 2006",
+            "backlink": "https://www.findagrave.com/memorial/185234118/alvin-o-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:185234118/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1926",
+              "death_year": "2006",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "118344118",
+            "slug": "alvin-o-andrews",
+            "name": "Alvin O. Andrews Flowers have been left. 3 Jul 1905 – 3 May 1950",
+            "backlink": "https://www.findagrave.com/memorial/118344118/alvin-o-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:118344118/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1905",
+              "death_year": "1950",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "28670237",
+            "slug": "alvin-quitman-andrews",
+            "name": "Alvin Quitman Andrews Flowers have been left. 1883 – 14 May 1957",
+            "backlink": "https://www.findagrave.com/memorial/28670237/alvin-quitman-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:28670237/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1883",
+              "death_year": "1957",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B1-exact",
+              "params": {
+                "firstname": "Alvin",
+                "lastname": "Andrews",
+                "exactspelling": "true",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B1-exact"
+            ],
+            "score": 0.445,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 1.0,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "17020990",
+            "slug": "aaron-k-andrews",
+            "name": "Aaron K. Andrews Flowers have been left. 8 Dec 1915 – 19 Mar 1992",
+            "backlink": "https://www.findagrave.com/memorial/17020990/aaron-k-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:17020990/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1915",
+              "death_year": "1992",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "171522411",
+            "slug": "aaron-levi-andrews",
+            "name": "Aaron Levi Andrews Flowers have been left. 20 Feb 1925 – 18 Oct 2016",
+            "backlink": "https://www.findagrave.com/memorial/171522411/aaron-levi-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:171522411/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1925",
+              "death_year": "2016",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "34258750",
+            "slug": "aaron-winton-andrews",
+            "name": "Aaron Winton Andrews Flowers have been left. 26 Apr 1884 – 7 Mar 1969",
+            "backlink": "https://www.findagrave.com/memorial/34258750/aaron-winton-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:34258750/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1884",
+              "death_year": "1969",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "176241662",
+            "slug": "aaroneta-andrews",
+            "name": "Aaroneta Helm Andrews 25 Oct 1927 – 9 Feb 2011",
+            "backlink": "https://www.findagrave.com/memorial/176241662/aaroneta-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:176241662/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1927",
+              "death_year": "2011",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "14188410",
+            "slug": "abraham-andrews",
+            "name": "Abraham “Abe” Andrews Flowers have been left. 20 Feb 1877 – 18 Dec 1944",
+            "backlink": "https://www.findagrave.com/memorial/14188410/abraham-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:14188410/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1877",
+              "death_year": "1944",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "127522548",
+            "slug": "ada-l-andrews",
+            "name": "Ada L. Oates Andrews Flowers have been left. Dec 1869 – 24 Nov 1949",
+            "backlink": "https://www.findagrave.com/memorial/127522548/ada-l-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:127522548/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1869",
+              "death_year": "1949",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "58726693",
+            "slug": "adaline-henriette-andrews",
+            "name": "Adaline Henriette Wolf Andrews Flowers have been left. 28 Nov 1897 – 13 Sep 1993",
+            "backlink": "https://www.findagrave.com/memorial/58726693/adaline-henriette-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:58726693/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1897",
+              "death_year": "1993",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "7572048",
+            "slug": "adam-joseph-andrews",
+            "name": "No grave photo Adam Joseph Andrews 1997 – 30 Apr 1997",
+            "backlink": "https://www.findagrave.com/memorial/7572048/adam-joseph-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:7572048/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1997",
+              "death_year": "1997",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "5211642",
+            "slug": "addie-andrews",
+            "name": "Addie Andrews Flowers have been left. 1863 – 21 Jun 1886",
+            "backlink": "https://www.findagrave.com/memorial/5211642/addie-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:5211642/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1863",
+              "death_year": "1886",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "122403728",
+            "slug": "addie-andrews",
+            "name": "Addie Andrews Flowers have been left. 5 Feb 1913 – 21 Jul 1979",
+            "backlink": "https://www.findagrave.com/memorial/122403728/addie-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:122403728/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1913",
+              "death_year": "1979",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          },
+          {
+            "memorial_id": "9056848",
+            "slug": "addie-buren-andrews",
+            "name": "Addie Buren Andrews Flowers have been left. 26 Dec 1905 – 26 Jan 1925",
+            "backlink": "https://www.findagrave.com/memorial/9056848/addie-buren-andrews",
+            "iiif_url": "https://www.findagrave.com/iiif/2/memorial:9056848/full/full/0/default.jpg",
+            "details": {
+              "is_veteran": false,
+              "birth_year": "1905",
+              "death_year": "1925",
+              "state": null,
+              "cemetery": null
+            },
+            "_found_by": {
+              "strategy": "B3-first-initial-fuzzy",
+              "params": {
+                "firstname": "A*",
+                "lastname": "Andrews",
+                "fuzzyNames": "true",
+                "birthyearfilter": "5",
+                "locationId": "state_38"
+              }
+            },
+            "via_strategies": [
+              "B3-first-initial-fuzzy",
+              "B4-fuzzy-last"
+            ],
+            "score": 0.377,
+            "score_breakdown": {
+              "last": 1.0,
+              "first": 0.6,
+              "middle": 0.5,
+              "ok_burial": 0.0,
+              "state": 0.0,
+              "veteran": 0.0,
+              "death": 0.0
+            }
+          }
+        ],
+        "fag_status": "too_many",
+        "both_match": {
+          "method": "corroboration",
+          "cgr_cem_id": "14200",
+          "fag_memorial_id": "5179320",
+          "reason": "name + death year agree (burial state differs)",
+          "confidence": 0.8
+        },
+        "best_score": 0.589,
+        "status": "too_many",
+        "timestamp": "2026-07-16T17:39:41",
+        "error": null,
+        "pensioncard_pages": [
+          1088,
+          1089
+        ],
+        "cgr_dedup_status": "follow_up_candidate",
+        "cgr_match_summary": {
+          "cgr_id": 107948,
+          "cgr_name": "Alvin Newton Andrews",
+          "cgr_cemetery": "Wards Grove Cemetery",
+          "cgr_unit": "28 TN",
+          "cgr_birth_year": "1845",
+          "cgr_death_year": "1935",
+          "cgr_died_state": "OK",
+          "match_strength": "medium"
+        },
+        "cgr_candidates_count": 20
+      },
+      "candidates": [],
+      "cgr_dedup_status": "follow_up_candidate",
+      "cgr_match_summary": {
+        "cgr_id": 107948,
+        "cgr_name": "Alvin Newton Andrews",
+        "cgr_cemetery": "Wards Grove Cemetery",
+        "cgr_unit": "28 TN",
+        "cgr_birth_year": "1845",
+        "cgr_death_year": "1935",
+        "cgr_died_state": "OK",
+        "match_strength": "medium"
+      }
+    }
+  }
+}
