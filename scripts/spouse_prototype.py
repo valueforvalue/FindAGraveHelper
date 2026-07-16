@@ -31,82 +31,11 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
 
+from scripts.spouse_extract import extract_spouse, extract_children
+
 LOCAL_CSV = "C:/Development/FindAGraveHelper/docs/research/local-data/local_soldiers_with_fag.csv"
 UNIFIED_JSON = "C:/tmp/unified.json"
 OUTPUT_INDEX = "C:/tmp/fag_gt/spouse_index.json"
-
-# Regex patterns for FaG memorial page parsing
-SPOUSE_HEADER = re.compile(r"^Spouse\s*$", re.MULTILINE)
-CHILDREN_HEADER = re.compile(r"^Children\s*$", re.MULTILINE)
-NAME_YEAR_PATTERN = re.compile(
-    r"^([^\n]+?)\s*\n\s*(\d{4})\s*[–\-]\s*(\d{4})\s*(?:\(m\.\s*(\d{4})\))?",
-    re.MULTILINE,
-)
-
-
-def extract_spouse(page_text: str) -> dict | None:
-    """Extract the first spouse entry from a FaG memorial page text."""
-    # Find "Spouse" section
-    spouse_idx = page_text.find("Spouse")
-    if spouse_idx == -1:
-        return None
-    # Find end of section (next "Children" or other marker)
-    end_markers = ["Children", "Parents", "Burial", "Plot"]
-    end_idx = len(page_text)
-    for m in end_markers:
-        idx = page_text.find(m, spouse_idx + 7)
-        if idx > -1:
-            end_idx = min(end_idx, idx)
-    section = page_text[spouse_idx:end_idx]
-    # Extract name + dates
-    m = re.search(r"([A-Z][^\n]{2,60})\n\s*(\d{4})\s*[–\-]\s*(\d{4})", section)
-    if not m:
-        return None
-    name = m.group(1).strip()
-    birth = m.group(2)
-    death = m.group(3)
-    # Parse into first/last
-    name_parts = name.split()
-    return {
-        "raw_name": name,
-        "first_name": name_parts[0] if name_parts else "",
-        "last_name": name_parts[-1] if len(name_parts) > 1 else name_parts[0] if name_parts else "",
-        "birth_year": birth,
-        "death_year": death,
-    }
-
-
-def extract_children(page_text: str) -> list[dict]:
-    """Extract children entries from a FaG memorial page text."""
-    children_idx = page_text.find("Children")
-    if children_idx == -1:
-        return []
-    end_markers = ["Parents", "Burial", "Plot", "Inscription"]
-    end_idx = len(page_text)
-    for m in end_markers:
-        idx = page_text.find(m, children_idx + 9)
-        if idx > -1:
-            end_idx = min(end_idx, idx)
-    section = page_text[children_idx:end_idx]
-    # Extract each "Name\nYYYY-YYYY" pair
-    matches = re.findall(
-        r"([A-Z][^\n]{2,80})\n\s*(\d{4})\s*[–\-]\s*(\d{4})", section
-    )
-    children = []
-    for raw_name, b, d in matches:
-        # Trim trailing " V VETERAN" etc.
-        clean_name = re.sub(r"\s+V VETERAN\s*$", "", raw_name).strip()
-        if not clean_name:
-            continue
-        parts = clean_name.split()
-        children.append({
-            "raw_name": clean_name,
-            "first_name": parts[0],
-            "last_name": parts[-1] if len(parts) > 1 else parts[0],
-            "birth_year": b,
-            "death_year": d,
-        })
-    return children
 
 
 def fetch_memorial(page, mem_id: str, slug: str) -> dict:

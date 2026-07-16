@@ -54,10 +54,15 @@ import json
 import logging
 import random
 import re
+import sys
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Any
+
+# Allow imports from this script's directory when run as a script.
+sys.path.insert(0, str(Path(__file__).parent))
+from checkpoint import write_checkpoint, read_checkpoint, record_failure  # noqa: E402
 from urllib.parse import urlencode
 
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
@@ -476,6 +481,27 @@ CEMETERY_RE = re.compile(
     r"([A-Z][^<>\n,]{2,40})?",
     re.I
 )
+
+
+def tag_candidates_with_found_by(
+    candidates: list[dict], strategy: str, params: dict
+) -> list[dict]:
+    """Add a _found_by field to each candidate.
+
+    Returns a NEW list of new dicts (does not mutate inputs). Each
+    output dict has the original fields plus:
+      _found_by: {strategy: str, params: dict}
+
+    The _found_by field is what the HTML viewer renders next to each
+    backlink so the reviewer can see "this candidate was found by
+    strategy B1-exact with params {firstname=John&lastname=Smith}".
+    """
+    out = []
+    for c in candidates:
+        new_c = dict(c)
+        new_c["_found_by"] = {"strategy": strategy, "params": dict(params or {})}
+        out.append(new_c)
+    return out
 
 
 def parse_results_page(page: Page) -> tuple[int, list[dict]]:
@@ -981,6 +1007,9 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
             any_error = True
             continue
 
+        # Tag each candidate with the strategy that found it, so the
+        # HTML viewer can show "Found by: B1-exact (firstname=John&...)"
+        cands = tag_candidates_with_found_by(cands, name, params)
         log.info("  %s %-12s [%s] -> %d results", first, last, name, total)
         strategy_runs.append((name, cands))
         # No early-stop — collect all candidates across all strategies
@@ -1183,6 +1212,8 @@ def main() -> int:
 
     with sync_playwright() as pw:
         browser, ctx, page = setup_browser(pw)
+        checkpoint_path = args.state.with_suffix(".checkpoint.json")
+        log.info("Checkpoint file: %s", checkpoint_path)
         try:
             # Warmup: visit homepage first to establish Cloudflare session
             log.info("Warming up browser session...")
@@ -1197,8 +1228,27 @@ def main() -> int:
                 log.info("[%d/%d] id=%d  %s %s", count, len(pensioners),
                          pid, p_data.get("first_name", ""),
                          p_data.get("last_name", ""))
-                record = search_one_pensioner(page, p_data)
-                append_state(args.state, record)
+                # Wrap each pensioner in try/except so one bad row doesn't
+                # kill the whole run. We record the failure and move on.
+                try:
+                    record = search_one_pensioner(page, p_data)
+                    append_state(args.state, record)
+                    # Checkpoint: record that we successfully processed this id.
+                    write_checkpoint(
+                        checkpoint_path,
+                        last_processed_id=pid,
+                        last_strategy=record.get("strategies_run", [""])[-1] if record.get("strategies_run") else "",
+                        pensioner_name=record.get("pensioner_name", ""),
+                        run_id=str(int(time.time())),
+                        state_file=str(args.state),
+                    )
+                except Exception as e:
+                    log.error("Pensioner %d failed: %s", pid, e, exc_info=False)
+                    record_failure(
+                        args.state, pid,
+                        f"{p_data.get('first_name', '')} {p_data.get('last_name', '')}".strip(),
+                        error=str(e)[:500],
+                    )
                 time.sleep(THROTTLE_SECONDS)
         finally:
             ctx.close()

@@ -186,7 +186,11 @@ scripts/
 ├── validate_v5_ladder.py                # Phase 3: validate v5 ladder
 ├── scrape_digitalprairie.py             # scrape OK pensioner index
 ├── search_fag.py                        # batch FaG searcher (production)
-└── view.html                            # browser review UI
+├── view.html                            # browser review UI
+├── spouse_extract.py                    # extract spouse/children from FaG page text
+├── spouse_cross_ref.py                  # cross-ref FaG spouse vs unified widow
+├── spouse_prototype.py                  # validate the spouse index approach
+└── checkpoint.py                        # checkpoint + crash-safety helpers
 
 FindaGraveScraper.user.js                # scrapes already-known FaG pages
 FindaGraveIterativeHelper.user.js        # v4.0 search helper (will be replaced)

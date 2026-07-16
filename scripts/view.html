@@ -53,6 +53,21 @@
   .candidate .score.low { color: #dc3545; }
   .candidate .breakdown { font-size: 11px; color: #666; font-family: monospace;
                           margin-top: 4px; }
+  .candidate .breakdown-bar { display: inline-block; height: 6px; background: #eee;
+                              border-radius: 3px; width: 80px; margin: 0 4px;
+                              vertical-align: middle; overflow: hidden; }
+  .candidate .breakdown-bar > div { height: 100%; background: #28a745;
+                                    transition: width 0.2s; }
+  .candidate .breakdown-bar > div.low { background: #dc3545; }
+  .candidate .breakdown-bar > div.mid { background: #ffc107; }
+  .candidate .breakdown-row { display: flex; align-items: center; gap: 4px;
+                              margin: 1px 0; }
+  .candidate .breakdown-label { width: 70px; color: #555; }
+  .candidate .breakdown-val { width: 30px; text-align: right; }
+  .candidate .found-by { font-size: 10px; color: #888; margin-top: 4px;
+                          padding-top: 4px; border-top: 1px dashed #eee; }
+  .candidate .found-by code { background: #f5f5f5; padding: 1px 4px;
+                              border-radius: 2px; }
   .candidate .pick { white-space: nowrap; }
   .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
@@ -105,6 +120,13 @@
         <option>100</option>
       </select>
     </label>
+    <label>Show top:
+      <select id="showTop">
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20" selected>20</option>
+      </select>
+    </label>
     <button id="exportBtn" style="background:#007bff;color:#fff;border:none;">Export decisions</button>
     <button id="importBtn">Import decisions</button>
     <input type="file" id="importFile" accept=".json" style="display:none">
@@ -125,6 +147,7 @@ let decisions = {};      // {pensioner_id: {memorial_id, slug, by, at, notes}}
 let filteredIds = [];
 let currentPage = 1;
 let perPage = 25;
+let showTop = 20;       // show top N candidates per pensioner (5/10/20)
 
 // ============================================================
 // File loading
@@ -213,12 +236,17 @@ function saveDecisionsToLocalStorage() {
 const statusFilter = document.getElementById('statusFilter');
 const searchBox = document.getElementById('searchBox');
 const perPageSel = document.getElementById('perPage');
+const showTopSel = document.getElementById('showTop');
 
 statusFilter.addEventListener('change', () => { currentPage = 1; applyFilter(); });
 searchBox.addEventListener('input', () => { currentPage = 1; applyFilter(); });
 perPageSel.addEventListener('change', () => {
     perPage = parseInt(perPageSel.value, 10);
     currentPage = 1;
+    render();
+});
+showTopSel.addEventListener('change', () => {
+    showTop = parseInt(showTopSel.value, 10);
     render();
 });
 
@@ -328,6 +356,12 @@ function render() {
             setNotes(pid, input.value);
         });
     });
+    results.querySelectorAll('[data-action="pickrank1"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            pickRank1(pid);
+        });
+    });
 }
 
 function renderPensioner(p) {
@@ -343,10 +377,39 @@ function renderPensioner(p) {
     if (cands.length === 0) {
         candsHtml = '<div class="empty">No candidates found in this run. Try running with more strategies or longer wait.</div>';
     } else {
-        candsHtml = cands.map((c, idx) => {
+        const visible = cands.slice(0, showTop);
+        candsHtml = visible.map((c, idx) => {
             const scoreClass = c.score >= 0.85 ? 'high' : c.score >= 0.70 ? 'mid' : 'low';
             const isPicked = decision && decision.memorial_id === c.memorial_id;
             const bd = c.score_breakdown || {};
+            const fb = c._found_by || {};
+            const fbStr = fb.strategy
+                ? `<code>${escapeHtml(fb.strategy)}</code> ${escapeHtml(formatParams(fb.params))}`
+                : '';
+            // Render each scoring feature as a bar
+            const featOrder = ['last','first','middle','ok_burial','state','veteran','death'];
+            const featLabels = {
+                last: 'last name', first: 'first name', middle: 'middle name',
+                ok_burial: 'OK burial', state: 'served state',
+                veteran: 'VETERAN', death: 'death year',
+            };
+            const featMax = {
+                last: 1.0, first: 1.0, middle: 1.0, ok_burial: 0.3,
+                state: 0.1, veteran: 0.8, death: 0.5,
+            };
+            const barsHtml = featOrder.map(feat => {
+                const v = bd[feat] || 0;
+                const max = featMax[feat];
+                const pct = Math.round((v / max) * 100);
+                const cls = pct >= 70 ? '' : (pct >= 30 ? 'mid' : 'low');
+                return `
+                    <div class="breakdown-row">
+                        <span class="breakdown-label">${escapeHtml(featLabels[feat])}</span>
+                        <span class="breakdown-bar"><div class="${cls}" style="width:${pct}%"></div></span>
+                        <span class="breakdown-val">${v.toFixed(2)}</span>
+                    </div>
+                `;
+            }).join('');
             return `
                 <div class="candidate ${isPicked ? 'decided' : ''}">
                     <div class="rank">#${idx + 1}</div>
@@ -355,14 +418,15 @@ function renderPensioner(p) {
                              <span class="slug">${escapeHtml(c.slug)}</span>
                              <span class="mark-decided" style="display:${isPicked ? 'inline-block' : 'none'}">PICKED</span>
                         </div>
-                        <div class="breakdown">
-                            last=${bd.last ?? '?'} first=${bd.first ?? '?'} mid=${bd.middle ?? '?'} state=${bd.state ?? '?'} vet=${bd.veteran ?? '?'}
+                        <div class="breakdown">${barsHtml}</div>
+                        <div>
                             &middot; <a href="${escapeHtml(c.backlink)}" target="_blank">open</a>
                             &middot; <a href="${escapeHtml(c.iiif_url)}" target="_blank">image</a>
                             ${c.details?.is_veteran ? '<strong style="color:#0066cc;">VETERAN</strong> &middot; ' : ''}
                             ${c.details?.birth_year ? 'b.' + c.details.birth_year + ' ' : ''}
                             ${c.details?.death_year ? 'd.' + c.details.death_year : ''}
                         </div>
+                        ${fbStr ? `<div class="found-by">Found by: ${fbStr}</div>` : ''}
                     </div>
                     <div class="score ${scoreClass}">${(c.score * 100).toFixed(0)}%</div>
                     <div class="pick">
@@ -388,6 +452,7 @@ function renderPensioner(p) {
             </div>
             <div class="candidates">${candsHtml}</div>
             <div class="actions">
+                ${cands.length > 0 ? `<button data-action="pickrank1" data-pid="${pid}">Pick rank 1</button>` : ''}
                 <button data-action="none" data-pid="${pid}">Mark: no FaG match</button>
                 ${decision ? `<button data-action="unpick" data-pid="${pid}">Clear decision</button>` : ''}
             </div>
@@ -420,6 +485,25 @@ function pickCandidate(pid, mid, slug) {
     saveDecisionsToLocalStorage();
     applyFilter();
     flash('Saved decision for ' + pid);
+}
+
+function pickRank1(pid) {
+    // Look up the pensioner, pick the top candidate.
+    const p = pensioners.find(x => x.pensioner_id === pid);
+    if (!p || !p.ranked_candidates || p.ranked_candidates.length === 0) {
+        flash('No candidates to pick for ' + pid);
+        return;
+    }
+    const top = p.ranked_candidates[0];
+    pickCandidate(pid, top.memorial_id, top.slug);
+}
+
+function formatParams(params) {
+    if (!params || Object.keys(params).length === 0) return '';
+    // Render as k=v pairs
+    return Object.entries(params)
+        .map(([k, v]) => `${k}=${escapeHtml(String(v))}`)
+        .join(' ');
 }
 
 function unpick(pid) {
