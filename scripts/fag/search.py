@@ -71,6 +71,7 @@ from scripts.nickname_match import strategy_with_nickname, nickname_candidates
 from scripts.fag.filters import (
     apply_location_filter, parse_slug,
     extract_state_from_regiment, extract_candidate_details,
+    S_NO_RESULTS, S_ERROR,
 )
 from scripts.fag.scoring import score_candidate, tag_candidates_with_found_by
 from scripts.fag.parser import parse_results_page, merge_candidates

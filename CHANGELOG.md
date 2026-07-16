@@ -4,6 +4,31 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Fix #12: S_NO_RESULTS / S_ERROR import in scripts/fag/search.py
+
+scripts/fag/search.py referenced `S_NO_RESULTS` (lines 241,
+433) and `S_ERROR` (line 431) without importing them. The
+constants live in scripts/fag/filters.py (lines 65, 68) but
+the `from scripts.fag.filters import (...)` block didn't
+include them — a regression from the T008 split
+(commit c217eff).
+
+Repro: calling `make_fag_search_fn(...)().fag_search(...)`
+with any pensioner raised `NameError: name 'S_NO_RESULTS' is
+not defined` and aborted the run with `status='error'`. Found
+while smoke-testing the test-batch-25 run.
+
+- scripts/fag/search.py — added `S_NO_RESULTS, S_ERROR` to the
+  `from scripts.fag.filters import (...)` block.
+- tests/test_fag_search_imports.py (new) — regression test:
+  asserts the constants are importable from
+  `scripts.fag.search` AND that the source-level
+  `from scripts.fag.filters import (...)` block contains
+  both names (catches re-introductions after future
+  refactors).
+
+Tests: 2 new pass; 729 adjacent pass.
+
 ### J5-S3: resume.sh artifact + log + post-interrupt
 
 Every run writes `output/<runname>/resume.sh` — a single-line,
