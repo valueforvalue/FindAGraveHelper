@@ -104,9 +104,14 @@ def run_pipeline_for_pensioner(
     # Step 3: Always run FaG (per user decision)
     if fag_search_fn is not None:
         try:
-            fag_record, fag_status = fag_search_fn(pensioner, config)
-            if fag_record:
-                result.fag_records = [fag_record]
+            fag_result, fag_status = fag_search_fn(pensioner, config)
+            # The FaG search function may return EITHER:
+            #   (record_dict, status_str) — single candidate
+            #   (list_of_records, status_str) — list of candidates
+            if isinstance(fag_result, dict):
+                result.fag_records = [fag_result] if fag_result else []
+            elif isinstance(fag_result, list):
+                result.fag_records = fag_result or []
             else:
                 result.fag_records = []
             result.fag_status = fag_status

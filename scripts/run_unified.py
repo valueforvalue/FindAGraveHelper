@@ -204,8 +204,8 @@ def result_to_dict(result: PipelineResult) -> dict:
         "fag_status": result.fag_status,
         "both_match": result.both_match,
         "best_score": (
-            max((c.get("score", 0) or 0) for c in result.fag_records)
-            if result.fag_records
+            max((c.get("score", 0) or 0) for c in (result.fag_records or []))
+            if (result.fag_records or [])
             else 0.0
         ),
         "status": result.fag_status,
@@ -244,3 +244,353 @@ def heartbeat_logger(
 
 def now_iso() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+# ============================================================
+# Batch orchestration
+# ============================================================
+@dataclass
+class BatchResult:
+    """Result of a batch run."""
+    total: int = 0
+    processed: int = 0
+    outliers_count: int = 0
+    auto_accepts: int = 0
+    errors: int = 0
+    both_match_total: int = 0
+    both_match_direct: int = 0
+    both_match_corroborated: int = 0
+    started_at: float = 0.0
+    finished_at: float = 0.0
+
+    @property
+    def elapsed_seconds(self) -> float:
+        return self.finished_at - self.started_at
+
+    def to_dict(self) -> dict:
+        return {
+            "total": self.total,
+            "processed": self.processed,
+            "outliers_count": self.outliers_count,
+            "auto_accepts": self.auto_accepts,
+            "errors": self.errors,
+            "both_match_total": self.both_match_total,
+            "both_match_direct": self.both_match_direct,
+            "both_match_corroborated": self.both_match_corroborated,
+            "elapsed_seconds": round(self.elapsed_seconds, 1),
+        }
+
+
+def run_batch(
+    pensioners: list[dict],
+    cemeteries: list[dict],
+    config: UnifiedRunnerConfig,
+    log: Optional[logging.Logger] = None,
+) -> BatchResult:
+    """Run the unified pipeline on a batch of pensioners.
+
+    For each pensioner:
+      - Skip if already in state file (resume)
+      - Run CGR + FaG
+      - Write state.jsonl line
+      - Write outliers.jsonl line if outlier
+
+    At end: writes report.md + report.json.
+
+    Args:
+        pensioners: list of pensioner dicts
+        cemeteries: list of cemetery records for CGR blocking index
+        config: UnifiedRunnerConfig with fag_search_fn injected
+        log: optional logger
+    """
+    if log is None:
+        log = logging.getLogger("run_unified")
+
+    if config.out_dir is None:
+        raise ValueError("UnifiedRunnerConfig.out_dir must be set")
+    out_dir = Path(config.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    state_path = out_dir / "state.jsonl"
+    outliers_path = out_dir / "outliers.jsonl"
+
+    # Resume support
+    tracker = ResumeTracker(state_path)
+    if tracker.count() > 0:
+        log.info(
+            "Resume: %d pensioners already in state file %s",
+            tracker.count(), state_path,
+        )
+
+    # Apply limit (after resume, if any)
+    if config.limit:
+        remaining = [p for p in pensioners if not tracker.is_done(p["id"])][:config.limit]
+    else:
+        remaining = [p for p in pensioners if not tracker.is_done(p["id"])]
+
+    log.info("Processing %d pensioners (total=%d, already done=%d)",
+             len(remaining), len(pensioners), tracker.count())
+
+    # Stats
+    result = BatchResult(
+        total=len(pensioners),
+        started_at=time.time(),
+        processed=0,
+    )
+
+    pipeline_cfg = PipelineConfig(throttle_seconds=config.throttle_seconds)
+    outlier_cfg = OutlierConfig(low_score_threshold=config.low_score_threshold)
+    last_heartbeat = result.started_at
+
+    for i, pensioner in enumerate(remaining):
+        pid = pensioner.get("id")
+        # Per-pensioner try/except so one bad record doesn't crash the batch
+        try:
+            pipeline_result = run_pipeline_for_pensioner(
+                pensioner=pensioner,
+                cgr_index_vets=cemeteries,
+                config=pipeline_cfg,
+                fag_search_fn=config.fag_search_fn,
+            )
+            record = result_to_dict(pipeline_result)
+            # Track stats
+            result.processed += 1
+            if pipeline_result.cgr_records and pipeline_result.fag_records:
+                if pipeline_result.both_match:
+                    result.both_match_total += 1
+                    method = pipeline_result.both_match.get("method", "")
+                    if method == "direct_link":
+                        result.both_match_direct += 1
+                    elif method == "corroboration":
+                        result.both_match_corroborated += 1
+            if record.get("fag_status") == "auto_accept":
+                result.auto_accepts += 1
+            # Write unified line
+            write_unified_line(state_path, record)
+            # Write outlier line if applicable
+            if is_outlier(record, outlier_cfg):
+                write_outliers_line(outliers_path, record)
+                result.outliers_count += 1
+            log.debug(
+                "Processed pensioner #%d (%s %s): fag_status=%s",
+                pid, pensioner.get("first_name"), pensioner.get("last_name"),
+                record.get("fag_status"),
+            )
+        except Exception as e:
+            log.error(
+                "Failed pensioner #%d: %s\n%s",
+                pid, e, traceback.format_exc()[:500],
+            )
+            result.errors += 1
+            # Still flush a record for this pensioner so it's "done"
+            try:
+                err_record = {
+                    "pensioner_id": pid,
+                    "pensioner_name": " ".join([
+                        str(pensioner.get("first_name", "")),
+                        str(pensioner.get("last_name", "")),
+                    ]).strip(),
+                    "fag_status": "error",
+                    "cgr_status": "error",
+                    "error": str(e)[:200],
+                    "best_score": 0.0,
+                    "cgr_records": [],
+                    "fag_records": [],
+                    "ranked_candidates": [],
+                    "status": "error",
+                    "timestamp": now_iso(),
+                }
+                write_unified_line(state_path, err_record)
+            except Exception:
+                pass
+
+        # Heartbeat every N records OR every minute
+        now = time.time()
+        if (i + 1) % config.write_heartbeat_every == 0 or (now - last_heartbeat) > 60:
+            heartbeat_logger(
+                log, state_path=state_path,
+                total=len(remaining), processed=i + 1,
+                started_at=result.started_at, now=now,
+            )
+            last_heartbeat = now
+
+    result.finished_at = time.time()
+    log.info(
+        "Batch complete: %d/%d processed, %d outliers, %d errors, "
+        "%d BOTH MATCH (%d direct, %d corroborated). Elapsed: %.1f min",
+        result.processed, len(remaining), result.outliers_count, result.errors,
+        result.both_match_total, result.both_match_direct, result.both_match_corroborated,
+        result.elapsed_seconds / 60,
+    )
+
+    # Final report
+    try:
+        all_records = []
+        if state_path.exists():
+            with state_path.open(encoding="utf-8") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    try:
+                        all_records.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        continue
+        if all_records:
+            stats = build_report(all_records)
+            ts = now_iso().replace(":", "").replace("-", "")[:15]
+            write_report(stats, all_records, out_dir, timestamp=ts)
+            log.info("Report written to %s", out_dir)
+    except Exception as e:
+        log.error("Report generation failed: %s", e)
+
+    return result
+
+
+# ============================================================
+# CLI main() — for the real 7,758 run
+# ============================================================
+def _load_pensioners(args) -> list[dict]:
+    """Load pensioner records from --input or --input-csv."""
+    if args.input:
+        with open(args.input, encoding="utf-8") as f:
+            data = json.load(f)
+        return data
+    if args.input_csv:
+        import csv
+        rows = list(csv.DictReader(open(args.input_csv, encoding="utf-8")))
+        return rows
+    raise SystemExit("Provide --input (ok_pensioners.json) or --input-csv")
+
+
+def _load_cems(cgr_path: Path) -> list[dict]:
+    """Load enriched CGR vets, group by cemetery."""
+    by_cem = {}
+    with cgr_path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
+                continue
+            rec = json.loads(line)
+            cid = rec.get("cemetery_id")
+            if cid not in by_cem:
+                by_cem[cid] = {
+                    "cemetery_id": cid,
+                    "cemetery_name": rec.get("cemetery_name"),
+                    "county": rec.get("county"),
+                    "state": rec.get("state", "OK"),
+                    "veterans": [],
+                }
+            by_cem[cid]["veterans"].append(rec)
+    return list(by_cem.values())
+
+
+def cli_main() -> int:
+    """CLI entry point: parse args, init Playwright, run batch.
+
+    Usage:
+      python scripts/run_unified.py \\
+        --input docs/research/digitalprairie/ok_pensioners.json \\
+        --cgr docs/research/cgr/ok_vets_enriched.jsonl \\
+        --out data/results/run_2026_07_16/ \\
+        [--limit N] [--throttle 1.5] [--shuffle]
+    """
+    import argparse
+    parser = argparse.ArgumentParser(description="Unified runner CLI")
+    parser.add_argument("--input", type=Path,
+                        help="Local path to ok_pensioners.json")
+    parser.add_argument("--input-csv", type=Path,
+                        help="Local path to a generic CSV (dixiedata-style)")
+    parser.add_argument("--cgr", type=Path, required=True,
+                        help="Enriched CGR JSONL (ok_vets_enriched.jsonl)")
+    parser.add_argument("--out", type=Path, required=True,
+                        help="Output directory (will be created)")
+    parser.add_argument("--limit", type=int, default=None,
+                        help="Process only first N pensioners (for tests)")
+    parser.add_argument("--throttle", type=float, default=1.5,
+                        help="Seconds between FaG requests (default 1.5)")
+    parser.add_argument("--low-score-threshold", type=float, default=0.40,
+                        help="Outlier threshold (top score below = outlier)")
+    parser.add_argument("--shuffle", action="store_true",
+                        help="Process pensioners in random order")
+    parser.add_argument("--start-from", type=int, default=0,
+                        help="Skip the first N pensioners in the list")
+    parser.add_argument("--no-fag", action="store_true",
+                        help="Skip FaG search (CGR-only mode, for testing)")
+    parser.add_argument("--heartbeat-every", type=int, default=50,
+                        help="Heartbeat every N pensioners (default 50)")
+    args = parser.parse_args()
+
+    # Setup logger
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    log_path = out_dir / "run.log"
+    log = logging.getLogger("run_unified_main")
+    log.setLevel(logging.INFO)
+    # Always clear existing handlers
+    for h in list(log.handlers):
+        log.removeHandler(h)
+    formatter = logging.Formatter("%(asctime)s %(levelname)s %(message)s")
+    file_handler = logging.FileHandler(log_path, encoding="utf-8")
+    file_handler.setFormatter(formatter)
+    log.addHandler(file_handler)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
+    log.addHandler(stream_handler)
+
+    log.info("Run starting at %s", now_iso())
+    log.info("Output dir: %s", out_dir)
+    log.info("Args: %s", vars(args))
+
+    # Load pensioners
+    pensioners = _load_pensioners(args)
+    if args.shuffle:
+        import random
+        random.shuffle(pensioners)
+    if args.start_from:
+        pensioners = pensioners[args.start_from:]
+    log.info("Loaded %d pensioners from input", len(pensioners))
+
+    # Load CGR
+    if not Path(args.cgr).exists():
+        log.error("CGR file not found: %s", args.cgr)
+        return 1
+    cems = _load_cems(Path(args.cgr))
+    log.info("Loaded CGR data: %d cemeteries, %d total vets",
+             len(cems), sum(len(c.get("veterans", [])) for c in cems))
+
+    # Build FaG search function (or None)
+    fag_search_fn = None
+    if not args.no_fag:
+        # Inline-import to avoid loading Playwright when not needed
+        from scripts.fag_browser import make_fag_search_fn
+        log.info("Initializing Playwright (visible browser, takes ~10s)...")
+        fag_search_fn = make_fag_search_fn(throttle=args.throttle)
+        log.info("Playwright ready.")
+
+    # Run batch
+    cfg = UnifiedRunnerConfig(
+        out_dir=out_dir,
+        throttle_seconds=args.throttle,
+        low_score_threshold=args.low_score_threshold,
+        max_cgr_candidates=20,
+        limit=args.limit,
+        fag_search_fn=fag_search_fn,
+        write_heartbeat_every=args.heartbeat_every,
+    )
+
+    try:
+        result = run_batch(
+            pensioners=pensioners,
+            cemeteries=cems,
+            config=cfg,
+            log=log,
+        )
+        log.info("Run finished: %s", json.dumps(result.to_dict(), indent=2))
+        return 0
+    except KeyboardInterrupt:
+        log.warning("Interrupted by user. State has been flushed; restart to resume.")
+        return 130
+
+
+if __name__ == "__main__":
+    raise SystemExit(cli_main())
