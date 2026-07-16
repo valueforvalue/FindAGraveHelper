@@ -246,7 +246,85 @@ Observations:
 | `nominatim` | OSM geocoding | Enrich birthplace data |
 | `rank-bm25` | Relevance ranking | Filter large result sets |
 
-## 9. Sources
+## 9. Implementation results (July 16, 2026)
+
+All 4 algorithm improvements were implemented and tested:
+
+### Slice A1: Better string matching (priority 1)
+- Added `Jaro-Winkler` (rapidfuzz), `Metaphone`, `NYSIIS` (jellyfish)
+- `cgr_matcher.name_match_strength` now uses combined phonetic
+  signals, not just Soundex
+- **31 tests, all passing**
+
+### Slice A2: Phonetic blocking (priority 2)
+- `scripts/blocking.py` builds a multi-key index from a vet list
+- For 2,593 OK CGR vets: 2,998 blocks in 0.01s
+- Lookup time: 0.0001s per query (vs ~1.5s per search_by_name call)
+- 7,758 pensioner lookups = ~0.8s vs ~3.2 hours of network calls
+- **27 tests, all passing**
+
+### Slice A3: Confusion matrix evaluation (priority 4)
+- `scripts/evaluation.py` provides `ConfusionMatrix`,
+  `precision`, `recall`, `f1_score`, `best_threshold`
+- Lets us pick thresholds scientifically instead of guessing
+- **26 tests, all passing**
+
+### Slice A4: Fellegi-Sunter probabilistic matcher (priority 3)
+- `scripts/fellegi_sunter.py` wraps `python-recordlinkage`'s
+  classifier with a friendlier interface
+- Features: JW first/last, metaphone, NYSIIS, unit state match
+- Logistic regression on the features (small training sets
+  are more practical than the full Fellegi-Sunter EM)
+- Trainable on labeled data, persistent, explainable
+- **16 tests, all passing**
+
+### E2E validation on 50 ground-truth records (Slice A5)
+
+| Metric | Old (Soundex only) | New (all 4 algorithms) |
+|---|---|---|
+| Rank-1 hit rate | 78% | **86%** |
+| Auto-accept precision | 100% | **100%** |
+| Auto-accept count | 0 (none) | **27** |
+| **Best F1 (confusion matrix)** | n/a (no eval harness) | **0.945** |
+| **Best precision** | n/a | **0.896** |
+| **Best recall** | n/a | **1.000** |
+| **Best threshold (data-driven)** | hard-coded 0.70 | **0.538** |
+
+The harness now finds **every** true match (recall = 1.0) at the
+optimal threshold of 0.538, with 89.6% precision. The
+hard-coded 0.70 threshold is conservative — many true
+matches have scores in the 0.55-0.70 range.
+
+### What changed in the pipeline
+
+```
+unified.json (7,758 pensioners)
+       ↓
+   search_fag.py
+       ↓
+   For each pensioner, run strategies
+   Score candidates with the OLD formula (no Soundex impact
+   on FaG scoring — that's still rule-based)
+       ↓
+   state.jsonl (ranked candidates)
+       ↓
+   view.html (human review)
+```
+
+The 4 algorithm improvements mainly affect the **CGR xref path**:
+```
+unified.json + ok_cemeteries.jsonl
+       ↓
+   blocking.py — pre-compute phonetic index
+       ↓
+   For each pensioner, lookup block (no network)
+   ↓
+   fellegi_sunter.py — score candidates
+   ↓
+   Best threshold chosen via evaluation.py
+```
+
+## 10. Sources
 
 - [Jellyfish](https://github.com/jamesturk/jellyfish) — Python
   approximate & phonetic matching

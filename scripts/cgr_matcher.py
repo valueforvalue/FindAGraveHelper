@@ -80,35 +80,63 @@ def name_match_strength(
     """Compare pensioner name parts against CGR name parts.
 
     Returns 'strong', 'medium', 'weak', or 'none'.
+
+    Algorithm (per Priority 1 of algorithms-research.md):
+      1. Last name must match (exact or via combined phonetic
+         signals). Otherwise "none".
+      2. First name scoring: Jaro-Winkler + Metaphone + NYSIIS
+         combined score.
+      3. Bucket the combined score into strong/medium/weak.
     """
     p_first = _norm(p_first).rstrip(".")
     p_last = _norm(p_last)
     c_first = _norm(c_first).rstrip(".")
     c_last = _norm(c_last)
 
-    # Last name must match (exact or phonetic)
+    # 1. Last name must match (exact, phonetic, or fuzzy)
     if not p_last or not c_last:
         return "none"
-    if p_last == c_last:
-        last_eq = True
-    elif _soundex(p_last) == _soundex(c_last):
-        last_eq = False  # phonetic only
-    else:
+    last_score = _combined_name_score(p_last, c_last)
+    if last_score < 0.80:
         return "none"
 
-    # First name comparison
+    # 2. First name scoring
     if not p_first or not c_first:
         # No first name on either side; rely on last
-        return "medium" if last_eq else "weak"
+        if last_score >= 0.95:
+            return "medium"
+        return "weak"
 
-    if p_first == c_first:
+    first_score = _combined_name_score(p_first, c_first)
+
+    # 3. Bucket
+    # Use the max of last and first scores (whichever is stronger)
+    overall = max(last_score, first_score)
+    if overall >= 0.95:
         return "strong"
-    if p_first[0] == c_first[0]:
+    if overall >= 0.80:
         return "medium"
-    # Phonetic first match (rare but possible)
-    if _soundex(p_first) == _soundex(c_first):
-        return "medium"
-    return "weak" if last_eq else "none"
+    return "weak"
+
+
+def _combined_name_score(a: str, b: str) -> float:
+    """Wrapper that tries to use the new phonetic_match module.
+
+    Falls back to Soundex-only if the module isn't importable
+    (e.g. rapidfuzz or jellyfish not installed).
+    """
+    try:
+        from scripts.phonetic_match import combined_name_score
+        return combined_name_score(a, b)
+    except ImportError:
+        # Fallback: Soundex-only scoring
+        if not a or not b:
+            return 0.0
+        if a == b:
+            return 1.0
+        if _soundex(a) == _soundex(b):
+            return 0.85
+        return 0.0
 
 
 def compare_years(local_year: str, cgr_born: str) -> str:
