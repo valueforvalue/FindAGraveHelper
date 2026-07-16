@@ -14,13 +14,12 @@ docs/research/broadened-set/rosters/
 docs/research/local-data/local_soldiers_with_fag.csv
 docs/research/local-data/local_fag_records.csv
 
-# Digital Prairie pension records — large (~60MB total) and reproducible
-# by re-running scripts/scrape_digitalprairie.py. The 50-record sample is
-# kept in repo for quick reference.
+# Digital Prairie pension records — large and reproducible by
+# re-running scripts/scrape_digitalprairie.py. The unified canonical
+# list (unified.{json,csv}) IS committed; the per-collection files
+# and the scrape log are gitignored.
 docs/research/digitalprairie/pensions.csv
 docs/research/digitalprairie/pensions.json
 docs/research/digitalprairie/pensioncard.csv
 docs/research/digitalprairie/pensioncard.json
-docs/research/digitalprairie/unified.csv
-docs/research/digitalprairie/unified.json
 docs/research/digitalprairie/scrape.log
