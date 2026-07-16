@@ -118,3 +118,4 @@ def test_checkpoint_records_last_successful(tmp_path, monkeypatch):
     cp = search_fag.read_checkpoint(checkpoint_path)
     assert cp["last_processed_id"] == 3
     assert cp["pensioner_name"] == "Person 3"
+

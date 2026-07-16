@@ -895,11 +895,14 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
     except Exception:
         pass
     # Encourage the interpreter to free cycle references promptly
-    # every 25 records (cheap, helps Playwright Locator/future refs).
+    # every 5 records. Live monitoring of the resumed Run #2 showed
+    # Python RSS growing ~15 MB/min at the previous cadence (every
+    # 25 records); 5 reduces the long-run RSS growth rate materially
+    # with negligible CPU cost (~1 ms).
     import gc as _gc
     n = getattr(parse_results_page, "_record_count", 0) + 1
     parse_results_page._record_count = n
-    if n % 25 == 0:
+    if n % 5 == 0:
         _gc.collect()
 
     return total, candidates
@@ -1207,7 +1210,31 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
             continue
 
         title = page.title()
-        if "Just a moment" in title or "Attention Required" in title:
+        # Detect Cloudflare blocks. The title patterns include:
+        #   "Just a moment..." (Turnstile challenge page)
+        #   "Attention Required! | Cloudflare" (Turnstile blocked)
+        #   "Error 1015 (Rate Limited) - www.findagrave.com"
+        # All three mean we should not parse results from this page.
+        # The rate-limit (1015) response has a longer backoff because
+        # repeated violations extend the ban window.
+        if ("Just a moment" in title
+            or "Attention Required" in title
+            or "Rate Limited" in title
+            or "Error 1015" in title
+        ):
+            if "Rate Limited" in title or "Error 1015" in title:
+                log.warning(
+                    "CLOUDFLARE 1015 RATE LIMIT: %s %s [%s]. Backing off "
+                    "120s + resetting session cookies.",
+                    first, last, name,
+                )
+                captcha_seen = True
+                # Heavy backoff for rate-limit. The ban window is
+                # typically 1-15 min; we back off 2 min and rely
+                # on the periodic browser reset (every 250 records)
+                # to clear cookies.
+                time.sleep(120.0)
+                continue
             log.warning("CAPTCHA: %s %s [%s]. Waiting up to 30s for it to resolve.",
                         first, last, name)
             captcha_seen = True

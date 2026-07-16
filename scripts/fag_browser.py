@@ -98,6 +98,27 @@ def make_fag_search_fn(
 
     Returns a closure suitable for UnifiedRunnerConfig.fag_search_fn.
     """
+    # Apply the Playwright Python memory leak fix BEFORE any Playwright
+    # import path that creates tasks. See:
+    #   github.com/microsoft/playwright/issues/15400
+    #   comments by laztheripper (2026-06): __pw_stack__ and
+    #   __pw_stack_trace__ pin Python frames in the asyncio event loop,
+    #   accumulating gigabytes over hours of navigations. The fix is to
+    #   replace these with empty lists (the captured stack traces were
+    #   debugging hints, not load-bearing). We monkey-patch the relevant
+    #   method on SyncBase before sync_playwright() is constructed.
+    try:
+        from scripts.playwright_leak_fix import apply_playwright_leak_fix
+        applied = apply_playwright_leak_fix()
+        if applied:
+            log.info("Applied Playwright Python memory-leak fix "
+                     "(suppresses __pw_stack__ frame pinning).")
+    except Exception as e:
+        # Best-effort: if the fix module can't load (e.g. older
+        # Playwright), the run continues without it. The other
+        # mitigations (RSS watchdog, browser reset) still apply.
+        log.warning("Playwright leak fix not applied: %s", e)
+
     from playwright.sync_api import sync_playwright
 
     log.info(
