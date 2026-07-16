@@ -102,6 +102,7 @@ def test_load_config_round_trip(tmp_path):
         "end_row": 500,
         "throttle": 3.0,
         "low_score_threshold": 0.45,
+        "fag_state_filter": "OK",
     }
     cfg_path.write_text(json.dumps(raw), encoding="utf-8")
 
@@ -114,6 +115,7 @@ def test_load_config_round_trip(tmp_path):
     assert cfg.end_row == 500
     assert cfg.throttle == 3.0
     assert cfg.low_score_threshold == 0.45
+    assert cfg.fag_state_filter == "OK"
 
 
 def test_load_config_minimal_required(tmp_path):
@@ -131,6 +133,7 @@ def test_load_config_minimal_required(tmp_path):
     assert cfg.end_row is None
     assert cfg.throttle == 2.5
     assert cfg.low_score_threshold == 0.40
+    assert cfg.fag_state_filter == "OK"  # default
 
 
 def test_load_config_missing_required_key(tmp_path):

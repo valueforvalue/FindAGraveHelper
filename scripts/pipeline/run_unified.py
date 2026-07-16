@@ -736,6 +736,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "records to bound Chromium RSS growth "
                              "(default 250; 500 was the old default "
                              "before the memory leak investigation)")
+    parser.add_argument("--fag-state-filter", type=str, default=None,
+                        help="FaG locationId scope. A US state abbr "
+                             "('OK', 'TX'), 'US' for country_4, or '' "
+                             "to disable. When --config is used, the "
+                             "config's fag_state_filter is the default "
+                             "(currently 'OK'). Override here to "
+                             "broaden (e.g. '' for global) or scope to "
+                             "another state.")
     args = parser.parse_args(argv)
 
     # ============================================================
@@ -783,6 +791,8 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             args.throttle = batch_cfg.throttle
         if args.low_score_threshold == 0.40:  # default sentinel
             args.low_score_threshold = batch_cfg.low_score_threshold
+        if args.fag_state_filter is None:
+            args.fag_state_filter = batch_cfg.fag_state_filter
         # start_row / end_row → start_from + limit
         if args.start_from == 0:
             args.start_from = batch_cfg.start_row
@@ -866,11 +876,20 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # Inline-import to avoid loading Playwright when not needed
         from scripts.fag_browser import make_fag_search_fn
         log.info("Initializing Playwright (visible browser, takes ~10s)...")
+        # FaG locationId scope: from --fag-state-filter CLI flag,
+        # or from batch_cfg.fag_state_filter if a config was loaded.
+        # Default "OK" scopes to Oklahoma per the project goal
+        # (AGENTS.md "find Confederate soldiers associated with
+        # Oklahoma").
+        fag_state_filter = getattr(args, "fag_state_filter", "OK")
+        if fag_state_filter == "":
+            fag_state_filter = None  # let search_one_pensioner default
         fag_search_fn = make_fag_search_fn(
             throttle=args.throttle,
             reset_browser_every=args.reset_browser_every,
             watchdog=watchdog,
             max_consecutive_errors=args.max_consecutive_errors,
+            state_filter=fag_state_filter,
         )
         log.info("Playwright ready.")
 

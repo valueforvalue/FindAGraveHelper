@@ -61,6 +61,11 @@ class BatchConfig:
     end_row: Optional[int] = None
     throttle: float = 2.5
     low_score_threshold: float = 0.40
+    # FaG locationId scope. Default "OK" scopes all FaG searches to
+    # Oklahoma via locationId=state_38. Other values: any US state
+    # abbr ("TX", "MS"), "US" for country_4, or "" to disable the
+    # state filter (legacy behavior — search returns global results).
+    fag_state_filter: str = "OK"
 
     def runname_is_slug(self) -> bool:
         """True iff self.runname is a valid runname slug."""
@@ -83,6 +88,7 @@ DEFAULT_START_ROW = 0
 DEFAULT_END_ROW = None
 DEFAULT_THROTTLE = 2.5
 DEFAULT_LOW_SCORE_THRESHOLD = 0.40
+DEFAULT_FAG_STATE_FILTER = "OK"
 
 
 # ============================================================
@@ -139,6 +145,7 @@ def init_batch(
         "end_row": DEFAULT_END_ROW,
         "throttle": DEFAULT_THROTTLE,
         "low_score_threshold": DEFAULT_LOW_SCORE_THRESHOLD,
+        "fag_state_filter": DEFAULT_FAG_STATE_FILTER,
     }
     config_path.write_text(
         json.dumps(template, indent=2) + "\n",
@@ -196,6 +203,7 @@ def load_config(path: Path) -> BatchConfig:
         ("start_row", int),
         ("throttle", (int, float)),
         ("low_score_threshold", (int, float)),
+        ("fag_state_filter", str),
     ):
         if key in raw and not isinstance(raw[key], expected):
             raise ConfigError(
@@ -216,6 +224,9 @@ def load_config(path: Path) -> BatchConfig:
         throttle=float(raw.get("throttle", DEFAULT_THROTTLE)),
         low_score_threshold=float(
             raw.get("low_score_threshold", DEFAULT_LOW_SCORE_THRESHOLD)
+        ),
+        fag_state_filter=raw.get(
+            "fag_state_filter", DEFAULT_FAG_STATE_FILTER
         ),
     )
 

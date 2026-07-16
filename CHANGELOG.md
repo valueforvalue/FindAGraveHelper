@@ -4,6 +4,62 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Bug: FaG locationId scoped to regiment state, not OK
+
+The v5 strategy ladder scoped FaG searches to the
+pensioner's regiment state (e.g. "4th Missouri Cavalry" →
+state_25 = Missouri). For the OK Confederate pensioner
+project — whose goal is "find Confederate soldiers
+associated with Oklahoma who are not yet in Find a Grave"
+(AGENTS.md) — this returns nationwide matches instead of
+OK-buried candidates. Confirmed by a 25-record test batch
+where distinct locationId values spanned 9 different
+states (state_25=MO, state_45=TX, state_24=MS, etc.) and
+zero BOTH_MATCH corroborations.
+
+Fix: scope all FaG searches to OK by default. Added
+`fag_state_filter` to `BatchConfig` (default `"OK"`,
+overridable to any US state abbr, `"US"` for country_4,
+or `""` to disable). Wired through `cli_main` →
+`make_fag_search_fn` → `search_one_pensioner` as a
+new `state_filter` parameter; legacy behavior (scope =
+regiment state) preserved when `state_filter=None` is
+passed. Added `--fag-state-filter` CLI flag for ad-hoc
+override.
+
+Re-ran the test-batch-25 with the new default: 8 BOTH_MATCH
+corroborations, 1 auto_accept, vs the previous run's 0
+BOTH_MATCH / 1 auto_accept / 10 too_many. Massive
+improvement in result quality.
+
+Known follow-up (out of scope here): the v5 ladder still
+returns `too_many` for many records because the OK scope
+yields 20 candidates per strategy. A two-tier search (OK
+first, broaden to US if results are sparse) would catch
+OK-buried soldiers who were pensioned in OK but buried
+elsewhere. Filed separately; this slice fixes only the
+wrong default.
+
+- scripts/batch_config.py — `BatchConfig.fag_state_filter`
+  (default `"OK"`); init-batch template + load_config
+  round-trip + type check.
+- scripts/fag/search.py — `search_one_pensioner` gains
+  `state_filter` kwarg; default None preserves legacy
+  behavior. When set, overrides the
+  `extract_state_from_regiment(pensioner["regiment"])`
+  lookup.
+- scripts/fag/fag_browser.py — `make_fag_search_fn` gains
+  `state_filter` kwarg; passed through to
+  `search_one_pensioner`.
+- scripts/pipeline/run_unified.py — new
+  `--fag-state-filter` CLI flag; CLI default `None`, when
+  `--config` is used the config's `fag_state_filter` is
+  the default. CLI flag overrides config.
+- tests/test_batch_config.py — round-trip + default-value
+  tests extended for the new field.
+
+Tests: 730 adjacent pass; 1 pre-existing failure unrelated.
+
 ### Fix #12: S_NO_RESULTS / S_ERROR import in scripts/fag/search.py
 
 scripts/fag/search.py referenced `S_NO_RESULTS` (lines 241,

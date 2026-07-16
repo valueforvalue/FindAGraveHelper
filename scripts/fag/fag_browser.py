@@ -78,6 +78,7 @@ def make_fag_search_fn(
     reset_browser_every: int = 250,
     watchdog: Optional["object"] = None,
     max_consecutive_errors: int = 10,
+    state_filter: Optional[str] = None,
 ) -> Callable:
     """Create a fag_search_fn(pensioner, config) closure.
 
@@ -95,6 +96,10 @@ def make_fag_search_fn(
         max_consecutive_errors: after this many in-a-row 'error'
             results, give up and re-raise the last exception so the
             outer loop can stop the run rather than thrash.
+        state_filter: FaG locationId scope. A state abbr ("OK",
+            "TX"), "US" for country_4, or "" to disable. Passed
+            through to search_one_pensioner. Default None preserves
+            legacy behavior (scope = pensioner's regiment state).
 
     Returns a closure suitable for UnifiedRunnerConfig.fag_search_fn.
     """
@@ -271,6 +276,7 @@ def make_fag_search_fn(
                 record = search_one_pensioner(
                     state["page"], pensioner,
                     throttle_seconds=throttle,
+                    state_filter=state_filter,
                 )
             except Exception as e:
                 state["consecutive_errors"] += 1

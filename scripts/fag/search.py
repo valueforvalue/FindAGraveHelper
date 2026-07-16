@@ -73,6 +73,7 @@ from scripts.fag.filters import (
     extract_state_from_regiment, extract_candidate_details,
     S_NO_RESULTS, S_ERROR,
 )
+from scripts.search.strategies import STRATEGIES
 from scripts.fag.scoring import score_candidate, tag_candidates_with_found_by
 from scripts.fag.parser import parse_results_page, merge_candidates
 from scripts.fag.state_io import (
@@ -95,6 +96,16 @@ log = logging.getLogger("search")
 # ============================================================
 # Tunables
 # ============================================================
+# Status values (T008 split regression: these were dropped from
+# scripts/fag/search.py when the file was split into private
+# modules in commit c217eff; restored from the pre-split
+# scripts/search_fag.py.)
+S_AUTO_ACCEPT = "auto_accept"
+S_AMBIGUOUS = "ambiguous"
+S_TOO_MANY = "too_many"
+S_CAPTCHA = "captcha"
+S_SKIP = "skip"
+
 # Auto-accept when score is high. With our scoring function, exact
 # last+first+middle + veteran + death + state all match → 0.80.
 # When local state is known AND candidate state matches, we get
@@ -210,7 +221,8 @@ def warmup_session(page: Page, log_) -> bool:
 # ============================================================
 
 def search_one_pensioner(page: Page, pensioner: dict,
-                          throttle_seconds: Optional[float] = None) -> dict:
+                          throttle_seconds: Optional[float] = None,
+                          state_filter: Optional[str] = None) -> dict:
     """Run the strategy ladder for one pensioner. Return a state record.
 
     throttle_seconds: if provided, sleep this long between
@@ -220,11 +232,21 @@ def search_one_pensioner(page: Page, pensioner: dict,
     intra-pensioner pause, popular-name records slam FaG with
     10+ requests in 5-10 seconds flat, hitting Cloudflare's
     burst-rate limit.
+
+    state_filter: a state abbr ("OK", "TX"), "US" for country_4,
+    or "" to disable. When provided, this OVERRIDES the default
+    behavior of scoping FaG searches to the pensioner's regiment
+    state. Pass "OK" to scope all searches to Oklahoma (the
+    project goal per AGENTS.md). When None (default), legacy
+    behavior is preserved (scope = regiment state).
     """
     first = pensioner.get("first_name", "")
     middle = pensioner.get("middle_name", "")
     last = pensioner.get("last_name", "")
-    state_abbr = extract_state_from_regiment(pensioner.get("regiment", ""))
+    if state_filter is not None:
+        state_abbr = state_filter
+    else:
+        state_abbr = extract_state_from_regiment(pensioner.get("regiment", ""))
     pensioner_id = pensioner.get("id", -1)
     record = {
         "pensioner_id": pensioner_id,
