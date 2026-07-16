@@ -1,0 +1,1544 @@
+01:12:59 INFO Output: C:\tmp\ok_cgr_paginated.jsonl
+01:12:59 INFO State: OK | Vet details: no | Throttle: 0.3s
+01:12:59 INFO Listing cemeteries in OK...
+01:13:01 INFO Found 769 cemeteries in OK
+01:13:01 INFO [1/769] Cemetery 13211 — Adair Co.: Baptist Mission Cemetery
+01:13:01 INFO   -> 4 veteran(s)
+01:13:01 INFO [2/769] Cemetery 14481 — Adair Co.: Chalk Bluff Cemetery
+01:13:02 INFO   -> 2 veteran(s)
+01:13:02 INFO [3/769] Cemetery 14568 — Adair Co.: Foreman Cemetery
+01:13:02 INFO   -> 1 veteran(s)
+01:13:02 INFO [4/769] Cemetery 14614 — Adair Co.: Honey Hill Cemetery (AKA: Allison Cemetery)
+01:13:03 INFO   -> 1 veteran(s)
+01:13:03 INFO [5/769] Cemetery 14372 — Adair Co.: Oak Grove Cemetery
+01:13:03 INFO   -> 3 veteran(s)
+01:13:03 INFO [6/769] Cemetery 18723 — Adair Co.: Paden Cemetery (AKA: Geneva Cem, Rock Springs Cem)
+01:13:04 INFO   -> 1 veteran(s)
+01:13:04 INFO [7/769] Cemetery 14845 — Adair Co.: Piney Cemetery
+01:13:04 INFO   -> 1 veteran(s)
+01:13:04 INFO [8/769] Cemetery 17918 — Adair Co.: Piney Cemetery
+01:13:05 INFO   -> 1 veteran(s)
+01:13:05 INFO [9/769] Cemetery 15306 — Adair Co.: Proctor-Sanders Community Cemetery (AKA: Proctor Cemetery)
+01:13:06 INFO   -> 1 veteran(s)
+01:13:06 INFO [10/769] Cemetery 17674 — Adair Co.: Reese Cemetery
+01:13:06 INFO   -> 1 veteran(s)
+01:13:06 INFO [11/769] Cemetery 15054 — Adair Co.: Samuel Adair Cemetery
+01:13:07 INFO   -> 1 veteran(s)
+01:13:07 INFO [12/769] Cemetery 14646 — Adair Co.: Stilwell Cemetery (AKA: New Hope Cemetery)
+01:13:07 INFO   -> 2 veteran(s)
+01:13:07 INFO [13/769] Cemetery 14465 — Alfalfa Co.: Byron-Amorita Cemetery
+01:13:08 INFO   -> 1 veteran(s)
+01:13:08 INFO [14/769] Cemetery 13706 — Alfalfa Co.: Carmen Cemetery
+01:13:08 INFO   -> 1 veteran(s)
+01:13:08 INFO [15/769] Cemetery 14492 — Alfalfa Co.: Cherokee Municipal Cemetery (AKA: Cherokee Cemetery)
+01:13:09 INFO   -> 2 veteran(s)
+01:13:09 INFO [16/769] Cemetery 12921 — Alfalfa Co.: Pleasant Ridge Cemetery
+01:13:10 INFO   -> 3 veteran(s)
+01:13:10 INFO [17/769] Cemetery 13210 — Atoka Co.: Balls Chapel Cemetery
+01:13:10 INFO   -> 1 veteran(s)
+01:13:10 INFO [18/769] Cemetery 14271 — Atoka Co.: Bentley Cemetery
+01:13:11 INFO   -> 2 veteran(s)
+01:13:11 INFO [19/769] Cemetery 14273 — Atoka Co.: Bera Cemetery
+01:13:11 INFO   -> 1 veteran(s)
+01:13:11 INFO [20/769] Cemetery 12726 — Atoka Co.: Boggy Depot Cemetery
+01:13:12 INFO   -> 3 veteran(s)
+01:13:12 INFO [21/769] Cemetery 14464 — Atoka Co.: Butler Cemetery
+01:13:13 INFO   -> 2 veteran(s)
+01:13:13 INFO [22/769] Cemetery 12822 — Atoka Co.: Confederate Cemetery (AKA: Harkins Cemetery)
+01:13:14 INFO   -> 14 veteran(s)
+01:13:14 INFO [23/769] Cemetery 24065 — Atoka Co.: Folsom Cemetery
+01:13:14 INFO   -> 1 veteran(s)
+01:13:14 INFO [24/769] Cemetery 14733 — Atoka Co.: Maytubby Cemetery
+01:13:15 INFO   -> 1 veteran(s)
+01:13:15 INFO [25/769] Cemetery 14523 — Atoka Co.: Stewart Gammon Cemetery (AKA: Caney Cemetery)
+01:13:15 INFO   -> 1 veteran(s)
+01:13:15 INFO [26/769] Cemetery 14786 — Atoka Co.: Stringtown Cemetery
+01:13:16 INFO   -> 1 veteran(s)
+01:13:16 INFO [27/769] Cemetery 14779 — Atoka Co.: Tushka Cemetery
+01:13:16 INFO   -> 2 veteran(s)
+01:13:16 INFO [28/769] Cemetery 14759 — Atoka Co.: Wards Chapel Cemetery
+01:13:17 INFO   -> 1 veteran(s)
+01:13:17 INFO [29/769] Cemetery 14758 — Atoka Co.: Wardville Cemetery
+01:13:17 INFO   -> 1 veteran(s)
+01:13:17 INFO [30/769] Cemetery 12725 — Atoka Co.: Westview Cemetery (AKA: Atoka)
+01:13:18 INFO   -> 5 veteran(s)
+01:13:18 INFO [31/769] Cemetery 13761 — Beaver Co.: Beaver Pioneer Cemetery (AKA: Beaver Cemetery)
+01:13:18 INFO   -> 1 veteran(s)
+01:13:18 INFO [32/769] Cemetery 14449 — Beaver Co.: Bethany Cemetery
+01:13:19 INFO   -> 1 veteran(s)
+01:13:19 INFO [33/769] Cemetery 14499 — Beaver Co.: Cline Cemetery (AKA: Cline-Meridian Cemetery)
+01:13:19 INFO   -> 1 veteran(s)
+01:13:19 INFO [34/769] Cemetery 12683 — Beaver Co.: Gray Cemetery
+01:13:20 INFO   -> 1 veteran(s)
+01:13:20 INFO [35/769] Cemetery 14798 — Beaver Co.: Sophia Cemetery
+01:13:20 INFO   -> 2 veteran(s)
+01:13:20 INFO [36/769] Cemetery 12727 — Beckham Co.: Buffalo Cemetery
+01:13:21 INFO   -> 4 veteran(s)
+01:13:21 INFO [37/769] Cemetery 13050 — Beckham Co.: Carter Cemetery
+01:13:21 INFO   -> 4 veteran(s)
+01:13:21 INFO [38/769] Cemetery 14519 — Beckham Co.: Davis Cemetery
+01:13:21 INFO   -> 1 veteran(s)
+01:13:21 INFO [39/769] Cemetery 12728 — Beckham Co.: Erick Cemetery
+01:13:22 INFO   -> 6 veteran(s)
+01:13:22 INFO [40/769] Cemetery 15053 — Beckham Co.: Fairlawn Cemetery (AKA: Elk City Cemetery)
+01:13:22 INFO   -> 5 veteran(s)
+01:13:22 INFO [41/769] Cemetery 14401 — Beckham Co.: Lone Oak Cemetery
+01:13:23 INFO   -> 4 veteran(s)
+01:13:23 INFO [42/769] Cemetery 14838 — Beckham Co.: Poarch Cemetery
+01:13:23 INFO   -> 1 veteran(s)
+01:13:23 INFO [43/769] Cemetery 12900 — Beckham Co.: Sayre-Doxey Cemetery
+01:13:24 INFO   -> 4 veteran(s)
+01:13:24 INFO [44/769] Cemetery 12912 — Beckham Co.: Texola Cemetery
+01:13:24 INFO   -> 3 veteran(s)
+01:13:24 INFO [45/769] Cemetery 14261 — Beckham Co.: Ural Cemetery
+01:13:25 INFO   -> 2 veteran(s)
+01:13:25 INFO [46/769] Cemetery 14443 — Blaine Co.: Geary Cemetery
+01:13:25 INFO   -> 3 veteran(s)
+01:13:25 INFO [47/769] Cemetery 16746 — Blaine Co.: Hydro Masonic Cemetery (AKA: Masonic Cemetery)
+01:13:26 INFO   -> 1 veteran(s)
+01:13:26 INFO [48/769] Cemetery 14696 — Blaine Co.: IOOF Cemetery (AKA: Watonga IOOF Cemetery)
+01:13:26 INFO   -> 1 veteran(s)
+01:13:26 INFO [49/769] Cemetery 14812 — Blaine Co.: Roselawn Cemetery
+01:13:27 INFO   -> 1 veteran(s)
+01:13:27 INFO [50/769] Cemetery 16747 — Blaine Co.: Worley Cemetery
+01:13:27 INFO   -> 1 veteran(s)
+01:13:27 INFO [51/769] Cemetery 14270 — Bryan Co.: Bennington Cemetery
+01:13:28 INFO   -> 1 veteran(s)
+01:13:28 INFO [52/769] Cemetery 12729 — Bryan Co.: Bokchito Cemetery
+01:13:28 INFO   -> 3 veteran(s)
+01:13:28 INFO [53/769] Cemetery 14791 — Bryan Co.: Burney Cemetery
+01:13:29 INFO   -> 1 veteran(s)
+01:13:29 INFO [54/769] Cemetery 14181 — Bryan Co.: Colbert Garden of Memory Cemetery
+01:13:29 INFO   -> 4 veteran(s)
+01:13:29 INFO [55/769] Cemetery 6128 — Bryan Co.: Ft  Washita Cemetery
+01:13:30 INFO   -> 1 veteran(s)
+01:13:30 INFO [56/769] Cemetery 6545 — Bryan Co.: Gethsemane Cemetery (AKA: Caddo Cemetery)
+01:13:30 INFO   -> 13 veteran(s)
+01:13:30 INFO [57/769] Cemetery 12730 — Bryan Co.: Highland Cemetery
+01:13:31 INFO   -> 17 veteran(s)
+01:13:31 INFO [58/769] Cemetery 14887 — Bryan Co.: Kemp Cemetery
+01:13:31 INFO   -> 1 veteran(s)
+01:13:31 INFO [59/769] Cemetery 12533 — Bryan Co.: Mead Cemetery
+01:13:32 INFO   -> 3 veteran(s)
+01:13:32 INFO [60/769] Cemetery 15866 — Bryan Co.: Old Kemp Cemetery
+01:13:32 INFO   -> 1 veteran(s)
+01:13:32 INFO [61/769] Cemetery 25238 — Bryan Co.: Pioneer Cemetery
+01:13:33 INFO   -> 1 veteran(s)
+01:13:33 INFO [62/769] Cemetery 14352 — Bryan Co.: Pleasant Hill Cemetery
+01:13:33 INFO   -> 3 veteran(s)
+01:13:33 INFO [63/769] Cemetery 14343 — Bryan Co.: Silo Restland Cemetery (AKA: Restland Cemetery)
+01:13:34 INFO   -> 2 veteran(s)
+01:13:34 INFO [64/769] Cemetery 14744 — Bryan Co.: Wolf Creek Cemetery
+01:13:34 INFO   -> 1 veteran(s)
+01:13:34 INFO [65/769] Cemetery 15850 — Bryan Co.: Yarnaby Cemetery
+01:13:35 INFO   -> 1 veteran(s)
+01:13:35 INFO [66/769] Cemetery 12734 — Caddo Co.: Albert Cemetery (AKA: Oney Cemetery)
+01:13:35 INFO   -> 4 veteran(s)
+01:13:35 INFO [67/769] Cemetery 12731 — Caddo Co.: Alden Cemetery
+01:13:36 INFO   -> 1 veteran(s)
+01:13:36 INFO [68/769] Cemetery 12732 — Caddo Co.: Alfalfa Cemetery
+01:13:36 INFO   -> 6 veteran(s)
+01:13:36 INFO [69/769] Cemetery 14466 — Caddo Co.: Cache Creek Mission Cemetery
+01:13:37 INFO   -> 1 veteran(s)
+01:13:37 INFO [70/769] Cemetery 14301 — Caddo Co.: Cement Cemetery (AKA: IOOF Cemetery)
+01:13:37 INFO   -> 2 veteran(s)
+01:13:37 INFO [71/769] Cemetery 14460 — Caddo Co.: Graceland Cemetery (AKA: Bridgeport Cemetery)
+01:13:38 INFO   -> 1 veteran(s)
+01:13:38 INFO [72/769] Cemetery 15247 — Caddo Co.: Hinton Cemetery
+01:13:39 INFO   -> 1 veteran(s)
+01:13:39 INFO [73/769] Cemetery 12733 — Caddo Co.: Memory Lane Cemetery
+01:13:40 INFO   -> 5 veteran(s)
+01:13:40 INFO [74/769] Cemetery 14695 — Caddo Co.: Mound Valley Cemetery (AKA: Kimball Cemetery)
+01:13:40 INFO   -> 1 veteran(s)
+01:13:40 INFO [75/769] Cemetery 14467 — Canadian Co.: Calumet Cemetery
+01:13:40 INFO   -> 1 veteran(s)
+01:13:40 INFO [76/769] Cemetery 14188 — Canadian Co.: El Reno Cemetery
+01:13:41 INFO   -> 4 veteran(s)
+01:13:41 INFO [77/769] Cemetery 14692 — Canadian Co.: Kansas Cemetery
+01:13:41 INFO   -> 1 veteran(s)
+01:13:41 INFO [78/769] Cemetery 14823 — Canadian Co.: Union City Cemetery
+01:13:42 INFO   -> 1 veteran(s)
+01:13:42 INFO [79/769] Cemetery 12735 — Carter Co.: Berwyn Cemetery
+01:13:42 INFO   -> 5 veteran(s)
+01:13:42 INFO [80/769] Cemetery 14457 — Carter Co.: Bomar Point Cemetery
+01:13:43 INFO   -> 1 veteran(s)
+01:13:43 INFO [81/769] Cemetery 14486 — Carter Co.: Cheek Cemetery (AKA: Wilson)
+01:13:43 INFO   -> 2 veteran(s)
+01:13:43 INFO [82/769] Cemetery 14597 — Carter Co.: Graham Cemetery
+01:13:44 INFO   -> 1 veteran(s)
+01:13:44 INFO [83/769] Cemetery 14705 — Carter Co.: Henderson Cemetery
+01:13:44 INFO   -> 1 veteran(s)
+01:13:44 INFO [84/769] Cemetery 14409 — Carter Co.: Hewitt Cemetery
+01:13:45 INFO   -> 2 veteran(s)
+01:13:45 INFO [85/769] Cemetery 14889 — Carter Co.: Keller Cemetery
+01:13:45 INFO   -> 1 veteran(s)
+01:13:45 INFO [86/769] Cemetery 12848 — Carter Co.: Lone Grove Cemetery
+01:13:46 INFO   -> 2 veteran(s)
+01:13:46 INFO [87/769] Cemetery 15307 — Carter Co.: McAlester Cemetery
+01:13:46 INFO   -> 1 veteran(s)
+01:13:46 INFO [88/769] Cemetery 492 — Carter Co.: Milo Cemetery
+01:13:47 INFO   -> 1 veteran(s)
+01:13:47 INFO [89/769] Cemetery 14667 — Carter Co.: Mount Olive Cemetery (AKA: Healdton Cemetery)
+01:13:47 INFO   -> 2 veteran(s)
+01:13:47 INFO [90/769] Cemetery 14373 — Carter Co.: Newport Cemetery
+01:13:48 INFO   -> 2 veteran(s)
+01:13:48 INFO [91/769] Cemetery 12824 — Carter Co.: Old Berwyn Cemetery (AKA: Gene Autry Cemetery)
+01:13:48 INFO   -> 1 veteran(s)
+01:13:48 INFO [92/769] Cemetery 12736 — Carter Co.: Pooleville Cemetery
+01:13:49 INFO   -> 38 veteran(s)
+01:13:49 INFO [93/769] Cemetery 3392 — Carter Co.: Rose Hill Cemetery
+01:13:55 INFO   -> 313 veteran(s)
+01:13:55 INFO [94/769] Cemetery 24793 — Carter Co.: Saint Marys Cemetery
+01:13:55 INFO   -> 1 veteran(s)
+01:13:55 INFO [95/769] Cemetery 15152 — Carter Co.: Springer Cemetery
+01:13:56 INFO   -> 1 veteran(s)
+01:13:56 INFO [96/769] Cemetery 14711 — Carter Co.: Woodford Cemetery
+01:13:56 INFO   -> 1 veteran(s)
+01:13:56 INFO [97/769] Cemetery 14454 — Cherokee Co.: Blue Springs Cemetery
+01:13:57 INFO   -> 3 veteran(s)
+01:13:57 INFO [98/769] Cemetery 14299 — Cherokee Co.: Caney Cemetery
+01:13:57 INFO   -> 2 veteran(s)
+01:13:57 INFO [99/769] Cemetery 19119 — Cherokee Co.: Crittenden Cemetery
+01:13:57 INFO   -> 1 veteran(s)
+01:13:57 INFO [100/769] Cemetery 14517 — Cherokee Co.: Double Springs Cemetery
+01:13:58 INFO   -> 1 veteran(s)
+01:13:58 INFO [101/769] Cemetery 18851 — Cherokee Co.: Eureka Cemetery
+01:13:58 INFO   -> 1 veteran(s)
+01:13:58 INFO [102/769] Cemetery 14599 — Cherokee Co.: Grandview Cemetery
+01:13:59 INFO   -> 1 veteran(s)
+01:13:59 INFO [103/769] Cemetery 14608 — Cherokee Co.: Hendricks Cemetery
+01:13:59 INFO   -> 1 veteran(s)
+01:13:59 INFO [104/769] Cemetery 14709 — Cherokee Co.: IOOF Cemetery (AKA: Hulbert IOOF Cemetery)
+01:14:00 INFO   -> 1 veteran(s)
+01:14:00 INFO [105/769] Cemetery 14665 — Cherokee Co.: Mount Zion Cemetery
+01:14:00 INFO   -> 1 veteran(s)
+01:14:00 INFO [106/769] Cemetery 19370 — Cherokee Co.: New Home Cemetery
+01:14:01 INFO   -> 1 veteran(s)
+01:14:01 INFO [107/769] Cemetery 14652 — Cherokee Co.: New Hope Cemetery
+01:14:01 INFO   -> 1 veteran(s)
+01:14:01 INFO [108/769] Cemetery 12898 — Cherokee Co.: Park Hill Cemetery
+01:14:02 INFO   -> 4 veteran(s)
+01:14:02 INFO [109/769] Cemetery 14846 — Cherokee Co.: Peggs Cemetery
+01:14:02 INFO   -> 1 veteran(s)
+01:14:02 INFO [110/769] Cemetery 12737 — Cherokee Co.: Tahlequah Cemetery
+01:14:03 INFO   -> 5 veteran(s)
+01:14:03 INFO [111/769] Cemetery 14570 — Choctaw Co.: Fort Towson Cemetery (AKA: Doakesville Cemetery)
+01:14:03 INFO   -> 3 veteran(s)
+01:14:03 INFO [112/769] Cemetery 15023 — Choctaw Co.: Goodland Cemetery
+01:14:04 INFO   -> 1 veteran(s)
+01:14:04 INFO [113/769] Cemetery 17790 — Choctaw Co.: Grant Cemetery
+01:14:04 INFO   -> 1 veteran(s)
+01:14:04 INFO [114/769] Cemetery 14495 — Choctaw Co.: Long Creek Cemetery (AKA: Choctaw Cemetery)
+01:14:05 INFO   -> 1 veteran(s)
+01:14:05 INFO [115/769] Cemetery 12738 — Choctaw Co.: Mt Olivet Cemetery
+01:14:05 INFO   -> 7 veteran(s)
+01:14:05 INFO [116/769] Cemetery 14631 — Choctaw Co.: Oakes Cemetery
+01:14:06 INFO   -> 1 veteran(s)
+01:14:06 INFO [117/769] Cemetery 14344 — Choctaw Co.: Restland Cemetery
+01:14:06 INFO   -> 10 veteran(s)
+01:14:06 INFO [118/769] Cemetery 14338 — Choctaw Co.: Spencerville Cemetery
+01:14:07 INFO   -> 2 veteran(s)
+01:14:07 INFO [119/769] Cemetery 14059 — Choctaw Co.: Springs Chapel Cemetery
+01:14:07 INFO   -> 3 veteran(s)
+01:14:07 INFO [120/769] Cemetery 14397 — Cimarron Co.: Marella Cemetery
+01:14:08 INFO   -> 2 veteran(s)
+01:14:08 INFO [121/769] Cemetery 6119 — Cleveland Co.: Box Cemetery
+01:14:08 INFO   -> 3 veteran(s)
+01:14:08 INFO [122/769] Cemetery 14483 — Cleveland Co.: Chappel Hill Cemetery (AKA: Cropper Cemetery)
+01:14:09 INFO   -> 1 veteran(s)
+01:14:09 INFO [123/769] Cemetery 15613 — Cleveland Co.: Denver Cemetery
+01:14:09 INFO   -> 2 veteran(s)
+01:14:09 INFO [124/769] Cemetery 12902 — Cleveland Co.: Dripping Springs Cemetery
+01:14:10 INFO   -> 2 veteran(s)
+01:14:10 INFO [125/769] Cemetery 12739 — Cleveland Co.: IOOF Cemetery
+01:14:10 INFO   -> 3 veteran(s)
+01:14:10 INFO [126/769] Cemetery 12740 — Cleveland Co.: IOOF Cemetery (AKA: Memorial Gardens)
+01:14:11 INFO   -> 8 veteran(s)
+01:14:11 INFO [127/769] Cemetery 12741 — Cleveland Co.: Lexington Cemetery
+01:14:11 INFO   -> 7 veteran(s)
+01:14:11 INFO [128/769] Cemetery 14547 — Cleveland Co.: Maguire-Fairview Cemetery
+01:14:12 INFO   -> 2 veteran(s)
+01:14:12 INFO [129/769] Cemetery 14740 — Cleveland Co.: Moore Cemetery
+01:14:12 INFO   -> 1 veteran(s)
+01:14:12 INFO [130/769] Cemetery 15861 — Cleveland Co.: Red Oak Cemetery
+01:14:13 INFO   -> 2 veteran(s)
+01:14:13 INFO [131/769] Cemetery 14340 — Cleveland Co.: Shiloh Cemetery
+01:14:13 INFO   -> 2 veteran(s)
+01:14:13 INFO [132/769] Cemetery 14790 — Cleveland Co.: St. Johns Catholic Cemetery
+01:14:14 INFO   -> 1 veteran(s)
+01:14:14 INFO [133/769] Cemetery 14722 — Cleveland Co.: Warren Cemetery
+01:14:14 INFO   -> 1 veteran(s)
+01:14:14 INFO [134/769] Cemetery 14334 — Cleveland Co.: Willow View Cemetery
+01:14:14 INFO   -> 2 veteran(s)
+01:14:14 INFO [135/769] Cemetery 15156 — Coal Co.: Byrds Prairie Cemetery
+01:14:15 INFO   -> 1 veteran(s)
+01:14:15 INFO [136/769] Cemetery 12742 — Coal Co.: Coalgate Cemetery
+01:14:15 INFO   -> 4 veteran(s)
+01:14:15 INFO [137/769] Cemetery 16009 — Coal Co.: Lehigh Cemetery
+01:14:16 INFO   -> 3 veteran(s)
+01:14:16 INFO [138/769] Cemetery 14395 — Coal Co.: McCarty Cemetery
+01:14:16 INFO   -> 2 veteran(s)
+01:14:16 INFO [139/769] Cemetery 14844 — Coal Co.: Pleasant Grove Cemetery
+01:14:17 INFO   -> 4 veteran(s)
+01:14:17 INFO [140/769] Cemetery 14553 — Comanche Co.: Faxon Cemetery
+01:14:17 INFO   -> 1 veteran(s)
+01:14:17 INFO [141/769] Cemetery 14566 — Comanche Co.: Fletcher Cemetery
+01:14:18 INFO   -> 1 veteran(s)
+01:14:18 INFO [142/769] Cemetery 15582 — Comanche Co.: Flower Mound Cemetery
+01:14:18 INFO   -> 1 veteran(s)
+01:14:18 INFO [143/769] Cemetery 12743 — Comanche Co.: Highland Cemetery
+01:14:19 INFO   -> 13 veteran(s)
+01:14:19 INFO [144/769] Cemetery 14708 — Comanche Co.: Indiahoma IOOF Cemetery
+01:14:19 INFO   -> 1 veteran(s)
+01:14:19 INFO [145/769] Cemetery 14683 — Comanche Co.: Letitia Cemetery
+01:14:20 INFO   -> 1 veteran(s)
+01:14:20 INFO [146/769] Cemetery 14737 — Comanche Co.: Meers Cemetery
+01:14:20 INFO   -> 1 veteran(s)
+01:14:20 INFO [147/769] Cemetery 14668 — Comanche Co.: Mountain View Cemetery
+01:14:21 INFO   -> 1 veteran(s)
+01:14:21 INFO [148/769] Cemetery 14394 — Comanche Co.: Sterling Cemetery (AKA: Sterling Catholic Cemetery)
+01:14:21 INFO   -> 2 veteran(s)
+01:14:21 INFO [149/769] Cemetery 14177 — Cotton Co.: Devol Cemetery
+01:14:22 INFO   -> 1 veteran(s)
+01:14:22 INFO [150/769] Cemetery 14549 — Cotton Co.: Fairview-Randlett Cemetery
+01:14:22 INFO   -> 4 veteran(s)
+01:14:22 INFO [151/769] Cemetery 12744 — Cotton Co.: Temple Masonic Cemetery
+01:14:23 INFO   -> 10 veteran(s)
+01:14:23 INFO [152/769] Cemetery 12745 — Cotton Co.: Walters Cemetery
+01:14:23 INFO   -> 6 veteran(s)
+01:14:23 INFO [153/769] Cemetery 14451 — Craig Co.: Big Cabin Cemetery
+01:14:24 INFO   -> 1 veteran(s)
+01:14:24 INFO [154/769] Cemetery 13049 — Craig Co.: Bluejacket Cemetery
+01:14:24 INFO   -> 4 veteran(s)
+01:14:24 INFO [155/769] Cemetery 14300 — Craig Co.: Carselowey Cemetery
+01:14:25 INFO   -> 2 veteran(s)
+01:14:25 INFO [156/769] Cemetery 14307 — Craig Co.: Centralia Cemetery
+01:14:25 INFO   -> 2 veteran(s)
+01:14:25 INFO [157/769] Cemetery 12746 — Craig Co.: Fairview Cemetery
+01:14:26 INFO   -> 26 veteran(s)
+01:14:26 INFO [158/769] Cemetery 14694 — Craig Co.: Ketchum Cemetery
+01:14:26 INFO   -> 1 veteran(s)
+01:14:26 INFO [159/769] Cemetery 12917 — Craig Co.: Welch Cemetery
+01:14:27 INFO   -> 3 veteran(s)
+01:14:27 INFO [160/769] Cemetery 12905 — Craig Co.: West Point Cemetery
+01:14:27 INFO   -> 3 veteran(s)
+01:14:27 INFO [161/769] Cemetery 14710 — Craig Co.: Williams Timberhill Cemetery
+01:14:28 INFO   -> 1 veteran(s)
+01:14:28 INFO [162/769] Cemetery 12891 — Creek Co.: Bristow City Cemetery (AKA: Oaklawn)
+01:14:28 INFO   -> 2 veteran(s)
+01:14:28 INFO [163/769] Cemetery 14617 — Creek Co.: Hosey Cemetery
+01:14:29 INFO   -> 1 veteran(s)
+01:14:29 INFO [164/769] Cemetery 15079 — Creek Co.: Kellyville City Cemetery
+01:14:29 INFO   -> 1 veteran(s)
+01:14:29 INFO [165/769] Cemetery 14625 — Creek Co.: Oak Hill Cemetery (AKA: 44 Cemetery)
+01:14:30 INFO   -> 1 veteran(s)
+01:14:30 INFO [166/769] Cemetery 16010 — Creek Co.: Oak Hill Cemetery (AKA: Basin Cemetery)
+01:14:30 INFO   -> 1 veteran(s)
+01:14:30 INFO [167/769] Cemetery 14205 — Creek Co.: Old Sapulpa Cemetery (AKA: Sapulpa City Cemetery)
+01:14:31 INFO   -> 5 veteran(s)
+01:14:31 INFO [168/769] Cemetery 14796 — Creek Co.: South Heights Cemetery
+01:14:31 INFO   -> 1 veteran(s)
+01:14:31 INFO [169/769] Cemetery 13205 — Custer Co.: Arapaho Cemetery
+01:14:32 INFO   -> 1 veteran(s)
+01:14:32 INFO [170/769] Cemetery 14296 — Custer Co.: Butler Cemetery
+01:14:32 INFO   -> 2 veteran(s)
+01:14:32 INFO [171/769] Cemetery 15001 — Custer Co.: Chapel Hill Cemetery
+01:14:33 INFO   -> 1 veteran(s)
+01:14:33 INFO [172/769] Cemetery 15017 — Custer Co.: Elm Cemetery
+01:14:33 INFO   -> 3 veteran(s)
+01:14:33 INFO [173/769] Cemetery 12747 — Custer Co.: Greenwood Cemetery
+01:14:34 INFO   -> 8 veteran(s)
+01:14:34 INFO [174/769] Cemetery 14620 — Custer Co.: Independence Cemetery
+01:14:34 INFO   -> 1 veteran(s)
+01:14:34 INFO [175/769] Cemetery 14879 — Custer Co.: Masonic Cemetery (AKA: Custer City Cemetery)
+01:14:34 INFO   -> 1 veteran(s)
+01:14:34 INFO [176/769] Cemetery 14800 — Custer Co.: Sketchley Evergreen Cemetery
+01:14:35 INFO   -> 1 veteran(s)
+01:14:35 INFO [177/769] Cemetery 14789 — Custer Co.: Stafford Cemetery
+01:14:35 INFO   -> 1 veteran(s)
+01:14:35 INFO [178/769] Cemetery 14516 — Delaware Co.: Duffield Memorial Cemetery
+01:14:36 INFO   -> 1 veteran(s)
+01:14:36 INFO [179/769] Cemetery 14534 — Delaware Co.: Ezekiel Fields Cemetery
+01:14:36 INFO   -> 1 veteran(s)
+01:14:36 INFO [180/769] Cemetery 14408 — Delaware Co.: Hickory Grove Cemetery
+01:14:37 INFO   -> 2 veteran(s)
+01:14:37 INFO [181/769] Cemetery 14623 — Delaware Co.: Indianola Cemetery
+01:14:37 INFO   -> 1 veteran(s)
+01:14:37 INFO [182/769] Cemetery 12201 — Delaware Co.: Joe Ward Cemetery
+01:14:38 INFO   -> 1 veteran(s)
+01:14:38 INFO [183/769] Cemetery 24453 — Delaware Co.: Moses Fields Cemetery
+01:14:38 INFO   -> 1 veteran(s)
+01:14:38 INFO [184/769] Cemetery 24087 — Delaware Co.: Old Eucha Cemetery
+01:14:39 INFO   -> 1 veteran(s)
+01:14:39 INFO [185/769] Cemetery 6261 — Delaware Co.: Old Ridge Cemetery
+01:14:39 INFO   -> 1 veteran(s)
+01:14:39 INFO [186/769] Cemetery 12748 — Delaware Co.: Olympus Cemetery
+01:14:40 INFO   -> 5 veteran(s)
+01:14:40 INFO [187/769] Cemetery 16945 — Delaware Co.: Perry Cemetery
+01:14:40 INFO   -> 1 veteran(s)
+01:14:40 INFO [188/769] Cemetery 14834 — Delaware Co.: Polson Cemetery
+01:14:41 INFO   -> 1 veteran(s)
+01:14:41 INFO [189/769] Cemetery 14810 — Delaware Co.: Row Cemetery
+01:14:41 INFO   -> 1 veteran(s)
+01:14:41 INFO [190/769] Cemetery 14767 — Delaware Co.: Wallen Cemetery
+01:14:42 INFO   -> 1 veteran(s)
+01:14:42 INFO [191/769] Cemetery 17915 — Delaware Co.: Ward Cemetery
+01:14:42 INFO   -> 1 veteran(s)
+01:14:42 INFO [192/769] Cemetery 14331 — Delaware Co.: Zena Cemetery
+01:14:43 INFO   -> 2 veteran(s)
+01:14:43 INFO [193/769] Cemetery 15000 — Dewey Co.: Brumfield Cemetery
+01:14:43 INFO   -> 1 veteran(s)
+01:14:43 INFO [194/769] Cemetery 14473 — Dewey Co.: Center Point Cemetery
+01:14:44 INFO   -> 1 veteran(s)
+01:14:44 INFO [195/769] Cemetery 15851 — Dewey Co.: Evergreen Cemetery
+01:14:44 INFO   -> 1 veteran(s)
+01:14:44 INFO [196/769] Cemetery 14675 — Dewey Co.: Mound Cemetery
+01:14:45 INFO   -> 2 veteran(s)
+01:14:45 INFO [197/769] Cemetery 14715 — Dewey Co.: Mt. Hope Cemetery
+01:14:45 INFO   -> 1 veteran(s)
+01:14:45 INFO [198/769] Cemetery 14653 — Dewey Co.: New Hermon Cemetery
+01:14:46 INFO   -> 1 veteran(s)
+01:14:46 INFO [199/769] Cemetery 12829 — Dewey Co.: Prairie Bell Cemetery
+01:14:46 INFO   -> 3 veteran(s)
+01:14:46 INFO [200/769] Cemetery 15606 — Dewey Co.: Riley Cemetery
+01:14:47 INFO   -> 1 veteran(s)
+01:14:47 INFO [201/769] Cemetery 13207 — Ellis Co.: Debolt Cemetery (AKA: Arnett Cemetery)
+01:14:47 INFO   -> 2 veteran(s)
+01:14:47 INFO [202/769] Cemetery 14572 — Ellis Co.: Gage Memorial Cemetery
+01:14:48 INFO   -> 1 veteran(s)
+01:14:48 INFO [203/769] Cemetery 23994 — Ellis Co.: Lone Tree Cemtery
+01:14:48 INFO   -> 1 veteran(s)
+01:14:48 INFO [204/769] Cemetery 14735 — Ellis Co.: May Cemetery
+01:14:49 INFO   -> 1 veteran(s)
+01:14:49 INFO [205/769] Cemetery 14788 — Ellis Co.: Stone Cemetery
+01:14:49 INFO   -> 1 veteran(s)
+01:14:49 INFO [206/769] Cemetery 14601 — Ellis Co.: Sunset Cemetery
+01:14:49 INFO   -> 1 veteran(s)
+01:14:49 INFO [207/769] Cemetery 12889 — Garfield Co.: Enid Cemetery
+01:14:50 INFO   -> 8 veteran(s)
+01:14:50 INFO [208/769] Cemetery 14322 — Garfield Co.: Garber Cemetery
+01:14:50 INFO   -> 1 veteran(s)
+01:14:50 INFO [209/769] Cemetery 14622 — Garfield Co.: Heitholt Cemetery
+01:14:51 INFO   -> 1 veteran(s)
+01:14:51 INFO [210/769] Cemetery 14642 — Garfield Co.: North IOOF Cemetery (AKA: North Marshall Cemetery)
+01:14:51 INFO   -> 1 veteran(s)
+01:14:51 INFO [211/769] Cemetery 14855 — Garfield Co.: Paradise Cemetery
+01:14:52 INFO   -> 1 veteran(s)
+01:14:52 INFO [212/769] Cemetery 15525 — Garfield Co.: Sample Cemetery
+01:14:52 INFO   -> 1 veteran(s)
+01:14:52 INFO [213/769] Cemetery 14720 — Garfield Co.: Waukomis Cemetery
+01:14:53 INFO   -> 1 veteran(s)
+01:14:53 INFO [214/769] Cemetery 13038 — Garvin Co.: Antioch Cemetery
+01:14:53 INFO   -> 2 veteran(s)
+01:14:53 INFO [215/769] Cemetery 14513 — Garvin Co.: Dulin Family Cemetery
+01:14:54 INFO   -> 1 veteran(s)
+01:14:54 INFO [216/769] Cemetery 12858 — Garvin Co.: Elmore City Cemetery
+01:14:54 INFO   -> 6 veteran(s)
+01:14:54 INFO [217/769] Cemetery 12857 — Garvin Co.: Erin Springs Cemetery
+01:14:55 INFO   -> 4 veteran(s)
+01:14:55 INFO [218/769] Cemetery 14621 — Garvin Co.: Florence Cemetery
+01:14:55 INFO   -> 1 veteran(s)
+01:14:55 INFO [219/769] Cemetery 14276 — Garvin Co.: Foster Cemetery
+01:14:56 INFO   -> 3 veteran(s)
+01:14:56 INFO [220/769] Cemetery 14693 — Garvin Co.: Katie Cemetery
+01:14:56 INFO   -> 2 veteran(s)
+01:14:56 INFO [221/769] Cemetery 14420 — Garvin Co.: Klondike Cemetery
+01:14:57 INFO   -> 4 veteran(s)
+01:14:57 INFO [222/769] Cemetery 14385 — Garvin Co.: Lewis Cemetery
+01:14:57 INFO   -> 3 veteran(s)
+01:14:57 INFO [223/769] Cemetery 12847 — Garvin Co.: Maysville Cemetery
+01:14:58 INFO   -> 4 veteran(s)
+01:14:58 INFO [224/769] Cemetery 12846 — Garvin Co.: McGee Cemetery
+01:14:58 INFO   -> 6 veteran(s)
+01:14:58 INFO [225/769] Cemetery 12749 — Garvin Co.: Mt Olivet Cemetery
+01:14:59 INFO   -> 10 veteran(s)
+01:14:59 INFO [226/769] Cemetery 12750 — Garvin Co.: Oaklawn Cemetery
+01:15:00 INFO   -> 52 veteran(s)
+01:15:00 INFO [227/769] Cemetery 12751 — Garvin Co.: Paoli Cemetery
+01:15:00 INFO   -> 5 veteran(s)
+01:15:00 INFO [228/769] Cemetery 14679 — Garvin Co.: Whitebead Cemetery
+01:15:01 INFO   -> 2 veteran(s)
+01:15:01 INFO [229/769] Cemetery 12752 — Garvin Co.: Wynnewood View Cemetery
+01:15:01 INFO   -> 4 veteran(s)
+01:15:01 INFO [230/769] Cemetery 14892 — Grady Co.: Amber Cemetery
+01:15:02 INFO   -> 1 veteran(s)
+01:15:02 INFO [231/769] Cemetery 13209 — Grady Co.: Bailey Cemetery
+01:15:02 INFO   -> 7 veteran(s)
+01:15:02 INFO [232/769] Cemetery 14533 — Grady Co.: Evergreen Cemetery
+01:15:03 INFO   -> 1 veteran(s)
+01:15:03 INFO [233/769] Cemetery 14546 — Grady Co.: Fairlawn Cemetery
+01:15:03 INFO   -> 1 veteran(s)
+01:15:03 INFO [234/769] Cemetery 15078 — Grady Co.: Fairview Cemetery
+01:15:04 INFO   -> 1 veteran(s)
+01:15:04 INFO [235/769] Cemetery 14569 — Grady Co.: Friendship Cemetery
+01:15:04 INFO   -> 1 veteran(s)
+01:15:04 INFO [236/769] Cemetery 14603 — Grady Co.: Hale Cemetery
+01:15:05 INFO   -> 1 veteran(s)
+01:15:05 INFO [237/769] Cemetery 14707 — Grady Co.: Hazel Dell Cemetery
+01:15:05 INFO   -> 1 veteran(s)
+01:15:05 INFO [238/769] Cemetery 24934 — Grady Co.: Holcomb Cemetery
+01:15:06 INFO   -> 1 veteran(s)
+01:15:06 INFO [239/769] Cemetery 12753 — Grady Co.: Naples Cemetery
+01:15:06 INFO   -> 7 veteran(s)
+01:15:06 INFO [240/769] Cemetery 15867 — Grady Co.: Ninnekah Cemetery
+01:15:07 INFO   -> 1 veteran(s)
+01:15:07 INFO [241/769] Cemetery 14836 — Grady Co.: Pocasset Cemetery
+01:15:07 INFO   -> 1 veteran(s)
+01:15:07 INFO [242/769] Cemetery 12754 — Grady Co.: Rose Hill Cemetery
+01:15:08 INFO   -> 23 veteran(s)
+01:15:08 INFO [243/769] Cemetery 14808 — Grady Co.: Rush Springs Cemetery
+01:15:08 INFO   -> 3 veteran(s)
+01:15:08 INFO [244/769] Cemetery 12908 — Grady Co.: Verden Cemetery
+01:15:09 INFO   -> 5 veteran(s)
+01:15:09 INFO [245/769] Cemetery 14332 — Grady Co.: Woodlawn Cemetery
+01:15:09 INFO   -> 2 veteran(s)
+01:15:09 INFO [246/769] Cemetery 15526 — Grant Co.: Eddy New Home Cemetery
+01:15:10 INFO   -> 1 veteran(s)
+01:15:10 INFO [247/769] Cemetery 14881 — Grant Co.: Manchester Cemetery
+01:15:10 INFO   -> 1 veteran(s)
+01:15:10 INFO [248/769] Cemetery 14648 — Grant Co.: New Home Cemetery
+01:15:11 INFO   -> 1 veteran(s)
+01:15:11 INFO [249/769] Cemetery 14811 — Grant Co.: Rosemound Cemetery
+01:15:11 INFO   -> 1 veteran(s)
+01:15:11 INFO [250/769] Cemetery 14768 — Grant Co.: Wakita Cemetery
+01:15:12 INFO   -> 1 veteran(s)
+01:15:12 INFO [251/769] Cemetery 14505 — Greer Co.: Corinth Cemetery
+01:15:12 INFO   -> 1 veteran(s)
+01:15:12 INFO [252/769] Cemetery 14437 — Greer Co.: Granite City Cemetery (AKA: Granite Cemetery)
+01:15:12 INFO   -> 2 veteran(s)
+01:15:12 INFO [253/769] Cemetery 14826 — Greer Co.: Reed Cemetery
+01:15:13 INFO   -> 1 veteran(s)
+01:15:13 INFO [254/769] Cemetery 6152 — Greer Co.: Riverside Cemetery
+01:15:13 INFO   -> 17 veteran(s)
+01:15:13 INFO [255/769] Cemetery 14438 — Greer Co.: Rock Cemetery
+01:15:14 INFO   -> 3 veteran(s)
+01:15:14 INFO [256/769] Cemetery 12755 — Greer Co.: White Flat Cemetery
+01:15:14 INFO   -> 4 veteran(s)
+01:15:14 INFO [257/769] Cemetery 14452 — Harmon Co.: Bitter Creek Cemetery
+01:15:15 INFO   -> 3 veteran(s)
+01:15:15 INFO [258/769] Cemetery 12756 — Harmon Co.: Cave Creek Cemetery
+01:15:15 INFO   -> 4 veteran(s)
+01:15:15 INFO [259/769] Cemetery 12903 — Harmon Co.: Dryden Cemetery
+01:15:16 INFO   -> 3 veteran(s)
+01:15:16 INFO [260/769] Cemetery 12757 — Harmon Co.: Fairmount Cemetery
+01:15:16 INFO   -> 10 veteran(s)
+01:15:16 INFO [261/769] Cemetery 14595 — Harmon Co.: Gould Cemetery
+01:15:17 INFO   -> 1 veteran(s)
+01:15:17 INFO [262/769] Cemetery 14251 — Harmon Co.: Liberty Cemetery
+01:15:17 INFO   -> 3 veteran(s)
+01:15:17 INFO [263/769] Cemetery 12758 — Harmon Co.: McKnight Cemetery
+01:15:18 INFO   -> 3 veteran(s)
+01:15:18 INFO [264/769] Cemetery 14637 — Harmon Co.: OM Cemetery
+01:15:18 INFO   -> 1 veteran(s)
+01:15:18 INFO [265/769] Cemetery 17297 — Harper Co.: High Point Cemetery
+01:15:19 INFO   -> 1 veteran(s)
+01:15:19 INFO [266/769] Cemetery 14351 — Harper Co.: Pleasant Valley Cemetery (AKA: Girard Cemetey)
+01:15:19 INFO   -> 1 veteran(s)
+01:15:19 INFO [267/769] Cemetery 12759 — Haskell Co.: Brooken Cemetery
+01:15:20 INFO   -> 7 veteran(s)
+01:15:20 INFO [268/769] Cemetery 14298 — Haskell Co.: Cache Cemetery (AKA: Old Cache Cemetery)
+01:15:20 INFO   -> 2 veteran(s)
+01:15:20 INFO [269/769] Cemetery 12880 — Haskell Co.: Enterprise Cemetery
+01:15:21 INFO   -> 7 veteran(s)
+01:15:21 INFO [270/769] Cemetery 12760 — Haskell Co.: Garland Cemetery
+01:15:22 INFO   -> 6 veteran(s)
+01:15:22 INFO [271/769] Cemetery 12761 — Haskell Co.: Hoyt Cemetery
+01:15:23 INFO   -> 12 veteran(s)
+01:15:23 INFO [272/769] Cemetery 14434 — Haskell Co.: Iron Bridge Cemetery
+01:15:23 INFO   -> 1 veteran(s)
+01:15:23 INFO [273/769] Cemetery 14389 — Haskell Co.: Keota Cemetery (AKA: Garden of Memories Cemetery)
+01:15:24 INFO   -> 1 veteran(s)
+01:15:24 INFO [274/769] Cemetery 14254 — Haskell Co.: Little Sans Bois Cemetery
+01:15:24 INFO   -> 1 veteran(s)
+01:15:24 INFO [275/769] Cemetery 14195 — Haskell Co.: Mountain Home Cemetery (AKA: Beaver Mountain Cemetery)
+01:15:25 INFO   -> 2 veteran(s)
+01:15:25 INFO [276/769] Cemetery 12762 — Haskell Co.: Old Enterprise
+01:15:25 INFO   -> 7 veteran(s)
+01:15:25 INFO [277/769] Cemetery 14355 — Haskell Co.: Old Panther Cemetery
+01:15:26 INFO   -> 1 veteran(s)
+01:15:26 INFO [278/769] Cemetery 12833 — Haskell Co.: Quinton Cemetery
+01:15:26 INFO   -> 2 veteran(s)
+01:15:26 INFO [279/769] Cemetery 12763 — Haskell Co.: San Bois
+01:15:27 INFO   -> 8 veteran(s)
+01:15:27 INFO [280/769] Cemetery 12764 — Haskell Co.: Stigler Cemetery
+01:15:27 INFO   -> 8 veteran(s)
+01:15:27 INFO [281/769] Cemetery 12765 — Haskell Co.: Tamaha Cemetery
+01:15:28 INFO   -> 5 veteran(s)
+01:15:28 INFO [282/769] Cemetery 12904 — Haskell Co.: West Liberty Cemetery
+01:15:28 INFO   -> 1 veteran(s)
+01:15:28 INFO [283/769] Cemetery 12766 — Haskell Co.: Whitefield Cemetery
+01:15:29 INFO   -> 10 veteran(s)
+01:15:29 INFO [284/769] Cemetery 13041 — Hughes Co.: Atwood Cemetery
+01:15:29 INFO   -> 3 veteran(s)
+01:15:29 INFO [285/769] Cemetery 12892 — Hughes Co.: Barnett Cemetery (AKA: Old Wetumka)
+01:15:30 INFO   -> 4 veteran(s)
+01:15:30 INFO [286/769] Cemetery 12767 — Hughes Co.: Bohannon Cemetery
+01:15:30 INFO   -> 1 veteran(s)
+01:15:30 INFO [287/769] Cemetery 15060 — Hughes Co.: Carson Cemetery
+01:15:31 INFO   -> 1 veteran(s)
+01:15:31 INFO [288/769] Cemetery 14182 — Hughes Co.: Citra Cemetery
+01:15:31 INFO   -> 2 veteran(s)
+01:15:31 INFO [289/769] Cemetery 14522 — Hughes Co.: Crossroads Cemetery
+01:15:32 INFO   -> 2 veteran(s)
+01:15:32 INFO [290/769] Cemetery 14392 — Hughes Co.: Holdenville Cemetery
+01:15:32 INFO   -> 7 veteran(s)
+01:15:32 INFO [291/769] Cemetery 14726 — Hughes Co.: Lamar Cemetery
+01:15:33 INFO   -> 1 veteran(s)
+01:15:33 INFO [292/769] Cemetery 14859 — Hughes Co.: Mission Cemetery (AKA: Collins Cemetery)
+01:15:33 INFO   -> 1 veteran(s)
+01:15:33 INFO [293/769] Cemetery 14336 — Hughes Co.: Wetumka Cemetery
+01:15:34 INFO   -> 6 veteran(s)
+01:15:34 INFO [294/769] Cemetery 14743 — Hughes Co.: Yeager Cemetery (AKA: Oakhill Cemetery)
+01:15:34 INFO   -> 1 veteran(s)
+01:15:34 INFO [295/769] Cemetery 24593 — Jackson Co.: Aaron Cemetery
+01:15:35 INFO   -> 1 veteran(s)
+01:15:35 INFO [296/769] Cemetery 12768 — Jackson Co.: Altus Cemetery
+01:15:35 INFO   -> 9 veteran(s)
+01:15:35 INFO [297/769] Cemetery 15581 — Jackson Co.: Antioch Cemetery
+01:15:36 INFO   -> 3 veteran(s)
+01:15:36 INFO [298/769] Cemetery 12769 — Jackson Co.: Blair Cemetery
+01:15:36 INFO   -> 5 veteran(s)
+01:15:36 INFO [299/769] Cemetery 14455 — Jackson Co.: Boggy Cemetery
+01:15:37 INFO   -> 2 veteran(s)
+01:15:37 INFO [300/769] Cemetery 14468 — Jackson Co.: Carmel Cemetery
+01:15:37 INFO   -> 1 veteran(s)
+01:15:37 INFO [301/769] Cemetery 14529 — Jackson Co.: Durham Cemetery
+01:15:38 INFO   -> 1 veteran(s)
+01:15:38 INFO [302/769] Cemetery 12770 — Jackson Co.: Eldorado Cemetery
+01:15:38 INFO   -> 12 veteran(s)
+01:15:38 INFO [303/769] Cemetery 12859 — Jackson Co.: Elmer Cemetery
+01:15:38 INFO   -> 5 veteran(s)
+01:15:38 INFO [304/769] Cemetery 12888 — Jackson Co.: Francis Cemetery
+01:15:39 INFO   -> 3 veteran(s)
+01:15:39 INFO [305/769] Cemetery 14610 — Jackson Co.: Hess Cemetery
+01:15:39 INFO   -> 1 veteran(s)
+01:15:39 INFO [306/769] Cemetery 14396 — Jackson Co.: Martha Cemetery
+01:15:40 INFO   -> 2 veteran(s)
+01:15:40 INFO [307/769] Cemetery 14359 — Jackson Co.: Odema Cemetery
+01:15:40 INFO   -> 2 veteran(s)
+01:15:40 INFO [308/769] Cemetery 14357 — Jackson Co.: Olustee Cemetery
+01:15:41 INFO   -> 3 veteran(s)
+01:15:41 INFO [309/769] Cemetery 12830 — Jackson Co.: Prairie Hill Cemetery
+01:15:41 INFO   -> 1 veteran(s)
+01:15:41 INFO [310/769] Cemetery 12826 — Jackson Co.: Rock Cemetery
+01:15:42 INFO   -> 3 veteran(s)
+01:15:42 INFO [311/769] Cemetery 12909 — Jackson Co.: Victory Cemetery
+01:15:42 INFO   -> 2 veteran(s)
+01:15:42 INFO [312/769] Cemetery 12771 — Jefferson Co.: Addington Cemetery
+01:15:43 INFO   -> 3 veteran(s)
+01:15:43 INFO [313/769] Cemetery 14272 — Jefferson Co.: Benton Cemetery
+01:15:43 INFO   -> 1 veteran(s)
+01:15:43 INFO [314/769] Cemetery 24285 — Jefferson Co.: Cornish Cemetery
+01:15:44 INFO   -> 1 veteran(s)
+01:15:44 INFO [315/769] Cemetery 14447 — Jefferson Co.: Grady Cemetery
+01:15:44 INFO   -> 1 veteran(s)
+01:15:44 INFO [316/769] Cemetery 14410 — Jefferson Co.: Hastings Cemetery
+01:15:45 INFO   -> 2 veteran(s)
+01:15:45 INFO [317/769] Cemetery 12772 — Jefferson Co.: Ryan Cemetery
+01:15:45 INFO   -> 5 veteran(s)
+01:15:45 INFO [318/769] Cemetery 14783 — Jefferson Co.: Sugden Cemetery
+01:15:46 INFO   -> 1 veteran(s)
+01:15:46 INFO [319/769] Cemetery 12911 — Jefferson Co.: Terral Cemetery
+01:15:46 INFO   -> 4 veteran(s)
+01:15:46 INFO [320/769] Cemetery 14199 — Jefferson Co.: Waurika Cemetery
+01:15:47 INFO   -> 3 veteran(s)
+01:15:47 INFO [321/769] Cemetery 13762 — Johnston Co.: Bee Cemetery
+01:15:47 INFO   -> 1 veteran(s)
+01:15:47 INFO [322/769] Cemetery 358 — Johnston Co.: Boggy Depot Cemetery
+01:15:48 INFO   -> 1 veteran(s)
+01:15:48 INFO [323/769] Cemetery 14504 — Johnston Co.: Condon Grove Cemetery
+01:15:48 INFO   -> 2 veteran(s)
+01:15:48 INFO [324/769] Cemetery 15059 — Johnston Co.: Ego-Coleman Cemetery (AKA: Coleman Cemetery)
+01:15:49 INFO   -> 1 veteran(s)
+01:15:49 INFO [325/769] Cemetery 14532 — Johnston Co.: Emet Cemetery
+01:15:49 INFO   -> 1 veteran(s)
+01:15:49 INFO [326/769] Cemetery 15024 — Johnston Co.: Fillmore Cemetery
+01:15:50 INFO   -> 1 veteran(s)
+01:15:50 INFO [327/769] Cemetery 14503 — Johnston Co.: Harris Cemetery (AKA: Collins Cemetery)
+01:15:50 INFO   -> 2 veteran(s)
+01:15:50 INFO [328/769] Cemetery 14706 — Johnston Co.: Hearrell Cemetery
+01:15:51 INFO   -> 1 veteran(s)
+01:15:51 INFO [329/769] Cemetery 12894 — Johnston Co.: Mannsville Cemetery
+01:15:51 INFO   -> 7 veteran(s)
+01:15:51 INFO [330/769] Cemetery 14374 — Johnston Co.: Mill Creek Cemetery
+01:15:52 INFO   -> 5 veteran(s)
+01:15:52 INFO [331/769] Cemetery 14635 — Johnston Co.: Norton Cemetery
+01:15:52 INFO   -> 2 veteran(s)
+01:15:52 INFO [332/769] Cemetery 14640 — Johnston Co.: Oak Grove Cemetery
+01:15:53 INFO   -> 1 veteran(s)
+01:15:53 INFO [333/769] Cemetery 14831 — Johnston Co.: Pontotoc Cemetery
+01:15:53 INFO   -> 1 veteran(s)
+01:15:53 INFO [334/769] Cemetery 12836 — Johnston Co.: Ravia Cemetery
+01:15:54 INFO   -> 5 veteran(s)
+01:15:54 INFO [335/769] Cemetery 14201 — Johnston Co.: Rose Hill Cemetery (AKA: Wapanucka Cemetery)
+01:15:54 INFO   -> 6 veteran(s)
+01:15:54 INFO [336/769] Cemetery 14807 — Johnston Co.: Russett Cemetery
+01:15:54 INFO   -> 1 veteran(s)
+01:15:54 INFO [337/769] Cemetery 14952 — Johnston Co.: Teller Cemetery
+01:15:55 INFO   -> 2 veteran(s)
+01:15:55 INFO [338/769] Cemetery 12424 — Johnston Co.: Tishomingo City Cemetery (AKA: City Cemetery Tishamingo)
+01:15:55 INFO   -> 8 veteran(s)
+01:15:55 INFO [339/769] Cemetery 12914 — Johnston Co.: Troy Cemetery
+01:15:56 INFO   -> 4 veteran(s)
+01:15:56 INFO [340/769] Cemetery 14198 — Johnston Co.: Wells Valley Cemetery
+01:15:56 INFO   -> 2 veteran(s)
+01:15:56 INFO [341/769] Cemetery 14391 — Kay Co.: IOOF Blackwell Cemetery (AKA: Blackwell Cemetery)
+01:15:57 INFO   -> 2 veteran(s)
+01:15:57 INFO [342/769] Cemetery 14666 — Kay Co.: Mount Olive Cemetery (AKA: Nardin Cemetery)
+01:15:57 INFO   -> 1 veteran(s)
+01:15:57 INFO [343/769] Cemetery 14832 — Kay Co.: Odd Fellows Cemetery (AKA: IOOF Cemetery)
+01:15:58 INFO   -> 2 veteran(s)
+01:15:58 INFO [344/769] Cemetery 14469 — Kingfisher Co.: Cashion Cemetery
+01:15:58 INFO   -> 1 veteran(s)
+01:15:58 INFO [345/769] Cemetery 14704 — Kingfisher Co.: Hennessey Cemetery
+01:15:59 INFO   -> 1 veteran(s)
+01:15:59 INFO [346/769] Cemetery 14422 — Kingfisher Co.: Kingfisher Cemetery
+01:15:59 INFO   -> 2 veteran(s)
+01:15:59 INFO [347/769] Cemetery 14729 — Kingfisher Co.: Maple Grove Cemetery
+01:16:00 INFO   -> 1 veteran(s)
+01:16:00 INFO [348/769] Cemetery 14678 — Kingfisher Co.: Morrison Cemetery
+01:16:00 INFO   -> 1 veteran(s)
+01:16:00 INFO [349/769] Cemetery 14854 — Kingfisher Co.: Parvin Cemetery
+01:16:01 INFO   -> 1 veteran(s)
+01:16:01 INFO [350/769] Cemetery 14769 — Kingfisher Co.: Venable Cemetery
+01:16:01 INFO   -> 1 veteran(s)
+01:16:01 INFO [351/769] Cemetery 14545 — Kiowa Co.: Fairlawn Cemetery
+01:16:02 INFO   -> 1 veteran(s)
+01:16:02 INFO [352/769] Cemetery 14445 — Kiowa Co.: Gotebo Cemetery
+01:16:02 INFO   -> 2 veteran(s)
+01:16:02 INFO [353/769] Cemetery 14255 — Kiowa Co.: Hobart Rose Cemetery
+01:16:03 INFO   -> 3 veteran(s)
+01:16:03 INFO [354/769] Cemetery 14400 — Kiowa Co.: Lone Wolf Cemetery
+01:16:03 INFO   -> 3 veteran(s)
+01:16:03 INFO [355/769] Cemetery 12773 — Kiowa Co.: Mountain View Cemetery
+01:16:04 INFO   -> 6 veteran(s)
+01:16:04 INFO [356/769] Cemetery 14815 — Kiowa Co.: Roosevelt Cemetery
+01:16:04 INFO   -> 1 veteran(s)
+01:16:04 INFO [357/769] Cemetery 14474 — Latimer Co.: Center Point Cemetery
+01:16:05 INFO   -> 2 veteran(s)
+01:16:05 INFO [358/769] Cemetery 14681 — Latimer Co.: Degnan NW Cemetery
+01:16:05 INFO   -> 1 veteran(s)
+01:16:05 INFO [359/769] Cemetery 17916 — Latimer Co.: Gowen/Cambria Community Cemetery
+01:16:06 INFO   -> 1 veteran(s)
+01:16:06 INFO [360/769] Cemetery 14732 — Latimer Co.: Laura Cemetery (AKA: Laura McGee Cemetery)
+01:16:06 INFO   -> 1 veteran(s)
+01:16:06 INFO [361/769] Cemetery 14669 — Latimer Co.: Mountain Station Cemetery
+01:16:07 INFO   -> 1 veteran(s)
+01:16:07 INFO [362/769] Cemetery 14852 — Latimer Co.: Peachland Cemetery
+01:16:07 INFO   -> 1 veteran(s)
+01:16:07 INFO [363/769] Cemetery 12774 — Latimer Co.: Red Oak Cemetery
+01:16:08 INFO   -> 6 veteran(s)
+01:16:08 INFO [364/769] Cemetery 14757 — Latimer Co.: Wilburton City Cemetery
+01:16:08 INFO   -> 2 veteran(s)
+01:16:08 INFO [365/769] Cemetery 14312 — Le Flore Co.: Ellis Chapel Cemetery
+01:16:09 INFO   -> 3 veteran(s)
+01:16:09 INFO [366/769] Cemetery 15160 — Le Flore Co.: Fairview Cemetery
+01:16:09 INFO   -> 1 veteran(s)
+01:16:09 INFO [367/769] Cemetery 14323 — Le Flore Co.: Garden of Memories Cemetery (AKA: Spiro City Cemetery)
+01:16:10 INFO   -> 2 veteran(s)
+01:16:10 INFO [368/769] Cemetery 14945 — Le Flore Co.: Greenhill Cemetery
+01:16:10 INFO   -> 1 veteran(s)
+01:16:10 INFO [369/769] Cemetery 15612 — Le Flore Co.: Hall Cemetery
+01:16:10 INFO   -> 2 veteran(s)
+01:16:10 INFO [370/769] Cemetery 14618 — Le Flore Co.: Howe Cemetery
+01:16:11 INFO   -> 1 veteran(s)
+01:16:11 INFO [371/769] Cemetery 14686 — Le Flore Co.: Leard Cemetery
+01:16:11 INFO   -> 2 veteran(s)
+01:16:11 INFO [372/769] Cemetery 15159 — Le Flore Co.: Loving Cemetery
+01:16:12 INFO   -> 2 veteran(s)
+01:16:12 INFO [373/769] Cemetery 14872 — Le Flore Co.: Monroe Cemetery
+01:16:12 INFO   -> 1 veteran(s)
+01:16:12 INFO [374/769] Cemetery 14956 — Le Flore Co.: Mount Pleasant Cemetery
+01:16:13 INFO   -> 2 veteran(s)
+01:16:13 INFO [375/769] Cemetery 14645 — Le Flore Co.: New Hope Garden of Memories Cemetery
+01:16:13 INFO   -> 2 veteran(s)
+01:16:13 INFO [376/769] Cemetery 14196 — Le Flore Co.: Oakdale Cemetery (AKA: Lower Cemetery)
+01:16:14 INFO   -> 3 veteran(s)
+01:16:14 INFO [377/769] Cemetery 12775 — Le Flore Co.: Oakland Cemetery (AKA: Poteau Cemetery)
+01:16:14 INFO   -> 13 veteran(s)
+01:16:14 INFO [378/769] Cemetery 15154 — Le Flore Co.: Octavia Cemetery
+01:16:15 INFO   -> 1 veteran(s)
+01:16:15 INFO [379/769] Cemetery 14860 — Le Flore Co.: Old Bokoshe Memorial Gardens Cemetery (AKA: Bokoshe Cemetery)
+01:16:15 INFO   -> 2 veteran(s)
+01:16:15 INFO [380/769] Cemetery 12776 — Le Flore Co.: Old Talihina Cemetery
+01:16:16 INFO   -> 3 veteran(s)
+01:16:16 INFO [381/769] Cemetery 14944 — Le Flore Co.: Reichert Cemetery
+01:16:16 INFO   -> 1 veteran(s)
+01:16:16 INFO [382/769] Cemetery 20118 — Le Flore Co.: Short Mountain Cemetery
+01:16:17 INFO   -> 1 veteran(s)
+01:16:17 INFO [383/769] Cemetery 12918 — Le Flore Co.: Skullyville Cemetery (AKA: Choctaw Natl. Cemetery)
+01:16:17 INFO   -> 4 veteran(s)
+01:16:17 INFO [384/769] Cemetery 14337 — Le Flore Co.: Springhill Cemetery
+01:16:18 INFO   -> 2 veteran(s)
+01:16:18 INFO [385/769] Cemetery 14714 — Le Flore Co.: Wister City Cemetery
+01:16:18 INFO   -> 1 veteran(s)
+01:16:18 INFO [386/769] Cemetery 14839 — Lincoln Co.: Avery Memorial Cemetery
+01:16:19 INFO   -> 1 veteran(s)
+01:16:19 INFO [387/769] Cemetery 15849 — Lincoln Co.: Bethel Grove Cemetery
+01:16:19 INFO   -> 1 veteran(s)
+01:16:19 INFO [388/769] Cemetery 14567 — Lincoln Co.: Flynn Cemetery
+01:16:20 INFO   -> 1 veteran(s)
+01:16:20 INFO [389/769] Cemetery 14571 — Lincoln Co.: Gable Cemetery
+01:16:20 INFO   -> 1 veteran(s)
+01:16:20 INFO [390/769] Cemetery 14619 — Lincoln Co.: Immanuel Lutheran Cemetery
+01:16:21 INFO   -> 1 veteran(s)
+01:16:21 INFO [391/769] Cemetery 14890 — Lincoln Co.: Jamison Cemetery
+01:16:21 INFO   -> 2 veteran(s)
+01:16:21 INFO [392/769] Cemetery 14888 — Lincoln Co.: Kellerby Cemetery
+01:16:22 INFO   -> 3 veteran(s)
+01:16:22 INFO [393/769] Cemetery 14727 — Lincoln Co.: Lambdin Cemetery
+01:16:22 INFO   -> 1 veteran(s)
+01:16:22 INFO [394/769] Cemetery 14876 — Lincoln Co.: New Hope Cemetery (AKA: Meeker Cemetery)
+01:16:23 INFO   -> 1 veteran(s)
+01:16:23 INFO [395/769] Cemetery 14193 — Lincoln Co.: Oak Park Cemetery
+01:16:23 INFO   -> 2 veteran(s)
+01:16:23 INFO [396/769] Cemetery 14256 — Lincoln Co.: Rossville Cemetery
+01:16:24 INFO   -> 3 veteran(s)
+01:16:24 INFO [397/769] Cemetery 14784 — Lincoln Co.: Stroud Cemetery
+01:16:24 INFO   -> 3 veteran(s)
+01:16:24 INFO [398/769] Cemetery 14781 — Lincoln Co.: Tryon Cemetery
+01:16:25 INFO   -> 1 veteran(s)
+01:16:25 INFO [399/769] Cemetery 13053 — Logan Co.: Crescent Cemetery
+01:16:25 INFO   -> 2 veteran(s)
+01:16:25 INFO [400/769] Cemetery 14606 — Logan Co.: Harmony Cemetery
+01:16:26 INFO   -> 1 veteran(s)
+01:16:26 INFO [401/769] Cemetery 14728 — Logan Co.: Lawrie Cemetery
+01:16:26 INFO   -> 1 veteran(s)
+01:16:26 INFO [402/769] Cemetery 14629 — Logan Co.: Oak View Cemetery
+01:16:27 INFO   -> 0 veteran(s)
+01:16:27 INFO [403/769] Cemetery 14841 — Logan Co.: Pleasant Valley Cemetery
+01:16:27 INFO   -> 1 veteran(s)
+01:16:27 INFO [404/769] Cemetery 12777 — Logan Co.: Summit View Cemetery
+01:16:28 INFO   -> 8 veteran(s)
+01:16:28 INFO [405/769] Cemetery 24417 — Logan Co.: Union Hill Cemetery
+01:16:28 INFO   -> 1 veteran(s)
+01:16:28 INFO [406/769] Cemetery 15025 — Love Co.: Belleville-Bourland Cemetery
+01:16:29 INFO   -> 2 veteran(s)
+01:16:29 INFO [407/769] Cemetery 14295 — Love Co.: Burneyville Cemetery
+01:16:29 INFO   -> 2 veteran(s)
+01:16:29 INFO [408/769] Cemetery 3233 — Love Co.: Crow Cemetery
+01:16:30 INFO   -> 1 veteran(s)
+01:16:30 INFO [409/769] Cemetery 14594 — Love Co.: Gordon Cemetery
+01:16:30 INFO   -> 2 veteran(s)
+01:16:30 INFO [410/769] Cemetery 15026 — Love Co.: Greenville Cemetery
+01:16:31 INFO   -> 1 veteran(s)
+01:16:31 INFO [411/769] Cemetery 12778 — Love Co.: Lakeview Cemetery
+01:16:31 INFO   -> 10 veteran(s)
+01:16:31 INFO [412/769] Cemetery 14684 — Love Co.: Leon Cemetery
+01:16:32 INFO   -> 1 veteran(s)
+01:16:32 INFO [413/769] Cemetery 15311 — Love Co.: Mount Zion Cemetery
+01:16:32 INFO   -> 1 veteran(s)
+01:16:32 INFO [414/769] Cemetery 15027 — Love Co.: Orr Cemetery
+01:16:33 INFO   -> 1 veteran(s)
+01:16:33 INFO [415/769] Cemetery 14857 — Love Co.: Oswalt Cemetery
+01:16:33 INFO   -> 1 veteran(s)
+01:16:33 INFO [416/769] Cemetery 14809 — Love Co.: Rubottom Cemetery
+01:16:33 INFO   -> 1 veteran(s)
+01:16:33 INFO [417/769] Cemetery 13039 — Major Co.: Ames Cemetery
+01:16:34 INFO   -> 2 veteran(s)
+01:16:34 INFO [418/769] Cemetery 14724 — Major Co.: Isabella Cemetery
+01:16:34 INFO   -> 1 veteran(s)
+01:16:34 INFO [419/769] Cemetery 14682 — Major Co.: Liberty Cemetery
+01:16:35 INFO   -> 1 veteran(s)
+01:16:35 INFO [420/769] Cemetery 14814 — Major Co.: Roscoe Cemetery
+01:16:35 INFO   -> 1 veteran(s)
+01:16:35 INFO [421/769] Cemetery 14498 — Marshall Co.: Cliff Cemetery
+01:16:36 INFO   -> 1 veteran(s)
+01:16:36 INFO [422/769] Cemetery 15004 — Marshall Co.: Cumberland Cemetery
+01:16:36 INFO   -> 2 veteran(s)
+01:16:36 INFO [423/769] Cemetery 14999 — Marshall Co.: Hainline Cemetery
+01:16:37 INFO   -> 1 veteran(s)
+01:16:37 INFO [424/769] Cemetery 14421 — Marshall Co.: Kingston Cemetery
+01:16:37 INFO   -> 3 veteran(s)
+01:16:37 INFO [425/769] Cemetery 14386 — Marshall Co.: Lebanon Cemetery
+01:16:38 INFO   -> 4 veteran(s)
+01:16:38 INFO [426/769] Cemetery 13206 — Marshall Co.: Linn-Archard Cemetery (AKA: Linn Cemetery)
+01:16:38 INFO   -> 1 veteran(s)
+01:16:38 INFO [427/769] Cemetery 24389 — Marshall Co.: Madill Cemetery
+01:16:39 INFO   -> 1 veteran(s)
+01:16:39 INFO [428/769] Cemetery 14463 — Marshall Co.: Moore Burney Cemetery
+01:16:39 INFO   -> 1 veteran(s)
+01:16:39 INFO [429/769] Cemetery 14267 — Marshall Co.: Oakland Cemetery
+01:16:40 INFO   -> 2 veteran(s)
+01:16:40 INFO [430/769] Cemetery 12828 — Marshall Co.: Powell Cemetery
+01:16:40 INFO   -> 3 veteran(s)
+01:16:40 INFO [431/769] Cemetery 14816 — Marshall Co.: Rollins Cemetery
+01:16:41 INFO   -> 1 veteran(s)
+01:16:41 INFO [432/769] Cemetery 14335 — Marshall Co.: Willis Cemetery
+01:16:41 INFO   -> 3 veteran(s)
+01:16:41 INFO [433/769] Cemetery 14333 — Marshall Co.: Woodberry Forest Cemetery
+01:16:42 INFO   -> 5 veteran(s)
+01:16:42 INFO [434/769] Cemetery 13203 — Mayes Co.: Adair Cemetery
+01:16:42 INFO   -> 4 veteran(s)
+01:16:42 INFO [435/769] Cemetery 15039 — Mayes Co.: Alberty Cemetery
+01:16:43 INFO   -> 2 veteran(s)
+01:16:43 INFO [436/769] Cemetery 15038 — Mayes Co.: Anderson-Vann Cemetery (AKA: Daniel Webster Vann Family Cemetery)
+01:16:43 INFO   -> 1 veteran(s)
+01:16:43 INFO [437/769] Cemetery 14253 — Mayes Co.: Bryan-Lindsey Family Cemetery
+01:16:44 INFO   -> 3 veteran(s)
+01:16:44 INFO [438/769] Cemetery 14470 — Mayes Co.: Cavalier-Vann Cemetery
+01:16:44 INFO   -> 1 veteran(s)
+01:16:44 INFO [439/769] Cemetery 12779 — Mayes Co.: Chouteau Cemetery North
+01:16:45 INFO   -> 4 veteran(s)
+01:16:45 INFO [440/769] Cemetery 12780 — Mayes Co.: Fairview Cemetery
+01:16:45 INFO   -> 30 veteran(s)
+01:16:45 INFO [441/769] Cemetery 14659 — Mayes Co.: Haner Cemetery
+01:16:46 INFO   -> 1 veteran(s)
+01:16:46 INFO [442/769] Cemetery 15037 — Mayes Co.: Lone Chapel Cemetery
+01:16:46 INFO   -> 1 veteran(s)
+01:16:46 INFO [443/769] Cemetery 14842 — Mayes Co.: Pleasant Hope Baptist Church Cemetery
+01:16:47 INFO   -> 1 veteran(s)
+01:16:47 INFO [444/769] Cemetery 12405 — Mayes Co.: Rose Cemetery
+01:16:47 INFO   -> 1 veteran(s)
+01:16:47 INFO [445/769] Cemetery 21470 — Mayes Co.: Ross Mayes Cemetery
+01:16:48 INFO   -> 2 veteran(s)
+01:16:48 INFO [446/769] Cemetery 14795 — Mayes Co.: Spavinaw-Strang Cemetery
+01:16:49 INFO   -> 1 veteran(s)
+01:16:49 INFO [447/769] Cemetery 15067 — Mayes Co.: West Adair Cemetery (AKA: Old Adair Cemetery)
+01:16:49 INFO   -> 1 veteran(s)
+01:16:49 INFO [448/769] Cemetery 12879 — McClain Co.: Blanchard Cemetery
+01:16:50 INFO   -> 3 veteran(s)
+01:16:50 INFO [449/769] Cemetery 14297 — McClain Co.: Byers Cemetery
+01:16:50 INFO   -> 3 veteran(s)
+01:16:50 INFO [450/769] Cemetery 14174 — McClain Co.: Dibble Cemetery
+01:16:51 INFO   -> 4 veteran(s)
+01:16:51 INFO [451/769] Cemetery 20989 — McClain Co.: Green Hill Cemetery
+01:16:51 INFO   -> 3 veteran(s)
+01:16:51 INFO [452/769] Cemetery 12781 — McClain Co.: Hillside Cemetery
+01:16:52 INFO   -> 6 veteran(s)
+01:16:52 INFO [453/769] Cemetery 12851 — McClain Co.: Hopping Cemetery
+01:16:52 INFO   -> 4 veteran(s)
+01:16:52 INFO [454/769] Cemetery 14813 — McClain Co.: Rosedale Cemetery
+01:16:53 INFO   -> 1 veteran(s)
+01:16:53 INFO [455/769] Cemetery 14661 — McClain Co.: Washington Cemetery
+01:16:53 INFO   -> 2 veteran(s)
+01:16:53 INFO [456/769] Cemetery 13757 — McCurtain Co.: Battiest Cemetery
+01:16:54 INFO   -> 1 veteran(s)
+01:16:54 INFO [457/769] Cemetery 14280 — McCurtain Co.: Broken Bow Cemetery
+01:16:54 INFO   -> 1 veteran(s)
+01:16:54 INFO [458/769] Cemetery 14510 — McCurtain Co.: Crown Hill Cemetery
+01:16:55 INFO   -> 1 veteran(s)
+01:16:55 INFO [459/769] Cemetery 12782 — McCurtain Co.: Denison Cemetery
+01:16:55 INFO   -> 12 veteran(s)
+01:16:55 INFO [460/769] Cemetery 15162 — McCurtain Co.: Forest Hill Cemetery
+01:16:55 INFO   -> 1 veteran(s)
+01:16:55 INFO [461/769] Cemetery 15155 — McCurtain Co.: Haworth Cemetery
+01:16:56 INFO   -> 1 veteran(s)
+01:16:56 INFO [462/769] Cemetery 12852 — McCurtain Co.: Holly Creek Cemetery
+01:16:57 INFO   -> 3 veteran(s)
+01:16:57 INFO [463/769] Cemetery 14827 — McCurtain Co.: Redland Cemetery
+01:16:57 INFO   -> 1 veteran(s)
+01:16:57 INFO [464/769] Cemetery 14771 — McCurtain Co.: Valliant Cemetery
+01:16:57 INFO   -> 3 veteran(s)
+01:16:57 INFO [465/769] Cemetery 14721 — McCurtain Co.: Waterhole Cemetery
+01:16:58 INFO   -> 1 veteran(s)
+01:16:58 INFO [466/769] Cemetery 14275 — McIntosh Co.: Bertholf Cemetery
+01:16:58 INFO   -> 1 veteran(s)
+01:16:58 INFO [467/769] Cemetery 13701 — McIntosh Co.: Bower Cemetery
+01:16:59 INFO   -> 1 veteran(s)
+01:16:59 INFO [468/769] Cemetery 14550 — McIntosh Co.: Fame Cemetery
+01:16:59 INFO   -> 1 veteran(s)
+01:16:59 INFO [469/769] Cemetery 14556 — McIntosh Co.: Fishertown Cemetery
+01:17:00 INFO   -> 1 veteran(s)
+01:17:00 INFO [470/769] Cemetery 12854 — McIntosh Co.: Greenlawn Cemetery
+01:17:00 INFO   -> 5 veteran(s)
+01:17:00 INFO [471/769] Cemetery 12853 — McIntosh Co.: Greenwood Cemetery
+01:17:01 INFO   -> 4 veteran(s)
+01:17:01 INFO [472/769] Cemetery 14448 — McIntosh Co.: Hanna Cemetery
+01:17:01 INFO   -> 2 veteran(s)
+01:17:01 INFO [473/769] Cemetery 12783 — McIntosh Co.: Honey Springs Battlefield Cemetery
+01:17:02 INFO   -> 39 veteran(s)
+01:17:02 INFO [474/769] Cemetery 14717 — McIntosh Co.: Lawson Williams Cemetery
+01:17:03 INFO   -> 1 veteran(s)
+01:17:03 INFO [475/769] Cemetery 15061 — McIntosh Co.: Mellette Cemetery
+01:17:03 INFO   -> 1 veteran(s)
+01:17:03 INFO [476/769] Cemetery 14376 — McIntosh Co.: Mount Nebo Cemetery
+01:17:04 INFO   -> 2 veteran(s)
+01:17:04 INFO [477/769] Cemetery 14828 — McIntosh Co.: Red Hill Cemetery
+01:17:05 INFO   -> 1 veteran(s)
+01:17:05 INFO [478/769] Cemetery 14802 — Mcintosh Co.: Shady Grove Cemetery
+01:17:06 INFO   -> 1 veteran(s)
+01:17:06 INFO [479/769] Cemetery 12710 — McIntosh Co.: Twin Grove Cemetery (AKA: Central High Cemetery)
+01:17:06 INFO   -> 1 veteran(s)
+01:17:06 INFO [480/769] Cemetery 14293 — Murray Co.: Buckhorn Cemetery
+01:17:07 INFO   -> 2 veteran(s)
+01:17:07 INFO [481/769] Cemetery 14512 — Murray Co.: Dougherty Cemetery
+01:17:07 INFO   -> 3 veteran(s)
+01:17:07 INFO [482/769] Cemetery 12901 — Murray Co.: Drake-Nebo Cemetery (AKA: Drake)
+01:17:08 INFO   -> 4 veteran(s)
+01:17:08 INFO [483/769] Cemetery 14413 — Murray Co.: Green Hill Cemetery
+01:17:08 INFO   -> 10 veteran(s)
+01:17:08 INFO [484/769] Cemetery 14611 — Murray Co.: Hickory Cemetery
+01:17:09 INFO   -> 1 veteran(s)
+01:17:09 INFO [485/769] Cemetery 12850 — Murray Co.: Iona Cemetery
+01:17:10 INFO   -> 5 veteran(s)
+01:17:10 INFO [486/769] Cemetery 12784 — Murray Co.: Oaklawn Cemetery
+01:17:11 INFO   -> 9 veteran(s)
+01:17:11 INFO [487/769] Cemetery 14356 — Murray Co.: Palmer Cemetery
+01:17:11 INFO   -> 2 veteran(s)
+01:17:11 INFO [488/769] Cemetery 17675 — Murray Co.: Scullin Cemetery
+01:17:12 INFO   -> 1 veteran(s)
+01:17:12 INFO [489/769] Cemetery 17267 — Muskogee Co.: Bennett Cemetery
+01:17:12 INFO   -> 1 veteran(s)
+01:17:12 INFO [490/769] Cemetery 9226 — Muskogee Co.: Briartown Cemetery
+01:17:13 INFO   -> 1 veteran(s)
+01:17:13 INFO [491/769] Cemetery 24574 — Muskogee Co.: Brushy Mountain Cemetery
+01:17:13 INFO   -> 1 veteran(s)
+01:17:13 INFO [492/769] Cemetery 14309 — Muskogee Co.: Cherokee National Cemetery (AKA: Citizens Cemetery)
+01:17:14 INFO   -> 1 veteran(s)
+01:17:14 INFO [493/769] Cemetery 14508 — Muskogee Co.: Cramp Cemetery
+01:17:14 INFO   -> 1 veteran(s)
+01:17:14 INFO [494/769] Cemetery 14555 — Muskogee Co.: Fields Cemetery
+01:17:15 INFO   -> 1 veteran(s)
+01:17:15 INFO [495/769] Cemetery 25164 — Muskogee Co.: Grayson Cemetery
+01:17:15 INFO   -> 1 veteran(s)
+01:17:15 INFO [496/769] Cemetery 12785 — Muskogee Co.: Greenhill Cemetery
+01:17:16 INFO   -> 33 veteran(s)
+01:17:16 INFO [497/769] Cemetery 14411 — Muskogee Co.: Hanks Family Cemetery
+01:17:17 INFO   -> 3 veteran(s)
+01:17:17 INFO [498/769] Cemetery 14604 — Muskogee Co.: Harmon Family Cemetery
+01:17:17 INFO   -> 1 veteran(s)
+01:17:17 INFO [499/769] Cemetery 14607 — Muskogee Co.: Haskell Cemetery
+01:17:18 INFO   -> 1 veteran(s)
+01:17:18 INFO [500/769] Cemetery 14731 — Muskogee Co.: McFarland Family Cemetery
+01:17:18 INFO   -> 1 veteran(s)
+01:17:18 INFO [501/769] Cemetery 14873 — Muskogee Co.: Middleton Chapel Cemetery
+01:17:19 INFO   -> 1 veteran(s)
+01:17:19 INFO [502/769] Cemetery 14804 — Muskogee Co.: Sam Cemetery
+01:17:19 INFO   -> 1 veteran(s)
+01:17:19 INFO [503/769] Cemetery 13750 — Muskogee Co.: South Bethel Cemetery
+01:17:20 INFO   -> 1 veteran(s)
+01:17:20 INFO [504/769] Cemetery 18015 — Muskogee Co.: South Bethel Cemetery
+01:17:20 INFO   -> 1 veteran(s)
+01:17:20 INFO [505/769] Cemetery 14446 — Noble Co.: Grace Hill Cemetery
+01:17:21 INFO   -> 2 veteran(s)
+01:17:21 INFO [506/769] Cemetery 14685 — Noble Co.: Lela Cemetery
+01:17:21 INFO   -> 1 veteran(s)
+01:17:21 INFO [507/769] Cemetery 14677 — Noble Co.: Morrison Cemetery
+01:17:22 INFO   -> 1 veteran(s)
+01:17:22 INFO [508/769] Cemetery 13749 — Nowata Co.: Martin Cemetery
+01:17:22 INFO   -> 2 veteran(s)
+01:17:22 INFO [509/769] Cemetery 14636 — Nowata Co.: Nowata Memorial Cemetery
+01:17:23 INFO   -> 1 veteran(s)
+01:17:23 INFO [510/769] Cemetery 14406 — Okfuskee Co.: Highland Cemetery
+01:17:23 INFO   -> 3 veteran(s)
+01:17:23 INFO [511/769] Cemetery 14407 — Okfuskee Co.: Hillcrest Cemetery
+01:17:24 INFO   -> 6 veteran(s)
+01:17:24 INFO [512/769] Cemetery 14252 — Okfuskee Co.: Likowski Community Cemetery
+01:17:24 INFO   -> 2 veteran(s)
+01:17:24 INFO [513/769] Cemetery 14874 — Okfuskee Co.: Micawber Cemetery
+01:17:25 INFO   -> 1 veteran(s)
+01:17:25 INFO [514/769] Cemetery 14676 — Okfuskee Co.: Morse Cemetery
+01:17:25 INFO   -> 2 veteran(s)
+01:17:25 INFO [515/769] Cemetery 14630 — Okfuskee Co.: Oakdale Cemetery (AKA: Paden Cemetery)
+01:17:25 INFO   -> 1 veteran(s)
+01:17:25 INFO [516/769] Cemetery 14718 — Okfuskee Co.: Welty Cemetery
+01:17:26 INFO   -> 1 veteran(s)
+01:17:26 INFO [517/769] Cemetery 5551 — Oklahoma Co.: Bethany Cemetery
+01:17:26 INFO   -> 1 veteran(s)
+01:17:26 INFO [518/769] Cemetery 15158 — Oklahoma Co.: Britton Cemetery
+01:17:27 INFO   -> 1 veteran(s)
+01:17:27 INFO [519/769] Cemetery 14493 — Oklahoma Co.: Chitwood Cemetery
+01:17:27 INFO   -> 1 veteran(s)
+01:17:27 INFO [520/769] Cemetery 19451 — Oklahoma Co.: Elmwood Cemetery
+01:17:28 INFO   -> 1 veteran(s)
+01:17:28 INFO [521/769] Cemetery 12823 — Oklahoma Co.: Fairlawn Cemetery
+01:17:28 INFO   -> 25 veteran(s)
+01:17:28 INFO [522/769] Cemetery 14596 — Oklahoma Co.: Gracelawn Cemetery
+01:17:29 INFO   -> 4 veteran(s)
+01:17:29 INFO [523/769] Cemetery 20877 — Oklahoma Co.: Kolb Cemetery (AKA: Kolb Family Cemetery)
+01:17:29 INFO   -> 1 veteran(s)
+01:17:29 INFO [524/769] Cemetery 15157 — Oklahoma Co.: Memory Lane Cemetery (AKA: Harrah Cemetery)
+01:17:30 INFO   -> 1 veteran(s)
+01:17:30 INFO [525/769] Cemetery 12920 — Oklahoma Co.: Pleasant Valley Cemetery
+01:17:30 INFO   -> 3 veteran(s)
+01:17:30 INFO [526/769] Cemetery 12919 — Oklahoma Co.: Rose Hill Burial Park Cemetery
+01:17:31 INFO   -> 4 veteran(s)
+01:17:31 INFO [527/769] Cemetery 14266 — Oklahoma Co.: Sunny Lane Cemetery
+01:17:31 INFO   -> 4 veteran(s)
+01:17:31 INFO [528/769] Cemetery 14616 — Oklahoma Co.: Whisler Cemetery
+01:17:32 INFO   -> 1 veteran(s)
+01:17:32 INFO [529/769] Cemetery 14269 — Okmulgee Co.: Beggs Cemetery
+01:17:32 INFO   -> 2 veteran(s)
+01:17:32 INFO [530/769] Cemetery 14485 — Okmulgee Co.: Checote Cemetery
+01:17:33 INFO   -> 1 veteran(s)
+01:17:33 INFO [531/769] Cemetery 14703 — Okmulgee Co.: Henry Family Cemetery
+01:17:33 INFO   -> 1 veteran(s)
+01:17:33 INFO [532/769] Cemetery 14700 — Okmulgee Co.: Hoffman Cemetery
+01:17:34 INFO   -> 1 veteran(s)
+01:17:34 INFO [533/769] Cemetery 14377 — Okmulgee Co.: Morris Cemetery
+01:17:34 INFO   -> 3 veteran(s)
+01:17:34 INFO [534/769] Cemetery 12924 — Okmulgee Co.: Okmulgee Cemetery
+01:17:35 INFO   -> 2 veteran(s)
+01:17:35 INFO [535/769] Cemetery 14858 — Okmulgee Co.: Old Okmulgee Cemetery
+01:17:35 INFO   -> 1 veteran(s)
+01:17:35 INFO [536/769] Cemetery 14805 — Okmulgee Co.: Salem Cemetery
+01:17:36 INFO   -> 1 veteran(s)
+01:17:36 INFO [537/769] Cemetery 14756 — Okmulgee Co.: Salt Creek Cemetery
+01:17:36 INFO   -> 2 veteran(s)
+01:17:36 INFO [538/769] Cemetery 14799 — Okmulgee Co.: Sonora Cemetery (AKA: New Sonora Cemetery)
+01:17:37 INFO   -> 1 veteran(s)
+01:17:37 INFO [539/769] Cemetery 12786 — Okmulgee Co.: West Lawn Cemetery
+01:17:37 INFO   -> 8 veteran(s)
+01:17:37 INFO [540/769] Cemetery 14687 — Osage Co.: A J Powell Memorial Cemetery (AKA: Hominy Cemetery)
+01:17:38 INFO   -> 3 veteran(s)
+01:17:38 INFO [541/769] Cemetery 13756 — Osage Co.: Ethel Reece Cemetery
+01:17:38 INFO   -> 2 veteran(s)
+01:17:38 INFO [542/769] Cemetery 15530 — Osage Co.: Fairfax Cemetery
+01:17:39 INFO   -> 1 veteran(s)
+01:17:39 INFO [543/769] Cemetery 15527 — Osage Co.: Osage Cemetery
+01:17:39 INFO   -> 1 veteran(s)
+01:17:39 INFO [544/769] Cemetery 12791 — Osage Co.: Pawhuska City Cemetery
+01:17:40 INFO   -> 4 veteran(s)
+01:17:40 INFO [545/769] Cemetery 14506 — Ottawa Co.: Council House Cemetery
+01:17:40 INFO   -> 1 veteran(s)
+01:17:40 INFO [546/769] Cemetery 14320 — Ottawa Co.: Fairland Cemetery (AKA: Fairfield Lutheran Cemetery)
+01:17:41 INFO   -> 2 veteran(s)
+01:17:41 INFO [547/769] Cemetery 15595 — Ottawa Co.: Grand Army of the Republic Cemetery
+01:17:41 INFO   -> 1 veteran(s)
+01:17:41 INFO [548/769] Cemetery 12792 — Ottawa Co.: Mount Hope Cemetery
+01:17:41 INFO   -> 7 veteran(s)
+01:17:41 INFO [549/769] Cemetery 14712 — Ottawa Co.: Wyandotte Indian Cemetery
+01:17:42 INFO   -> 1 veteran(s)
+01:17:42 INFO [550/769] Cemetery 13759 — Pawnee Co.: Bear Creek Cemetery (AKA: Dixie Cemetery)
+01:17:42 INFO   -> 1 veteran(s)
+01:17:42 INFO [551/769] Cemetery 14393 — Pawnee Co.: Highland Cemetery
+01:17:43 INFO   -> 4 veteran(s)
+01:17:43 INFO [552/769] Cemetery 24099 — Pawnee Co.: Skedee Cemetery
+01:17:43 INFO   -> 1 veteran(s)
+01:17:43 INFO [553/769] Cemetery 14262 — Pawnee Co.: Union Cemetery
+01:17:44 INFO   -> 3 veteran(s)
+01:17:44 INFO [554/769] Cemetery 14183 — Pawnee Co.: Woodland Cemetery (AKA: Cleveland Cemetery)
+01:17:44 INFO   -> 3 veteran(s)
+01:17:44 INFO [555/769] Cemetery 14968 — Payne Co.: Bend Cemetery
+01:17:45 INFO   -> 1 veteran(s)
+01:17:45 INFO [556/769] Cemetery 14450 — Payne Co.: Bethel Cemetery
+01:17:45 INFO   -> 1 veteran(s)
+01:17:45 INFO [557/769] Cemetery 14497 — Payne Co.: Church of the Brethren Cemetery
+01:17:46 INFO   -> 1 veteran(s)
+01:17:46 INFO [558/769] Cemetery 12887 — Payne Co.: Fairlawn Cemetery
+01:17:46 INFO   -> 3 veteran(s)
+01:17:46 INFO [559/769] Cemetery 12793 — Payne Co.: Fairlawn Cemetery
+01:17:47 INFO   -> 6 veteran(s)
+01:17:47 INFO [560/769] Cemetery 14418 — Payne Co.: Lawson Cemetery (AKA: Quay Cemetery)
+01:17:47 INFO   -> 1 veteran(s)
+01:17:47 INFO [561/769] Cemetery 14194 — Payne Co.: Mt. Hope Cemetery
+01:17:48 INFO   -> 2 veteran(s)
+01:17:48 INFO [562/769] Cemetery 14996 — Payne Co.: New Zion Cemetery
+01:17:48 INFO   -> 1 veteran(s)
+01:17:48 INFO [563/769] Cemetery 15102 — Payne Co.: Paradise Cemetery
+01:17:49 INFO   -> 1 veteran(s)
+01:17:49 INFO [564/769] Cemetery 14354 — Payne Co.: Perkins Cemetery
+01:17:49 INFO   -> 1 veteran(s)
+01:17:49 INFO [565/769] Cemetery 14824 — Payne Co.: Ripley Oak Park Cemetery (AKA: Ripley Cemetery)
+01:17:50 INFO   -> 1 veteran(s)
+01:17:50 INFO [566/769] Cemetery 14263 — Payne Co.: Union Cemetery (AKA: Driggs Cemetery)
+01:17:50 INFO   -> 1 veteran(s)
+01:17:50 INFO [567/769] Cemetery 23603 — Pittsburg Co.: Ashland Cemetery
+01:17:51 INFO   -> 1 veteran(s)
+01:17:51 INFO [568/769] Cemetery 14494 — Pittsburg Co.: Choate Praire Cemetery
+01:17:51 INFO   -> 2 veteran(s)
+01:17:51 INFO [569/769] Cemetery 22254 — Pittsburg Co.: Christian Hill Cemetery
+01:17:52 INFO   -> 1 veteran(s)
+01:17:52 INFO [570/769] Cemetery 12882 — Pittsburg Co.: Elmwood Cemetery
+01:17:52 INFO   -> 5 veteran(s)
+01:17:52 INFO [571/769] Cemetery 14554 — Pittsburg Co.: Featherston Cemetery
+01:17:53 INFO   -> 1 veteran(s)
+01:17:53 INFO [572/769] Cemetery 14602 — Pittsburg Co.: Haile Cemetery
+01:17:53 INFO   -> 1 veteran(s)
+01:17:53 INFO [573/769] Cemetery 14435 — Pittsburg Co.: Hugh Low Cemetery
+01:17:54 INFO   -> 1 veteran(s)
+01:17:54 INFO [574/769] Cemetery 13726 — Pittsburg Co.: Indianola Cemetery
+01:17:54 INFO   -> 3 veteran(s)
+01:17:54 INFO [575/769] Cemetery 6252 — Pittsburg Co.: Kiowa City Cemetery (AKA: Oak Hill)
+01:17:55 INFO   -> 8 veteran(s)
+01:17:55 INFO [576/769] Cemetery 14878 — Pittsburg Co.: Massey Cemetery
+01:17:55 INFO   -> 1 veteran(s)
+01:17:55 INFO [577/769] Cemetery 14954 — Pittsburg Co.: Nail-Cheadle Cemetery
+01:17:55 INFO   -> 1 veteran(s)
+01:17:55 INFO [578/769] Cemetery 12794 — Pittsburg Co.: North McAlester Cemetery (AKA: North Town Cemetery)
+01:17:56 INFO   -> 10 veteran(s)
+01:17:56 INFO [579/769] Cemetery 12795 — Pittsburg Co.: Oak Hill Memorial Park Cemetery
+01:17:57 INFO   -> 35 veteran(s)
+01:17:57 INFO [580/769] Cemetery 14840 — Pittsburg Co.: Pleasant Valley Cemetery
+01:17:57 INFO   -> 1 veteran(s)
+01:17:57 INFO [581/769] Cemetery 14829 — Pittsburg Co.: Red Oak Cemetery
+01:17:58 INFO   -> 1 veteran(s)
+01:17:58 INFO [582/769] Cemetery 14782 — Pittsburg Co.: Sulphur Cemetery
+01:17:58 INFO   -> 1 veteran(s)
+01:17:58 INFO [583/769] Cemetery 14419 — Pittsburg Co.: Tannehill Cemetery
+01:17:59 INFO   -> 1 veteran(s)
+01:17:59 INFO [584/769] Cemetery 14574 — Pittsburg Co.: Tipton Ridge Cemetery (AKA: Gibson Family Cemetery)
+01:17:59 INFO   -> 1 veteran(s)
+01:17:59 INFO [585/769] Cemetery 12796 — Pittsburg Co.: White Chimney Cemetery
+01:18:00 INFO   -> 4 veteran(s)
+01:18:00 INFO [586/769] Cemetery 12797 — Pontotoc Co.: Allen Cemetery
+01:18:00 INFO   -> 13 veteran(s)
+01:18:00 INFO [587/769] Cemetery 15860 — Pontotoc Co.: Box X Cemetery
+01:18:01 INFO   -> 1 veteran(s)
+01:18:01 INFO [588/769] Cemetery 14302 — Pontotoc Co.: Center Cemetery
+01:18:01 INFO   -> 2 veteran(s)
+01:18:01 INFO [589/769] Cemetery 14843 — Pontotoc Co.: Colbert Family Cemetery
+01:18:02 INFO   -> 1 veteran(s)
+01:18:02 INFO [590/769] Cemetery 14511 — Pontotoc Co.: Dolberg Cemetery
+01:18:02 INFO   -> 1 veteran(s)
+01:18:02 INFO [591/769] Cemetery 12798 — Pontotoc Co.: East Hill Cemetery
+01:18:03 INFO   -> 15 veteran(s)
+01:18:03 INFO [592/769] Cemetery 12799 — Pontotoc Co.: Egypt Cemetery
+01:18:03 INFO   -> 6 veteran(s)
+01:18:03 INFO [593/769] Cemetery 14565 — Pontotoc Co.: Five Mile Cemetery
+01:18:04 INFO   -> 1 veteran(s)
+01:18:04 INFO [594/769] Cemetery 12800 — Pontotoc Co.: Francis Cedar Grove Cemetery
+01:18:04 INFO   -> 7 veteran(s)
+01:18:04 INFO [595/769] Cemetery 12855 — Pontotoc Co.: Frisco Cemetery
+01:18:05 INFO   -> 7 veteran(s)
+01:18:05 INFO [596/769] Cemetery 24794 — Pontotoc Co.: Hart Cemetery
+01:18:05 INFO   -> 1 veteran(s)
+01:18:05 INFO [597/769] Cemetery 14702 — Pontotoc Co.: High Hill Cemetery
+01:18:06 INFO   -> 1 veteran(s)
+01:18:06 INFO [598/769] Cemetery 14612 — Pontotoc Co.: Highland Cemetery
+01:18:06 INFO   -> 1 veteran(s)
+01:18:06 INFO [599/769] Cemetery 14390 — Pontotoc Co.: Jesse Cemetery
+01:18:07 INFO   -> 4 veteran(s)
+01:18:07 INFO [600/769] Cemetery 12849 — Pontotoc Co.: Lightning Ridge Cemetery
+01:18:07 INFO   -> 4 veteran(s)
+01:18:07 INFO [601/769] Cemetery 14680 — Pontotoc Co.: Lula Cemetery
+01:18:08 INFO   -> 2 veteran(s)
+01:18:08 INFO [602/769] Cemetery 14739 — Pontotoc Co.: Memorial Park Cemetery
+01:18:08 INFO   -> 1 veteran(s)
+01:18:08 INFO [603/769] Cemetery 12801 — Pontotoc Co.: Midland Cemetery (AKA: Vanoss Cemetery)
+01:18:09 INFO   -> 5 veteran(s)
+01:18:09 INFO [604/769] Cemetery 14658 — Pontotoc Co.: New Bethel Cemetery
+01:18:09 INFO   -> 1 veteran(s)
+01:18:09 INFO [605/769] Cemetery 12896 — Pontotoc Co.: Oakman Cemetery
+01:18:10 INFO   -> 4 veteran(s)
+01:18:10 INFO [606/769] Cemetery 12926 — Pontotoc Co.: Old Ada Cemetery (AKA: North Hickory Cemetery)
+01:18:10 INFO   -> 2 veteran(s)
+01:18:10 INFO [607/769] Cemetery 12802 — Pontotoc Co.: Rosedale Cemetery
+01:18:12 INFO   -> 63 veteran(s)
+01:18:12 INFO [608/769] Cemetery 14787 — Pontotoc Co.: Stonewall Cemetery
+01:18:12 INFO   -> 1 veteran(s)
+01:18:12 INFO [609/769] Cemetery 14264 — Pontotoc Co.: Tyrola Cemetery
+01:18:13 INFO   -> 2 veteran(s)
+01:18:13 INFO [610/769] Cemetery 13208 — Pottawatomie Co.: Avoca Cemetery
+01:18:13 INFO   -> 1 veteran(s)
+01:18:13 INFO [611/769] Cemetery 14453 — Pottawatomie Co.: Blackburn Chapel Cemetery
+01:18:13 INFO   -> 1 veteran(s)
+01:18:13 INFO [612/769] Cemetery 14461 — Pottawatomie Co.: Brown Cemetery
+01:18:14 INFO   -> 1 veteran(s)
+01:18:14 INFO [613/769] Cemetery 14475 — Pottawatomie Co.: Centerville Cemetery
+01:18:14 INFO   -> 1 veteran(s)
+01:18:14 INFO [614/769] Cemetery 13052 — Pottawatomie Co.: Collins Cemetery
+01:18:15 INFO   -> 3 veteran(s)
+01:18:15 INFO [615/769] Cemetery 12803 — Pottawatomie Co.: Cummings Cemetery
+01:18:15 INFO   -> 6 veteran(s)
+01:18:15 INFO [616/769] Cemetery 14521 — Pottawatomie Co.: Dale Cemetery
+01:18:16 INFO   -> 1 veteran(s)
+01:18:16 INFO [617/769] Cemetery 12804 — Pottawatomie Co.: Fairview Cemetery
+01:18:17 INFO   -> 33 veteran(s)
+01:18:17 INFO [618/769] Cemetery 14321 — Pottawatomie Co.: Fairview Cemetery
+01:18:17 INFO   -> 4 veteran(s)
+01:18:17 INFO [619/769] Cemetery 14593 — Pottawatomie Co.: Giles Cemetery
+01:18:18 INFO   -> 1 veteran(s)
+01:18:18 INFO [620/769] Cemetery 18528 — Pottawatomie Co.: Hopewell Cemetery
+01:18:18 INFO   -> 1 veteran(s)
+01:18:18 INFO [621/769] Cemetery 14882 — Pottawatomie Co.: Lyons Cemetery
+01:18:19 INFO   -> 1 veteran(s)
+01:18:19 INFO [622/769] Cemetery 14730 — Pottawatomie Co.: Mars Hill Cemetery
+01:18:19 INFO   -> 1 veteran(s)
+01:18:19 INFO [623/769] Cemetery 14877 — Pottawatomie Co.: McLoud Cemetery (AKA: McLoud Riverside Cemetery)
+01:18:20 INFO   -> 1 veteran(s)
+01:18:20 INFO [624/769] Cemetery 14741 — Pottawatomie Co.: Moral Cemetery (AKA: Old Moral Cemetery)
+01:18:20 INFO   -> 2 veteran(s)
+01:18:20 INFO [625/769] Cemetery 12805 — Pottawatomie Co.: New Hope Cemetery
+01:18:21 INFO   -> 4 veteran(s)
+01:18:21 INFO [626/769] Cemetery 14639 — Pottawatomie Co.: Oak Grove Cemetery
+01:18:21 INFO   -> 1 veteran(s)
+01:18:21 INFO [627/769] Cemetery 14349 — Pottawatomie Co.: Pleasant Valley Cemetery
+01:18:22 INFO   -> 2 veteran(s)
+01:18:22 INFO [628/769] Cemetery 12831 — Pottawatomie Co.: Prairie View Cemetery
+01:18:23 INFO   -> 2 veteran(s)
+01:18:23 INFO [629/769] Cemetery 12832 — Pottawatomie Co.: Prospect Cemetery
+01:18:24 INFO   -> 1 veteran(s)
+01:18:24 INFO [630/769] Cemetery 14350 — Pottawatomie Co.: Resthaven Memorial Park Cemetery (AKA: Resthaven Cemetery)
+01:18:24 INFO   -> 3 veteran(s)
+01:18:24 INFO [631/769] Cemetery 14202 — Pottawatomie Co.: Romulus Cemetery
+01:18:25 INFO   -> 2 veteran(s)
+01:18:25 INFO [632/769] Cemetery 14806 — Pottawatomie Co.: Sacred Heart Cemetery
+01:18:25 INFO   -> 1 veteran(s)
+01:18:25 INFO [633/769] Cemetery 12806 — Pottawatomie Co.: Tecumseh Cemetery (AKA: Mission Hill Cem)
+01:18:26 INFO   -> 9 veteran(s)
+01:18:26 INFO [634/769] Cemetery 12910 — Pottawatomie Co.: Violet Springs Cemetery
+01:18:26 INFO   -> 3 veteran(s)
+01:18:26 INFO [635/769] Cemetery 12807 — Pottawatomie Co.: Wanette Cemetery
+01:18:27 INFO   -> 10 veteran(s)
+01:18:27 INFO [636/769] Cemetery 12808 — Pushmataha Co.: Antlers City Cemetery
+01:18:27 INFO   -> 13 veteran(s)
+01:18:27 INFO [637/769] Cemetery 14524 — Pushmataha Co.: Corinne Cemetery
+01:18:28 INFO   -> 1 veteran(s)
+01:18:28 INFO [638/769] Cemetery 14179 — Pushmataha Co.: Darwin Cemetery
+01:18:28 INFO   -> 4 veteran(s)
+01:18:28 INFO [639/769] Cemetery 25073 — Pushmataha Co.: Finley Cemetery
+01:18:29 INFO   -> 1 veteran(s)
+01:18:29 INFO [640/769] Cemetery 14388 — Pushmataha Co.: Kiamichi Pioneer Cemetery
+01:18:29 INFO   -> 2 veteran(s)
+01:18:29 INFO [641/769] Cemetery 14725 — Pushmataha Co.: Kosoma Cemetery
+01:18:31 INFO   -> 1 veteran(s)
+01:18:31 INFO [642/769] Cemetery 14378 — Pushmataha Co.: Locke Cemetery (AKA: Locke Family Cemetery)
+01:18:31 INFO   -> 2 veteran(s)
+01:18:31 INFO [643/769] Cemetery 14644 — Pushmataha Co.: Nolia Cemetery
+01:18:32 INFO   -> 1 veteran(s)
+01:18:32 INFO [644/769] Cemetery 12835 — Pushmataha Co.: Rattan Cemetery
+01:18:32 INFO   -> 1 veteran(s)
+01:18:32 INFO [645/769] Cemetery 14496 — Pushmataha Co.: Tuskahoma Cemetery
+01:18:33 INFO   -> 1 veteran(s)
+01:18:33 INFO [646/769] Cemetery 14274 — Roger Mills Co.: Berlin Cemetery
+01:18:33 INFO   -> 2 veteran(s)
+01:18:33 INFO [647/769] Cemetery 14472 — Roger Mills Co.: Center Chapel Cemetery
+01:18:34 INFO   -> 1 veteran(s)
+01:18:34 INFO [648/769] Cemetery 13051 — Roger Mills Co.: Cheyenne Cemetery
+01:18:35 INFO   -> 4 veteran(s)
+01:18:35 INFO [649/769] Cemetery 14518 — Roger Mills Co.: Dempsey Cemetery
+01:18:36 INFO   -> 1 veteran(s)
+01:18:36 INFO [650/769] Cemetery 14664 — Roger Mills Co.: Mulberry Cemetery
+01:18:37 INFO   -> 2 veteran(s)
+01:18:37 INFO [651/769] Cemetery 14412 — Roger Mills Co.: Red Hill Cemetery (AKA: Hammon Cemetery)
+01:18:38 INFO   -> 4 veteran(s)
+01:18:38 INFO [652/769] Cemetery 14801 — Roger Mills Co.: Shirley Cemetery
+01:18:38 INFO   -> 1 veteran(s)
+01:18:38 INFO [653/769] Cemetery 14509 — Roger Mills Co.: Silent Home Cemetery
+01:18:38 INFO   -> 1 veteran(s)
+01:18:38 INFO [654/769] Cemetery 14785 — Roger Mills Co.: Strong City Cemetery
+01:18:39 INFO   -> 1 veteran(s)
+01:18:39 INFO [655/769] Cemetery 14825 — Roger Mills Co.: White Rose Cemetery
+01:18:39 INFO   -> 1 veteran(s)
+01:18:39 INFO [656/769] Cemetery 15607 — Rogers Co.: Beck Cemetery
+01:18:40 INFO   -> 1 veteran(s)
+01:18:40 INFO [657/769] Cemetery 14308 — Rogers Co.: Chelsea Cemetery
+01:18:41 INFO   -> 7 veteran(s)
+01:18:41 INFO [658/769] Cemetery 18020 — Rogers Co.: Dick Duck Cemetery
+01:18:42 INFO   -> 1 veteran(s)
+01:18:42 INFO [659/769] Cemetery 14548 — Rogers Co.: Fairview Cemetery (AKA: Talala Cemetery)
+01:18:42 INFO   -> 2 veteran(s)
+01:18:42 INFO [660/769] Cemetery 14613 — Rogers Co.: Highland Cemetery
+01:18:43 INFO   -> 1 veteran(s)
+01:18:43 INFO [661/769] Cemetery 14632 — Rogers Co.: Oak Hill Cemetery
+01:18:43 INFO   -> 1 veteran(s)
+01:18:43 INFO [662/769] Cemetery 14339 — Rogers Co.: Snider Cemetery
+01:18:44 INFO   -> 2 veteran(s)
+01:18:44 INFO [663/769] Cemetery 14200 — Rogers Co.: Wards Grove Cemetery
+01:18:44 INFO   -> 2 veteran(s)
+01:18:44 INFO [664/769] Cemetery 12809 — Rogers Co.: Woodlawn Cemetery
+01:18:45 INFO   -> 6 veteran(s)
+01:18:45 INFO [665/769] Cemetery 14803 — Seminole Co.: John F Brown Cemetery
+01:18:45 INFO   -> 1 veteran(s)
+01:18:45 INFO [666/769] Cemetery 12810 — Seminole Co.: Konawa Memorial Cemetery
+01:18:46 INFO   -> 6 veteran(s)
+01:18:46 INFO [667/769] Cemetery 13863 — Seminole Co.: Little Cemetery
+01:18:46 INFO   -> 3 veteran(s)
+01:18:46 INFO [668/769] Cemetery 14880 — Seminole Co.: Maple Grove Cemetery
+01:18:47 INFO   -> 1 veteran(s)
+01:18:47 INFO [669/769] Cemetery 14871 — Seminole Co.: Oakwood Cemetery
+01:18:47 INFO   -> 1 veteran(s)
+01:18:47 INFO [670/769] Cemetery 20474 — Seminole Co.: Sand Creek Cemetery
+01:18:48 INFO   -> 1 veteran(s)
+01:18:48 INFO [671/769] Cemetery 14716 — Seminole Co.: Spring Baptist Church Cemetery
+01:18:48 INFO   -> 1 veteran(s)
+01:18:48 INFO [672/769] Cemetery 14770 — Seminole Co.: Vamoosa Cemetery
+01:18:49 INFO   -> 2 veteran(s)
+01:18:49 INFO [673/769] Cemetery 14745 — Seminole Co.: Wolf Cemetery
+01:18:49 INFO   -> 1 veteran(s)
+01:18:49 INFO [674/769] Cemetery 12811 — Sequoyah Co.: Akins Cemetery
+01:18:50 INFO   -> 2 veteran(s)
+01:18:50 INFO [675/769] Cemetery 14459 — Sequoyah Co.: Box Cemetery
+01:18:50 INFO   -> 1 veteran(s)
+01:18:50 INFO [676/769] Cemetery 14277 — Sequoyah Co.: Brent Cemetery
+01:18:51 INFO   -> 1 veteran(s)
+01:18:51 INFO [677/769] Cemetery 14462 — Sequoyah Co.: Brushy Cemetery
+01:18:51 INFO   -> 1 veteran(s)
+01:18:51 INFO [678/769] Cemetery 14278 — Sequoyah Co.: Daniel Brackett Cemetery (AKA: Brackett Cemetery)
+01:18:52 INFO   -> 2 veteran(s)
+01:18:52 INFO [679/769] Cemetery 18722 — Sequoyah Co.: Drakestand Cemetery
+01:18:52 INFO   -> 1 veteran(s)
+01:18:52 INFO [680/769] Cemetery 14514 — Sequoyah Co.: Duncan Cemetery
+01:18:53 INFO   -> 1 veteran(s)
+01:18:53 INFO [681/769] Cemetery 14530 — Sequoyah Co.: Dwight Mission Cemetery
+01:18:53 INFO   -> 1 veteran(s)
+01:18:53 INFO [682/769] Cemetery 14551 — Sequoyah Co.: Faulkner Family Cemetery
+01:18:54 INFO   -> 1 veteran(s)
+01:18:54 INFO [683/769] Cemetery 14268 — Sequoyah Co.: Fleetwood Cemetery
+01:18:54 INFO   -> 5 veteran(s)
+01:18:54 INFO [684/769] Cemetery 14573 — Sequoyah Co.: Garden of Memories Cemetery
+01:18:55 INFO   -> 1 veteran(s)
+01:18:55 INFO [685/769] Cemetery 17268 — Sequoyah Co.: Lees Chapel Cemetery
+01:18:55 INFO   -> 1 veteran(s)
+01:18:55 INFO [686/769] Cemetery 21040 — Sequoyah Co.: Liberty Cemetery
+01:18:55 INFO   -> 1 veteran(s)
+01:18:55 INFO [687/769] Cemetery 14399 — Sequoyah Co.: Long Cemetery
+01:18:56 INFO   -> 2 veteran(s)
+01:18:56 INFO [688/769] Cemetery 12895 — Sequoyah Co.: Maple Cemetery
+01:18:56 INFO   -> 2 veteran(s)
+01:18:56 INFO [689/769] Cemetery 16048 — Sequoyah Co.: Marble City Cemetery
+01:18:57 INFO   -> 1 veteran(s)
+01:18:57 INFO [690/769] Cemetery 15055 — Sequoyah Co.: McCoy Cemetery
+01:18:57 INFO   -> 1 veteran(s)
+01:18:57 INFO [691/769] Cemetery 14375 — Sequoyah Co.: Muldrow Memorial Gardens Cemetery
+01:18:58 INFO   -> 3 veteran(s)
+01:18:58 INFO [692/769] Cemetery 14634 — Sequoyah Co.: Northview Cemetery
+01:18:58 INFO   -> 1 veteran(s)
+01:18:58 INFO [693/769] Cemetery 14856 — Sequoyah Co.: Pack - Faulkner Cemetery
+01:18:59 INFO   -> 1 veteran(s)
+01:18:59 INFO [694/769] Cemetery 14955 — Sequoyah Co.: Paw Paw Cemetery
+01:18:59 INFO   -> 2 veteran(s)
+01:18:59 INFO [695/769] Cemetery 16004 — Sequoyah Co.: Rocky Point Cemetery
+01:19:00 INFO   -> 1 veteran(s)
+01:19:00 INFO [696/769] Cemetery 14203 — Sequoyah Co.: Roland Cemetery
+01:19:00 INFO   -> 2 veteran(s)
+01:19:00 INFO [697/769] Cemetery 12825 — Sequoyah Co.: Sallisaw City Cemetery
+01:19:01 INFO   -> 4 veteran(s)
+01:19:01 INFO [698/769] Cemetery 14742 — Sequoyah Co.: Upper Camp Creek Cemetery
+01:19:01 INFO   -> 2 veteran(s)
+01:19:01 INFO [699/769] Cemetery 13204 — Stephens Co.: Alma Cemetery
+01:19:02 INFO   -> 1 veteran(s)
+01:19:02 INFO [700/769] Cemetery 13760 — Stephens Co.: Bear Creek Cemetery
+01:19:02 INFO   -> 1 veteran(s)
+01:19:02 INFO [701/769] Cemetery 14501 — Stephens Co.: Claud Cemetery
+01:19:03 INFO   -> 1 veteran(s)
+01:19:03 INFO [702/769] Cemetery 14713 — Stephens Co.: Cooper Cemetery (AKA: York Cemetery)
+01:19:03 INFO   -> 1 veteran(s)
+01:19:03 INFO [703/769] Cemetery 15002 — Stephens Co.: Corum Cemetery
+01:19:04 INFO   -> 3 veteran(s)
+01:19:04 INFO [704/769] Cemetery 14178 — Stephens Co.: Denton Cemetery
+01:19:04 INFO   -> 1 veteran(s)
+01:19:04 INFO [705/769] Cemetery 14175 — Stephens Co.: Diamond Cemetery
+01:19:05 INFO   -> 2 veteran(s)
+01:19:05 INFO [706/769] Cemetery 12812 — Stephens Co.: Dixie Cemetery
+01:19:05 INFO   -> 9 veteran(s)
+01:19:05 INFO [707/769] Cemetery 12813 — Stephens Co.: Duncan Municipal Cemetery
+01:19:06 INFO   -> 22 veteran(s)
+01:19:06 INFO [708/769] Cemetery 12814 — Stephens Co.: Fairlawn Cemetery
+01:19:06 INFO   -> 18 veteran(s)
+01:19:06 INFO [709/769] Cemetery 14615 — Stephens Co.: Hope Cemetery
+01:19:07 INFO   -> 1 veteran(s)
+01:19:07 INFO [710/769] Cemetery 14197 — Stephens Co.: Loco Cemetery
+01:19:07 INFO   -> 3 veteran(s)
+01:19:07 INFO [711/769] Cemetery 12815 — Stephens Co.: Marlow Cemetery
+01:19:08 INFO   -> 22 veteran(s)
+01:19:08 INFO [712/769] Cemetery 14670 — Stephens Co.: Mountain Grove Cemetery
+01:19:08 INFO   -> 1 veteran(s)
+01:19:08 INFO [713/769] Cemetery 14633 — Stephens Co.: Oak Grove Cemetery
+01:19:09 INFO   -> 1 veteran(s)
+01:19:09 INFO [714/769] Cemetery 14953 — Stephens Co.: Old Duncan Cemetery
+01:19:10 INFO   -> 1 veteran(s)
+01:19:10 INFO [715/769] Cemetery 14358 — Stephens Co.: Old Velma Cemetery
+01:19:11 INFO   -> 4 veteran(s)
+01:19:11 INFO [716/769] Cemetery 14853 — Stephens Co.: Passmore Cemetery
+01:19:11 INFO   -> 2 veteran(s)
+01:19:11 INFO [717/769] Cemetery 14822 — Stephens Co.: Rock Creek Cemetery
+01:19:12 INFO   -> 1 veteran(s)
+01:19:12 INFO [718/769] Cemetery 12816 — Stephens Co.: Sandy Bear Cemetery (AKA: Winter Cem.)
+01:19:12 INFO   -> 4 veteran(s)
+01:19:12 INFO [719/769] Cemetery 14265 — Stephens Co.: Tucker Cemetery
+01:19:13 INFO   -> 2 veteran(s)
+01:19:13 INFO [720/769] Cemetery 12915 — Stephens Co.: Weaver Chapel Cemetery
+01:19:13 INFO   -> 3 veteran(s)
+01:19:13 INFO [721/769] Cemetery 5552 — Texas Co.: Carter Graveyard
+01:19:14 INFO   -> 1 veteran(s)
+01:19:14 INFO [722/769] Cemetery 12860 — Texas Co.: Elmhurst Cemetery
+01:19:14 INFO   -> 5 veteran(s)
+01:19:14 INFO [723/769] Cemetery 14660 — Texas Co.: Nabisco Cemetery
+01:19:14 INFO   -> 1 veteran(s)
+01:19:14 INFO [724/769] Cemetery 14657 — Tillman Co.: Bethel Cemetery
+01:19:15 INFO   -> 1 veteran(s)
+01:19:15 INFO [725/769] Cemetery 14484 — Tillman Co.: Chattanooga Cemetery
+01:19:15 INFO   -> 1 veteran(s)
+01:19:15 INFO [726/769] Cemetery 12817 — Tillman Co.: Davidson Cemetery
+01:19:16 INFO   -> 4 veteran(s)
+01:19:16 INFO [727/769] Cemetery 14515 — Tillman Co.: Dunkard Cemetery
+01:19:16 INFO   -> 1 veteran(s)
+01:19:16 INFO [728/769] Cemetery 12818 — Tillman Co.: Frederick Memorial Cemetery
+01:19:17 INFO   -> 9 veteran(s)
+01:19:17 INFO [729/769] Cemetery 15077 — Tillman Co.: Grandfield Memorial Cemetery
+01:19:17 INFO   -> 1 veteran(s)
+01:19:17 INFO [730/769] Cemetery 14688 — Tillman Co.: Hollister Cemetery
+01:19:18 INFO   -> 1 veteran(s)
+01:19:18 INFO [731/769] Cemetery 14398 — Tillman Co.: Manitou Cemetery
+01:19:18 INFO   -> 2 veteran(s)
+01:19:18 INFO [732/769] Cemetery 15066 — Tillman Co.: Rogers Cemetery
+01:19:19 INFO   -> 1 veteran(s)
+01:19:19 INFO [733/769] Cemetery 12913 — Tillman Co.: Tipton Cemetery (AKA: Tipton Municipal Cemetery)
+01:19:19 INFO   -> 4 veteran(s)
+01:19:19 INFO [734/769] Cemetery 12819 — Tulsa Co.: Bixby Cemetery
+01:19:20 INFO   -> 8 veteran(s)
+01:19:20 INFO [735/769] Cemetery 14500 — Tulsa Co.: Clinton Oaks Cemetery (AKA: Red Fork Cemetery)
+01:19:20 INFO   -> 1 veteran(s)
+01:19:20 INFO [736/769] Cemetery 14436 — Tulsa Co.: Hillside Mission Cemetery (AKA: Hillside cemetery)
+01:19:21 INFO   -> 3 veteran(s)
+01:19:21 INFO [737/769] Cemetery 14736 — Tulsa Co.: McHenry Family Cemetery
+01:19:21 INFO   -> 1 veteran(s)
+01:19:21 INFO [738/769] Cemetery 5553 — Tulsa Co.: Oaklawn Cemetery
+01:19:22 INFO   -> 32 veteran(s)
+01:19:22 INFO [739/769] Cemetery 12897 — Tulsa Co.: Park Grove Cemetery
+01:19:23 INFO   -> 3 veteran(s)
+01:19:23 INFO [740/769] Cemetery 14257 — Tulsa Co.: Ridgelawn Cemetery
+01:19:23 INFO   -> 3 veteran(s)
+01:19:23 INFO [741/769] Cemetery 14507 — Tulsa Co.: Rosencutter Cemetery (AKA: Covey Cemetery)
+01:19:24 INFO   -> 1 veteran(s)
+01:19:24 INFO [742/769] Cemetery 14780 — Tulsa Co.: Tullahassee Creek Indian Cemetery
+01:19:24 INFO   -> 1 veteran(s)
+01:19:24 INFO [743/769] Cemetery 12820 — Tulsa Co.: White Church Cemetery (AKA: Lockridge)
+01:19:25 INFO   -> 3 veteran(s)
+01:19:25 INFO [744/769] Cemetery 12881 — Wagoner Co.: Elmwood Cemetery
+01:19:25 INFO   -> 6 veteran(s)
+01:19:25 INFO [745/769] Cemetery 14592 — Wagoner Co.: Gibson Cemetery
+01:19:26 INFO   -> 1 veteran(s)
+01:19:26 INFO [746/769] Cemetery 14279 — Washington Co.: Buck Creek Cemetery (AKA: Eldridge Cemetery)
+01:19:26 INFO   -> 1 veteran(s)
+01:19:26 INFO [747/769] Cemetery 14176 — Washington Co.: Dewey Cemetery
+01:19:27 INFO   -> 1 veteran(s)
+01:19:27 INFO [748/769] Cemetery 14502 — Washington Co.: Keys Cemetery (AKA: Cobb Cemetery)
+01:19:27 INFO   -> 1 veteran(s)
+01:19:27 INFO [749/769] Cemetery 14875 — Washington Co.: Memorial Park Cemetery
+01:19:28 INFO   -> 1 veteran(s)
+01:19:28 INFO [750/769] Cemetery 14870 — Washington Co.: Ochelata Cemetery
+01:19:28 INFO   -> 1 veteran(s)
+01:19:28 INFO [751/769] Cemetery 12834 — Washington Co.: Ramona Cemetery
+01:19:29 INFO   -> 2 veteran(s)
+01:19:29 INFO [752/769] Cemetery 12821 — Washington Co.: White Rose Cemetery
+01:19:29 INFO   -> 6 veteran(s)
+01:19:29 INFO [753/769] Cemetery 14456 — Washita Co.: Boggy Cemetery
+01:19:30 INFO   -> 2 veteran(s)
+01:19:30 INFO [754/769] Cemetery 11674 — Washita Co.: Colony Indian Cemetery
+01:19:30 INFO   -> 1 veteran(s)
+01:19:30 INFO [755/769] Cemetery 14531 — Washita Co.: Elm Flat Cemetery
+01:19:31 INFO   -> 1 veteran(s)
+01:19:31 INFO [756/769] Cemetery 14387 — Washita Co.: Lawnview Cemetery (AKA: Cordell Cemetery)
+01:19:32 INFO   -> 5 veteran(s)
+01:19:32 INFO [757/769] Cemetery 14643 — Washita Co.: North Burns Cemetery
+01:19:33 INFO   -> 2 veteran(s)
+01:19:33 INFO [758/769] Cemetery 12923 — Washita Co.: Odessa Cemetery
+01:19:33 INFO   -> 3 veteran(s)
+01:19:33 INFO [759/769] Cemetery 12827 — Washita Co.: Port-Sentinel Cemetery (AKA: Port)
+01:19:34 INFO   -> 3 veteran(s)
+01:19:34 INFO [760/769] Cemetery 14342 — Washita Co.: Retrop Cemetery
+01:19:34 INFO   -> 3 veteran(s)
+01:19:34 INFO [761/769] Cemetery 14204 — Washita Co.: Sentinel Cemetery
+01:19:35 INFO   -> 2 veteran(s)
+01:19:35 INFO [762/769] Cemetery 14797 — Washita Co.: South Burns Cemetery
+01:19:35 INFO   -> 3 veteran(s)
+01:19:35 INFO [763/769] Cemetery 12626 — Washita Co.: Strickland
+01:19:36 INFO   -> 1 veteran(s)
+01:19:36 INFO [764/769] Cemetery 13040 — Woods Co.: Alva Municipal Cemetery
+01:19:36 INFO   -> 1 veteran(s)
+01:19:36 INFO [765/769] Cemetery 14738 — Woods Co.: Memorial Hill Cemetery
+01:19:37 INFO   -> 1 veteran(s)
+01:19:37 INFO [766/769] Cemetery 14719 — Woods Co.: Waynoka Municipal Cemetery
+01:19:37 INFO   -> 2 veteran(s)
+01:19:37 INFO [767/769] Cemetery 12883 — Woodward Co.: Elmwood Cemetery
+01:19:39 INFO   -> 3 veteran(s)
+01:19:39 INFO [768/769] Cemetery 14353 — Woodward Co.: Persimmon Cemetery
+01:19:39 INFO   -> 2 veteran(s)
+01:19:39 INFO [769/769] Cemetery 18852 — Woodward Co.: Rest Haven Cemetery
+01:19:40 INFO   -> 1 veteran(s)
+01:19:40 INFO Done. 769 cemetery records.
+01:19:40 INFO Summary: 769 cemeteries, 768 with veterans, 2593 total vets

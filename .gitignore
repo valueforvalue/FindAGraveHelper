@@ -23,3 +23,12 @@ docs/research/digitalprairie/pensions.json
 docs/research/digitalprairie/pensioncard.csv
 docs/research/digitalprairie/pensioncard.json
 docs/research/digitalprairie/scrape.log
+
+# CGR (Confederate Graves Registry) bulk scrapes — research data
+# is COMMITTED to the repo for future reference and cross-state
+# comparison. See docs/research/cgr/README.md. The scraper is
+# idempotent and resume-safe so it can be re-run; the committed
+# copy is the snapshot at time of the original scrape.
+#
+# If a future scrape supersedes the committed data, replace
+# the files in place rather than ignore-then-regenerate.
