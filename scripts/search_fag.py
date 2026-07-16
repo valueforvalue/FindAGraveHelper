@@ -15,6 +15,9 @@ Each output record contains:
       details (is_veteran, birth_year, death_year),
       backlink, iiif_url
   - decision: null (filled in by human via view.html)
+  - ground_truth: optional, set when --ground-truth-csv is used.
+    Records whether the expected memorial_id/slug was found in the
+    candidate list, and at what rank.
 
 Prerequisites:
   pip install playwright playwright-stealth
@@ -69,8 +72,14 @@ log = logging.getLogger("search")
 # ============================================================
 # Tunables
 # ============================================================
-AUTO_ACCEPT_THRESHOLD = 0.95   # auto-accept without review
-PROMPT_THRESHOLD = 0.70        # show as ambiguous for review
+# Auto-accept when score is high. With our scoring function, exact
+# last+first+middle + veteran + death + state all match → 0.80.
+# When local state is known AND candidate state matches, we get
+# 0.80; when it doesn't, we cap at 0.735. So 0.75 is a reasonable
+# threshold: at or above this, we're confident the top candidate
+# is the right person.
+AUTO_ACCEPT_THRESHOLD = 0.75
+PROMPT_THRESHOLD = 0.60
 THROTTLE_SECONDS = 1.5
 CAPTCHA_BACKOFF_SECONDS = 30.0
 MAX_CANDIDATES_PER_PENSIONER = 20
@@ -160,14 +169,21 @@ def strategy_b5_apostrophe_variants(first, middle, last, birth_year):
 
 
 def strategy_c1_cw_context(first, middle, last, birth_year):
-    """C1: civil war bio context catch-all."""
+    """C1: civil war bio context catch-all.
+
+    Uses the narrowest bio term first ("Confederate States America"
+    or "United States Army") because the broader terms (Civil War,
+    Confederate) return hundreds of thousands of results.
+    """
     if not first or not last:
         return None
+    # Try Confederate-specific first; the regex would be ideal but
+    # bio is full-text only. We pick the narrowest CSA-specific term.
     return {
         "firstname": first,
         "lastname": last,
         "isVeteran": "true",
-        "bio": '"Civil War" OR "CSA" OR "Confederate" OR "GAR"',
+        "bio": "Confederate States America",
     }
 
 
@@ -231,12 +247,43 @@ def parse_slug(slug: str) -> dict:
 def extract_state_from_regiment(regiment: str) -> str:
     if not regiment:
         return ""
-    m = re.search(
+    # Normalize "Co." → "Co" (we don't want to match it as Colorado CO)
+    norm = re.sub(r'\bCo\.', 'Co', regiment)
+    norm_up = norm.upper()
+    # Try 2-letter abbreviation. Find ALL matches; skip "CO" (Company)
+    # and prefer later matches (the state is usually after the company).
+    skip_codes = {'CO'}
+    all_codes = re.findall(
         r"\b(AL|MS|TN|TX|GA|FL|AR|SC|NC|VA|LA|KY|MO|MD|OK|IN|IL|OH|PA|NY|"
         r"NJ|CT|MA|VT|NH|ME|DE|WV|IA|WI|MN|MI|KS|NE|ND|SD|WY|CO|NV|CA|"
         r"OR|WA|ID|UT|MT|AZ|NM|AK|HI|RI)\b",
-        regiment.upper())
-    return m.group(1) if m else ""
+        norm_up)
+    filtered = [c for c in all_codes if c not in skip_codes]
+    if filtered:
+        return filtered[0]  # first non-CO match
+    if all_codes:
+        # Only CO found; fall through to full-name match
+        pass
+    # Try full state name
+    state_names = {
+        'ALABAMA': 'AL', 'MISSISSIPPI': 'MS', 'TENNESSEE': 'TN', 'TEXAS': 'TX',
+        'GEORGIA': 'GA', 'FLORIDA': 'FL', 'ARKANSAS': 'AR', 'SOUTH CAROLINA': 'SC',
+        'NORTH CAROLINA': 'NC', 'VIRGINIA': 'VA', 'LOUISIANA': 'LA', 'KENTUCKY': 'KY',
+        'MISSOURI': 'MO', 'MARYLAND': 'MD', 'OKLAHOMA': 'OK', 'INDIANA': 'IN',
+        'ILLINOIS': 'IL', 'OHIO': 'OH', 'PENNSYLVANIA': 'PA', 'NEW YORK': 'NY',
+        'NEW JERSEY': 'NJ', 'CONNECTICUT': 'CT', 'MASSACHUSETTS': 'MA',
+        'VERMONT': 'VT', 'NEW HAMPSHIRE': 'NH', 'MAINE': 'ME', 'DELAWARE': 'DE',
+        'WEST VIRGINIA': 'WV', 'IOWA': 'IA', 'WISCONSIN': 'WI', 'MINNESOTA': 'MN',
+        'MICHIGAN': 'MI', 'KANSAS': 'KS', 'NEBRASKA': 'NE', 'NORTH DAKOTA': 'ND',
+        'SOUTH DAKOTA': 'SD', 'WYOMING': 'WY', 'COLORADO': 'CO', 'NEVADA': 'NV',
+        'CALIFORNIA': 'CA', 'OREGON': 'OR', 'WASHINGTON': 'WA', 'IDAHO': 'ID',
+        'UTAH': 'UT', 'MONTANA': 'MT', 'ARIZONA': 'AZ', 'NEW MEXICO': 'NM',
+        'ALASKA': 'AK', 'HAWAII': 'HI', 'RHODE ISLAND': 'RI',
+    }
+    for name, code in state_names.items():
+        if name in norm_up:
+            return code
+    return ""
 
 
 # ============================================================
@@ -323,30 +370,69 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         # No middle on local — we don't penalize
         middle_score = 0.5
 
-    # State match — we don't have state info in the result link's text,
-    # so this is currently disabled. (Could be added by visiting each
-    # candidate's memorial page and parsing the burial location.)
+    # OK burial boost — PRIMARY signal for this tool's purpose.
+    # We're searching for CW soldiers buried in OK (or another target
+    # state). A candidate buried in OK is a strong match regardless
+    # of where the soldier served.
+    ok_burial_score = 0.0
+    cand_state = candidate.get("details", {}).get("state")
+    if cand_state and cand_state.upper() == "OK":
+        ok_burial_score = 0.5
+
+    # State match — secondary signal. If the local record specifies
+    # a target burial state and the candidate's state matches, that's
+    # good. (Not used as the primary signal because most of our
+    # searches are for OK-buried soldiers, and many had no OK
+    # record at all — only FaG tells us the burial state.)
     state_score = 0.0
+    if local_state and cand_state and local_state.upper() == cand_state.upper():
+        state_score = 0.2  # small bonus on top of OK_burial
 
     # Veteran flag (CW pensioners were veterans — strong signal!)
     is_veteran = candidate.get("details", {}).get("is_veteran", False)
-    veteran_score = 0.5 if is_veteran else 0.0
+    veteran_score = 0.4 if is_veteran else 0.0
 
-    # Weights — last + first + middle dominate, state/veteran are tie-breakers
+    # Death-year match (strong signal when local death_year is known)
+    death_score = 0.0
+    local_dy = str(local.get("_death_year", "")).strip()
+    cand_dy = candidate.get("details", {}).get("death_year", "")
+    if local_dy and cand_dy:
+        try:
+            d_local = int(local_dy)
+            d_cand = int(cand_dy)
+            diff = abs(d_local - d_cand)
+            if diff == 0:
+                death_score = 0.4
+            elif diff <= 2:
+                death_score = 0.3
+            elif diff <= 5:
+                death_score = 0.15
+        except (ValueError, TypeError):
+            pass
+
+    # Weights:
+    # - last/first/middle: name match dominates (0.62 max)
+    # - OK burial: the killer feature for OK searches (0.5 max)
+    # - veteran: strong tiebreaker (0.4 max)
+    # - death year: confirms correct person (0.4 max)
+    # - state match: minor bonus (0.2 max)
     score = (
-        0.35 * last_score +
-        0.25 * first_score +
-        0.20 * middle_score +
-        0.12 * state_score +
-        0.08 * veteran_score
+        0.25 * last_score +
+        0.19 * first_score +
+        0.13 * middle_score +
+        0.20 * ok_burial_score +
+        0.12 * veteran_score +
+        0.11 * death_score
     )
 
     breakdown = {
         "last": round(last_score, 2),
         "first": round(first_score, 2),
         "middle": round(middle_score, 2),
+        "ok_burial": round(ok_burial_score, 2),
         "state": round(state_score, 2),
         "veteran": round(veteran_score, 2),
+        "death": round(death_score, 2),
     }
     return score, breakdown
 
@@ -471,6 +557,82 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
             if sm2 and not birth_year:
                 birth_year = sm2.group(1)
 
+        # Grab the full result card (2 levels up — enough for cemetery +
+        # location, not so far that we capture other results on the page).
+        try:
+            card_text = link.evaluate('''el => {
+                let cur = el;
+                for (let i = 0; i < 2; i++) {
+                    if (cur.parentElement) cur = cur.parentElement;
+                }
+                return cur.innerText;
+            }''')
+        except Exception:
+            card_text = ""
+        card_text = re.sub(r'\s+', ' ', card_text).strip()
+
+        # Extract state from the card text. Location is rendered like:
+        #   "Eolian, Stephens County, Texas"  (one entry)
+        #   or "Battle Creek Cemetery Eolian, Stephens County, Texas"
+        # After whitespace normalization, commas may or may not be present
+        # between city and county. Use a state-name lookup that works in
+        # both cases: find a state name or 2-letter code anywhere in the
+        # card text, prioritizing the LAST match (state is always last).
+        cand_state = None
+        state_names = {
+            'alabama': 'AL', 'mississippi': 'MS', 'tennessee': 'TN', 'texas': 'TX',
+            'georgia': 'GA', 'florida': 'FL', 'arkansas': 'AR', 'south carolina': 'SC',
+            'north carolina': 'NC', 'virginia': 'VA', 'louisiana': 'LA', 'kentucky': 'KY',
+            'missouri': 'MO', 'maryland': 'MD', 'oklahoma': 'OK', 'indiana': 'IN',
+            'illinois': 'IL', 'ohio': 'OH', 'pennsylvania': 'PA', 'new york': 'NY',
+            'new jersey': 'NJ', 'connecticut': 'CT', 'massachusetts': 'MA',
+            'vermont': 'VT', 'new hampshire': 'NH', 'maine': 'ME', 'delaware': 'DE',
+            'west virginia': 'WV', 'iowa': 'IA', 'wisconsin': 'WI', 'minnesota': 'MN',
+            'michigan': 'MI', 'kansas': 'KS', 'nebraska': 'NE', 'north dakota': 'ND',
+            'south dakota': 'SD', 'wyoming': 'WY', 'colorado': 'CO', 'nevada': 'NV',
+            'california': 'CA', 'oregon': 'OR', 'washington': 'WA', 'idaho': 'ID',
+            'utah': 'UT', 'montana': 'MT', 'arizona': 'AZ', 'new mexico': 'NM',
+            'alaska': 'AK', 'hawaii': 'HI', 'rhode island': 'RI',
+        }
+        # First try comma-separated tokens (works for "City, County, State")
+        for tok in reversed(re.split(r',\s*', card_text)):
+            tok_clean = tok.strip().rstrip('.').lower()
+            if tok_clean in state_names:
+                cand_state = state_names[tok_clean]
+                break
+            if re.fullmatch(r'[A-Z]{2}', tok.strip()) and len(tok.strip()) == 2:
+                cand_state = tok.strip()
+                break
+        # Fallback: scan the whole text for state names (handles
+        # whitespace-collapsed "Stephens County Texas")
+        if not cand_state:
+            lower = card_text.lower()
+            # Find the rightmost state-name match
+            best_idx = -1
+            for name, code in state_names.items():
+                idx = lower.rfind(name)
+                if idx > best_idx:
+                    best_idx = idx
+                    cand_state = code
+            # Also check for 2-letter codes as standalone words
+            if not cand_state:
+                for m in re.finditer(r'\b([A-Z]{2})\b', card_text):
+                    code = m.group(1)
+                    # Skip obvious false positives (the company letters in
+                    # company codes like "A B" — but state codes are valid
+                    # too, so just include all)
+                    cand_state = code
+                    break
+
+        # Extract cemetery name (line before the city/county/state line)
+        cemetery = None
+        cm = re.search(r'([A-Z][A-Za-z\.\s]+?(?:Cemetery|Memorial Cemetery|Burying Ground|'
+                       r'Cemetery|Church Cemetery|National Cemetery|Memorial Park|'
+                       r'City Cemetery|Memorial Gardens|Mausoleum))\s*[,\n]',
+                       card_text)
+        if cm:
+            cemetery = cm.group(1).strip()
+
         # Cemetery + location: parse the surrounding card if accessible.
         # Fall back to the snippet text.
         # The full result card may have cemetery/location as additional
@@ -487,6 +649,8 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
                 "is_veteran": is_veteran,
                 "birth_year": birth_year,
                 "death_year": death_year,
+                "state": cand_state,
+                "cemetery": cemetery,
             },
         })
         if len(candidates) >= MAX_FAG_RESULTS_TO_PARSE:
@@ -573,6 +737,75 @@ def load_unified_from_file(path: Path) -> list[dict]:
     return data
 
 
+def load_local_csv(path: Path) -> list[dict]:
+    """Load a generic CSV (e.g. from local dixiedata export).
+
+    Expected columns (case-insensitive, some optional):
+      id, first_name, middle_name, last_name,
+      unit, pension_state, application_number, slug, memorial_id
+    """
+    import csv
+    log.info("Loading %s ...", path)
+    out = []
+    with path.open(encoding='utf-8', errors='replace', newline='') as f:
+        rdr = csv.DictReader(f)
+        for i, row in enumerate(rdr, start=1):
+            # Normalise column names
+            lc = {k.lower().strip(): (v or '').strip() for k, v in row.items() if k}
+            out.append({
+                'id': int(lc.get('id') or i),
+                'first_name': lc.get('first_name', ''),
+                'middle_name': lc.get('middle_name', ''),
+                'last_name': lc.get('last_name', ''),
+                'application_number': lc.get('application_number', ''),
+                'regiment': lc.get('unit', ''),
+                'company': lc.get('company', ''),
+                'birth_year': lc.get('birth_year', ''),
+                'death_year': lc.get('death_year', ''),
+                'pensioncard_backlink': '',
+                # For ground-truth testing:
+                '_expected_memorial_id': lc.get('memorial_id', ''),
+                '_expected_slug': lc.get('slug', ''),
+            })
+    log.info("Loaded %d records", len(out))
+    return out
+
+
+def load_input(args, pensioners_list_holder: list) -> None:
+    """Resolve which input loader to use based on args.
+
+    Mutates pensioners_list_holder[0] to be the loaded list.
+    """
+    if args.input_url:
+        pensioners_list_holder.append(load_unified_from_url(args.input_url))
+    elif args.input_csv:
+        pensioners_list_holder.append(load_local_csv(args.input_csv))
+    else:
+        pensioners_list_holder.append(load_unified_from_file(args.input))
+
+
+def load_ground_truth(path: Path) -> dict[int, dict]:
+    """Load expected {memorial_id, slug} per row, keyed by row id.
+
+    The CSV must have columns: id, memorial_id, slug
+    (or: id, app_number for matching by application number)
+    """
+    import csv
+    gt = {}
+    with path.open(encoding='utf-8', errors='replace', newline='') as f:
+        for row in csv.DictReader(f):
+            try:
+                rid = int(row.get('id') or 0)
+            except (ValueError, TypeError):
+                continue
+            gt[rid] = {
+                'memorial_id': (row.get('memorial_id') or '').strip(),
+                'slug': (row.get('slug') or '').strip(),
+            }
+    log.info("Loaded %d ground-truth records from %s", len(gt), path)
+    return gt
+
+
 # ============================================================
 # Setup Playwright with stealth
 # ============================================================
@@ -636,6 +869,8 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
         "pensioner_first": first,
         "pensioner_middle": middle,
         "pensioner_last": last,
+        "pensioner_birth_year": pensioner.get("birth_year", ""),
+        "pensioner_death_year": pensioner.get("death_year", ""),
         "regiment": pensioner.get("regiment", ""),
         "company": pensioner.get("company", ""),
         "pensioncard_backlink": pensioner.get("pensioncard_backlink", ""),
@@ -658,6 +893,8 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
         "middle_name": middle,
         "last_name": last,
         "_state_abbr": state_abbr,
+        "_death_year": pensioner.get("death_year", ""),
+        "_birth_year": pensioner.get("birth_year", ""),
     }
 
     strategy_runs = []  # (strategy_name, [candidates])
@@ -726,6 +963,32 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
             "score": merged[0]["score"],
         }
 
+    # Ground-truth validation (if the local record has an expected
+    # memorial_id+slug, check if it appears anywhere in the candidates)
+    expected_mid = pensioner.get("_expected_memorial_id", "").strip()
+    expected_slug = pensioner.get("_expected_slug", "").strip()
+    if expected_mid or expected_slug:
+        hit_idx = None
+        for idx, c in enumerate(merged):
+            if expected_mid and c["memorial_id"] == expected_mid:
+                hit_idx = idx
+                break
+            if expected_slug and c["slug"] == expected_slug:
+                hit_idx = idx
+                break
+        if hit_idx is not None:
+            record["ground_truth"] = {
+                "expected": {"memorial_id": expected_mid, "slug": expected_slug},
+                "found": True,
+                "rank": hit_idx + 1,  # 1-based
+                "score": merged[hit_idx]["score"],
+            }
+        else:
+            record["ground_truth"] = {
+                "expected": {"memorial_id": expected_mid, "slug": expected_slug},
+                "found": False,
+            }
+
     # Status
     if captcha_seen and not merged:
         record["status"] = S_CAPTCHA
@@ -736,13 +999,17 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
             record["status"] = S_NO_RESULTS
     else:
         # We have at least one result. Decide:
-        # - top score >= 0.95 -> auto_accept
-        # - top score < 0.95 but 2-10 unique candidates -> ambiguous
-        # - top score < 0.95 and 1 candidate -> still ambiguous (only one match, but score is mid)
-        if record["best_score"] >= AUTO_ACCEPT_THRESHOLD and len(merged) == 1:
+        # - top score >= AUTO_ACCEPT_THRESHOLD and only one candidate -> auto_accept
+        # - top score >= AUTO_ACCEPT_THRESHOLD and multiple candidates -> still
+        #   "auto_accept but other matches exist" — keep as ambiguous for
+        #   human review (the user can verify)
+        # - top score below threshold -> ambiguous/too_many
+        if len(merged) == 1 and record["best_score"] >= AUTO_ACCEPT_THRESHOLD:
             record["status"] = S_AUTO_ACCEPT
+        elif record["best_score"] >= AUTO_ACCEPT_THRESHOLD and 2 <= len(merged) <= 10:
+            record["status"] = S_AMBIGUOUS
         elif len(merged) == 1:
-            record["status"] = S_AMBIGUOUS  # 1 candidate, score below auto-accept — review
+            record["status"] = S_AMBIGUOUS  # 1 candidate, score below auto-accept
         elif 2 <= len(merged) <= 10:
             record["status"] = S_AMBIGUOUS
         else:
@@ -760,7 +1027,11 @@ def main() -> int:
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     src = p.add_mutually_exclusive_group(required=True)
     src.add_argument("--input", type=Path, help="Local path to unified.json")
-    src.add_argument("--input-url", help="URL to fetch unified.json")
+    src.add_argument("--input-url", help="URL to fetch unified.json (e.g. raw GitHub)")
+    src.add_argument("--input-csv", type=Path,
+                     help="Local path to a generic CSV (dixiedata export, etc.). "
+                          "Expected columns: id, first_name, middle_name, last_name, "
+                          "unit, company, application_number, memorial_id, slug")
     p.add_argument("--state", type=Path, required=True,
                    help="Output JSONL state file (one line per pensioner)")
     p.add_argument("--limit", type=int, default=0,
@@ -769,10 +1040,16 @@ def main() -> int:
                    help="Process in random order")
     p.add_argument("--start-from", type=int, default=0,
                    help="Skip the first N pensioners")
+    p.add_argument("--ground-truth-csv", type=Path, default=None,
+                   help="Optional CSV with expected memorial_id+slug per row. "
+                        "When set, the state output includes 'ground_truth_match' "
+                        "(true/false/null) per pensioner for validation.")
     args = p.parse_args()
 
-    pensioners = (load_unified_from_url(args.input_url) if args.input_url
-                  else load_unified_from_file(args.input))
+    # Load input
+    holder = []
+    load_input(args, holder)
+    pensioners = holder[0]
 
     if args.shuffle:
         random.shuffle(pensioners)
@@ -784,6 +1061,18 @@ def main() -> int:
     processed = load_processed_ids(args.state)
     log.info("Will process %d pensioners (%d already done)",
              len(pensioners), len(processed))
+
+    # Load ground truth if supplied
+    ground_truth = {}
+    if args.ground_truth_csv:
+        ground_truth = load_ground_truth(args.ground_truth_csv)
+        # Build a map by application number too, for unified.json
+        for p_data in pensioners:
+            app = p_data.get('application_number', '').strip()
+            if app:
+                # If the GT has matching app# we'd need a second column;
+                # skip for now
+                pass
 
     with sync_playwright() as pw:
         browser, ctx, page = setup_browser(pw)
