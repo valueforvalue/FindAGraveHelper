@@ -1,0 +1,25 @@
+2026-07-16 04:02:03,850 INFO Run starting at 2026-07-16T09:02:03Z
+2026-07-16 04:02:03,850 INFO Output dir: data\results\run_50_test
+2026-07-16 04:02:03,850 INFO Args: {'input': WindowsPath('docs/research/digitalprairie/ok_pensioners.json'), 'input_csv': None, 'cgr': WindowsPath('docs/research/cgr/ok_vets_enriched.jsonl'), 'out': WindowsPath('data/results/run_50_test'), 'limit': 50, 'throttle': 2.0, 'low_score_threshold': 0.4, 'shuffle': False, 'start_from': 0, 'no_fag': False, 'heartbeat_every': 50}
+2026-07-16 04:02:03,995 INFO Loaded 7709 pensioners from input
+2026-07-16 04:02:04,029 INFO Loaded CGR data: 768 cemeteries, 2593 total vets
+2026-07-16 04:02:04,281 INFO Initializing Playwright (visible browser, takes ~10s)...
+2026-07-16 04:02:08,995 INFO Playwright ready.
+2026-07-16 04:02:08,998 INFO Will process 50 pensioners (total=7709, already done=0, remaining in run=50)
+2026-07-16 04:03:12,600 INFO Heartbeat: 16/50 (32.0%)  rate=0.25 rec/s  eta=2.3 min  size=458.2 KB
+2026-07-16 04:04:15,072 INFO Heartbeat: 30/50 (60.0%)  rate=0.24 rec/s  eta=1.4 min  size=918.8 KB
+2026-07-16 04:05:18,190 INFO Heartbeat: 43/50 (86.0%)  rate=0.23 rec/s  eta=0.5 min  size=1317.5 KB
+2026-07-16 04:05:50,168 INFO Heartbeat: 50/50 (100.0%)  rate=0.23 rec/s  eta=0.0 min  size=1555.8 KB
+2026-07-16 04:05:50,168 INFO Batch complete: 50/50 processed, 3 outliers, 0 errors, 13 BOTH MATCH (0 direct, 13 corroborated). Elapsed: 3.7 min
+2026-07-16 04:05:50,220 INFO Report written to data\results\run_50_test
+2026-07-16 04:05:50,220 INFO Run finished: {
+  "total": 7709,
+  "processed": 50,
+  "outliers_count": 3,
+  "auto_accepts": 5,
+  "errors": 0,
+  "both_match_total": 13,
+  "both_match_direct": 0,
+  "both_match_corroborated": 13,
+  "elapsed_seconds": 221.2
+}

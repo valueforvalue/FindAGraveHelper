@@ -1,0 +1,125 @@
+{
+  "total": 50,
+  "auto_accepts": 5,
+  "ambiguous": 0,
+  "no_results": 0,
+  "errors": 0,
+  "captchas": 0,
+  "too_many": 43,
+  "skipped": 2,
+  "both_match_total": 13,
+  "both_match_direct": 0,
+  "both_match_corroborated": 13,
+  "outliers_total": 3,
+  "outliers_low_score": 3,
+  "outliers_no_results": 0,
+  "outliers_error": 0,
+  "score_distribution": {
+    "<0.20": 2,
+    "0.20-0.40": 1,
+    "0.40-0.60": 28,
+    "0.60-0.80": 19,
+    "0.80-0.95": 0,
+    "0.95-1.00": 0
+  },
+  "field_completeness": {
+    "pensioner_first": 100.0,
+    "pensioner_last": 96.0,
+    "regiment": 96.0,
+    "pensioner_birth_year": 0.0,
+    "pensioner_death_year": 0.0,
+    "pensioncard_backlink": 96.0
+  },
+  "top_both_match": [
+    {
+      "pensioner_id": 5,
+      "pensioner_name": "Hugh H. Akers",
+      "method": "corroboration",
+      "confidence": 0.95,
+      "reason": "name + death year + burial state all agree",
+      "fag_memorial_id": "26716384",
+      "fag_backlink": "https://www.findagrave.com/memorial/26716384"
+    },
+    {
+      "pensioner_id": 30,
+      "pensioner_name": "J. H. Asbill",
+      "method": "corroboration",
+      "confidence": 0.95,
+      "reason": "name + death year + burial state all agree",
+      "fag_memorial_id": "37349195",
+      "fag_backlink": "https://www.findagrave.com/memorial/37349195"
+    },
+    {
+      "pensioner_id": 51,
+      "pensioner_name": "John W. Barefoot",
+      "method": "corroboration",
+      "confidence": 0.95,
+      "reason": "name + death year + burial state all agree",
+      "fag_memorial_id": "25368896",
+      "fag_backlink": "https://www.findagrave.com/memorial/25368896"
+    },
+    {
+      "pensioner_id": 14,
+      "pensioner_name": "Johnson B. Aker",
+      "method": "corroboration",
+      "confidence": 0.8,
+      "reason": "name + death year agree (burial state differs)",
+      "fag_memorial_id": "16048101",
+      "fag_backlink": "https://www.findagrave.com/memorial/16048101"
+    },
+    {
+      "pensioner_id": 24,
+      "pensioner_name": "Susan A. Andes",
+      "method": "corroboration",
+      "confidence": 0.8,
+      "reason": "name + death year agree (burial state differs)",
+      "fag_memorial_id": "19041437",
+      "fag_backlink": "https://www.findagrave.com/memorial/19041437"
+    },
+    {
+      "pensioner_id": 31,
+      "pensioner_name": "G. W. Ashlock",
+      "method": "corroboration",
+      "confidence": 0.8,
+      "reason": "name + death year agree (burial state differs)",
+      "fag_memorial_id": "137725706",
+      "fag_backlink": "https://www.findagrave.com/memorial/137725706"
+    },
+    {
+      "pensioner_id": 20,
+      "pensioner_name": "Napoleon B. Anderson",
+      "method": "corroboration",
+      "confidence": 0.7,
+      "reason": "name + burial state agree (no death year in CGR)",
+      "fag_memorial_id": "106600754",
+      "fag_backlink": "https://www.findagrave.com/memorial/106600754"
+    },
+    {
+      "pensioner_id": 9,
+      "pensioner_name": "W. A. Alexander",
+      "method": "corroboration",
+      "confidence": 0.6,
+      "reason": "name matches (no death-year corroboration available)",
+      "fag_memorial_id": "16026667",
+      "fag_backlink": "https://www.findagrave.com/memorial/16026667"
+    },
+    {
+      "pensioner_id": 23,
+      "pensioner_name": "W. C. Sr. Anderson",
+      "method": "corroboration",
+      "confidence": 0.6,
+      "reason": "name matches (no death-year corroboration available)",
+      "fag_memorial_id": "116743935",
+      "fag_backlink": "https://www.findagrave.com/memorial/116743935"
+    },
+    {
+      "pensioner_id": 25,
+      "pensioner_name": "Alvin Andrews",
+      "method": "corroboration",
+      "confidence": 0.6,
+      "reason": "name matches (no death-year corroboration available)",
+      "fag_memorial_id": "2999407",
+      "fag_backlink": "https://www.findagrave.com/memorial/2999407"
+    }
+  ]
+}
