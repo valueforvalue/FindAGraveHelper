@@ -37,6 +37,14 @@ docs/research/digitalprairie/scrape.log
 # Resume-safe by design (file is flushed per-pensioner + ResumeTracker).
 # Keep outputs local; final report is regenerated from this data.
 data/results/
+# J5+ per-run output dirs (output/<runname>/). Same resume-safety as
+# data/results/ — these are regenerable from the pipeline + config.
+output/
+
+# One-off debug artifacts (e.g. screenshots of UI bugs during local
+# review). Not part of the codebase; delete after use.
+viewerror.png
+debug_*.png
 
 # Probe artifacts (one-off investigation scripts + captured HTML/JSON).
 # Prefix scripts with underscore (_probe_*.py) and output goes under
