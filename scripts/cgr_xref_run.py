@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """CGR cross-reference runner.
 
-Walks the OK Confederate pensioner list (unified.json), searches
+Walks the OK Confederate pensioner list (ok_pensioners.json), searches
 each in the Confederate Graves Registry (cgr.scv.org), fetches
 vet + cemetery details for any matches, and writes a state JSONL
 file with one record per pensioner.
@@ -14,7 +14,7 @@ PHILOSOPHY:
     the human reviews
 
 Usage:
-  # First 10 from unified.json
+  # First 10 from ok_pensioners.json
   python scripts/cgr_xref_run.py --limit 10
 
   # Full batch
@@ -47,14 +47,14 @@ log = logging.getLogger("cgr_xref_run")
 
 
 def load_pensioners(path: Path) -> list[dict]:
-    """Load pensioners from unified.json (a JSON array)."""
+    """Load pensioners from ok_pensioners.json (a JSON array)."""
     return json.loads(path.read_text(encoding="utf-8"))
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
     parser.add_argument("--input", type=Path,
-                        default=Path("docs/research/digitalprairie/unified.json"))
+                        default=Path("docs/research/digitalprairie/ok_pensioners.json"))
     parser.add_argument("--state", type=Path, required=True,
                         help="Output JSONL state file")
     parser.add_argument("--limit", type=int, default=0)

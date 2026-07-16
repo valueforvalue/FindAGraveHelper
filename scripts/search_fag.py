@@ -26,17 +26,17 @@ Prerequisites:
 Usage:
   # First time: from local file
   python scripts/search_fag.py \\
-      --input docs/research/digitalprairie/unified.json \\
+      --input docs/research/digitalprairie/ok_pensioners.json \\
       --state out/search_state.jsonl
 
   # From raw GitHub
   python scripts/search_fag.py \\
-      --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/unified.json \\
+      --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json \\
       --state out/search_state.jsonl
 
   # Test on a few records first
   python scripts/search_fag.py \\
-      --input docs/research/digitalprairie/unified.json \\
+      --input docs/research/digitalprairie/ok_pensioners.json \\
       --state out/test_state.jsonl --limit 20
 
 Notes:
@@ -1241,8 +1241,8 @@ def main() -> int:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     src = p.add_mutually_exclusive_group(required=True)
-    src.add_argument("--input", type=Path, help="Local path to unified.json")
-    src.add_argument("--input-url", help="URL to fetch unified.json (e.g. raw GitHub)")
+    src.add_argument("--input", type=Path, help="Local path to ok_pensioners.json")
+    src.add_argument("--input-url", help="URL to fetch ok_pensioners.json (e.g. raw GitHub)")
     src.add_argument("--input-csv", type=Path,
                      help="Local path to a generic CSV (dixiedata export, etc.). "
                           "Expected columns: id, first_name, middle_name, last_name, "
@@ -1327,7 +1327,7 @@ def main() -> int:
     ground_truth = {}
     if args.ground_truth_csv:
         ground_truth = load_ground_truth(args.ground_truth_csv)
-        # Build a map by application number too, for unified.json
+        # Build a map by application number too, for ok_pensioners.json
         for p_data in pensioners:
             app = p_data.get('application_number', '').strip()
             if app:

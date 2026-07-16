@@ -1,6 +1,6 @@
 """Tests for spouse cross-reference logic.
 
-Given a FaG spouse/children index entry and a unified.json widow
+Given a FaG spouse/children index entry and a ok_pensioners.json widow
 record, decide whether they're the same family. The cross-ref is
 strong when:
   - Widow's first + last name matches spouse's first + last
@@ -25,7 +25,7 @@ from scripts.spouse_cross_ref import (
 
 
 # ============================================================
-# Fixtures: real widow records from unified.json
+# Fixtures: real widow records from ok_pensioners.json
 # ============================================================
 WIDOW_LOONEY = {
     "id": 5052,
