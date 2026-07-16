@@ -4,6 +4,31 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J5-S2: per-run results.jsonl + view.html copy
+
+Each run's per-pensioner records now live at
+`output/<runname>/results.jsonl` (was `state.jsonl`); the legacy
+filename is still supported via `results_filename` override.
+`scripts/view.html` is copied into the run dir at start (skipped
+if already present, to preserve user edits during review).
+ResumeTracker is filename-agnostic; tests
+`tests/test_run_unified_main.py` updated to assert the new
+default.
+
+- scripts/pipeline/run_unified.py — `UnifiedRunnerConfig` gains
+  `results_filename` (default `"results.jsonl"`) and
+  `view_html_source` (default `scripts/view.html`). New module
+  function `copy_view_html_if_missing(source, dest_dir)` does
+  the byte-identical copy with no-overwrite policy.
+- tests/test_per_run_isolation.py (new) — 13 tests covering
+  the per-run filename default + override, view.html copy +
+  skip-if-exists + missing-source resilience, and
+  backward-compat for `state.jsonl`.
+
+Tests: 13 new pass; 715 adjacent pass; 1 pre-existing failure
+in `test_view_html.py::test_view_html_field_set_matches_schema`
+unrelated (carried from issue #9).
+
 ### J5-S1: batch config.json + init-batch subcommand + --config arg
 
 Each run now lives in its own `output/<runname>/` folder with

@@ -48,7 +48,7 @@ def test_run_batch_processes_all(tmp_path):
     """Batch processes each pensioner once."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    state = out_dir / "state.jsonl"
+    state = out_dir / "results.jsonl"
     outliers = out_dir / "outliers.jsonl"
 
     def fake_fag(pensioner, cfg):
@@ -84,7 +84,7 @@ def test_run_batch_skips_completed(tmp_path):
     """Resume: pensioners already in state are skipped."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    state = out_dir / "state.jsonl"
+    state = out_dir / "results.jsonl"
     # Pre-populate with pensioner 1
     write_unified_line(state, {"pensioner_id": 1, "fag_status": "no_results"})
 
@@ -131,7 +131,7 @@ def test_run_batch_limit(tmp_path):
     """Limit caps the number of pensioners processed."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    state = out_dir / "state.jsonl"
+    state = out_dir / "results.jsonl"
 
     def fake_fag(p, c):
         return [], "no_results"
@@ -147,7 +147,7 @@ def test_run_batch_handles_pensioner_exception(tmp_path):
     """A pensioner that raises doesn't crash the whole batch."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    state = out_dir / "state.jsonl"
+    state = out_dir / "results.jsonl"
 
     def fake_fag(pensioner, cfg):
         if pensioner["id"] == 2:
@@ -190,7 +190,7 @@ def test_run_batch_records_count_in_both_files(tmp_path):
     """state.jsonl and outliers.jsonl counts add to total processed."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
-    state = out_dir / "state.jsonl"
+    state = out_dir / "results.jsonl"
     outliers = out_dir / "outliers.jsonl"
 
     def fake_fag(p, c):

@@ -92,8 +92,8 @@ def test_cli_config_loads_and_runs(tmp_path, monkeypatch):
     with patch("scripts.fag_browser.make_fag_search_fn") as mfsf:
         rc = cli_main(["--config", str(cfg_path), "--no-fag"])
     assert rc == 0
-    # State file should exist under output/beta/
-    state = tmp_path / "output" / "beta" / "state.jsonl"
+    # Results file should exist under output/beta/
+    state = tmp_path / "output" / "beta" / "results.jsonl"
     assert state.exists()
 
 

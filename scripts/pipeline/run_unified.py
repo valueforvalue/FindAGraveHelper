@@ -88,6 +88,47 @@ class UnifiedRunnerConfig:
     write_heartbeat_every: int = 50  # every N pensioners
     # Browser (kept abstract; the actual FaG search is injected)
     fag_search_fn: Optional[Callable] = None
+    # Per-run isolation (J5-S2)
+    # Filename for per-pensioner results within out_dir. Defaults to
+    # "results.jsonl" (one Results file per run, named after the
+    # run). Legacy "state.jsonl" is still supported by passing it
+    # explicitly — ResumeTracker + run_batch are filename-agnostic.
+    results_filename: str = "results.jsonl"
+    # Path to the source view.html to copy into out_dir at run start.
+    # The copy is skipped if out_dir/view.html already exists
+    # (preserves user edits during review).
+    view_html_source: Optional[Path] = None
+
+
+# ============================================================
+# view.html copy (J5-S2)
+# ============================================================
+def copy_view_html_if_missing(
+    source: Optional[Path],
+    dest_dir: Path,
+    dest_filename: str = "view.html",
+) -> bool:
+    """Copy source → dest_dir/dest_filename iff dest doesn't exist.
+
+    Returns True if a copy happened, False otherwise (skipped because
+    dest exists, or source missing, or source/dest identical path).
+    Never raises on missing source — the run proceeds without a
+    per-run view.html.
+    """
+    if source is None:
+        return False
+    source = Path(source)
+    dest_dir = Path(dest_dir)
+    dest = dest_dir / dest_filename
+    if dest.exists():
+        return False
+    if not source.exists():
+        return False
+    dest_dir.mkdir(parents=True, exist_ok=True)
+    # Byte-copy; shutil.copyfile preserves bytes exactly.
+    import shutil
+    shutil.copyfile(source, dest)
+    return True
 
 
 # ============================================================
@@ -322,8 +363,14 @@ def run_batch(
         raise ValueError("UnifiedRunnerConfig.out_dir must be set")
     out_dir = Path(config.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    state_path = out_dir / "state.jsonl"
+    # Per-run Results file (J5-S2). Default results.jsonl; legacy
+    # state.jsonl supported by passing it explicitly.
+    state_path = out_dir / config.results_filename
     outliers_path = out_dir / "outliers.jsonl"
+
+    # view.html copy (J5-S2). No-op if source missing or dest exists.
+    if config.view_html_source is not None:
+        copy_view_html_if_missing(config.view_html_source, out_dir)
 
     # Resume support
     tracker = ResumeTracker(state_path)
@@ -741,6 +788,10 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         limit=args.limit,
         fag_search_fn=fag_search_fn,
         write_heartbeat_every=args.heartbeat_every,
+        # J5-S2: per-run Results filename + view.html source.
+        # Default results.jsonl; CLI/config can override.
+        results_filename=getattr(args, "results_filename", "results.jsonl"),
+        view_html_source=getattr(args, "view_html_source", Path("scripts/view.html")),
     )
 
     try:
