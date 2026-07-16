@@ -62,10 +62,10 @@ from typing import Any, Optional
 
 # Allow imports from this script's directory when run as a script.
 sys.path.insert(0, str(Path(__file__).parent))
-from checkpoint import write_checkpoint, read_checkpoint, record_failure  # noqa: E402
+from scripts.checkpoint import write_checkpoint, read_checkpoint, record_failure
 from urllib.parse import urlencode
-from regiment_keyword import strategy_regiment_bio, extract_regiment_phrases  # noqa: E402
-from nickname_match import strategy_with_nickname, nickname_candidates  # noqa: E402
+from scripts.regiment_keyword import strategy_regiment_bio, extract_regiment_phrases
+from scripts.nickname_match import strategy_with_nickname, nickname_candidates
 
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 from playwright.sync_api import TimeoutError as PWTimeout

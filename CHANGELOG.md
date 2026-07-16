@@ -4,6 +4,33 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: orphan-library audit + fix search_fag bare imports (T020)
+
+The audit found ZERO true orphan libraries. The four modules
+initially suspected (cgr_fag_link, nickname_match,
+regiment_keyword, spouse_cross_ref) are all live code:
+
+- spouse_cross_ref is the seed for T005 (Spouse cross-reference
+  full pipeline) + the domain concept in CONTEXT.md glossary
+- cgr_fag_link is the seed for the BOTH MATCH direct_link
+  detector; both_match.py already accepts fag_link as a param
+- nickname_match + regiment_keyword ARE imported by
+  scripts/search_fag.py via fragile bare imports
+  (`from nickname_match import ...` without the `scripts.`
+  prefix) that the audit tool couldn't see
+
+The bare imports were the actual fragility — fixed:
+
+- `scripts/search_fag.py` now uses `from scripts.checkpoint`,
+  `from scripts.regiment_keyword`, `from scripts.nickname_match`
+
+- `scripts/_archive/ARCHIVED.md` created with the decision
+  rationale for future maintainers
+- 4 follow-up issues filed for related bugs found:
+  soundex (#6, fixed), search_fag incomplete split (#8),
+  checkpoint import path (#7), cgr_fag_link regex syntax (#10)
+- 699 tests green
+
 ### Refactor: lift state.jsonl schema to typed dataclasses (T018)
 
 state.jsonl was an implicit schema documented in
