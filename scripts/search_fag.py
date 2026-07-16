@@ -394,23 +394,15 @@ STRATEGIES = [
 # ============================================================
 
 def normalise(s: str) -> str:
-    return re.sub(r"[^a-z]", "", (s or "").lower())
+    """Back-compat shim. Canonical implementation: scripts.name_utils.normalise."""
+    from scripts.name_utils import normalise as _impl
+    return _impl(s)
 
 
 def soundex(name: str) -> str:
-    name = normalise(name)
-    if not name:
-        return ""
-    code = name[0].upper()
-    mapping = {"BFPV": "1", "CGJKQSXZ": "2", "DT": "3", "L": "4", "MN": "5", "R": "6"}
-    for c in name[1:]:
-        for k, v in mapping.items():
-            if c in k:
-                if code[-1] != v:
-                    code += v
-                break
-    code = code[0] + ''.join(c for c in code[1:] if not c.isalpha())
-    return code.ljust(4, '0')[:4]
+    """Back-compat shim. Canonical implementation: scripts.name_utils.soundex."""
+    from scripts.name_utils import soundex as _impl
+    return _impl(name)
 
 
 def parse_slug(slug: str) -> dict:

@@ -4,6 +4,22 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: extract name_utils (T016)
+
+scripts/phonetic_match.py imported `normalise` and `soundex`
+from scripts/search_fag.py — a downstream matcher reaching up
+into the god-module for two helpers. Extracted both to
+scripts/name_utils.py. search_fag.py keeps its defs as a
+back-compat shim that delegates to name_utils, so callers
+that `from scripts.search_fag import normalise` keep working.
+
+- `scripts/name_utils.py` (new) — leaf module with 2
+  functions: normalise, soundex
+- `scripts/phonetic_match.py` — imports from name_utils
+- `scripts/search_fag.py` — defs become shims
+- `tests/test_name_utils.py` (new) — 11 tests covering empty/
+  None/unicode/punctuation/classic Soundex cases
+
 ### Refactor: rename data files + add provenance _meta (T015)
 
 The canonical OK pensioner file was called `unified.json`, which

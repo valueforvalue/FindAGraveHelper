@@ -32,7 +32,9 @@ from __future__ import annotations
 import jellyfish
 from rapidfuzz.distance import JaroWinkler
 
-from scripts.search_fag import normalise as _normalize, soundex as _soundex_local
+from scripts.name_utils import normalise as _normalize, soundex as _soundex_local
+from scripts import name_utils  # back-compat shim, prefer scripts.name_utils
+from scripts.name_utils import normalise, soundex
 
 
 # ============================================================
