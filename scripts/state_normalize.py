@@ -18,7 +18,7 @@ Unified shape:
     company,
     pensioncard_backlink,
     cgr_records, cgr_status,
-    fag_records, fag_status, cgr_skipped_fag,
+    fag_records, fag_status,
     both_match: { method, reason, confidence } | None,
     ranked_candidates: <alias for fag_records, top 20 by score>,
     best_score: <max of fag_records or 0>,
@@ -44,14 +44,14 @@ from scripts.state.schema import (
 # ============================================================
 def is_unified(rec: dict) -> bool:
     """A unified record has fag_records OR cgr_records or
-    cgr_skipped_fag or fag_status/cgr_status explicit fields.
+    fag_status/cgr_status explicit fields.
 
     If a record has ANY of the unified-format keys, treat it as
     unified. Pure legacy records only have ranked_candidates."""
     unified_keys = (
         "fag_records", "cgr_records",
         "fag_status", "cgr_status",
-        "cgr_skipped_fag", "both_match",
+        "both_match",
     )
     return any(k in rec for k in unified_keys)
 
@@ -82,8 +82,8 @@ def extract_cgr_records(rec: dict) -> list[dict]:
 def get_status(rec: dict) -> str:
     """Get the status string regardless of format."""
     if is_unified(rec):
-        # If CGR strong skipped FaG, the fag_status is "skipped_cgr_strong"
-        # That's the most informative status for view.html
+        # FaG runs unconditionally (POLICY-LOCKED 2026-07-16), so
+        # fag_status is always populated when CGR runs.
         if rec.get("fag_status"):
             return rec["fag_status"]
         if rec.get("cgr_status"):
@@ -153,7 +153,8 @@ def normalize_state_record(rec: dict) -> dict:
             "strategies_run": rec.get("strategies_run", []),
             "cgr_records": typed.cgr_records,
             "cgr_status": typed.cgr_status,
-            "cgr_skipped_fag": bool(rec.get("cgr_skipped_fag", False)),
+            # NOTE: no skip-FaG key — POLICY-LOCKED 2026-07-16. FaG
+            # always runs for every pensioner regardless of CGR strength.
             "both_match": typed.both_match.to_dict() if typed.both_match else None,
             "timestamp": typed.timestamp,
         }
@@ -179,7 +180,7 @@ def normalize_state_record(rec: dict) -> dict:
         "strategies_run": rec.get("strategies_run", []),
         "cgr_records": [],
         "cgr_status": "",
-        "cgr_skipped_fag": False,
+        # NOTE: no skip-FaG key — POLICY-LOCKED 2026-07-16.
         "both_match": None,
         "timestamp": typed.timestamp,
     }

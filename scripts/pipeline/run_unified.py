@@ -92,6 +92,10 @@ class UnifiedRunnerConfig:
     # pensioner_id (str) -> [page_id, ...] (the IIIF image IDs for
     # Side 1, Side 2, ...). view.html embeds the images directly.
     pensioncard_pages_path: Optional[Path] = None
+    # CGR source JSONL path. Used by the post-run CGR <-> FaG
+    # dedup (scripts/cgr/cgr_fag_dedup.py). When None, the dedup
+    # is skipped.
+    cgr_path: Optional[Path] = None
     # Browser (kept abstract; the actual FaG search is injected)
     fag_search_fn: Optional[Callable] = None
     # Per-run isolation (J5-S2)
@@ -642,6 +646,29 @@ def run_batch(
     except Exception as e:
         log.error("Report generation failed: %s", e)
 
+    # CGR <-> FaG dedup (J7). After the report, before the resume
+    # artifact, so the dedup reflects the final state. Annotates
+    # each results.jsonl record in place and writes a summary to
+    # cgr_fag_dedup.json in the run dir.
+    if config.cgr_path is not None:
+        try:
+            from scripts.cgr.cgr_fag_dedup import run_dedup
+            dedup_report = run_dedup(
+                results_path=state_path,
+                cgr_path=Path(config.cgr_path),
+                output_path=out_dir / "cgr_fag_dedup.json",
+                cgr_blocking_index=prebuilt_cgr_index,
+            )
+            counts = dedup_report.get("stats", {}).get(
+                "pensioner_count_by_status", {}
+            )
+            log.info(
+                "CGR dedup: %s",
+                ", ".join(f"{k}={v}" for k, v in counts.items()),
+            )
+        except Exception as e:
+            log.error("CGR dedup failed: %s", e)
+
     # J5-S3: resume.sh artifact. Written after the report so the
     # final state is captured by the next resume.
     if config_path_for_resume is not None:
@@ -954,6 +981,8 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         view_html_source=getattr(args, "view_html_source", Path("scripts/view.html")),
         # J6: pensioncard pages sidecar (view.html embeds IIIF images).
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
+        # J7: CGR path for post-run dedup.
+        cgr_path=Path(args.cgr) if args.cgr else None,
     )
 
     try:

@@ -10,7 +10,10 @@ Public facade:
     fag_search_fn, prebuilt_cgr_index) -> PipelineResult
   - PipelineConfig, PipelineResult
   - build_cgr_blocking_index, lookup_cgr_for_pensioner,
-    annotate_cgr_matches, should_skip_fag
+    annotate_cgr_matches
   - write_state_line, load_cgr_index_from_jsonl
   - UnifiedConfig, UnifiedRunResult (back-compat aliases)
+
+NOTE: should_skip_fag() was REMOVED (POLICY-LOCKED 2026-07-16).
+FaG runs unconditionally; do not gate it on CGR strength.
 """

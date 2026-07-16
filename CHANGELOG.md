@@ -4,6 +4,60 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J7: CGR <-> FaG post-run dedup (CGR no longer in view.html)
+
+Reframed the CGR role. The CGR (Confederate Graves Registry)
+data is no longer displayed inline in view.html as a side
+panel. It is now a post-run dedup signal: each results.jsonl
+record is annotated with one of four `cgr_dedup_status`
+values:
+
+  - `duplicate`             FaG auto-resolved AND CGR has them
+  - `follow_up_candidate`   CGR has them but FaG didn't auto-resolve
+                            (these are the gold — CGR found a lead
+                            FaG missed; reviewer should re-examine)
+  - `clear`                 no CGR match; FaG is the only signal
+  - `no_fag_match`          neither CGR nor FaG found anything
+
+The status surfaces in view.html as a small badge beside the
+fag_status pill + a new entry in the status filter dropdown +
+a pill in the stats bar. The old CGR panel CSS, JS, and
+function definitions are removed.
+
+For the test-batch-25 (re-run with this slice):
+  - 1 duplicate (Hugh H. Akers, auto_accept + CGR at Dougherty
+    Cemetery, Carter Co., OK, b.1846 d.1924)
+  - 1 follow_up_candidate (Alvin Andrews, FaG too_many + CGR
+    at Wards Grove Cemetery)
+  - 23 clear
+  - 0 no_fag_match
+
+A new `output/<runname>/cgr_fag_dedup.json` summary is written
+with per-pensioner verdicts + a `follow_up_candidates` shortcut
+list for reviewer triage.
+
+- scripts/cgr/cgr_fag_dedup.py (new): match logic (last name +
+  phonetic first name + unit/year corroboration), per-pensioner
+  classification, run_dedup() entry point that annotates
+  results.jsonl in place + writes the summary.
+- scripts/pipeline/run_unified.py: `UnifiedRunnerConfig` gains
+  `cgr_path`; `run_batch()` calls `run_dedup()` after the
+  report (before the resume artifact) when cgr_path is set.
+- scripts/view.html: drops `renderCgrPanel`, `renderCgrConflicts`,
+  and the matching CSS. Adds `renderCgrDedupBadge` (renders
+  the badge beside the fag_status pill with hover tooltip
+  showing the matched CGR row), 4 new status filter entries,
+  4 new stats pills.
+- tests/test_cgr_fag_dedup.py (new): 15 unit + integration
+  tests covering year extraction, normalize_unit,
+  match_strength tiering, classify_pensioner decision matrix,
+  run_dedup in-place annotation, missing CGR file handling.
+- tests/test_cgr_view_html.py: rewritten — 6 tests for the
+  new badge rendering + status filter + panel removal.
+
+Tests: 21 new pass; 760 adjacent pass; 1 pre-existing failure
+unrelated.
+
 ### Fix #13: digitalprairie.ok.gov backlink migration + IIIF embed
 
 digitalprairie.ok.gov migrated its URL structure in mid-2026.

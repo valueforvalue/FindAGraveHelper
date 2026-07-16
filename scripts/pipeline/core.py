@@ -69,18 +69,11 @@ class PipelineConfig:
 class UnifiedConfig:
     """Back-compat alias. See PipelineConfig for the canonical type.
 
-    Note: the ``skip_fag_on_strong_cgr`` field is NOT honored by the
-    pipeline (POLICY-LOCKED 2026-07-16). Kept here for back-compat.
+    Note: there is intentionally NO `skip_fag_on_strong_cgr` field.
+    The decision to always run FaG is POLICY-LOCKED 2026-07-16 (see
+    this module's docstring). Adding such a field back risks
+    re-introducing the disabled skip path.
     """
-    skip_fag_on_strong_cgr: bool = field(
-        default=True,
-        metadata={
-            "policy": "POLICY-LOCKED 2026-07-16",
-            "note": "ignored by the pipeline; kept for back-compat. "
-                    "See scripts/unified_pipeline.py module docstring "
-                    "'DECISION POLICY (LOCKED 2026-07-16)'.",
-        },
-    )
     throttle_seconds: float = 1.5
     max_cgr_candidates: int = 20
     include_fag_candidates: bool = True
@@ -139,16 +132,13 @@ def lookup_cgr_for_pensioner(
     return matches
 
 
-def should_skip_fag(cgr_matches: list[dict]) -> bool:
-    """(POLICY-LOCKED) Would-be skip-if-CGR-strong predicate.
-
-    Returns True if any CGR match is 'strong'. This function is NOT
-    wired into the FaG search path by policy decision
-    (2026-07-16). Kept here so callers needing to surface CGR-
-    strong rows for view.html / dedup work can do so without
-    re-implementing the threshold logic.
-    """
-    return any(m.get("match_strength") == "strong" for m in cgr_matches)
+# NOTE: The should_skip_fag() predicate was REMOVED entirely
+# (previously was a would-be skip-if-CGR-strong check marked
+# POLICY-LOCKED 2026-07-16). Per this module's DECISION POLICY,
+# FaG runs unconditionally for every pensioner. If you need to
+# surface CGR-strong rows for dedup or display, inline the check
+# at the call site — do NOT re-introduce this helper, which
+# historically invited accidental re-wiring of the skip path.
 
 
 def annotate_cgr_matches(pensioner: dict, matches: list[dict]) -> list[dict]:
@@ -220,7 +210,8 @@ class UnifiedRunResult:
             "cgr_status": self.cgr_status,
             "fag_records": self.fag_records,
             "fag_status": self.fag_status,
-            "cgr_skipped_fag": (self.fag_status == "skipped_cgr_strong"),
+            # NOTE: no `cgr_skipped_fag` key — see DECISION POLICY
+            # (LOCKED 2026-07-16) in this module's docstring.
             "timestamp": self.timestamp,
             "error": self.error,
         }

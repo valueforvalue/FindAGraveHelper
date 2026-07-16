@@ -94,7 +94,7 @@ def _status_counts(records: list[dict]) -> dict[str, int]:
     s = {
         "auto_accept": 0, "ambiguous": 0, "no_results": 0,
         "error": 0, "captcha": 0, "too_many": 0, "skip": 0,
-        "skipped_cgr_strong": 0, "other": 0,
+        "other": 0,
     }
     for r in records:
         status = r.get("fag_status") or r.get("status", "")
@@ -164,7 +164,7 @@ def build_report(
     stats.errors = sc["error"]
     stats.captchas = sc["captcha"]
     stats.too_many = sc["too_many"]
-    stats.skipped = sc["skip"] + sc["skipped_cgr_strong"]
+    stats.skipped = sc["skip"]
 
     # BOTH MATCH
     for r in records:

@@ -1,77 +1,94 @@
-"""Tests for view.html CGR panel.
+"""Tests for view.html CGR dedup badge (J7).
 
-When the state record has 'cgr_records' (from the CGR xref run),
-view.html should render a CGR section showing:
-  - For each CGR match: name, unit, born, match_strength badge
-  - Died state (the key OK-burial field)
-  - Cemetery name + city + county
-  - Conflicts highlighted (different unit, different birth year)
-
-The CGR panel appears alongside the FaG candidates, not in
-place of them. The user reviews both.
+The CGR panel was removed (CGR is now a post-run dedup signal,
+not a side display). Each results.jsonl record carries a
+`cgr_dedup_status` field set by scripts/cgr/cgr_fag_dedup.py;
+view.html renders it as a small badge beside the fag_status pill
+and as a filter in the status dropdown.
 """
 import re
 import sys
 from pathlib import Path
 
 ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT))
-
 VIEW_HTML = (ROOT / "scripts" / "view.html").read_text(encoding="utf-8")
 
 
-def test_view_html_renders_cgr_records_section():
-    """When cgr_records is present, view.html renders them."""
-    assert "cgr_records" in VIEW_HTML
+# ============================================================
+# Badge rendering
+# ============================================================
+def test_view_html_renders_cgr_dedup_badge():
+    """The render path must call a cgr-dedup badge helper."""
+    assert "renderCgrDedupBadge" in VIEW_HTML, (
+        "expected renderCgrDedupBadge helper in view.html"
+    )
+    # The helper must read cgr_dedup_status from the record
+    assert re.search(r"p\.cgr_dedup_status", VIEW_HTML), (
+        "expected cgr_dedup_status to be read from the pensioner record"
+    )
 
 
-def test_view_html_shows_match_strength_badge():
-    """Match strength (strong/medium/weak) is shown as a CSS badge."""
-    assert "match-strength" in VIEW_HTML or "match_strength" in VIEW_HTML
+def test_view_html_badge_classes_for_all_statuses():
+    """CSS must include styling for all four dedup statuses."""
+    for status in ("duplicate", "follow_up_candidate", "clear", "no_fag_match"):
+        assert f".cgr-dedup-badge.{status}" in VIEW_HTML, (
+            f"expected CSS class for cgr-dedup-badge.{status}"
+        )
 
 
-def test_view_html_shows_died_state():
-    """The died state field is displayed (key OK-burial signal)."""
-    assert "died_state" in VIEW_HTML or "died-state" in VIEW_HTML
+# ============================================================
+# Filter integration
+# ============================================================
+def test_view_html_status_filter_includes_cgr_options():
+    """The status filter dropdown must include CGR dedup options."""
+    assert 'value="cgr_duplicate"' in VIEW_HTML, (
+        'expected <option value="cgr_duplicate"> in the status filter'
+    )
+    assert 'value="cgr_follow_up"' in VIEW_HTML
+    assert 'value="cgr_clear"' in VIEW_HTML
+    assert 'value="cgr_no_match"' in VIEW_HTML
 
 
-def test_view_html_shows_cemetery_name():
-    """Cemetery name field is displayed."""
-    assert "cemetery_details" in VIEW_HTML or "cemetery_name" in VIEW_HTML
+def test_view_html_filter_logic_handles_cgr_statuses():
+    """The applyFilter function must filter by cgr_dedup_status."""
+    # Look for the four `if` checks we added
+    assert re.search(
+        r"statusVal\s*===\s*['\"]cgr_duplicate['\"].*?cgr_dedup_status\s*!==\s*['\"]duplicate['\"]",
+        VIEW_HTML, re.DOTALL,
+    ), "expected filter check for cgr_duplicate"
+    assert re.search(
+        r"statusVal\s*===\s*['\"]cgr_follow_up['\"].*?cgr_dedup_status\s*!==\s*['\"]follow_up_candidate['\"]",
+        VIEW_HTML, re.DOTALL,
+    )
+    assert re.search(
+        r"statusVal\s*===\s*['\"]cgr_clear['\"].*?cgr_dedup_status\s*!==\s*['\"]clear['\"]",
+        VIEW_HTML, re.DOTALL,
+    )
+    assert re.search(
+        r"statusVal\s*===\s*['\"]cgr_no_match['\"].*?cgr_dedup_status\s*!==\s*['\"]no_fag_match['\"]",
+        VIEW_HTML, re.DOTALL,
+    )
 
 
-def test_view_html_highlights_conflicts():
-    """Conflicts (unit, birth_year) are highlighted somehow."""
-    assert "conflicts" in VIEW_HTML
+# ============================================================
+# CGR panel REMOVAL
+# ============================================================
+def test_view_html_no_cgr_panel_render():
+    """The CGR side panel (renderCgrPanel) must be gone."""
+    assert "renderCgrPanel" not in VIEW_HTML, (
+        "renderCgrPanel must be removed (CGR is now a dedup signal, "
+        "not a side panel)"
+    )
+    assert "renderCgrConflicts" not in VIEW_HTML
+    # And the old CSS classes
+    assert ".cgr-panel {" not in VIEW_HTML
+    assert ".cgr-conflict {" not in VIEW_HTML
+    assert ".match-badge.strong" not in VIEW_HTML
+    assert ".cgr-died-state" not in VIEW_HTML
 
 
-def test_view_html_handles_no_cgr_records():
-    """When cgr_records is absent or empty, no crash — show nothing or note."""
-    # Just verify the rendering code uses an optional check
-    # (cgr_records || [] is the standard pattern)
-    assert re.search(r"cgr_records\s*\|\|\s*\[\]", VIEW_HTML) or \
-           re.search(r"cgr_records\s*&&", VIEW_HTML) or \
-           re.search(r"\(cgr_records\s*\|\|", VIEW_HTML), \
-        "expected optional cgr_records handling"
-
-
-def test_view_html_cgr_panel_appears_per_pensioner():
-    """CGR panel is rendered as part of each pensioner's row, not globally."""
-    # Find the per-pensioner rendering block
-    js_block_match = re.search(r"function renderPensioner.*?\n}", VIEW_HTML, re.DOTALL)
-    assert js_block_match
-    js_block = js_block_match.group(0)
-    assert "cgr_records" in js_block or "cgr" in js_block.lower()
-
-
-def test_view_html_cgr_strength_styling():
-    """CSS classes exist for strong/medium/weak match strengths."""
-    assert "match-strong" in VIEW_HTML or "strong" in VIEW_HTML
-    assert "match-medium" in VIEW_HTML or "medium" in VIEW_HTML
-    assert "match-weak" in VIEW_HTML or "weak" in VIEW_HTML
-
-
-def test_view_html_cgr_died_state_emphasized():
-    """The died state should be visually emphasized (it's the killer field)."""
-    # Look for any CSS rule that highlights the died state
-    assert re.search(r"died.*state|died_state", VIEW_HTML, re.IGNORECASE)
+def test_view_html_stats_bar_includes_cgr_pills():
+    """The stats bar should show CGR dedup counts."""
+    # Just check the structural presence of all four label strings
+    for label in ("CGR dup", "CGR follow-up", "CGR clear", "CGR+FaG miss"):
+        assert label in VIEW_HTML, f"expected stats pill: {label}"

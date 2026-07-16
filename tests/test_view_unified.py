@@ -4,11 +4,16 @@ view.html processes JSONL state files. There are now two state
 formats:
   - FaG-only (legacy): {ranked_candidates, best_score, status, ...}
   - Unified (new):    {cgr_records, cgr_status,
-                       fag_records, fag_status, cgr_skipped_fag,
+                       fag_records, fag_status,
                        both_match, ...}
 
 We test the JS-side detection/normalization logic so that
 view.html can correctly render either format.
+
+POLICY-LOCKED 2026-07-16: FaG runs unconditionally for every
+pensioner; cgr_skipped_fag was REMOVED from the wire format.
+Any test that exercises `cgr_skipped_fag` or `skipped_cgr_strong`
+is pinning the dead-by-policy behavior and must fail.
 """
 import sys
 from pathlib import Path
@@ -101,7 +106,6 @@ def test_normalize_unified_record():
         "cgr_records": [{"cgr_id": "1", "match_strength": "strong"}],
         "fag_records": [{"memorial_id": "99", "score": 0.8}],
         "fag_status": "auto_accept",
-        "cgr_skipped_fag": True,
         "both_match": {"method": "direct_link", "confidence": 1.0},
         "pensioner_id": 5,
     }
@@ -110,7 +114,9 @@ def test_normalize_unified_record():
     assert "ranked_candidates" in out
     assert out["cgr_records"] == rec["cgr_records"]
     assert out["both_match"] == rec["both_match"]
-    assert out["cgr_skipped_fag"] is True
+    # POLICY GUARD (LOCKED 2026-07-16): FaG always runs. The skip
+    # field must not propagate from the source record.
+    assert "cgr_skipped_fag" not in out
 
 
 def test_normalize_legacy_record():
@@ -129,32 +135,35 @@ def test_normalize_legacy_record():
 
 
 def test_normalize_with_cgr_strong_skip():
-    """When CGR strong skipped FaG, ranked_candidates is empty but
-    both sources are present."""
+    """POLICY GUARD (LOCKED 2026-07-16): even when CGR is strong,
+    FaG always runs. The normalize path must NOT emit cgr_skipped_fag.
+    This test pins that contract for the legacy skip-status value."""
     rec = {
         "cgr_records": [{"match_strength": "strong", "cgr_name": "X"}],
-        "fag_records": [],
-        "fag_status": "skipped_cgr_strong",
+        "fag_records": [{"memorial_id": "1", "score": 0.5}],
+        "fag_status": "ambiguous",  # FaG ran, returned an ambiguous result
+        # Even if a legacy record carries these, the normalizer
+        # must NOT propagate them.
         "cgr_skipped_fag": True,
     }
     out = normalize_state_record(rec)
-    assert out["cgr_skipped_fag"] is True
-    assert out["ranked_candidates"] == []  # FaG skipped
+    assert "cgr_skipped_fag" not in out, (
+        "normalize_state_record propagated cgr_skipped_fag from "
+        "the source record; the field must be removed entirely "
+        "(POLICY-LOCKED 2026-07-16)."
+    )
+    # And FaG candidates must be present (not empty):
+    assert len(out["ranked_candidates"]) == 1
 
 
 # ============================================================
 # Status helpers
 # ============================================================
 def test_get_status_unified():
-    """Unified: use fag_status (or cgr_status if FaG skipped)."""
+    """Unified: use fag_status. FaG always runs (POLICY-LOCKED
+    2026-07-16), so fag_status is always populated."""
     rec = {"fag_status": "auto_accept", "cgr_status": "cgr_found"}
     assert get_status(rec) == "auto_accept"
-
-
-def test_get_status_unified_skipped():
-    """When FaG skipped, use cgr_status."""
-    rec = {"fag_status": "skipped_cgr_strong", "cgr_status": "cgr_found"}
-    assert get_status(rec) == "skipped_cgr_strong"
 
 
 def test_get_status_legacy():

@@ -22,7 +22,6 @@ from scripts.unified_runner import (
     lookup_cgr_for_pensioner,
     UnifiedRunResult,
     UnifiedConfig,
-    should_skip_fag,
 )
 
 
@@ -134,46 +133,6 @@ def test_lookup_returns_vets_in_different_cemeteries():
 
 
 # ============================================================
-# Skip decision
-# ============================================================
-def test_should_skip_fag_strong_match():
-    """Strong CGR match → skip FaG."""
-    cgr_matches = [{"match_strength": "strong", "id": 1}]
-    skip = should_skip_fag(cgr_matches)
-    assert skip is True
-
-
-def test_should_skip_fag_medium_match():
-    """Medium CGR match → still run FaG (verification)."""
-    cgr_matches = [{"match_strength": "medium", "id": 1}]
-    skip = should_skip_fag(cgr_matches)
-    assert skip is False
-
-
-def test_should_skip_fag_weak_match():
-    """Weak CGR match → still run FaG."""
-    cgr_matches = [{"match_strength": "weak", "id": 1}]
-    skip = should_skip_fag(cgr_matches)
-    assert skip is False
-
-
-def test_should_skip_fag_no_match():
-    """No CGR match → still run FaG."""
-    skip = should_skip_fag([])
-    assert skip is False
-
-
-def test_should_skip_fag_multiple_strong():
-    """Multiple strong matches → skip FaG (CGR is sufficient)."""
-    cgr_matches = [
-        {"match_strength": "strong", "id": 1},
-        {"match_strength": "strong", "id": 2},
-    ]
-    skip = should_skip_fag(cgr_matches)
-    assert skip is True
-
-
-# ============================================================
 # Unified result
 # ============================================================
 def _sample_pensioner():
@@ -188,65 +147,42 @@ def _sample_pensioner():
     }
 
 
-def test_unified_result_cgr_strong_skips_fag():
-    """When CGR is strong and we skip FaG, fag_status == 'skipped_cgr_strong'."""
-    config = UnifiedConfig(skip_fag_on_strong_cgr=True)
+def test_unified_result_no_cgr_skipped_fag_field():
+    """POLICY GUARD (LOCKED 2026-07-16): UnifiedRunResult.to_dict()
+    must not emit `cgr_skipped_fag`. The field represented a
+    skip-FaG-on-CGR-strong behavior that was never wired in
+    (POLICY: always run FaG). Re-introducing the field invites
+    re-use."""
     result = UnifiedRunResult(
         pensioner=_sample_pensioner(),
         cgr_records=[{"match_strength": "strong", "id": 999}],
         fag_records=[],
-        fag_status="skipped_cgr_strong",
-        timestamp="2026-07-16",
-    )
-    out = result.to_dict()
-    assert out["cgr_skipped_fag"] is True
-    assert out["fag_status"] == "skipped_cgr_strong"
-
-
-def test_unified_result_cgr_medium_runs_fag():
-    """Medium CGR match → FaG still runs."""
-    config = UnifiedConfig(skip_fag_on_strong_cgr=True)
-    result = UnifiedRunResult(
-        pensioner=_sample_pensioner(),
-        cgr_records=[{"match_strength": "medium", "id": 999}],
-        fag_records=[{"memorial_id": 12345, "score": 0.7}],
-        fag_status="auto_accept",
-        timestamp="2026-07-16",
-    )
-    out = result.to_dict()
-    assert out["cgr_skipped_fag"] is False
-    assert out["fag_status"] == "auto_accept"
-
-
-def test_unified_result_no_cgr_runs_fag():
-    """No CGR match → FaG runs."""
-    config = UnifiedConfig(skip_fag_on_strong_cgr=True)
-    result = UnifiedRunResult(
-        pensioner=_sample_pensioner(),
-        cgr_records=[],
-        fag_records=[{"memorial_id": 12345, "score": 0.5}],
         fag_status="ambiguous",
         timestamp="2026-07-16",
     )
     out = result.to_dict()
-    assert out["cgr_skipped_fag"] is False
-    assert out["fag_status"] == "ambiguous"
+    assert "cgr_skipped_fag" not in out, (
+        f"UnifiedRunResult.to_dict() emitted cgr_skipped_fag={out.get('cgr_skipped_fag')!r}; "
+        "field must not exist (POLICY-LOCKED 2026-07-16)."
+    )
 
 
 def test_unified_result_to_jsonl_roundtrip():
-    """UnifiedRunResult serializes to JSONL cleanly."""
+    """UnifiedRunResult serializes to JSONL cleanly (no cgr_skipped_fag
+    field; fag_status is what the search actually returned)."""
     import json
     result = UnifiedRunResult(
         pensioner=_sample_pensioner(),
         cgr_records=[{"match_strength": "strong", "id": 999}],
-        fag_records=[],
-        fag_status="skipped_cgr_strong",
+        fag_records=[{"memorial_id": 12345, "score": 0.5}],
+        fag_status="ambiguous",
         timestamp="2026-07-16",
     )
     line = json.dumps(result.to_dict(), ensure_ascii=False)
     parsed = json.loads(line)
     assert parsed["pensioner_id"] == 5
     assert parsed["pensioner_first"] == "Hugh"
+    assert "cgr_skipped_fag" not in parsed
 
 # ============================================================
 # POLICY GUARDS (LOCKED 2026-07-16):
@@ -294,33 +230,33 @@ class TestAlwaysRunFaGPolicy:
             "Module docstring must reference the policy-lock date."
         )
 
-    def test_unified_config_skip_field_documented_as_locked(self):
-        """UnifiedConfig.skip_fag_on_strong_cgr must be marked as
-        policy-locked so future readers don't mistake the default
-        for a behavior we honor.
+    def test_unified_config_has_no_skip_field(self):
+        """UnifiedConfig must NOT carry a `skip_fag_on_strong_cgr`
+        field. The field was dead code (marked POLICY-LOCKED,
+        never honored); carrying it forward risks a future
+        change silently wiring it back in.
         """
         from scripts.unified_runner import UnifiedConfig
         import dataclasses
         for f in dataclasses.fields(UnifiedConfig):
-            if f.name == "skip_fag_on_strong_cgr":
-                # Default exists; that's fine for back-compat.
-                # But the type or metadata must warn it's ignored.
-                assert "POLICY-LOCKED" in str(f), (
-                    f"UnifiedConfig.{f.name} default or metadata "
-                    f"should be marked POLICY-LOCKED so readers know "
-                    f"the pipeline ignores it. Got: {f!r}"
-                )
+            assert f.name != "skip_fag_on_strong_cgr", (
+                f"UnifiedConfig must not declare `skip_fag_on_strong_cgr`. "
+                f"Got: {f!r}"
+            )
 
-    def test_should_skip_fag_helper_kept_but_documented(self):
-        """should_skip_fag() exists for view.html / dedup use, not
-        pipeline-skip use. A guard test asserts it exists and is
-        callable, but does NOT exercise it from the pipeline.
+    def test_should_skip_fag_helper_removed(self):
+        """should_skip_fag() must NOT exist. It was a would-be
+        skip-on-CGR-strong predicate; removing it prevents accidental
+        re-wiring. See POLICY-LOCKED 2026-07-16.
         """
-        from scripts.unified_runner import should_skip_fag
-        # It exists and is callable.
-        assert callable(should_skip_fag)
-        # It returns False for empty input.
-        assert should_skip_fag([]) is False
+        # The helper was removed from scripts.pipeline.core; importing
+        # the back-compat shim should also raise.
+        from scripts.pipeline import core as core_mod
+        assert not hasattr(core_mod, "should_skip_fag"), (
+            "should_skip_fag() must not exist in scripts.pipeline.core "
+            "(POLICY-LOCKED 2026-07-16). Re-add it ONLY if the always-run-"
+            "FaG policy is being explicitly reversed via a documented decision."
+        )
 
     def test_unified_pipeline_docstring_endorses_followup_searches(self):
         """DOCUMENTATION guard: the always-run-FaG policy must

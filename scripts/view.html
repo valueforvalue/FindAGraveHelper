@@ -20,7 +20,7 @@
 
   Derived (computed by state_normalize.py before this file reads it):
     status, ranked_candidates, best_score, best_candidate,
-    cgr_skipped_fag, strategies_run
+    strategies_run
 
   Tests: tests/test_view_html.py::test_view_html_field_set_matches_schema
 -->
@@ -48,7 +48,6 @@
   .stats .pill.auto-accept { background: #cce5ff; color: #004085; }
   .stats .pill.too-many { background: #e2d4f0; color: #5b2a85; }
   .stats .pill.captcha { background: #dee2e6; color: #495057; }
-  .stats .pill.skipped_cgr_strong { background: #cce5ff; color: #004085; }
 
   .pensioner { background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 12px;
                box-shadow: 0 1px 2px rgba(0,0,0,.08); }
@@ -64,7 +63,6 @@
   .status.captcha { background: #dee2e6; color: #495057; }
   .status.skip { background: #dee2e6; color: #495057; }
   .status.error { background: #f8d7da; color: #721c24; }
-  .status.skipped_cgr_strong { background: #cce5ff; color: #004085; }
 
   .candidates { margin: 12px 0 0; }
   .candidate { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-bottom: 8px;
@@ -96,28 +94,16 @@
   .candidate .found-by code { background: #f5f5f5; padding: 1px 4px;
                               border-radius: 2px; }
 
-  /* CGR (Confederate Graves Registry) panel */
-  .cgr-panel { background: #f9f6f0; border: 1px solid #d4c8a8; border-radius: 4px;
-               padding: 10px; margin-top: 10px; }
-  .cgr-panel h3 { margin: 0 0 8px; font-size: 13px; color: #5d4e2e; }
-  .cgr-record { border: 1px solid #e8e0c8; border-radius: 3px;
-                padding: 8px; margin-bottom: 6px; background: #fff; }
-  .cgr-record .cgr-name { font-weight: bold; }
-  .cgr-record .cgr-meta { font-size: 11px; color: #555; margin-top: 2px; }
-  .match-badge { display: inline-block; padding: 1px 6px; border-radius: 8px;
-                 font-size: 10px; font-weight: bold; margin-left: 4px; }
-  .match-badge.strong { background: #28a745; color: #fff; }
-  .match-badge.medium { background: #ffc107; color: #333; }
-  .match-badge.weak { background: #fd7e14; color: #fff; }
-  .match-badge.none { background: #ccc; color: #333; }
-  .cgr-died-state { font-weight: bold; padding: 2px 6px; border-radius: 3px;
-                    margin-left: 4px; }
-  .cgr-died-state.ok { background: #cce5ff; color: #004085; }
-  .cgr-died-state.not-ok { background: #f8d7da; color: #721c24; }
-  .cgr-conflict { background: #fff3cd; border-left: 3px solid #ffc107;
-                  padding: 4px 8px; margin-top: 4px; font-size: 11px;
-                  color: #856404; }
-  .cgr-conflict strong { color: #5d4500; }
+  /* CGR dedup status badge (J7). CGR is no longer rendered
+     inline as a side panel; its verdict is shown as a small
+     badge beside the fag_status pill. */
+  .cgr-dedup-badge { display: inline-block; padding: 2px 6px;
+                     border-radius: 3px; font-size: 10px;
+                     margin-left: 4px; font-weight: bold; }
+  .cgr-dedup-badge.duplicate { background: #d4edda; color: #155724; }
+  .cgr-dedup-badge.follow_up_candidate { background: #fff3cd; color: #856404; }
+  .cgr-dedup-badge.clear { background: #e2e3e5; color: #383d41; }
+  .cgr-dedup-badge.no_fag_match { background: #f8d7da; color: #721c24; }
 
   /* BOTH MATCH banner (F6) */
   .both-match-banner { padding: 10px 14px; margin: 8px 0; border-radius: 4px;
@@ -190,6 +176,10 @@
         <option value="too_many">Too many</option>
         <option value="no_results">No results</option>
         <option value="captcha">Captcha</option>
+        <option value="cgr_duplicate">CGR duplicate</option>
+        <option value="cgr_follow_up">CGR follow-up</option>
+        <option value="cgr_clear">CGR clear</option>
+        <option value="cgr_no_match">CGR+FaG miss</option>
       </select>
     </label>
     <label>Search: <input type="text" id="searchBox" placeholder="name, regiment, app #…"></label>
@@ -277,10 +267,11 @@ function parseInput(text) {
 // ============================================================
 function isUnified(rec) {
     // A unified record has fag_records OR cgr_records OR
-    // cgr_skipped_fag OR both_match. Pure legacy records only
-    // have ranked_candidates.
+    // both_match. Pure legacy records only have ranked_candidates.
+    // (The skip-FaG field was removed: FaG runs unconditionally per
+    // POLICY-LOCKED 2026-07-16.)
     return ('fag_records' in rec) || ('cgr_records' in rec) ||
-           ('cgr_skipped_fag' in rec) || ('both_match' in rec);
+           ('both_match' in rec);
 }
 
 function extractFagCandidates(rec) {
@@ -339,7 +330,6 @@ function normalizeStateRecord(rec) {
             strategies_run: rec.strategies_run || [],
             cgr_records: rec.cgr_records || [],
             cgr_status: rec.cgr_status || '',
-            cgr_skipped_fag: !!rec.cgr_skipped_fag,
             both_match: rec.both_match || null,
             timestamp: rec.timestamp || '',
         };
@@ -362,7 +352,6 @@ function normalizeStateRecord(rec) {
         strategies_run: rec.strategies_run || [],
         cgr_records: [],
         cgr_status: '',
-        cgr_skipped_fag: false,
         both_match: null,
         timestamp: rec.timestamp || '',
     };
@@ -451,6 +440,11 @@ function applyFilter() {
         if (statusVal === 'undecided' && decided) continue;
         if (statusVal === 'decided' && !decided) continue;
         if (['auto_accept','ambiguous','too_many','no_results','captcha'].includes(statusVal) && status !== statusVal) continue;
+        // CGR dedup status filter (J7).
+        if (statusVal === 'cgr_duplicate' && p.cgr_dedup_status !== 'duplicate') continue;
+        if (statusVal === 'cgr_follow_up' && p.cgr_dedup_status !== 'follow_up_candidate') continue;
+        if (statusVal === 'cgr_clear' && p.cgr_dedup_status !== 'clear') continue;
+        if (statusVal === 'cgr_no_match' && p.cgr_dedup_status !== 'no_fag_match') continue;
         if (q) {
             const haystack = [
                 p.pensioner_name, p.pensioner_first, p.pensioner_middle, p.pensioner_last,
@@ -471,9 +465,13 @@ function updateStats() {
     const total = pensioners.length;
     const counts = { auto_accept: 0, ambiguous: 0, too_many: 0, no_results: 0,
                      captcha: 0, skip: 0, error: 0 };
+    const cgrCounts = { duplicate: 0, follow_up_candidate: 0, clear: 0, no_fag_match: 0 };
     let decided = 0;
     for (const p of pensioners) {
         counts[p.status] = (counts[p.status] || 0) + 1;
+        if (p.cgr_dedup_status) {
+            cgrCounts[p.cgr_dedup_status] = (cgrCounts[p.cgr_dedup_status] || 0) + 1;
+        }
         if (decisions[p.pensioner_id]) decided++;
     }
     const s = document.getElementById('statsBar');
@@ -485,6 +483,10 @@ function updateStats() {
         <span class="pill too-many">Too many ${counts.too_many}</span>
         <span class="pill no-results">No results ${counts.no_results}</span>
         <span class="pill captcha">Captcha ${counts.captcha}</span>
+        <span class="pill" style="background:#d4edda;color:#155724">CGR dup ${cgrCounts.duplicate}</span>
+        <span class="pill" style="background:#fff3cd;color:#856404">CGR follow-up ${cgrCounts.follow_up_candidate}</span>
+        <span class="pill" style="background:#e2e3e5;color:#383d41">CGR clear ${cgrCounts.clear}</span>
+        <span class="pill" style="background:#f8d7da;color:#721c24">CGR+FaG miss ${cgrCounts.no_fag_match}</span>
     `;
 }
 
@@ -625,7 +627,7 @@ function renderPensioner(p) {
         <div class="pensioner" id="p-${pid}">
             <h2>${escapeHtml(p.pensioner_name || '?')}
                 <span class="id">id=${pid}${p.pensioner_app_number ? ' &middot; app# ' + escapeHtml(p.pensioner_app_number) : ''}</span>
-                <span class="status ${statusClass}">${statusLabel}</span>
+                <span class="status ${statusClass}">${statusLabel}</span>${renderCgrDedupBadge(p)}
                 ${p.dd_in_local === true ? '<span class="dd-badge in">✓ in DD</span>'
                   : p.dd_in_local === false ? '<span class="dd-badge new">★ NEW FIND</span>' : ''}
                 ${p.leftover_pass && p.leftover_pass.disposition === 'found_conclusive'
@@ -641,12 +643,10 @@ function renderPensioner(p) {
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
                 ${p.pensioncard_backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.pensioncard_backlink))}" target="_blank">source card</a>` : ''}
                 ${p.backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" target="_blank">application</a>` : ''}
-                ${p.cgr_skipped_fag ? '<span class="badge skipped">FaG skipped — CGR strong match</span>' : ''}
             </div>
             ${renderPensionerCardImage(p)}
             ${renderBothMatchBanner(p)}
             <div class="candidates">${candsHtml}</div>
-            ${renderCgrPanel(p)}
             <div class="actions">
                 ${cands.length > 0 ? `<button data-action="pickrank1" data-pid="${pid}">Pick rank 1</button>` : ''}
                 <button data-action="none" data-pid="${pid}">Mark: no FaG match</button>
@@ -682,61 +682,29 @@ function renderBothMatchBanner(p) {
     `;
 }
 
-function renderCgrPanel(p) {
-    const cgrs = p.cgr_records || [];
-    if (cgrs.length === 0) return '';
-    let html = '<div class="cgr-panel"><h3>CGR (Confederate Graves Registry)</h3>';
-    for (const c of cgrs) {
-        const vet = c.vet_details || {};
-        const cem = c.cemetery_details || {};
-        const ms = c.match_strength || 'none';
-        const diedState = vet.died_state || '';
-        const diedCls = diedState === 'OK' ? 'ok' : 'not-ok';
-        const diedLabel = diedState || 'unknown';
-        html += `
-            <div class="cgr-record">
-                <div>
-                    <span class="cgr-name">${escapeHtml(c.cgr_name || '?')}</span>
-                    <span class="match-badge ${escapeHtml(ms)}">${escapeHtml(ms)}</span>
-                    <span class="cgr-died-state ${diedCls}">died ${escapeHtml(diedLabel)}</span>
-                </div>
-                <div class="cgr-meta">
-                    CGR id ${escapeHtml(String(c.cgr_id || '?'))} ·
-                    unit <code>${escapeHtml(vet.unit || c.cgr_unit || '?')}</code> ·
-                    born <code>${escapeHtml(vet.born || c.cgr_born || '?')}</code>
-                    ${vet.rank ? ' · rank ' + escapeHtml(vet.rank) : ''}
-                    ${vet.company ? ' · Co. ' + escapeHtml(vet.company) : ''}
-                </div>
-                <div class="cgr-meta">
-                    ${cem.name ? 'cemetery <code>' + escapeHtml(cem.name) + '</code>'
-                        + (cem.city ? ' (' + escapeHtml(cem.city) : '')
-                        + (cem.county ? ', ' + escapeHtml(cem.county) + ' Co.': '')
-                        + (cem.state ? ', ' + escapeHtml(cem.state) : '')
-                        + (cem.state ? ')' : '') : 'no cemetery info'}
-                </div>
-                ${renderCgrConflicts(c)}
-            </div>
-        `;
+// renderCgrDedupBadge: small badge beside the fag_status pill.
+// CGR is no longer rendered as a side panel; the post-run
+// dedup (scripts/cgr/cgr_fag_dedup.py) annotates each record
+// with a verdict, and view.html surfaces it as a single line.
+function renderCgrDedupBadge(p) {
+    const status = p.cgr_dedup_status;
+    if (!status) return '';
+    const labels = {
+        duplicate: 'CGR dup',
+        follow_up_candidate: 'CGR follow-up',
+        clear: 'CGR clear',
+        no_fag_match: 'CGR+FaG miss',
+    };
+    const label = labels[status] || status;
+    let title = `CGR dedup: ${status}`;
+    const sum = p.cgr_match_summary;
+    if (sum) {
+        title += ` (cgr_id=${sum.cgr_id || '?'}, match=${sum.match_strength || '?'}`;
+        if (sum.cgr_cemetery) title += `, cemetery=${sum.cgr_cemetery}`;
+        if (sum.cgr_birth_year) title += `, b.${sum.cgr_birth_year}`;
+        title += ')';
     }
-    html += '</div>';
-    return html;
-}
-
-function renderCgrConflicts(c) {
-    const conf = c.conflicts || {};
-    const keys = Object.keys(conf);
-    if (keys.length === 0) return '';
-    let html = '<div class="cgr-conflict"><strong>Conflicts (verify with sources):</strong><ul style="margin:4px 0 0 16px;padding:0;">';
-    for (const k of keys) {
-        const v = conf[k];
-        if (typeof v === 'object' && v !== null) {
-            html += `<li><strong>${escapeHtml(k)}:</strong> local="${escapeHtml(v.local || '')}" vs cgr="${escapeHtml(v.cgr || '')}"</li>`;
-        } else {
-            html += `<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</li>`;
-        }
-    }
-    html += '</ul></div>';
-    return html;
+    return `<span class="cgr-dedup-badge ${escapeHtml(status)}" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
 }
 
 function escapeHtml(s) {
