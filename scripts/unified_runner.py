@@ -23,7 +23,7 @@ from __future__ import annotations
 
 import json
 import time
-from dataclasses import dataclass, field, asdict
+from dataclasses import dataclass, field, asdict, Field
 from pathlib import Path
 from typing import Optional
 
@@ -88,12 +88,28 @@ def lookup_cgr_for_pensioner(
 
 
 # ============================================================
-# Skip decision
+# Skip decision — POLICY (LOCKED 2026-07-16)
 # ============================================================
-def should_skip_fag(cgr_matches: list[dict]) -> bool:
-    """Decide whether to skip FaG search for this pensioner.
+# This function is INTENTIONALLY NOT CALLED by the unified pipeline.
+# See scripts/unified_pipeline.py module docstring "DECISION POLICY
+# (LOCKED 2026-07-16)": we always run FaG for every pensioner so
+# we don't miss findings. The CGR data is used for annotation/display
+# only; it does NOT gate whether to search FaG.
+#
+# This helper is kept here as a documentation anchor and for any
+# future post-run dedup work that wants to filter CGR-strong rows
+# in view.html. If you find a call site that uses it to skip FaG,
+# STOP — that's policy drift.
 
-    Returns True if any CGR match is 'strong' (per user decision).
+
+def should_skip_fag(cgr_matches: list[dict]) -> bool:
+    """(POLICY-LOCKED) Would-be skip-if-CGR-strong predicate.
+
+    Returns True if any CGR match is 'strong'. This function is NOT
+    wired into the FaG search path by policy decision
+    (2026-07-16). Kept here so callers needing to surface CGR-
+    strong rows for view.html / dedup work can do so without
+    re-implementing the threshold logic.
     """
     return any(m.get("match_strength") == "strong" for m in cgr_matches)
 
@@ -103,8 +119,23 @@ def should_skip_fag(cgr_matches: list[dict]) -> bool:
 # ============================================================
 @dataclass
 class UnifiedConfig:
-    """Configuration for a unified run."""
-    skip_fag_on_strong_cgr: bool = True
+    """Configuration for a unified run.
+
+    Note: the ``skip_fag_on_strong_cgr`` field is NOT honored by the
+    pipeline (POLICY-LOCKED 2026-07-16 — we always run FaG). It is
+    kept here so callers can detect policy drift if someone tries
+    to gate FaG on CGR; the pipeline never reads it. See
+    scripts/unified_pipeline.py module docstring.
+    """
+    skip_fag_on_strong_cgr: bool = field(
+        default=True,
+        metadata={
+            "policy": "POLICY-LOCKED 2026-07-16",
+            "note": "ignored by the pipeline; kept for back-compat. "
+                    "See scripts/unified_pipeline.py module docstring "
+                    "'DECISION POLICY (LOCKED 2026-07-16)'.",
+        },
+    )
     throttle_seconds: float = 1.5
     max_cgr_candidates: int = 20
     include_fag_candidates: bool = True

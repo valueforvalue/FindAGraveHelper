@@ -247,3 +247,77 @@ def test_unified_result_to_jsonl_roundtrip():
     parsed = json.loads(line)
     assert parsed["pensioner_id"] == 5
     assert parsed["pensioner_first"] == "Hugh"
+
+# ============================================================
+# POLICY GUARDS (LOCKED 2026-07-16):
+# We always run FaG for every pensioner. The CGR data does not
+# gate the FaG search. These tests verify the policy is held.
+# ============================================================
+class TestAlwaysRunFaGPolicy:
+    """Guard: the FaG search must run for every pensioner.
+
+    Project goal is to discover how many of the 7,758 OK Confederate
+    pensioners are findable in FaG. Skipping the FaG search based
+    on CGR strength would cost us findings — the CGR index is too
+    noisy today.
+    """
+
+    def test_unified_pipeline_has_no_skip_fast_path(self):
+        """Source-level guard: run_pipeline_for_pensioner must not
+        contain any `should_skip_fag` call that returns early.
+        """
+        import inspect
+        from scripts.unified_pipeline import run_pipeline_for_pensioner
+        src = inspect.getsource(run_pipeline_for_pensioner)
+        assert "should_skip_fag" not in src, (
+            "POLICY VIOLATION: run_pipeline_for_pensioner() must never "
+            "skip the FaG search based on CGR strength. The full "
+            "FaG search must run for every pensioner. "
+            "See scripts/unified_pipeline.py module docstring "
+            "'DECISION POLICY (LOCKED 2026-07-16)'."
+        )
+
+    def test_unified_pipeline_docstring_states_policy(self):
+        """Source-level guard: the module docstring must explicitly
+        document the always-run-FaG decision and where the policy
+        record lives.
+        """
+        import inspect
+        from scripts import unified_pipeline
+        docstring = unified_pipeline.__doc__ or ""
+        # Must mention "always" + "FaG" + "LOCKED 2026-07-16"
+        assert "ALWAYS run FaG" in docstring or "always" in docstring.lower(), (
+            "scripts/unified_pipeline.py module docstring must "
+            "document the always-run-FaG policy."
+        )
+        assert "2026-07-16" in docstring, (
+            "Module docstring must reference the policy-lock date."
+        )
+
+    def test_unified_config_skip_field_documented_as_locked(self):
+        """UnifiedConfig.skip_fag_on_strong_cgr must be marked as
+        policy-locked so future readers don't mistake the default
+        for a behavior we honor.
+        """
+        from scripts.unified_runner import UnifiedConfig
+        import dataclasses
+        for f in dataclasses.fields(UnifiedConfig):
+            if f.name == "skip_fag_on_strong_cgr":
+                # Default exists; that's fine for back-compat.
+                # But the type or metadata must warn it's ignored.
+                assert "POLICY-LOCKED" in str(f), (
+                    f"UnifiedConfig.{f.name} default or metadata "
+                    f"should be marked POLICY-LOCKED so readers know "
+                    f"the pipeline ignores it. Got: {f!r}"
+                )
+
+    def test_should_skip_fag_helper_kept_but_documented(self):
+        """should_skip_fag() exists for view.html / dedup use, not
+        pipeline-skip use. A guard test asserts it exists and is
+        callable, but does NOT exercise it from the pipeline.
+        """
+        from scripts.unified_runner import should_skip_fag
+        # It exists and is callable.
+        assert callable(should_skip_fag)
+        # It returns False for empty input.
+        assert should_skip_fag([]) is False

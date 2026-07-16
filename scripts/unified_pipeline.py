@@ -7,10 +7,32 @@ For each pensioner:
   4. Detect BOTH MATCH
   5. Return PipelineResult
 
-User decision: Always run FaG for every pensioner. CGR is
-informational/display — it doesn't gate whether we search FaG.
-Even if CGR finds the person, we still need to discover the
-FaG memorial page.
+DECISION POLICY (LOCKED 2026-07-16):
+
+  We ALWAYS run FaG for every pensioner in
+  docs/research/digitalprairie/ok_pensioners.json. The CGR blocking
+  index exists only to annotate matches for human display and
+  post-run CGR-side dedup work; it MUST NOT gate whether we search
+  FaG.
+
+  Rationale: the project goal is to discover how many of the ~7,758
+  OK Confederate pensioners are findable in Find a Grave. Short-
+  circuiting on a "strong" CGR match would cost us findings — every
+  skipped FaG search is a missed opportunity to find a memorial
+  that CGR didn't surface. Also, the CGR blocking index is noisy
+  today (different-last-name matches sharing first-name phonetic
+  codes), so a "strong" threshold alone is not reliable.
+
+  Future work (separate phase): once FaG state is available, the
+  CGR data may be used to (1) find duplicates in CGR and
+  (2) reduce human-review work in view.html. Neither of these
+  replaces the per-pensioner FaG search.
+
+  If you are tempted to add a "skip FaG if CGR strong" gate:
+  STOP. Open an issue instead. Do not gate the FaG search.
+
+  See docs/learnings/2026-07-16-run-2-learnings.md for the
+  policy discussion that produced this decision.
 
 The FaG browser search is injected (dependency injection)
 so this module is testable without Playwright.

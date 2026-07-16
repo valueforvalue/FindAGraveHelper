@@ -319,6 +319,54 @@ Estimated wall time: ~3 hours for the remaining 2,732 pensioners.
 Memory bound: per-record growth <5 MB, RSS will stay under 1 GB
 throughout the run (vs ~7 GB on pwsh.exe previously).
 
+## Always-run-FaG policy (LOCKED 2026-07-16)
+
+The CGR blocking index returns mostly noise today (different-last-
+name matches sharing first-name phonetic codes), and the
+`match_strength="strong"` threshold is therefore reached only when
+names are essentially identical. The CGR data is used for human
+display and post-run dedup work, NOT as a fast-path gate on the
+FaG search.
+
+**We always run FaG for every pensioner.**
+
+The project goal is to discover how many of the ~7,758 OK
+Confederate pensioners are findable in Find a Grave. Short-
+circuiting on a strong CGR match would cost us findings — every
+skipped FaG search is a missed opportunity to find a memorial
+that CGR didn't surface.
+
+The unified pipeline enforces this in three places:
+
+1. `scripts/unified_pipeline.py` module docstring states the policy
+   and explicitly warns future maintainers not to add a skip
+   gate.
+2. `scripts/unified_pipeline.run_pipeline_for_pensioner()` has no
+   skip-fast-path; the inline comment "ALWAYS run FaG for every
+   pensioner" appears right above the `if fag_search_fn is not
+   None:` branch.
+3. `tests/test_unified_runner.py::TestAlwaysRunFaGPolicy` has
+   four guard tests that fail if a future commit tries to gate
+   the FaG search on `should_skip_fag` or if the policy docstring
+   is removed.
+
+The `should_skip_fag()` helper and `UnifiedConfig.skip_fag_on_strong_cgr`
+field are retained for documentation and for any future post-run
+CGR-side dedup work (e.g. view.html highlighting CGR-strong rows
+for human review) but are explicitly marked POLICY-LOCKED +
+ignored.
+
+Future work that may use CGR stronger:
+
+- **CGR-side dedup**: after the FaG run completes, identify CGR
+  records that point to the same FaG memorial (multiple CW pensioners
+  buried in the same plot, etc.). This is a separate phase that
+  runs on the FaG state.jsonl results — not a gate during the
+  per-pensioner search.
+- **view.html badges**: surface CGR-strong rows in the human-review
+  interface so reviewers prioritize them. Again, separate from
+  the search itself.
+
 ## Lessons
 
 1. **Long-running Playwright jobs are leak-prone.** Even with no
