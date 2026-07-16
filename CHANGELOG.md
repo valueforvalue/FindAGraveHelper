@@ -4,6 +4,33 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J5-S3: resume.sh artifact + log + post-interrupt
+
+Every run writes `output/<runname>/resume.sh` — a single-line,
+executable shell script that re-invokes the runner with
+`--config` pointing at this run's `config.json`. The same
+command is logged to `run.log` (as `RESUME COMMAND: …`) and
+printed to stdout via the standard logger. The artifact is
+also written on `KeyboardInterrupt`, so a crashed run is
+always one `./resume.sh` away from continuation. Re-running
+is safe: ResumeTracker skips pensioners with terminal status.
+
+- scripts/pipeline/run_unified.py — new `build_resume_command`
+  + `write_resume_artifact(out_dir, config_path, log)`. The
+  runner passes `args.config` to `run_batch` as
+  `config_path_for_resume`; cli_main also writes the artifact
+  in the KeyboardInterrupt handler.
+- tests/test_resume_artifact.py (new) — 12 tests covering
+  command building, artifact writing, log emission, exec bit
+  on POSIX, idempotent writes, post-completion and
+  post-interrupt generation, and reloadability of partial
+  results after an interrupt.
+
+Tests: 12 new pass; 727 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Closes issue #11 (per-run batch isolation umbrella issue).
+
 ### J5-S2: per-run results.jsonl + view.html copy
 
 Each run's per-pensioner records now live at
