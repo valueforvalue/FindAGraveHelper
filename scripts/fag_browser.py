@@ -127,8 +127,10 @@ def make_fag_search_fn(
         "prevention], target-closed auto-recovery=enabled)...",
         reset_browser_every,
     )
-    pw = sync_playwright().__enter__()
+    pw_cm = sync_playwright()
+    pw = pw_cm.__enter__()
     state = {
+        "pw_cm": pw_cm,
         "pw": pw,
         "browser": None,
         "ctx": None,
@@ -140,16 +142,17 @@ def make_fag_search_fn(
     }
 
     def _open_browser():
-        """Open a fresh browser context (used on init + after reset).
+        """Open a fresh browser + Playwright session (used on init + after reset).
 
-        Tries to close any prior context AND browser cleanly first
-        (the previous version only closed the browser, leaking the
-        context ref). On failure logs and continues — opening a
-        fresh one will still work.
+        Closes the old browser/context/page AND tears down the
+        sync_playwright() session entirely. This destroys the
+        asyncio event loop, freeing all accumulated Task objects
+        (see #15400 — ~220 Tasks/pensioner pinned in loop._tasks).
+
+        On failure logs and continues — opening a fresh one will
+        still work.
         """
-        # Close in order: page, context, then browser. Each step
-        # may itself raise; swallow so we still drop the references
-        # and let GC reclaim them.
+        # 1. Close browser layer: page, context, then browser.
         for attr in ("page", "ctx", "browser"):
             obj = state.get(attr)
             if obj is None:
@@ -159,11 +162,24 @@ def make_fag_search_fn(
             except Exception:
                 pass
             state[attr] = None
-        # Encourage the Python interpreter to free cycle refs
-        # before we spawn a new Chromium (Chromium startup holds
-        # a transient RSS spike, easier to do this on a small heap).
+        # 2. Tear down the Playwright session (kills event loop + all Tasks).
+        old_cm = state.get("pw_cm")
+        if old_cm is not None:
+            try:
+                old_cm.__exit__(None, None, None)
+            except Exception:
+                pass
+            state["pw_cm"] = None
+            state["pw"] = None
+        # 3. Encourage GC before Chromium startup (transient RSS spike).
         import gc as _gc
         _gc.collect()
+        # 4. Create a fresh Playwright session (new event loop, clean slate).
+        new_cm = sync_playwright()
+        state["pw_cm"] = new_cm
+        state["pw"] = new_cm.__enter__()
+        log.info("Playwright session reset (event loop + tasks freed).")
+        # 5. Open browser in the new session.
         try:
             browser, ctx, page = setup_browser(state["pw"])
         except Exception as e:
