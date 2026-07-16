@@ -4,6 +4,71 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Memory leak fixes for long runs
+
+The full 7,758-record Run #2 grew pwsh.exe to ~7 GB and then
+~3.5 GB even on resume; pwsh became unresponsive. Investigation
+pointed at two compounding issues:
+
+1. **Playwright Locator and `body` string retention** in
+   `scripts/search_fag.parse_results_page()` — link_locators list
+   (up to 20 refs) and the full `page.inner_text("body")` string
+   remained alive until function exit; on multi-thousand-record
+   runs this added up. Fixed by explicitly clearing the locator
+   list, dropping the body string, and running
+   `gc.collect()` every 25 records.
+2. **`scripts/fag_browser._open_browser()` only closed the
+   Browser**, not the Context or Page — leaving Playwright
+   connection objects referenced after periodic resets. Now closes
+   page → context → browser in order, drops state refs to None,
+   and runs `gc.collect()` once before spawn.
+
+Added:
+- `scripts/rss_watchdog.py` — background thread that polls process
+  RSS via Win32 `GetProcessMemoryInfo` (no psutil dependency).
+  Three configurable thresholds: warn, force-reset (signals the
+  runner to reopen the browser at the next opportunity), exit
+  (hard `os._exit(1)` so the runner can't write junk records after
+  a wedged pwsh).
+- `scripts/soak_memory.py` — manual smoke test that drives N
+  synthetic Playwright navigations, samples RSS, computes slope,
+  and exits 1 if average growth exceeds `--max-slope-mb-per-10`.
+- `tests/test_rss_watchdog.py` — platform-agnostic watchdog tests
+  via monkeypatched `GetProcessMemoryInfo` (7 tests).
+- `tests/test_search_fag_memory.py` — parse_results_page memory
+  hygiene tests (3 tests).
+
+`scripts/run_unified.py` and `scripts/retry_errors_run.py` now
+expose `--no-rss-watchdog`, `--rss-warn-mb`, `--rss-force-reset-mb`,
+`--rss-exit-mb`, and `--max-consecutive-errors` CLI flags. Defaults:
+2048 / 4096 / 6144 MB; 10 consecutive errors.
+
+`scripts/fag_browser.py`: `fag_search()` now auto-recovers from
+Playwright closed-target errors ("Target page, context or browser
+has been closed" etc.) by reopening the browser at the next
+opportunity. After `--max-consecutive-errors` (default 10)
+in-a-row errors, raises to let the outer loop terminate the run.
+
+`scripts/fag_browser.py`: matches closed-target errors against a
+list of stable substrings across Playwright versions
+("target closed", "browser has been closed", etc.) so the
+recovery logic doesn't break on Playwright message changes.
+
+### Run #1 / Run #2 update
+
+- Run #1 produced ~3,361 valid records before the original DOM-
+  crash bug.
+- Run #2 (resume) added another ~1,000 valid records before
+  Chromium memory pressure + a previously-broken browser reset
+  produced two more error storms.
+- State file `data/results/run_full_2026_07_16/state.jsonl` is
+  the canonical record; the new leak fixes only affect future
+  runs. Existing errored records will be re-tried with the new
+  code via `scripts/retry_errors_run.py` once a fresh main run
+  completes.
+
+
+
 ### Added — Oklahoma Digital Prairie Confederate pension index
 
 **The goal of the project** is to find Confederate soldiers associated

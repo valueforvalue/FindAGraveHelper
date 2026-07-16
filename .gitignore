@@ -32,3 +32,8 @@ docs/research/digitalprairie/scrape.log
 #
 # If a future scrape supersedes the committed data, replace
 # the files in place rather than ignore-then-regenerate.
+
+# Run outputs (state.jsonl, outliers.jsonl, run.log, reports).
+# Resume-safe by design (file is flushed per-pensioner + ResumeTracker).
+# Keep outputs local; final report is regenerated from this data.
+data/results/

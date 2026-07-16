@@ -533,6 +533,19 @@ def cli_main() -> int:
                         help="Skip FaG search (CGR-only mode, for testing)")
     parser.add_argument("--heartbeat-every", type=int, default=50,
                         help="Heartbeat every N pensioners (default 50)")
+    parser.add_argument("--no-rss-watchdog", action="store_true",
+                        help="Disable the RSS watchdog (default: enabled)")
+    parser.add_argument("--rss-warn-mb", type=int, default=2048,
+                        help="RSS warn threshold in MB (default 2048; 0 to disable)")
+    parser.add_argument("--rss-force-reset-mb", type=int, default=4096,
+                        help="Force browser-reset threshold in MB "
+                             "(default 4096; 0 to disable)")
+    parser.add_argument("--rss-exit-mb", type=int, default=6144,
+                        help="Hard-exit threshold in MB "
+                             "(default 6144; 0 to disable)")
+    parser.add_argument("--max-consecutive-errors", type=int, default=10,
+                        help="Stop the run after this many in-a-row "
+                             "FaG errors (default 10; 0 to disable)")
     args = parser.parse_args()
 
     # Setup logger
@@ -573,13 +586,29 @@ def cli_main() -> int:
     log.info("Loaded CGR data: %d cemeteries, %d total vets",
              len(cems), sum(len(c.get("veterans", [])) for c in cems))
 
+    # Optional RSS watchdog (independent of Playwright; safe to skip)
+    watchdog = None
+    if not args.no_rss_watchdog:
+        from scripts.rss_watchdog import RSSWatchdog
+        watchdog = RSSWatchdog(
+            poll_seconds=30.0,
+            warn_mb=args.rss_warn_mb,
+            force_reset_mb=args.rss_force_reset_mb,
+            exit_mb=args.rss_exit_mb,
+        )
+        watchdog.start()
+
     # Build FaG search function (or None)
     fag_search_fn = None
     if not args.no_fag:
         # Inline-import to avoid loading Playwright when not needed
         from scripts.fag_browser import make_fag_search_fn
         log.info("Initializing Playwright (visible browser, takes ~10s)...")
-        fag_search_fn = make_fag_search_fn(throttle=args.throttle)
+        fag_search_fn = make_fag_search_fn(
+            throttle=args.throttle,
+            watchdog=watchdog,
+            max_consecutive_errors=args.max_consecutive_errors,
+        )
         log.info("Playwright ready.")
 
     # Run batch

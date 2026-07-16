@@ -176,6 +176,8 @@ def retry_main(
     fag_search_fn: Optional[Callable] = None,
     no_fag: bool = False,
     throttle_seconds: float = 1.0,
+    watchdog: Optional["object"] = None,
+    max_consecutive_errors: int = 10,
 ) -> RetryResult:
     """Convenience: load inputs by path, then run retry_error_pensioners.
 
@@ -193,7 +195,11 @@ def retry_main(
     cems = _load_cems(cgr_path)
 
     if fag_search_fn is None and not no_fag:
-        fag_search_fn = make_fag_search_fn(throttle=throttle_seconds)
+        fag_search_fn = make_fag_search_fn(
+            throttle=throttle_seconds,
+            watchdog=watchdog,
+            max_consecutive_errors=max_consecutive_errors,
+        )
 
     if no_fag:
         # No actual FaG search; just re-run CGR

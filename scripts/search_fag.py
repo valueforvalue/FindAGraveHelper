@@ -827,6 +827,27 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         if len(candidates) >= MAX_FAG_RESULTS_TO_PARSE:
             break
 
+    # Memory hygiene: drop the locator refs and the body text before
+    # returning. Each Locator retains a handle to the Playwright
+    # connection; on long runs these add up. The `body` string can be
+    # 100 KB+ for huge-result pages — release it as well.
+    try:
+        link_locators.clear()
+        del link_locators
+    except Exception:
+        pass
+    try:
+        del body
+    except Exception:
+        pass
+    # Encourage the interpreter to free cycle references promptly
+    # every 25 records (cheap, helps Playwright Locator/future refs).
+    import gc as _gc
+    n = getattr(parse_results_page, "_record_count", 0) + 1
+    parse_results_page._record_count = n
+    if n % 25 == 0:
+        _gc.collect()
+
     return total, candidates
 
 
