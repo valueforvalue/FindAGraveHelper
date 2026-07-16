@@ -98,6 +98,70 @@ MAX_FAG_RESULTS_TO_PARSE = 20  # per strategy
 
 BASE_URL = "https://www.findagrave.com/memorial/search"
 
+# FaG's location filter URL params. Verified via probes v7 + v8:
+#
+#   data/probe/filter_v7.json — ?locationId=country_4 works for US.
+#   data/probe/filter_v8.json — ?locationId=state_38 works for OK state.
+#
+# Empirical results for "John Smith" baseline:
+#   no filter                                  -> 97,291 (global, with foreign hits)
+#   ?locationId=country_4                      -> 62,632 (US only, 0 foreign)
+#   ?locationId=state_38 (Oklahoma)            ->  1,087 (OK only, 0 foreign)
+#
+# The ?location=... text field is the visible "Cemetery Location" input; FaG
+# reads only locationId. Both states and countries share the locationId key
+# (last write wins; pass one at a time).
+#
+# Without locationId, FaG returns global results — pulling Australian, UK,
+# Canadian matches that get scored as too_many / ambiguous and waste the
+# strategy ladder.
+FAG_COUNTRY_FILTER_US = {"locationId": "country_4"}
+
+# FaG's state-level filter uses the same locationId key with a state_<id>
+# value. The 52 US states + districts + territories were enumerated from
+# data/probe/page_html_baseline.html (the browse-page radio list).
+FAG_STATE_IDS = {
+    "AL": "state_3", "AK": "state_2", "AZ": "state_5", "AR": "state_4",
+    "CA": "state_6", "CO": "state_7", "CT": "state_8", "DE": "state_9",
+    "DC": "state_10", "FL": "state_11", "GA": "state_12", "HI": "state_13",
+    "ID": "state_14", "IL": "state_15", "IN": "state_16", "IA": "state_17",
+    "KS": "state_18", "KY": "state_19", "LA": "state_20", "ME": "state_21",
+    "MD": "state_22", "MA": "state_23", "MI": "state_24", "MN": "state_25",
+    "MS": "state_26", "MO": "state_27", "MT": "state_28", "NE": "state_29",
+    "NV": "state_30", "NH": "state_31", "NJ": "state_32", "NM": "state_33",
+    "NY": "state_34", "NC": "state_35", "ND": "state_36", "OH": "state_37",
+    "OK": "state_38", "OR": "state_39", "PA": "state_40", "RI": "state_41",
+    "SC": "state_42", "SD": "state_43", "TN": "state_44", "TX": "state_45",
+    "UT": "state_46", "VT": "state_47", "VA": "state_48", "WA": "state_49",
+    "WV": "state_50", "WI": "state_51", "WY": "state_52",
+}
+
+
+def apply_location_filter(params: dict, state_abbr: str = "") -> dict:
+    """Inject FaG country (and optionally state) filter into a strategy's URL params.
+
+    Restricts results to the United States via locationId=country_4. When
+    `state_abbr` is a known US state, narrows further with locationId=state_<id>
+    (e.g. locationId=state_38 for Oklahoma). State filter cuts results 60x vs
+    country alone for common names — recommended when regiment state is known.
+
+    Note: only ONE locationId value can be passed at a time (last write wins),
+    so when state_abbr is supplied it overrides the country filter. Country is
+    implicit (state_38 is Oklahoma, United States of America per FaG's hierarchy).
+
+    Returns a NEW dict; does not mutate the caller's dict.
+    """
+    p = dict(params)
+    if state_abbr:
+        state_id = FAG_STATE_IDS.get(state_abbr.upper())
+        if state_id:
+            p["locationId"] = state_id
+        else:
+            p.update(FAG_COUNTRY_FILTER_US)
+    else:
+        p.update(FAG_COUNTRY_FILTER_US)
+    return p
+
 # Status values
 S_AUTO_ACCEPT = "auto_accept"
 S_AMBIGUOUS = "ambiguous"          # 2-10 candidates, none high-confidence
@@ -1209,6 +1273,10 @@ def search_one_pensioner(page: Page, pensioner: dict,
             params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
         if params is None:
             continue
+        # Restrict FaG to US (and US state if known) — see FAG_COUNTRY_FILTER_US.
+        # Without this, ~95% of results for common names are foreign and
+        # pollute the candidate set.
+        params = apply_location_filter(params, state_abbr)
         url = BASE_URL + "?" + urlencode(params)
         record["strategies_run"].append(name)
 
