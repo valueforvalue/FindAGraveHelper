@@ -74,6 +74,35 @@ def test_open_link_in_each_candidate():
     assert 'c.backlink' in VIEW_HTML
 
 
+def test_source_card_link_present():
+    """The pension card link (source card) renders when backlink present."""
+    assert 'source card' in VIEW_HTML, "expected 'source card' label"
+
+
+def test_application_link_present():
+    """The pensions-application link renders as 'application' beside source card."""
+    assert 'application' in VIEW_HTML, "expected 'application' label for app backlink"
+    # Must be inside an anchor with the backlink href
+    assert re.search(r'<a[^>]*>\s*application\s*</a>|application\b.*?</a>', VIEW_HTML), \
+        "expected application link to be an anchor"
+
+
+def test_backlink_field_consumed_in_normalize():
+    """normalize_state_record in view.html reads p.backlink."""
+    # Both the legacy and unified branches must read it.
+    assert re.search(r"backlink\s*:\s*rec\.backlink", VIEW_HTML), \
+        "expected backlink read from rec in normalize"
+
+
+def test_backlink_in_search_haystack():
+    """The search filter should include backlink so users can search by app URL."""
+    # The haystack array near filter logic should contain pensioncard_backlink's
+    # companion: backlink.
+    assert re.search(r"haystack.*pensioncard_backlink.*backlink|backlink.*pensioncard_backlink",
+                     VIEW_HTML, re.DOTALL), \
+        "expected backlink in search haystack"
+
+
 def test_found_by_strategy_and_params_visible():
     """The render must show both strategy name and params."""
     # Look for _found_by (possibly destructured as fb) and strategy usage

@@ -126,6 +126,7 @@ def normalize_state_record(rec: dict) -> dict:
             "regiment": rec.get("regiment", ""),
             "company": rec.get("company", ""),
             "pensioncard_backlink": rec.get("pensioncard_backlink", ""),
+            "backlink": rec.get("backlink", ""),
             # FaG side (renamed to ranked_candidates for view.html)
             "ranked_candidates": fag[:20],  # cap at 20
             "best_score": best,
@@ -155,6 +156,7 @@ def normalize_state_record(rec: dict) -> dict:
         "regiment": rec.get("regiment", ""),
         "company": rec.get("company", ""),
         "pensioncard_backlink": rec.get("pensioncard_backlink", ""),
+        "backlink": rec.get("backlink", ""),
         "ranked_candidates": rec.get("ranked_candidates", []) or [],
         "best_score": rec.get("best_score", 0.0),
         "best_candidate": rec.get("best_candidate"),

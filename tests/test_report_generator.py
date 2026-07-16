@@ -43,6 +43,8 @@ def _sample_records():
             "pensioner_last": "Looney",
             "regiment": "34 TX",
             "pensioner_death_year": "1932",
+            "pensioncard_backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensioncard/id/100",
+            "backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensions/id/5",
             "cgr_records": [
                 {"match_strength": "strong", "cgr_name": "William Looney", "cgr_id": 999,
                  "died": "1932-02-28", "died_state": "OK"},
@@ -94,6 +96,8 @@ def _sample_records():
             "pensioner_last": "Akers",
             "regiment": "4 MO",
             "pensioner_death_year": "1924",
+            "pensioncard_backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensioncard/id/200",
+            "backlink": "https://digitalprairie.ok.gov/digital/singleitem/collection/pensions/id/10",
             "cgr_records": [
                 {"match_strength": "strong", "cgr_name": "Hugh H Akers", "cgr_id": 1234,
                  "died": "1924-04-29", "died_state": "OK",
@@ -249,6 +253,34 @@ def test_report_to_markdown_includes_top_both_matches():
     # William Looney and Hugh Akers are the BOTH MATCH exemplars
     assert "William Looney" in md
     assert "Hugh Akers" in md
+
+
+def test_report_to_markdown_includes_pensioncard_links():
+    """Markdown renders pensioncard backlink for each exemplar."""
+    stats = build_report(_sample_records())
+    md = report_to_markdown(stats, _sample_records())
+    # pensioncard URLs from sample records
+    assert "/pensioncard/id/100" in md
+    assert "/pensioncard/id/200" in md
+
+
+def test_report_to_markdown_includes_application_links():
+    """Markdown renders pensions-application backlink for each exemplar."""
+    stats = build_report(_sample_records())
+    md = report_to_markdown(stats, _sample_records())
+    # application URLs from sample records
+    assert "/pensions/id/5" in md
+    assert "/pensions/id/10" in md
+
+
+def test_exemplar_payload_includes_both_backlinks():
+    """Top-both-match payload includes pensioncard_backlink + backlink."""
+    from scripts.report_generator import _both_match_exemplars
+    exemplars = _both_match_exemplars(_sample_records())
+    assert len(exemplars) >= 2
+    for ex in exemplars:
+        assert "pensioncard_backlink" in ex
+        assert "backlink" in ex
 
 
 # ============================================================

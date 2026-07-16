@@ -143,6 +143,8 @@ def _both_match_exemplars(records: list[dict], top_n: int = 10) -> list[dict]:
             "reason": r["both_match"].get("reason"),
             "fag_memorial_id": r["both_match"].get("fag_memorial_id"),
             "fag_backlink": f"https://www.findagrave.com/memorial/{r['both_match'].get('fag_memorial_id')}",
+            "pensioncard_backlink": r.get("pensioncard_backlink", ""),
+            "backlink": r.get("backlink", ""),
         })
     return out
 
@@ -272,14 +274,24 @@ def report_to_markdown(stats: ReportStats, records: list[dict]) -> str:
     lines.append("### Top BOTH MATCH Exemplars")
     lines.append("")
     if stats.top_both_match:
-        lines.append("| Pensioner | Method | Confidence | Reason | FaG |")
-        lines.append("|---|---|---|---|---|")
+        lines.append("| Pensioner | Method | Confidence | Reason | FaG | Pension card | Application |")
+        lines.append("|---|---|---|---|---|---|---|")
         for bm in stats.top_both_match:
+            card_cell = (
+                f"[card]({bm['pensioncard_backlink']})"
+                if bm.get("pensioncard_backlink") else "—"
+            )
+            app_cell = (
+                f"[app]({bm['backlink']})"
+                if bm.get("backlink") else "—"
+            )
             lines.append(
                 f"| #{bm['pensioner_id']} {bm['pensioner_name']} "
                 f"| {bm['method']} | {bm['confidence']*100:.0f}% "
                 f"| {bm['reason']} "
-                f"| [open]({bm['fag_backlink']}) |"
+                f"| [open]({bm['fag_backlink']}) "
+                f"| {card_cell} "
+                f"| {app_cell} |"
             )
     else:
         lines.append("_No BOTH MATCH records found._")

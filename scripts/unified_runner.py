@@ -169,6 +169,7 @@ class UnifiedRunResult:
             "regiment": self.pensioner.get("regiment", ""),
             "company": self.pensioner.get("company", ""),
             "pensioncard_backlink": self.pensioner.get("pensioncard_backlink", ""),
+            "backlink": self.pensioner.get("backlink", ""),
             "cgr_records": self.cgr_records,
             "cgr_status": self.cgr_status,
             "fag_records": self.fag_records,

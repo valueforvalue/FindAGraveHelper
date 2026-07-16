@@ -1103,6 +1103,7 @@ def load_local_csv(path: Path) -> list[dict]:
                 'birth_year': lc.get('birth_year', ''),
                 'death_year': lc.get('death_year', ''),
                 'pensioncard_backlink': '',
+                'backlink': '',
                 # For ground-truth testing:
                 '_expected_memorial_id': lc.get('memorial_id', ''),
                 '_expected_slug': lc.get('slug', ''),

@@ -305,6 +305,7 @@ function normalizeStateRecord(rec) {
             regiment: rec.regiment || '',
             company: rec.company || '',
             pensioncard_backlink: rec.pensioncard_backlink || '',
+            backlink: rec.backlink || '',
             ranked_candidates: fag.slice(0, 20),
             best_score: best,
             best_candidate: bestC,
@@ -326,6 +327,7 @@ function normalizeStateRecord(rec) {
         regiment: rec.regiment || '',
         company: rec.company || '',
         pensioncard_backlink: rec.pensioncard_backlink || '',
+        backlink: rec.backlink || '',
         ranked_candidates: rec.ranked_candidates || [],
         best_score: rec.best_score || 0,
         best_candidate: rec.best_candidate || null,
@@ -425,7 +427,7 @@ function applyFilter() {
         if (q) {
             const haystack = [
                 p.pensioner_name, p.pensioner_first, p.pensioner_middle, p.pensioner_last,
-                p.regiment, p.company, p.pensioner_app_number, p.pensioncard_backlink,
+                p.regiment, p.company, p.pensioner_app_number, p.pensioncard_backlink, p.backlink,
             ].filter(Boolean).join(' ').toLowerCase();
             if (!haystack.includes(q)) continue;
         }
@@ -611,6 +613,7 @@ function renderPensioner(p) {
                 ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
                 ${p.pensioncard_backlink ? `<a href="${escapeHtml(p.pensioncard_backlink)}" target="_blank">source card</a>` : ''}
+                ${p.backlink ? `<a href="${escapeHtml(p.backlink)}" target="_blank">application</a>` : ''}
                 ${p.cgr_skipped_fag ? '<span class="badge skipped">FaG skipped — CGR strong match</span>' : ''}
             </div>
             ${renderBothMatchBanner(p)}

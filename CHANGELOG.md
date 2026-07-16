@@ -4,6 +4,38 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Pensions-application backlink end-to-end
+
+view.html and report.md now show the digitalprairie
+pensions-application URL beside the pension-card URL per
+pensioner, alongside the existing Find a Grave backlink.
+unified.json has always carried both URLs (`backlink` for
+the application, `pensioncard_backlink` for the index
+card); only the card URL flowed through the pipeline.
+
+- `scripts/search_fag.py`, `scripts/state_normalize.py`,
+  `scripts/unified_runner.py`, `scripts/run_unified.py` —
+  plumb `backlink` through every record-construction
+  site. Missing field defaults to `""` (backwards-safe).
+- `scripts/view.html` — reads `backlink` in both
+  normalize branches, renders an `application` link next
+  to `source card`, includes the field in the search
+  haystack so users can search by app URL.
+- `scripts/report_generator.py` — top BOTH MATCH
+  exemplars table now has two extra columns: `Pension
+  card` and `Application`, each with markdown links.
+- `scripts/backfill_backlinks.py` (new) — one-shot
+  enrichment script. Reads existing `state.jsonl` and
+  `pensions.json`, adds the missing `backlink` field,
+  writes atomically (`.tmp` + rename). Use to enrich
+  pre-change state files so view.html shows both links
+  without waiting for a full pipeline rerun.
+- 22 new tests: `tests/test_backlink_pipeline.py`,
+  `tests/test_backfill_backlinks.py`,
+  `tests/test_view_html.py` (4 new assertions),
+  `tests/test_report_generator.py` (3 new assertions).
+  All 657 non-integration tests green.
+
 ### Engineering skills bootstrap
 
 Configured the mattpocock/skills engineering flow for this repo

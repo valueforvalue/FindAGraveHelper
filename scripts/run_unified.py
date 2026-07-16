@@ -209,6 +209,7 @@ def result_to_dict(result: PipelineResult) -> dict:
         "regiment": result.pensioner.get("regiment", ""),
         "company": result.pensioner.get("company", ""),
         "pensioncard_backlink": result.pensioner.get("pensioncard_backlink", ""),
+        "backlink": result.pensioner.get("backlink", ""),
         "cgr_records": result.cgr_records,
         "cgr_status": result.cgr_status,
         "fag_records": result.fag_records,
