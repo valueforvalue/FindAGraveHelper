@@ -101,3 +101,43 @@ class CGRClient:
         url = f"{_BASE_URL}/cemDetails.php?id={vet_id}"
         html = self._get(url)
         return parse_cgr_cem(html)
+
+    def list_cemeteries_in_state(self, state_code: str) -> list[dict]:
+        """List all cemeteries in a state.
+
+        POSTs 'state=<CODE>' to ajax_cemeteryDrop.php. Returns
+        list of {id, name, county, raw_label} dicts (parsed by
+        parse_cemeteries_html).
+        """
+        from scripts.cgr_cemeteries import parse_cemeteries_html
+        url = f"{_BASE_URL}/ajax_cemeteryDrop.php"
+        # Throttle applies to all requests except the first
+        if self._request_count > 0 and self.throttle_seconds > 0:
+            time.sleep(self.throttle_seconds)
+        self._request_count += 1
+        data = f"state={state_code}".encode("ascii")
+        req = urllib.request.Request(
+            url, data=data, method="POST",
+            headers={
+                "User-Agent": _USER_AGENT,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            raw = resp.read()
+        try:
+            html = raw.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            html = raw.decode("utf-8", errors="replace")
+        return parse_cemeteries_html(html)
+
+    def list_veterans_in_cemetery(self, cemetery_id: int) -> list[dict]:
+        """List all veterans buried in a cemetery.
+
+        GETs results.php?cemetery_id=X. Returns list of
+        {id, name, unit, born} dicts (parsed by parse_cgr_results).
+        """
+        from scripts.cgr_results import parse_cgr_results
+        url = f"{_BASE_URL}/results.php?cemetery_id={cemetery_id}"
+        html = self._get(url)
+        return parse_cgr_results(html)
