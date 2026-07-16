@@ -641,11 +641,24 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
     m = re.search(r"(\d[\d,]*)\s+matching records?", body)
     total = int(m.group(1).replace(",", "")) if m else 0
 
+    # Soft cap: if the result count is overwhelming (e.g. 200K+ matches
+    # for super-common names), don't try to enumerate every result.
+    # The DOM materialization is the expensive step. We've verified
+    # the query succeeded; cap based on MAX_FAG_RESULTS_TO_PARSE.
+    if total > MAX_FAG_RESULTS_TO_PARSE * 100:  # 20 * 100 = 2000
+        log.debug("Too many results (%d); capping parse", total)
+
     # Pull per-result details from the DOM (richer than HTML regex)
     candidates = []
     seen = set()
     try:
-        link_locators = page.locator('a[href*="/memorial/"]').all()
+        # Only materialize up to MAX_FAG_RESULTS_TO_PARSE locator refs.
+        # For wildly-popular queries (e.g. "John Smith" returns 200K
+        # results), materializing all locator refs would crash or time
+        # out.
+        locator = page.locator('a[href*="/memorial/"]')
+        n_locator = min(locator.count(), MAX_FAG_RESULTS_TO_PARSE)
+        link_locators = [locator.nth(i) for i in range(n_locator)]
     except Exception as e:
         log.warning("Locator query failed: %s", e)
         link_locators = []
