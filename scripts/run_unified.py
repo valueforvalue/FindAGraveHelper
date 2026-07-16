@@ -333,13 +333,17 @@ def run_batch(
         )
 
     # Apply limit (after resume, if any)
+    # First: filter out completed pensioners
+    not_done = [p for p in pensioners if not tracker.is_done(p["id"])]
     if config.limit:
-        remaining = [p for p in pensioners if not tracker.is_done(p["id"])][:config.limit]
+        remaining = not_done[:config.limit]
     else:
-        remaining = [p for p in pensioners if not tracker.is_done(p["id"])]
+        remaining = not_done
 
-    log.info("Processing %d pensioners (total=%d, already done=%d)",
-             len(remaining), len(pensioners), tracker.count())
+    log.info(
+        "Will process %d pensioners (total=%d, already done=%d, remaining in run=%d)",
+        len(remaining), len(pensioners), tracker.count(), len(remaining),
+    )
 
     # Stats
     result = BatchResult(
