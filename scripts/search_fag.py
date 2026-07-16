@@ -637,9 +637,38 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
     except PWTimeout:
         pass
 
-    body = page.inner_text("body", timeout=10000)
-    m = re.search(r"(\d[\d,]*)\s+matching records?", body)
+    # Memory-efficient count lookup. The previous implementation
+    # called `page.inner_text("body")` to grab the whole-page text
+    # (potentially 5MB+ for 200K-result pages) and regex'd for the
+    # "X matching records" string. This allocated MB-sized Python
+    # strings per call that the OS allocator never reclaimed; over a
+    # full run that was a sustained ~30 MB/min RSS growth.
+    #
+    # Instead, query the specific element that holds the count. The
+    # FaG result page renders the count inside the page header; we
+    # grab it via a small JavaScript expression that returns a
+    # short string. If the selector doesn't match (FaG may change it),
+    # we return 0 — `total` is only used for the "too_many" decision
+    # which already has its own fallback path.
+    body = ""
+    try:
+        body = page.evaluate(
+            '''() => {
+                const el = document.querySelector('[data-test-id="total-records"]')
+                  || document.querySelector('.total-records')
+                  || document.querySelector('.memorial-search-results-header');
+                if (el) return el.innerText || el.textContent || '';
+                return '';
+            }'''
+        )
+    except Exception:
+        body = ""
+    m = re.search(r"(\d[\d,]*)\s+matching records?", body or "")
     total = int(m.group(1).replace(",", "")) if m else 0
+    try:
+        del body
+    except Exception:
+        pass
 
     # Soft cap: if the result count is overwhelming (e.g. 200K+ matches
     # for super-common names), don't try to enumerate every result.
