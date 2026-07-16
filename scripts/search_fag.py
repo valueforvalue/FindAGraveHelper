@@ -42,7 +42,7 @@ Usage:
 Notes:
   - Must be run with a VISIBLE browser window (headless=False) on
     Windows because Cloudflare Turnstile blocks headless Chromium.
-  - 1.5s throttle between requests; 30s backoff on CAPTCHA.
+  - 2.5s throttle between requests; 30s backoff on CAPTCHA.
   - Resume-safe: re-running skips already-processed pensioners.
   - State file is one JSON record per line (JSONL). Easy to grep,
     version-control, parse.
@@ -91,7 +91,7 @@ AUTO_ACCEPT_THRESHOLD = 0.70  # name+veteran+death match is sufficient
 AUTO_ACCEPT_THRESHOLD_NO_DEATH = 0.60
 AUTO_ACCEPT_GAP = 0.10  # top must beat #2 by this much for auto-accept
 PROMPT_THRESHOLD = 0.60
-THROTTLE_SECONDS = 1.5
+THROTTLE_SECONDS = 2.5
 CAPTCHA_BACKOFF_SECONDS = 30.0
 MAX_CANDIDATES_PER_PENSIONER = 20
 MAX_FAG_RESULTS_TO_PARSE = 20  # per strategy
@@ -1187,6 +1187,7 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
     strategy_runs = []  # (strategy_name, [candidates])
     captcha_seen = False
     any_error = False
+    parse_error_streak = 0
 
     for name, fn in STRATEGIES:
         # Build per-strategy closure for F2/F3 which need pensioner
@@ -1254,13 +1255,38 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
         try:
             total, cands = parse_results_page(page)
         except Exception as e:
-            log.warning("Parse error %s %s: %s", first, last, e)
+            import traceback
+            tb_lines = traceback.format_exc().splitlines()
+            # Surface only the last 5 lines so the run.log stays
+            # readable.
+            short_tb = "\n  ".join(tb_lines[-5:])
+            log.warning(
+                "Parse error %s %s [%s]: %s\n  %s",
+                first, last, name, e, short_tb,
+            )
             any_error = True
+            parse_error_streak += 1
+            # Detect sustained Cloudflare rate-limit stalls. When
+            # parse_results_page errors multiple times in a row
+            # across strategies, FaG is almost certainly returning
+            # an interstitial/captcha page whose DOM our parser
+            # can't read. Back off hard + reset the browser cookies
+            # via the periodic reset (every N strategies) trigger.
+            if parse_error_streak >= 3:
+                log.warning(
+                    "Sustained parse errors (%d in a row). Cloudflare "
+                    "is likely rate-limiting or stalling; backing off "
+                    "60s before continuing.",
+                    parse_error_streak,
+                )
+                time.sleep(60.0)
+                parse_error_streak = 0
             continue
 
         # Tag each candidate with the strategy that found it, so the
         # HTML viewer can show "Found by: B1-exact (firstname=John&...)"
         cands = tag_candidates_with_found_by(cands, name, params)
+        parse_error_streak = 0  # reset on successful parse
         log.info("  %s %-12s [%s] -> %d results", first, last, name, total)
         strategy_runs.append((name, cands))
         # No early-stop — collect all candidates across all strategies

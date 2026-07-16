@@ -4,7 +4,7 @@ The runner coordinates per-pensioner:
   1. CGR blocking lookup (fast, no network)
   2. Annotate matches with match_strength
   3. Decide outlier status (low score or no results)
-  4. Run FaG search (browser, 1.5s throttle)
+  4. Run FaG search (browser, 2.5s throttle)
   5. Write state.jsonl (resumable)
   6. Append outliers to outliers.jsonl
 
@@ -78,7 +78,7 @@ class UnifiedRunnerConfig:
     """Configuration for the unified runner."""
     out_dir: Optional[Path] = None
     # Pipeline
-    throttle_seconds: float = 1.5
+    throttle_seconds: float = 2.5
     low_score_threshold: float = 0.40
     max_cgr_candidates: int = 20
     # Limits
@@ -521,7 +521,7 @@ def cli_main() -> int:
         --input docs/research/digitalprairie/ok_pensioners.json \\
         --cgr docs/research/cgr/ok_vets_enriched.jsonl \\
         --out data/results/run_2026_07_16/ \\
-        [--limit N] [--throttle 1.5] [--shuffle]
+        [--limit N] [--throttle 2.5] [--shuffle]
     """
     import argparse
     parser = argparse.ArgumentParser(description="Unified runner CLI")
@@ -535,8 +535,11 @@ def cli_main() -> int:
                         help="Output directory (will be created)")
     parser.add_argument("--limit", type=int, default=None,
                         help="Process only first N pensioners (for tests)")
-    parser.add_argument("--throttle", type=float, default=1.5,
-                        help="Seconds between FaG requests (default 1.5)")
+    parser.add_argument("--throttle", type=float, default=2.5,
+                        help="Seconds between FaG requests (default 2.5; "
+                             "raised from 1.5 after live monitoring showed "
+                             "Cloudflare 1015 rate-limit hits at the "
+                             "stricter cadence)")
     parser.add_argument("--low-score-threshold", type=float, default=0.40,
                         help="Outlier threshold (top score below = outlier)")
     parser.add_argument("--shuffle", action="store_true",

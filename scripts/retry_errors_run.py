@@ -37,8 +37,11 @@ def main() -> int:
                         help="Path to ok_pensioners.json (input)")
     parser.add_argument("--cgr", type=Path, required=True,
                         help="Path to ok_vets_enriched.jsonl")
-    parser.add_argument("--throttle", type=float, default=1.5,
-                        help="Seconds between FaG requests (default 1.5)")
+    parser.add_argument("--throttle", type=float, default=2.5,
+                        help="Seconds between FaG requests (default 2.5; "
+                             "raised from 1.5 after live monitoring showed "
+                             "Cloudflare 1015 rate-limit hits at the "
+                             "stricter cadence)")
     parser.add_argument("--no-fag", action="store_true",
                         help="CGR-only retry (no FaG)")
     parser.add_argument("--no-rss-watchdog", action="store_true",

@@ -74,7 +74,7 @@ def _is_target_closed(exc: BaseException) -> bool:
 
 
 def make_fag_search_fn(
-    throttle: float = 1.5,
+    throttle: float = 2.5,
     reset_browser_every: int = 250,
     watchdog: Optional["object"] = None,
     max_consecutive_errors: int = 10,

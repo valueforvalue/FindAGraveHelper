@@ -138,7 +138,7 @@ def test_run_one_pensioner_cgr_only(tmp_path):
 # ============================================================
 def test_unified_runner_config_defaults():
     cfg = UnifiedRunnerConfig()
-    assert cfg.throttle_seconds == 1.5
+    assert cfg.throttle_seconds == 2.5
     assert cfg.low_score_threshold == 0.40
     assert cfg.out_dir is None  # caller must set
 
