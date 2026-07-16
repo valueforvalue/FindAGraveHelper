@@ -4,6 +4,50 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J12: replace "source card" / "application" anchor links with JSON-modal buttons
+
+User feedback: the per-pensioner "source card" and
+"application" links opened a new browser tab to the
+digitalprairie URL (which now returns a soft-404 page per
+issue #13), instead of showing the parsed JSON inline. The
+"View source" button in the actions row did the right thing
+(loaded the JSON into a modal) but the user expected the
+in-line links to behave the same.
+
+Fix: convert both anchor tags to buttons that trigger the
+existing JSON modal. The buttons live in the meta row; their
+data-url points at the corresponding digitalprairie record
+(pensioncard_backlink for "source card", backlink for
+"application"). Clicking either button calls the same
+fetchSourceJson() handler the "View source" button uses.
+
+The buttons are styled to look like the links they replaced
+(no border, underline, link color) so the meta row layout is
+visually unchanged.
+
+Verified with headless Chrome: 48 view-source buttons across
+the 25 records (one per backlink per pensioner), 0 plain
+anchors. Clicking the first source-card button opens the
+modal with the parsed digitalprairie pension fields
+(Application Number, Pension Number, Company, Regiment,
+Publisher, Subject, Physical Description, Coverage, Type,
+Rights, etc.).
+
+- scripts/view.html: 2 anchor tags → 2 buttons (with
+  data-action="view-source"); CSS for `.meta
+  button[data-action="view-source"]` to preserve the link
+  look
+- tests/test_view_ux_j8.py: 2 new tests pinning the source
+  card + application buttons
+
+Tests: 2 new pass; 802 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Laws honored:
+  L4 stable key order: no JSONL key order changes.
+  L7 docstrings: existing fetchSourceJson + renderSourceJson
+  functions handle the new buttons without changes.
+
 ### J11: fix candidate-row layout (per-candidate notes squashing info column to 0 width)
 
 User feedback (with screenshot): the candidate row was

@@ -55,6 +55,14 @@
   .pensioner h2 .id { color: #888; font-weight: normal; font-size: 12px; }
   .meta { color: #666; font-size: 12px; margin-bottom: 12px; }
   .meta span { margin-right: 12px; }
+  /* J12: source-card / application buttons in the meta row
+     look like the anchor links they replaced. */
+  .meta button[data-action="view-source"] {
+      background: none; border: none; padding: 0;
+      color: #0066cc; cursor: pointer; text-decoration: underline;
+      font-size: 12px; margin-right: 12px;
+  }
+  .meta button[data-action="view-source"]:hover { color: #003d80; }
   .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
   .status.auto_accept { background: #cce5ff; color: #004085; }
   .status.ambiguous { background: #fff3cd; color: #856404; }
@@ -961,8 +969,8 @@ function renderPensioner(p) {
                 ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
                 ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
-                ${p.pensioncard_backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.pensioncard_backlink))}" target="_blank">source card</a>` : ''}
-                ${p.backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" target="_blank">application</a>` : ''}
+                ${p.pensioncard_backlink ? `<button data-action="view-source" data-pid="${pid}" data-url="${escapeHtml(fixDigitalPrairieUrl(p.pensioncard_backlink))}" title="Fetch + display the digitalprairie pension card JSON">source card</button>` : ''}
+                ${p.backlink ? `<button data-action="view-source" data-pid="${pid}" data-url="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" title="Fetch + display the digitalprairie pension application JSON">application</button>` : ''}
             </div>
             ${renderPensionerCardImage(p)}
             ${renderBothMatchBanner(p)}

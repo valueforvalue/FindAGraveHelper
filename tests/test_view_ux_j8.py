@@ -109,6 +109,41 @@ def test_view_source_button_present():
     assert "application" in VIEW_HTML or "pensions" in VIEW_HTML
 
 
+def test_source_card_link_is_a_view_source_button():
+    """J12: the 'source card' link must be a button that opens
+    the JSON modal (fetching pensioncard_backlink), not a plain
+    anchor that opens a new tab."""
+    # The meta-row 'source card' label must be inside a button
+    # element with data-action="view-source", not an <a target="_blank">
+    # Find the source card label
+    m = re.search(
+        r"source card",
+        VIEW_HTML,
+    )
+    assert m, "expected 'source card' label in the meta row"
+    # Check 500 chars before for an <a> wrapper — should be a
+    # <button> with view-source action instead
+    snippet = VIEW_HTML[max(0, m.start() - 400):m.start() + 100]
+    assert "data-action=\"view-source\"" in snippet, (
+        "source card label should be inside a view-source button"
+    )
+    assert "target=\"_blank\"" not in snippet or "source card" not in snippet.split("target=\"_blank\"")[0].split("</a>")[-1], (
+        "source card should NOT be inside an anchor with target=_blank"
+    )
+
+
+def test_application_link_is_a_view_source_button():
+    """J12: the 'application' link must be a button that opens
+    the JSON modal (fetching backlink), not a plain anchor."""
+    m = re.search(
+        r"<button[^>]*>application</button>|>application<",
+        VIEW_HTML,
+    )
+    assert m, (
+        "expected the 'application' label to be inside a button (not an anchor)"
+    )
+
+
 def test_modal_element_exists():
     """view.html must define a modal container + show/hide helpers."""
     assert re.search(
