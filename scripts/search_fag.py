@@ -392,23 +392,8 @@ def extract_state_from_regiment(regiment: str) -> str:
     if all_codes:
         # Only CO found; fall through to full-name match
         pass
-    # Try full state name
-    state_names = {
-        'ALABAMA': 'AL', 'MISSISSIPPI': 'MS', 'TENNESSEE': 'TN', 'TEXAS': 'TX',
-        'GEORGIA': 'GA', 'FLORIDA': 'FL', 'ARKANSAS': 'AR', 'SOUTH CAROLINA': 'SC',
-        'NORTH CAROLINA': 'NC', 'VIRGINIA': 'VA', 'LOUISIANA': 'LA', 'KENTUCKY': 'KY',
-        'MISSOURI': 'MO', 'MARYLAND': 'MD', 'OKLAHOMA': 'OK', 'INDIANA': 'IN',
-        'ILLINOIS': 'IL', 'OHIO': 'OH', 'PENNSYLVANIA': 'PA', 'NEW YORK': 'NY',
-        'NEW JERSEY': 'NJ', 'CONNECTICUT': 'CT', 'MASSACHUSETTS': 'MA',
-        'VERMONT': 'VT', 'NEW HAMPSHIRE': 'NH', 'MAINE': 'ME', 'DELAWARE': 'DE',
-        'WEST VIRGINIA': 'WV', 'IOWA': 'IA', 'WISCONSIN': 'WI', 'MINNESOTA': 'MN',
-        'MICHIGAN': 'MI', 'KANSAS': 'KS', 'NEBRASKA': 'NE', 'NORTH DAKOTA': 'ND',
-        'SOUTH DAKOTA': 'SD', 'WYOMING': 'WY', 'COLORADO': 'CO', 'NEVADA': 'NV',
-        'CALIFORNIA': 'CA', 'OREGON': 'OR', 'WASHINGTON': 'WA', 'IDAHO': 'ID',
-        'UTAH': 'UT', 'MONTANA': 'MT', 'ARIZONA': 'AZ', 'NEW MEXICO': 'NM',
-        'ALASKA': 'AK', 'HAWAII': 'HI', 'RHODE ISLAND': 'RI',
-    }
-    for name, code in state_names.items():
+    # Try full state name (use module-level constant, not a per-call dict)
+    for name, code in _STATE_NAMES_UPPER.items():
         if name in norm_up:
             return code
     return ""
@@ -588,6 +573,37 @@ RESULT_LINK_RE = re.compile(
     r'href=["\'](?:https?://www\.findagrave\.com)?/memorial/(\d+)/([^/?\"\'#]+)',
     re.I
 )
+
+
+# ============================================================
+# State name lookup tables (module-level constants)
+# ============================================================
+# Previously these dicts were recreated on every call to
+# extract_state_from_regiment() (50 names x ~2000 calls = 100K
+# transient dicts) and parse_results_page() (50 names x ~10K
+# calls = 500K transient dicts). Allocating+throwing away that
+# many dicts leaked MB of Python heap per minute: CPython's pymalloc
+# freelist never returned the pages to the OS. Hoisting both
+# lookups to module level fixes that path.
+_STATE_NAMES_UPPER = {
+    'ALABAMA': 'AL', 'MISSISSIPPI': 'MS', 'TENNESSEE': 'TN', 'TEXAS': 'TX',
+    'GEORGIA': 'GA', 'FLORIDA': 'FL', 'ARKANSAS': 'AR', 'SOUTH CAROLINA': 'SC',
+    'NORTH CAROLINA': 'NC', 'VIRGINIA': 'VA', 'LOUISIANI': 'LA',
+    'LOUISIANA': 'LA', 'KENTUCKY': 'KY',
+    'MISSOURI': 'MO', 'MARYLAND': 'MD', 'OKLAHOMA': 'OK', 'INDIANA': 'IN',
+    'ILLINOIS': 'IL', 'OHIO': 'OH', 'PENNSYLVANIA': 'PA', 'NEW YORK': 'NY',
+    'NEW JERSEY': 'NJ', 'CONNECTICUT': 'CT', 'MASSACHUSETTS': 'MA',
+    'VERMONT': 'VT', 'NEW HAMPSHIRE': 'NH', 'MAINE': 'ME', 'DELAWARE': 'DE',
+    'WEST VIRGINIA': 'WV', 'IOWA': 'IA', 'WISCONSIN': 'WI', 'MINNESOTA': 'MN',
+    'MICHIGAN': 'MI', 'KANSAS': 'KS', 'NEBRASKA': 'NE', 'NORTH DAKOTA': 'ND',
+    'SOUTH DAKOTA': 'SD', 'WYOMING': 'WY', 'COLORADO': 'CO', 'NEVADA': 'NV',
+    'CALIFORNIA': 'CA', 'OREGON': 'OR', 'WASHINGTON': 'WA', 'IDAHO': 'ID',
+    'UTAH': 'UT', 'MONTANA': 'MT', 'ARIZONA': 'AZ', 'NEW MEXICO': 'NM',
+    'ALASKA': 'AK', 'HAWAII': 'HI', 'RHODE ISLAND': 'RI',
+}
+# Lowercase-keys variant for parse_results_page (state names are
+# matched case-insensitively against the candidate text).
+_STATE_NAMES_LOWER = {k.lower(): v for k, v in _STATE_NAMES_UPPER.items()}
 
 # Death-year pattern (en dash or hyphen): "1890 – 9 Apr 1917" or "1890 - 1917"
 DATE_RANGE_RE = re.compile(r"(\d{4})\s*[–\-]\s*(\d{4})")
@@ -774,26 +790,11 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         # both cases: find a state name or 2-letter code anywhere in the
         # card text, prioritizing the LAST match (state is always last).
         cand_state = None
-        state_names = {
-            'alabama': 'AL', 'mississippi': 'MS', 'tennessee': 'TN', 'texas': 'TX',
-            'georgia': 'GA', 'florida': 'FL', 'arkansas': 'AR', 'south carolina': 'SC',
-            'north carolina': 'NC', 'virginia': 'VA', 'louisiana': 'LA', 'kentucky': 'KY',
-            'missouri': 'MO', 'maryland': 'MD', 'oklahoma': 'OK', 'indiana': 'IN',
-            'illinois': 'IL', 'ohio': 'OH', 'pennsylvania': 'PA', 'new york': 'NY',
-            'new jersey': 'NJ', 'connecticut': 'CT', 'massachusetts': 'MA',
-            'vermont': 'VT', 'new hampshire': 'NH', 'maine': 'ME', 'delaware': 'DE',
-            'west virginia': 'WV', 'iowa': 'IA', 'wisconsin': 'WI', 'minnesota': 'MN',
-            'michigan': 'MI', 'kansas': 'KS', 'nebraska': 'NE', 'north dakota': 'ND',
-            'south dakota': 'SD', 'wyoming': 'WY', 'colorado': 'CO', 'nevada': 'NV',
-            'california': 'CA', 'oregon': 'OR', 'washington': 'WA', 'idaho': 'ID',
-            'utah': 'UT', 'montana': 'MT', 'arizona': 'AZ', 'new mexico': 'NM',
-            'alaska': 'AK', 'hawaii': 'HI', 'rhode island': 'RI',
-        }
         # First try comma-separated tokens (works for "City, County, State")
         for tok in reversed(re.split(r',\s*', card_text)):
             tok_clean = tok.strip().rstrip('.').lower()
-            if tok_clean in state_names:
-                cand_state = state_names[tok_clean]
+            if tok_clean in _STATE_NAMES_LOWER:
+                cand_state = _STATE_NAMES_LOWER[tok_clean]
                 break
             if re.fullmatch(r'[A-Z]{2}', tok.strip()) and len(tok.strip()) == 2:
                 cand_state = tok.strip()
@@ -804,7 +805,7 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
             lower = card_text.lower()
             # Find the rightmost state-name match
             best_idx = -1
-            for name, code in state_names.items():
+            for name, code in _STATE_NAMES_LOWER.items():
                 idx = lower.rfind(name)
                 if idx > best_idx:
                     best_idx = idx
@@ -851,13 +852,21 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         if len(candidates) >= MAX_FAG_RESULTS_TO_PARSE:
             break
 
-    # Memory hygiene: drop the locator refs and the body text before
-    # returning. Each Locator retains a handle to the Playwright
-    # connection; on long runs these add up. The `body` string can be
-    # 100 KB+ for huge-result pages — release it as well.
+    # Memory hygiene: drop all locator refs and the body text before
+    # returning. Each Locator (parent `locator` AND every per-index
+    # `link_locators[i]`) retains a handle to the Playwright connection;
+    # on long runs these add up. The `body` string can be 100 KB+ for
+    # huge-result pages — release it as well.
     try:
         link_locators.clear()
         del link_locators
+    except Exception:
+        pass
+    # Drop the parent locator too: each per-index call kept an internal
+    # frame ref under the parent. Without this, even after the children
+    # list is cleared, the parent survives until the next assignment.
+    try:
+        del locator
     except Exception:
         pass
     try:
@@ -1067,7 +1076,18 @@ def setup_browser(p):
         timezone_id='America/Chicago',
     )
     page = ctx.new_page()
-    Stealth().apply_stealth_sync(page)
+    # Apply stealth to the CONTEXT (not the page). When applied to a
+    # page, the init scripts get re-injected on every navigation; the
+    # CDP round-trip + Python serialization buffers add up to ~8 MB/
+    # pensioner over a full run. At the context level the init scripts
+    # persist across all navigations within that context, eliminating
+    # the leak.
+    try:
+        Stealth().apply_stealth_sync(ctx)
+    except Exception:
+        # Fallback: if context-level stealth isn't supported in this
+        # version of playwright-stealth, apply per-page (old behaviour).
+        Stealth().apply_stealth_sync(page)
     return b, ctx, page
 
 
