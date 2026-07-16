@@ -4,6 +4,22 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: merge unified_pipeline + unified_runner into pipeline/core (T019)
+
+Two coupled modules (scripts/unified_pipeline.py +
+scripts/unified_runner.py) shared the same data model and
+called each other in both directions. Merged into one module
+under scripts/pipeline/core.py. PipelineResult is the single
+boundary DTO; UnifiedRunResult remains as a back-compat alias
+so existing callers (retry_errors, run_unified, 4 test files)
+keep compiling.
+
+- scripts/pipeline/__init__.py (new)
+- scripts/pipeline/core.py (new) — merged surface, 11.8k LoC
+- scripts/unified_pipeline.py — back-compat shim (4 LoC)
+- scripts/unified_runner.py — back-compat shim (8 LoC)
+- All 686 tests green (no behaviour change)
+
 ### Refactor: extract strategy ladder from search_fag.py (T017)
 
 First cut at splitting the 1631-LoC search_fag.py along
