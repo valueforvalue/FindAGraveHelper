@@ -64,6 +64,8 @@ from typing import Any
 sys.path.insert(0, str(Path(__file__).parent))
 from checkpoint import write_checkpoint, read_checkpoint, record_failure  # noqa: E402
 from urllib.parse import urlencode
+from regiment_keyword import strategy_regiment_bio, extract_regiment_phrases  # noqa: E402
+from nickname_match import strategy_with_nickname, nickname_candidates  # noqa: E402
 
 from playwright.sync_api import sync_playwright, Browser, BrowserContext, Page
 from playwright.sync_api import TimeoutError as PWTimeout
@@ -115,7 +117,7 @@ S_ERROR = "error"                  # exception during search
 # auto-accept match. Otherwise we collect the union of all
 # candidates seen across all strategies and rank by score.
 
-def strategy_b1_exact(first, middle, last, birth_year):
+def strategy_b1_exact(first, middle, last, birth_year, death_year=None):
     """B1: exact sniper. first + middlename + last + exactspelling."""
     if not first or not last:
         return None
@@ -128,7 +130,7 @@ def strategy_b1_exact(first, middle, last, birth_year):
     return p
 
 
-def strategy_b2_middle_initial(first, middle, last, birth_year):
+def strategy_b2_middle_initial(first, middle, last, birth_year, death_year=None):
     """B2: middlename-initial. Only if middle is a single letter."""
     if not middle or len(middle) > 1 or not first or not last:
         return None
@@ -140,7 +142,7 @@ def strategy_b2_middle_initial(first, middle, last, birth_year):
     }
 
 
-def strategy_b3_first_initial_fuzzy(first, middle, last, birth_year):
+def strategy_b3_first_initial_fuzzy(first, middle, last, birth_year, death_year=None):
     """B3: first-initial + fuzzy last + middlename."""
     if not first or not last:
         return None
@@ -153,7 +155,7 @@ def strategy_b3_first_initial_fuzzy(first, middle, last, birth_year):
     }
 
 
-def strategy_b4_fuzzy_last(first, middle, last, birth_year):
+def strategy_b4_fuzzy_last(first, middle, last, birth_year, death_year=None):
     """B4: fuzzy last only + middlename."""
     if not last:
         return None
@@ -163,7 +165,7 @@ def strategy_b4_fuzzy_last(first, middle, last, birth_year):
     return p
 
 
-def strategy_b5_apostrophe_variants(first, middle, last, birth_year):
+def strategy_b5_apostrophe_variants(first, middle, last, birth_year, death_year=None):
     """B5: apostrophe variants. Only if last contains apostrophe."""
     if not last or "'" not in last:
         return None
@@ -177,7 +179,7 @@ def strategy_b5_apostrophe_variants(first, middle, last, birth_year):
     }
 
 
-def strategy_c1_cw_context(first, middle, last, birth_year):
+def strategy_c1_cw_context(first, middle, last, birth_year, death_year=None):
     """C1: civil war bio context catch-all.
 
     Uses the narrowest bio term first ("Confederate States America"
@@ -196,6 +198,119 @@ def strategy_c1_cw_context(first, middle, last, birth_year):
     }
 
 
+# ============================================================
+# Year-filter strategies (F1: birth + death year support)
+# ============================================================
+# FaG search URL params:
+#   birthyear=YYYY&birthyearfilter=N — N years either side
+#   deathyear=YYYY&deathyearfilter=N — N years either side
+#   yearfilter=N                     — applies to both when no specific year
+# Where N is one of: 1, 3, 5, 10, 25 (or "exact" for exact match)
+
+
+def _year_str(year) -> str:
+    """Return year as a clean string, or '' if missing/zero."""
+    s = str(year or "").strip()
+    if not s or s == "0":
+        return ""
+    return s
+
+
+def strategy_with_birth_year(first, middle, last, birth_year, exact=False):
+    """F1a: B1-style exact with birth year filter.
+
+    When the pensioner has a birth year, this strategy combines it
+    with the name search. birthyearfilter=5 gives a 5-year window;
+    use exact=True for tighter (exact birth year required).
+    """
+    by = _year_str(birth_year)
+    if not first or not last or not by:
+        return None
+    params = {
+        "firstname": first,
+        "lastname": last,
+        "exactspelling": "true",
+        "birthyear": by,
+        "birthyearfilter": "exact" if exact else "5",
+    }
+    if middle:
+        params["middlename"] = middle
+    return params
+
+
+def strategy_with_death_year(first, middle, last, death_year):
+    """F1b: Death year filter strategy.
+
+    Uses deathyearfilter. Default window is 5y; for veterans who
+    died pre-1930 (poor records) widen to 10y.
+    """
+    dy = _year_str(death_year)
+    if not first or not last or not dy:
+        return None
+    try:
+        dy_int = int(dy)
+    except ValueError:
+        return None
+    window = "10" if dy_int < 1930 else "5"
+    return {
+        "firstname": first,
+        "lastname": last,
+        "deathyear": dy,
+        "deathyearfilter": window,
+        "exactspelling": "true",
+    }
+
+
+def strategy_year_sniper(first, middle, last, birth_year, death_year):
+    """F1c: Name + birth year + death year triple-filter.
+
+    Most precise strategy: requires both years to match.
+    Highly selective — only fires when we know both years.
+    """
+    by = _year_str(birth_year)
+    dy = _year_str(death_year)
+    if not first or not last or not by or not dy:
+        return None
+    p = {
+        "firstname": first,
+        "lastname": last,
+        "exactspelling": "true",
+        "birthyear": by,
+        "birthyearfilter": "5",
+        "deathyear": dy,
+        "deathyearfilter": "5",
+    }
+    if middle:
+        p["middlename"] = middle
+    return p
+
+
+def strategy_with_year_window(first, middle, last, birth_year, death_year):
+    """F1d: Widened year window (or-accept).
+
+    Uses both birthyearfilter and deathyearfilter at 5y. Returns
+    None if neither year is available.
+    """
+    by = _year_str(birth_year)
+    dy = _year_str(death_year)
+    if not first or not last or (not by and not dy):
+        return None
+    p = {
+        "firstname": first,
+        "lastname": last,
+        "fuzzyNames": "true",
+    }
+    if by:
+        p["birthyear"] = by
+        p["birthyearfilter"] = "5"
+    if dy:
+        p["deathyear"] = dy
+        p["deathyearfilter"] = "5"
+    if middle:
+        p["middlename"] = middle
+    return p
+
+
 STRATEGIES = [
     ("B1-exact",              strategy_b1_exact),
     ("B2-middle-initial",     strategy_b2_middle_initial),
@@ -203,7 +318,13 @@ STRATEGIES = [
     ("B4-fuzzy-last",         strategy_b4_fuzzy_last),
     ("B5-apostrophe",         strategy_b5_apostrophe_variants),
     ("C1-cw-context",         strategy_c1_cw_context),
-]
+    ("F1a-birthyear-exact",   strategy_with_birth_year),
+    ("F1b-deathyear",         strategy_with_death_year),
+    ("F1c-year-sniper",       lambda f, m, l, b, d=None: strategy_year_sniper(f, m, l, b, d)),
+    ("F1d-year-window",       lambda f, m, l, b, d=None: strategy_with_year_window(f, m, l, b, d)),
+    ("F2-regiment-bio",       lambda f, m, l, b, d=None: strategy_regiment_bio(f, m, l, pensioner.get("regiment", ""), d)),
+    ("F3-nickname",           lambda f, m, l, b, d=None: strategy_with_nickname(f, m, l, b, d, pensioner)),
+] 
 
 
 # ============================================================
@@ -968,7 +1089,7 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
     any_error = False
 
     for name, fn in STRATEGIES:
-        params = fn(first, middle, last, None)
+        params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
         if params is None:
             continue
         url = BASE_URL + "?" + urlencode(params)
