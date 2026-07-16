@@ -4,6 +4,50 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J11: fix candidate-row layout (per-candidate notes squashing info column to 0 width)
+
+User feedback (with screenshot): the candidate row was
+broken — the `.info` column had `width: 0px` (verified via
+headless inspection), causing the name + slug + breakdown
+to wrap character-by-character while the Pick / ✕ remove
+buttons took the visible space.
+
+Root cause: `.candidate` is a flex row. `.info` had
+`flex: 1; min-width: 0`, allowing it to shrink to 0. The
+`.score` and `.pick` siblings had intrinsic widths
+(60px + 124px) that consumed all the space. The
+`.candidate-notes` was supposed to wrap onto a new row via
+`flex-basis: 100%` but without `order` or `flex-shrink: 0`
+the flex algorithm kept everything on one row.
+
+Fix:
+- `.candidate .info`: `flex: 1 1 auto; min-width: 280px`
+  (was `flex: 1; min-width: 0`)
+- `.candidate .rank`: added `flex-shrink: 0`
+- `.candidate .candidate-notes`: `order: 99; flex: 1 0 100%`
+  (forces a new row regardless of sibling widths)
+- `.candidate .slug`: added `word-break: break-all` (so the
+  monospace slug doesn't overflow the narrow info column)
+- Removed the orphan `.candidate-notes` / `.candidate-notes input`
+  rules that conflicted with the new `.candidate .candidate-notes`
+  rules
+
+Verified with headless Chrome: the candidate row now has
+`.info` at 280px, `.score` at 60px, `.pick` at 124px, and
+`.notes` on its own row at 1288px (the full card width).
+
+- scripts/view.html: 5 CSS rule changes
+- tests/test_view_layout_j11.py (new): 6 tests pinning
+  the layout fixes
+
+Tests: 6 new pass; 800 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Laws honored:
+  L7 docstrings: the CSS rules carry comments explaining the
+    fix + the J11 history.
+  L4 stable key order: no JSONL key order changes.
+
 ### J10: rich JSON export + view-mode for re-loading your own export
 
 User feedback after J9: the CSV export was lossy (didn't

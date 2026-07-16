@@ -101,10 +101,23 @@
   .candidate { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-bottom: 8px;
                display: flex; align-items: center; gap: 12px; }
   .candidate.decided { background: #d4edda; border-color: #c3e6cb; }
-  .candidate .rank { font-weight: bold; color: #888; min-width: 30px; }
-  .candidate .info { flex: 1; min-width: 0; }
+  .candidate .rank { font-weight: bold; color: #888; min-width: 30px;
+                      flex-shrink: 0; }
+  .candidate .info { flex: 1 1 auto; min-width: 280px; }
   .candidate .name { font-weight: bold; }
-  .candidate .slug { color: #666; font-size: 12px; font-family: monospace; }
+  .candidate .slug { color: #666; font-size: 12px; font-family: monospace;
+                     word-break: break-all; }
+  /* J11: per-candidate notes lives in a SECOND flex row (after
+     rank/info/score/pick) so the notes input doesn't squeeze
+     the info column. The order:99 forces the wrap onto a new
+     line even when .pick is wide. */
+  .candidate .candidate-notes { order: 99; flex: 1 0 100%;
+                                 max-width: 100%; min-width: 0; }
+  .candidate .candidate-notes input { width: 100%;
+                                      font-size: 11px; padding: 3px 6px;
+                                      border: 1px solid #ddd;
+                                      border-radius: 3px;
+                                      box-sizing: border-box; }
   .candidate .score { font-size: 18px; font-weight: bold; min-width: 60px; text-align: center; }
   .candidate .score.high { color: #28a745; }
   .candidate .score.mid { color: #ffc107; }
@@ -187,13 +200,11 @@
   .actions input[data-action="notes"] { flex: 1 1 220px; min-width: 0;
                                         font-size: 12px; padding: 4px 6px;
                                         max-width: 480px; }
-  /* J8: per-candidate notes input — sits below the candidate
-     row, full width of the card, but the card itself is
-     capped by the candidates scroll container. */
-  .candidate-notes { flex-basis: 100%; margin-top: 4px; }
-  .candidate-notes input { width: 100%; font-size: 11px;
-                           padding: 3px 6px; border: 1px solid #ddd;
-                           border-radius: 3px; box-sizing: border-box; }
+  /* (J11) per-candidate notes input is a flex child of .candidate
+     with order:99 + flex-basis:100% so it wraps onto a new row
+     below the rank/info/score/pick row. The input itself uses
+     width:100% via the .candidate .candidate-notes input rule
+     above. */
   .pager { display: flex; gap: 8px; align-items: center; justify-content: center;
             margin: 20px 0; padding: 12px; }
   .pager button { font-size: 12px; }
