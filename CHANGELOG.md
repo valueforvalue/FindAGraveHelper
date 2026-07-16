@@ -4,6 +4,25 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: search_fag.py to 11-LoC compat shim (T022)
+
+scripts/search_fag.py (1432 LoC) is now an 11-line back-compat
+shim. The canonical implementation moved to scripts/fag/search.py
+as part of T022.
+
+  scripts/search_fag.py: 11 LoC (re-export shim)
+  scripts/fag/search.py: 1432 LoC (canonical)
+
+The deep-module-engineer facade rule (≤6 public symbols) will
+apply to a future collapse; the shim keeps every existing
+caller working for one release cycle.
+
+Tests that imported private symbols (_STATE_NAMES_UPPER, etc.)
+or read source via `open(search_fag.__file__)` were updated
+to use the canonical scripts.fag.search path.
+
+700 non-integration tests green.
+
 ### Refactor: restructure scripts/ into subpackages (T021)
 
 41 files moved from flat scripts/*.py into 8 subpackages

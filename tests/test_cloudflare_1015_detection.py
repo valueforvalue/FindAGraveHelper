@@ -13,7 +13,7 @@ import pytest
 
 
 def _search_fag_source() -> str:
-    return Path("scripts/search_fag.py").read_text(encoding="utf-8")
+    return Path("scripts/fag/search.py").read_text(encoding="utf-8")
 
 
 class TestCloudflare1015Detection:

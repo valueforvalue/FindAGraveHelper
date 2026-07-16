@@ -47,7 +47,7 @@ class TestIntraStrategyThrottleWiring:
         strategy (it has nothing before it). Verified by source-level
         check: the sleep is guarded by 'and strategy_runs'.
         """
-        from scripts import search_fag
+        from scripts.fag import search as search_fag
         src = open(search_fag.__file__).read()
         # Find the inter-strategy pause block.
         assert "if throttle_seconds and throttle_seconds > 0 and strategy_runs:" in src, (
