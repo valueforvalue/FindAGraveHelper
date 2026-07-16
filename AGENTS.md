@@ -82,6 +82,25 @@ this file stays short; for full guidance follow the links below.
 - [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]` block — update
   in the same commit as the change.
 
+## Agent skills
+
+### Issue tracker
+
+GitHub Issues via `gh` CLI. External PRs are not a triage
+surface. See [`docs/agents/issue-tracker.md`](docs/agents/issue-tracker.md).
+
+### Triage labels
+
+Five canonical labels: `needs-triage`, `needs-info`,
+`ready-for-agent`, `ready-for-human`, `wontfix`. See
+[`docs/agents/triage-labels.md`](docs/agents/triage-labels.md).
+
+### Domain docs
+
+Single-context layout: one `CONTEXT.md` at the root +
+[`docs/agents/adr/`](docs/agents/adr/) for architectural
+decisions. See [`docs/agents/domain.md`](docs/agents/domain.md).
+
 <!--
   Optional @imports for tool-specific files. Uncomment as
   needed.

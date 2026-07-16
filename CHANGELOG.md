@@ -4,6 +4,23 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Engineering skills bootstrap
+
+Configured the mattpocock/skills engineering flow for this repo
+so `/grill-with-docs`, `/to-prd`, `/to-issues`, `/triage`, and
+`/mimplement` have the per-repo scaffolding they assume.
+
+- `docs/agents/issue-tracker.md` — GitHub Issues via `gh` CLI;
+  external PRs are not a triage surface.
+- `docs/agents/triage-labels.md` — five canonical labels
+  (`needs-triage`, `needs-info`, `ready-for-agent`,
+  `ready-for-human`, `wontfix`).
+- `docs/agents/domain.md` — single-context layout; ADRs read from
+  `docs/agents/adr/` (matches this repo's existing location, not
+  the upstream `docs/adr/` default).
+- `AGENTS.md` — new `## Agent skills` block pointing at the three
+  docs above.
+
 ### Memory leak fixes for long runs
 
 The full 7,758-record Run #2 grew pwsh.exe to ~7 GB and then
