@@ -68,6 +68,29 @@
                           padding-top: 4px; border-top: 1px dashed #eee; }
   .candidate .found-by code { background: #f5f5f5; padding: 1px 4px;
                               border-radius: 2px; }
+
+  /* CGR (Confederate Graves Registry) panel */
+  .cgr-panel { background: #f9f6f0; border: 1px solid #d4c8a8; border-radius: 4px;
+               padding: 10px; margin-top: 10px; }
+  .cgr-panel h3 { margin: 0 0 8px; font-size: 13px; color: #5d4e2e; }
+  .cgr-record { border: 1px solid #e8e0c8; border-radius: 3px;
+                padding: 8px; margin-bottom: 6px; background: #fff; }
+  .cgr-record .cgr-name { font-weight: bold; }
+  .cgr-record .cgr-meta { font-size: 11px; color: #555; margin-top: 2px; }
+  .match-badge { display: inline-block; padding: 1px 6px; border-radius: 8px;
+                 font-size: 10px; font-weight: bold; margin-left: 4px; }
+  .match-badge.strong { background: #28a745; color: #fff; }
+  .match-badge.medium { background: #ffc107; color: #333; }
+  .match-badge.weak { background: #fd7e14; color: #fff; }
+  .match-badge.none { background: #ccc; color: #333; }
+  .cgr-died-state { font-weight: bold; padding: 2px 6px; border-radius: 3px;
+                    margin-left: 4px; }
+  .cgr-died-state.ok { background: #cce5ff; color: #004085; }
+  .cgr-died-state.not-ok { background: #f8d7da; color: #721c24; }
+  .cgr-conflict { background: #fff3cd; border-left: 3px solid #ffc107;
+                  padding: 4px 8px; margin-top: 4px; font-size: 11px;
+                  color: #856404; }
+  .cgr-conflict strong { color: #5d4500; }
   .candidate .pick { white-space: nowrap; }
   .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
@@ -451,6 +474,7 @@ function renderPensioner(p) {
                 ${p.pensioncard_backlink ? `<a href="${escapeHtml(p.pensioncard_backlink)}" target="_blank">source card</a>` : ''}
             </div>
             <div class="candidates">${candsHtml}</div>
+            ${renderCgrPanel(p)}
             <div class="actions">
                 ${cands.length > 0 ? `<button data-action="pickrank1" data-pid="${pid}">Pick rank 1</button>` : ''}
                 <button data-action="none" data-pid="${pid}">Mark: no FaG match</button>
@@ -462,6 +486,63 @@ function renderPensioner(p) {
             </div>
         </div>
     `;
+}
+
+function renderCgrPanel(p) {
+    const cgrs = p.cgr_records || [];
+    if (cgrs.length === 0) return '';
+    let html = '<div class="cgr-panel"><h3>CGR (Confederate Graves Registry)</h3>';
+    for (const c of cgrs) {
+        const vet = c.vet_details || {};
+        const cem = c.cemetery_details || {};
+        const ms = c.match_strength || 'none';
+        const diedState = vet.died_state || '';
+        const diedCls = diedState === 'OK' ? 'ok' : 'not-ok';
+        const diedLabel = diedState || 'unknown';
+        html += `
+            <div class="cgr-record">
+                <div>
+                    <span class="cgr-name">${escapeHtml(c.cgr_name || '?')}</span>
+                    <span class="match-badge ${escapeHtml(ms)}">${escapeHtml(ms)}</span>
+                    <span class="cgr-died-state ${diedCls}">died ${escapeHtml(diedLabel)}</span>
+                </div>
+                <div class="cgr-meta">
+                    CGR id ${escapeHtml(String(c.cgr_id || '?'))} ·
+                    unit <code>${escapeHtml(vet.unit || c.cgr_unit || '?')}</code> ·
+                    born <code>${escapeHtml(vet.born || c.cgr_born || '?')}</code>
+                    ${vet.rank ? ' · rank ' + escapeHtml(vet.rank) : ''}
+                    ${vet.company ? ' · Co. ' + escapeHtml(vet.company) : ''}
+                </div>
+                <div class="cgr-meta">
+                    ${cem.name ? 'cemetery <code>' + escapeHtml(cem.name) + '</code>'
+                        + (cem.city ? ' (' + escapeHtml(cem.city) : '')
+                        + (cem.county ? ', ' + escapeHtml(cem.county) + ' Co.': '')
+                        + (cem.state ? ', ' + escapeHtml(cem.state) : '')
+                        + (cem.state ? ')' : '') : 'no cemetery info'}
+                </div>
+                ${renderCgrConflicts(c)}
+            </div>
+        `;
+    }
+    html += '</div>';
+    return html;
+}
+
+function renderCgrConflicts(c) {
+    const conf = c.conflicts || {};
+    const keys = Object.keys(conf);
+    if (keys.length === 0) return '';
+    let html = '<div class="cgr-conflict"><strong>Conflicts (verify with sources):</strong><ul style="margin:4px 0 0 16px;padding:0;">';
+    for (const k of keys) {
+        const v = conf[k];
+        if (typeof v === 'object' && v !== null) {
+            html += `<li><strong>${escapeHtml(k)}:</strong> local="${escapeHtml(v.local || '')}" vs cgr="${escapeHtml(v.cgr || '')}"</li>`;
+        } else {
+            html += `<li><strong>${escapeHtml(k)}:</strong> ${escapeHtml(String(v))}</li>`;
+        }
+    }
+    html += '</ul></div>';
+    return html;
 }
 
 function escapeHtml(s) {
