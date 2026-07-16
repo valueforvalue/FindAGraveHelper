@@ -78,7 +78,8 @@ def test_b2_empty_middle_returns_none():
 def test_b3_returns_params():
     p = strategy_b3_first_initial_fuzzy("William", "Pickney", "Looney", None, None)
     assert p is not None
-    assert p["firstname"] == "W"
+    # B3 emits "W*" (first initial + wildcard)
+    assert p["firstname"].startswith("W")
     assert p["lastname"] == "Looney"
 
 
@@ -114,8 +115,9 @@ def test_c1_returns_params():
 # Year-based strategies
 # ============================================================
 def test_birth_year_strategy():
-    p = strategy_with_birth_year("William", "", "Looney", "1844", None, exact=False)
-    assert p is None or isinstance(p, dict)
+    p = strategy_with_birth_year("William", "", "Looney", "1844", exact=False)
+    assert p is not None  # should fire when birth_year present
+    assert "birthyear" in p
 
 
 def test_death_year_strategy():

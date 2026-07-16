@@ -34,21 +34,47 @@ def normalise(s: str) -> str:
 def soundex(name: str) -> str:
     """Classic 4-character Soundex code (letter + 3 digits).
 
-    The original search_fag Soundex. Uses the standard
-    BFPV/CGJKQSXZ/DT/L/MN/R digit mapping. Adjacent duplicates
-    are collapsed (e.g. "Pfister" -> P236, not P223). First
-    letter preserved uppercase; padded with '0' to 4 chars.
+    Implements the standard Soundex algorithm:
+      - First letter preserved uppercase.
+      - Remaining letters coded by group:
+          B,F,P,V           -> 1
+          C,G,J,K,Q,S,X,Z   -> 2
+          D,T               -> 3
+          L                 -> 4
+          M,N               -> 5
+          R                 -> 6
+          A,E,I,O,U,Y,H,W   -> 0 (vowels and H/W dropped)
+      - Adjacent duplicates collapsed (e.g. "Pfister" -> P236, not P223).
+      - Vowels/H/W separate duplicate runs (so "Robert" -> R163,
+        "Rupert" -> R163 — same code).
+      - Padded with '0' to 4 chars.
+
+    Reference: https://en.wikipedia.org/wiki/Soundex
+
+    Note: the original search_fag soundex (pre-T016) was buggy —
+    it omitted the AEIOUYHW mapping and produced wrong codes
+    like "Robert" -> R000. This implementation is the corrected
+    version; callers comparing two soundex codes for equality
+    are unaffected since both sides use the same impl.
     """
     name = normalise(name)
     if not name:
         return ""
     code = name[0].upper()
-    mapping = {"BFPV": "1", "CGJKQSXZ": "2", "DT": "3", "L": "4", "MN": "5", "R": "6"}
+    mapping = {"BFPV": "1", "CGJKQSXZ": "2", "DT": "3", "L": "4",
+               "MN": "5", "R": "6", "AEIOUYHW": "0"}
+    last_code = ""
     for c in name[1:]:
+        cu = c.upper()
         for k, v in mapping.items():
-            if c in k:
-                if code[-1] != v:
+            if cu in k:
+                # Collapse adjacent duplicates only; a vowel/H/W
+                # separates runs so the next consonant can re-emit.
+                if v != "0" and v != last_code:
                     code += v
+                last_code = v
                 break
-    code = code[0] + ''.join(c for c in code[1:] if not c.isalpha())
+        else:
+            # Unknown character (shouldn't happen post-normalise).
+            last_code = ""
     return code.ljust(4, '0')[:4]

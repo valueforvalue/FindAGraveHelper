@@ -29,6 +29,15 @@ Unified shape:
 """
 from __future__ import annotations
 
+# T018: use the typed front from scripts.state.schema. Keeps the
+# dict-returning legacy surface for back-compat (view.html is browser-side
+# and reads its own JS normalizer), but the Python side now reasons
+# about PensionerRecord instead of raw dicts.
+from scripts.state.schema import (
+    from_dict_pensioner,
+    PensionerRecord,
+)
+
 
 # ============================================================
 # Format detection
@@ -108,55 +117,60 @@ def normalize_state_record(rec: dict) -> dict:
     """Normalize a state record to a uniform shape view.html can render.
 
     Returns a NEW dict; original is untouched.
+
+    T018: parse the input through scripts.state.schema.from_dict_pensioner
+    first so we reason about typed fields. Output dict shape stays
+    unchanged for back-compat with view.html (browser-side, reads its
+    own JS normalizer).
     """
+    # Typed parse; schema-version mismatch is silent (forward-compat).
+    typed = from_dict_pensioner(rec)
+
     if is_unified(rec):
-        fag = rec.get("fag_records", []) or []
-        # Best score: max from fag_records, or 0 if empty/skipped
-        best = max((c.get("score", 0) or 0) for c in fag) if fag else 0.0
-        best_cand = max(fag, key=lambda c: c.get("score", 0)) if fag else None
+        fag_raw = rec.get("fag_records", []) or []
+        # Coerce CandidateRecord back to dicts for the legacy output shape.
+        fag_dicts = [c.to_dict() if hasattr(c, "to_dict") else c for c in typed.fag_records]
+        best = max((c.get("score", 0) or 0) for c in fag_raw) if fag_raw else 0.0
+        best_cand = max(fag_raw, key=lambda c: c.get("score", 0)) if fag_raw else None
         return {
-            "pensioner_id": rec.get("pensioner_id"),
-            "pensioner_name": rec.get("pensioner_name", ""),
-            "pensioner_first": rec.get("pensioner_first", ""),
-            "pensioner_middle": rec.get("pensioner_middle", ""),
-            "pensioner_last": rec.get("pensioner_last", ""),
-            "pensioner_birth_year": rec.get("pensioner_birth_year", ""),
-            "pensioner_death_year": rec.get("pensioner_death_year", ""),
-            "pensioner_app_number": rec.get("pensioner_app_number", ""),
-            "regiment": rec.get("regiment", ""),
-            "company": rec.get("company", ""),
-            "pensioncard_backlink": rec.get("pensioncard_backlink", ""),
-            "backlink": rec.get("backlink", ""),
-            # FaG side (renamed to ranked_candidates for view.html)
-            "ranked_candidates": fag[:20],  # cap at 20
+            "pensioner_id": typed.pensioner_id,
+            "pensioner_name": typed.pensioner_name,
+            "pensioner_first": typed.pensioner_first,
+            "pensioner_middle": typed.pensioner_middle,
+            "pensioner_last": typed.pensioner_last,
+            "pensioner_birth_year": typed.pensioner_birth_year,
+            "pensioner_death_year": typed.pensioner_death_year,
+            "pensioner_app_number": typed.pensioner_app_number,
+            "regiment": typed.regiment,
+            "company": typed.company,
+            "pensioncard_backlink": typed.pensioncard_backlink,
+            "backlink": typed.backlink,
+            "ranked_candidates": fag_dicts[:20],
             "best_score": best,
             "best_candidate": best_cand,
             "status": get_status(rec),
-            "fag_status": rec.get("fag_status", ""),
+            "fag_status": typed.fag_status,
             "strategies_run": rec.get("strategies_run", []),
-            # CGR side
-            "cgr_records": rec.get("cgr_records", []) or [],
-            "cgr_status": rec.get("cgr_status", ""),
+            "cgr_records": typed.cgr_records,
+            "cgr_status": typed.cgr_status,
             "cgr_skipped_fag": bool(rec.get("cgr_skipped_fag", False)),
-            # BOTH MATCH
-            "both_match": rec.get("both_match"),
-            "timestamp": rec.get("timestamp", ""),
+            "both_match": typed.both_match.to_dict() if typed.both_match else None,
+            "timestamp": typed.timestamp,
         }
 
-    # Legacy / FaG-only format
     return {
-        "pensioner_id": rec.get("pensioner_id"),
-        "pensioner_name": rec.get("pensioner_name", ""),
-        "pensioner_first": rec.get("pensioner_first", ""),
+        "pensioner_id": typed.pensioner_id,
+        "pensioner_name": typed.pensioner_name,
+        "pensioner_first": typed.pensioner_first,
         "pensioner_middle": "",
         "pensioner_last": "",
         "pensioner_birth_year": "",
         "pensioner_death_year": "",
-        "pensioner_app_number": rec.get("pensioner_app_number", ""),
-        "regiment": rec.get("regiment", ""),
-        "company": rec.get("company", ""),
-        "pensioncard_backlink": rec.get("pensioncard_backlink", ""),
-        "backlink": rec.get("backlink", ""),
+        "pensioner_app_number": typed.pensioner_app_number,
+        "regiment": typed.regiment,
+        "company": typed.company,
+        "pensioncard_backlink": typed.pensioncard_backlink,
+        "backlink": typed.backlink,
         "ranked_candidates": rec.get("ranked_candidates", []) or [],
         "best_score": rec.get("best_score", 0.0),
         "best_candidate": rec.get("best_candidate"),
@@ -167,9 +181,8 @@ def normalize_state_record(rec: dict) -> dict:
         "cgr_status": "",
         "cgr_skipped_fag": False,
         "both_match": None,
-        "timestamp": rec.get("timestamp", ""),
+        "timestamp": typed.timestamp,
     }
-
 
 def write_normalized_jsonl(
     input_path: Path,

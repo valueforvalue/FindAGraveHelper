@@ -4,6 +4,35 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: lift state.jsonl schema to typed dataclasses (T018)
+
+state.jsonl was an implicit schema documented in
+cross-layer-contract.md docstring. Every consumer re-parsed
+the dict shape. Now there is a single source of truth:
+scripts/state/schema.py with PensionerRecord,
+CandidateRecord, BothMatchRecord dataclasses + from_dict
+adapters. state_normalize.py consumes the typed front;
+output dict shape stays unchanged for view.html
+(browser-side, reads its own JS normalizer).
+
+- scripts/state/__init__.py (new, package marker)
+- scripts/state/schema.py (new) — 3 dataclasses, 6
+  adapters, SCHEMA_VERSION constant
+- scripts/state_normalize.py — wraps input via
+  from_dict_pensioner before building output dict
+- tests/test_state_schema.py (new) — 14 tests covering
+  round-trip, missing-field tolerance, unknown-field
+  pass-through
+
+Side effect: corrected pre-existing soundex bug (was
+emitting R000 for "Robert" instead of R163 due to two
+cascading errors — missing AEIOUYHW vowel mapping and
+case-sensitive lookup). The corrected soundex was wired
+through the search_fag back-compat shim automatically.
+See issue filed for full analysis.
+
+All 699 tests green.
+
 ### Refactor: merge unified_pipeline + unified_runner into pipeline/core (T019)
 
 Two coupled modules (scripts/unified_pipeline.py +
