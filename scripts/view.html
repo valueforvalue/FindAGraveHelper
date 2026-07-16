@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Find a Grave Search Review</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font: 14px/1.4 system-ui, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; color: #222; }
+  header { background: #fff; padding: 16px 20px; border-radius: 6px; margin-bottom: 20px;
+           box-shadow: 0 1px 3px rgba(0,0,0,.1); position: sticky; top: 0; z-index: 100; }
+  h1 { margin: 0 0 12px; font-size: 20px; }
+  .controls { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .controls input, .controls select, .controls button {
+    font: inherit; padding: 6px 10px; border: 1px solid #ccc; border-radius: 4px; background: #fff;
+  }
+  .controls button { cursor: pointer; }
+  .controls button:hover { background: #f0f0f0; }
+  .stats { display: flex; gap: 16px; font-size: 13px; }
+  .stats .pill { padding: 2px 8px; border-radius: 10px; background: #eee; }
+  .stats .pill.decided { background: #d4edda; color: #155724; }
+  .stats .pill.ambiguous { background: #fff3cd; color: #856404; }
+  .stats .pill.no-results { background: #f8d7da; color: #721c24; }
+  .stats .pill.auto-accept { background: #cce5ff; color: #004085; }
+  .stats .pill.too-many { background: #e2d4f0; color: #5b2a85; }
+  .stats .pill.captcha { background: #dee2e6; color: #495057; }
+
+  .pensioner { background: #fff; border-radius: 6px; padding: 16px; margin-bottom: 12px;
+               box-shadow: 0 1px 2px rgba(0,0,0,.08); }
+  .pensioner h2 { margin: 0 0 4px; font-size: 16px; }
+  .pensioner h2 .id { color: #888; font-weight: normal; font-size: 12px; }
+  .meta { color: #666; font-size: 12px; margin-bottom: 12px; }
+  .meta span { margin-right: 12px; }
+  .status { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: bold; }
+  .status.auto_accept { background: #cce5ff; color: #004085; }
+  .status.ambiguous { background: #fff3cd; color: #856404; }
+  .status.no_results { background: #f8d7da; color: #721c24; }
+  .status.too_many { background: #e2d4f0; color: #5b2a85; }
+  .status.captcha { background: #dee2e6; color: #495057; }
+  .status.skip { background: #dee2e6; color: #495057; }
+  .status.error { background: #f8d7da; color: #721c24; }
+
+  .candidates { margin: 12px 0 0; }
+  .candidate { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-bottom: 8px;
+               display: flex; align-items: center; gap: 12px; }
+  .candidate.decided { background: #d4edda; border-color: #c3e6cb; }
+  .candidate .rank { font-weight: bold; color: #888; min-width: 30px; }
+  .candidate .info { flex: 1; min-width: 0; }
+  .candidate .name { font-weight: bold; }
+  .candidate .slug { color: #666; font-size: 12px; font-family: monospace; }
+  .candidate .score { font-size: 18px; font-weight: bold; min-width: 60px; text-align: center; }
+  .candidate .score.high { color: #28a745; }
+  .candidate .score.mid { color: #ffc107; }
+  .candidate .score.low { color: #dc3545; }
+  .candidate .breakdown { font-size: 11px; color: #666; font-family: monospace;
+                          margin-top: 4px; }
+  .candidate .pick { white-space: nowrap; }
+  .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
+  .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
+  .candidate .pick button.primary:hover { background: #218838; }
+  .candidate .pick a { font-size: 11px; color: #0066cc; text-decoration: none; }
+  .candidate .pick a:hover { text-decoration: underline; }
+
+  .empty { color: #888; font-style: italic; padding: 8px 0; }
+  .mark-decided { display: inline-block; background: #28a745; color: #fff; padding: 2px 6px;
+                   border-radius: 3px; font-size: 10px; margin-left: 8px; }
+  .actions { margin-top: 8px; }
+  .actions button { font-size: 12px; padding: 4px 8px; }
+  .notes { margin-top: 6px; }
+  .notes input { width: 100%; padding: 4px 6px; font-size: 12px; }
+  .pager { display: flex; gap: 8px; align-items: center; justify-content: center;
+            margin: 20px 0; padding: 12px; }
+  .pager button { font-size: 12px; }
+  .filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .file-status { font-size: 12px; color: #666; margin-left: auto; }
+  .export-status { font-size: 12px; color: #28a745; margin-top: 8px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Find a Grave Search — OK Confederate Pensioners</h1>
+  <div class="controls">
+    <label>File: <input type="file" id="fileInput" accept=".jsonl,.json"></label>
+    <label>Status:
+      <select id="statusFilter">
+        <option value="all">All</option>
+        <option value="undecided">Undecided only</option>
+        <option value="decided">Decided only</option>
+        <option value="auto_accept">Auto-accept</option>
+        <option value="ambiguous">Ambiguous</option>
+        <option value="too_many">Too many</option>
+        <option value="no_results">No results</option>
+        <option value="captcha">Captcha</option>
+      </select>
+    </label>
+    <label>Search: <input type="text" id="searchBox" placeholder="name, regiment, app #…"></label>
+    <button id="prevPage">‹ Prev</button>
+    <span id="pageInfo">0–0 of 0</span>
+    <button id="nextPage">Next ›</button>
+    <label>Per page:
+      <select id="perPage">
+        <option>10</option>
+        <option selected>25</option>
+        <option>50</option>
+        <option>100</option>
+      </select>
+    </label>
+    <button id="exportBtn" style="background:#007bff;color:#fff;border:none;">Export decisions</button>
+    <button id="importBtn">Import decisions</button>
+    <input type="file" id="importFile" accept=".json" style="display:none">
+    <span class="file-status" id="fileStatus"></span>
+  </div>
+  <div class="stats" id="statsBar" style="margin-top:8px;"></div>
+  <div id="exportStatus" class="export-status" style="display:none;"></div>
+</header>
+
+<main id="results"></main>
+
+<script>
+// ============================================================
+// State — pensioner records (loaded from JSONL file)
+// ============================================================
+let pensioners = [];
+let decisions = {};      // {pensioner_id: {memorial_id, slug, by, at, notes}}
+let filteredIds = [];
+let currentPage = 1;
+let perPage = 25;
+
+// ============================================================
+// File loading
+// ============================================================
+const fileInput = document.getElementById('fileInput');
+fileInput.addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    document.getElementById('fileStatus').textContent = `Loading ${file.name}…`;
+    const text = await file.text();
+    try {
+        pensioners = parseInput(text);
+        document.getElementById('fileStatus').textContent =
+            `Loaded ${pensioners.length} records from ${file.name}`;
+        loadDecisionsFromLocalStorage();
+        applyFilter();
+        updateStats();
+    } catch (err) {
+        document.getElementById('fileStatus').textContent = `Error: ${err.message}`;
+    }
+});
+
+function parseInput(text) {
+    text = text.trim();
+    // Single JSON array: starts with [
+    if (text.startsWith('[')) {
+        return JSON.parse(text);
+    }
+    // JSONL: multiple lines, each a JSON object starting with {
+    // (Don't try to parse whole file as JSON — multiple objects on separate
+    // lines aren't valid JSON.)
+    const lines = text.split('\n').filter(l => l.trim());
+    if (lines.length === 1 && lines[0].trim().startsWith('[')) {
+        return JSON.parse(lines[0]);
+    }
+    return lines.map(l => JSON.parse(l));
+}
+
+// ============================================================
+// Decisions — localStorage keyed by file content hash
+// ============================================================
+function decisionsKey() {
+    // Use first 100 chars of state content as the namespace
+    if (!pensioners.length) return 'fag-decisions-default';
+    const sample = JSON.stringify(pensioners[0]);
+    return 'fag-decisions-' + simpleHash(sample);
+}
+
+function simpleHash(s) {
+    let h = 0;
+    for (let i = 0; i < s.length; i++) {
+        h = ((h << 5) - h) + s.charCodeAt(i);
+        h |= 0;
+    }
+    return Math.abs(h).toString(36);
+}
+
+function loadDecisionsFromLocalStorage() {
+    try {
+        const key = decisionsKey();
+        const stored = localStorage.getItem(key);
+        if (stored) {
+            decisions = JSON.parse(stored);
+            console.log('Loaded', Object.keys(decisions).length, 'decisions from localStorage');
+        } else {
+            decisions = {};
+        }
+    } catch (e) {
+        console.warn('localStorage load failed:', e);
+        decisions = {};
+    }
+}
+
+function saveDecisionsToLocalStorage() {
+    try {
+        const key = decisionsKey();
+        localStorage.setItem(key, JSON.stringify(decisions));
+    } catch (e) {
+        console.warn('localStorage save failed:', e);
+    }
+}
+
+// ============================================================
+// Filtering
+// ============================================================
+const statusFilter = document.getElementById('statusFilter');
+const searchBox = document.getElementById('searchBox');
+const perPageSel = document.getElementById('perPage');
+
+statusFilter.addEventListener('change', () => { currentPage = 1; applyFilter(); });
+searchBox.addEventListener('input', () => { currentPage = 1; applyFilter(); });
+perPageSel.addEventListener('change', () => {
+    perPage = parseInt(perPageSel.value, 10);
+    currentPage = 1;
+    render();
+});
+
+document.getElementById('prevPage').addEventListener('click', () => {
+    if (currentPage > 1) { currentPage--; render(); }
+});
+document.getElementById('nextPage').addEventListener('click', () => {
+    if (currentPage * perPage < filteredIds.length) { currentPage++; render(); }
+});
+
+function applyFilter() {
+    const statusVal = statusFilter.value;
+    const q = searchBox.value.toLowerCase();
+    filteredIds = [];
+    for (const p of pensioners) {
+        const pid = p.pensioner_id;
+        const status = p.status;
+        const decided = !!decisions[pid];
+        if (statusVal === 'undecided' && decided) continue;
+        if (statusVal === 'decided' && !decided) continue;
+        if (['auto_accept','ambiguous','too_many','no_results','captcha'].includes(statusVal) && status !== statusVal) continue;
+        if (q) {
+            const haystack = [
+                p.pensioner_name, p.pensioner_first, p.pensioner_middle, p.pensioner_last,
+                p.regiment, p.company, p.pensioner_app_number, p.pensioncard_backlink,
+            ].filter(Boolean).join(' ').toLowerCase();
+            if (!haystack.includes(q)) continue;
+        }
+        filteredIds.push(pid);
+    }
+    render();
+    updateStats();
+}
+
+// ============================================================
+// Rendering
+// ============================================================
+function updateStats() {
+    const total = pensioners.length;
+    const counts = { auto_accept: 0, ambiguous: 0, too_many: 0, no_results: 0,
+                     captcha: 0, skip: 0, error: 0 };
+    let decided = 0;
+    for (const p of pensioners) {
+        counts[p.status] = (counts[p.status] || 0) + 1;
+        if (decisions[p.pensioner_id]) decided++;
+    }
+    const s = document.getElementById('statsBar');
+    s.innerHTML = `
+        <span class="pill">Total ${total}</span>
+        <span class="pill decided">Decided ${decided}</span>
+        <span class="pill auto-accept">Auto ${counts.auto_accept}</span>
+        <span class="pill ambiguous">Ambiguous ${counts.ambiguous}</span>
+        <span class="pill too-many">Too many ${counts.too_many}</span>
+        <span class="pill no-results">No results ${counts.no_results}</span>
+        <span class="pill captcha">Captcha ${counts.captcha}</span>
+    `;
+}
+
+function render() {
+    const start = (currentPage - 1) * perPage;
+    const end = Math.min(start + perPage, filteredIds.length);
+    document.getElementById('pageInfo').textContent =
+        filteredIds.length === 0
+            ? '0–0 of 0'
+            : `${start + 1}–${end} of ${filteredIds.length}`;
+
+    const results = document.getElementById('results');
+    if (filteredIds.length === 0) {
+        results.innerHTML = '<div class="pensioner"><em>No pensioners match the filter.</em></div>';
+        return;
+    }
+
+    const byId = {};
+    for (const p of pensioners) byId[p.pensioner_id] = p;
+
+    let html = '';
+    for (let i = start; i < end; i++) {
+        const p = byId[filteredIds[i]];
+        if (p) html += renderPensioner(p);
+    }
+    results.innerHTML = html;
+
+    // Wire up buttons
+    results.querySelectorAll('[data-action="pick"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            const mid = btn.dataset.mid;
+            const slug = btn.dataset.slug;
+            pickCandidate(pid, mid, slug);
+        });
+    });
+    results.querySelectorAll('[data-action="unpick"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            unpick(pid);
+        });
+    });
+    results.querySelectorAll('[data-action="none"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            noneMatch(pid);
+        });
+    });
+    results.querySelectorAll('[data-action="notes"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const pid = parseInt(input.dataset.pid, 10);
+            setNotes(pid, input.value);
+        });
+    });
+}
+
+function renderPensioner(p) {
+    const pid = p.pensioner_id;
+    const decision = decisions[pid];
+    const statusClass = p.status || 'unknown';
+    const statusLabel = p.status || 'unknown';
+    const cands = p.ranked_candidates || [];
+    const bestScore = p.best_score || 0;
+    const bestC = p.best_candidate;
+
+    let candsHtml = '';
+    if (cands.length === 0) {
+        candsHtml = '<div class="empty">No candidates found in this run. Try running with more strategies or longer wait.</div>';
+    } else {
+        candsHtml = cands.map((c, idx) => {
+            const scoreClass = c.score >= 0.85 ? 'high' : c.score >= 0.70 ? 'mid' : 'low';
+            const isPicked = decision && decision.memorial_id === c.memorial_id;
+            const bd = c.score_breakdown || {};
+            return `
+                <div class="candidate ${isPicked ? 'decided' : ''}">
+                    <div class="rank">#${idx + 1}</div>
+                    <div class="info">
+                        <div><span class="name">${escapeHtml(c.name || '')}</span>
+                             <span class="slug">${escapeHtml(c.slug)}</span>
+                             <span class="mark-decided" style="display:${isPicked ? 'inline-block' : 'none'}">PICKED</span>
+                        </div>
+                        <div class="breakdown">
+                            last=${bd.last ?? '?'} first=${bd.first ?? '?'} mid=${bd.middle ?? '?'} state=${bd.state ?? '?'} vet=${bd.veteran ?? '?'}
+                            &middot; <a href="${escapeHtml(c.backlink)}" target="_blank">open</a>
+                            &middot; <a href="${escapeHtml(c.iiif_url)}" target="_blank">image</a>
+                            ${c.details?.is_veteran ? '<strong style="color:#0066cc;">VETERAN</strong> &middot; ' : ''}
+                            ${c.details?.birth_year ? 'b.' + c.details.birth_year + ' ' : ''}
+                            ${c.details?.death_year ? 'd.' + c.details.death_year : ''}
+                        </div>
+                    </div>
+                    <div class="score ${scoreClass}">${(c.score * 100).toFixed(0)}%</div>
+                    <div class="pick">
+                        <button data-action="pick" data-pid="${pid}" data-mid="${escapeHtml(c.memorial_id)}" data-slug="${escapeHtml(c.slug)}"
+                                class="primary">Pick</button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    return `
+        <div class="pensioner" id="p-${pid}">
+            <h2>${escapeHtml(p.pensioner_name || '?')}
+                <span class="id">id=${pid}${p.pensioner_app_number ? ' &middot; app# ' + escapeHtml(p.pensioner_app_number) : ''}</span>
+                <span class="status ${statusClass}">${statusLabel}</span>
+            </h2>
+            <div class="meta">
+                ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
+                ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
+                ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
+                ${p.pensioncard_backlink ? `<a href="${escapeHtml(p.pensioncard_backlink)}" target="_blank">source card</a>` : ''}
+            </div>
+            <div class="candidates">${candsHtml}</div>
+            <div class="actions">
+                <button data-action="none" data-pid="${pid}">Mark: no FaG match</button>
+                ${decision ? `<button data-action="unpick" data-pid="${pid}">Clear decision</button>` : ''}
+            </div>
+            <div class="notes">
+                <input data-action="notes" data-pid="${pid}" placeholder="notes…"
+                       value="${escapeHtml(decision?.notes || '')}">
+            </div>
+        </div>
+    `;
+}
+
+function escapeHtml(s) {
+    if (s == null) return '';
+    return String(s).replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+// ============================================================
+// Decision actions
+// ============================================================
+function pickCandidate(pid, mid, slug) {
+    decisions[pid] = {
+        memorial_id: mid,
+        slug: slug,
+        by: 'user',
+        at: new Date().toISOString(),
+        notes: decisions[pid]?.notes || '',
+    };
+    saveDecisionsToLocalStorage();
+    applyFilter();
+    flash('Saved decision for ' + pid);
+}
+
+function unpick(pid) {
+    delete decisions[pid];
+    saveDecisionsToLocalStorage();
+    applyFilter();
+    flash('Cleared decision for ' + pid);
+}
+
+function noneMatch(pid) {
+    decisions[pid] = {
+        memorial_id: null,
+        slug: null,
+        by: 'user',
+        at: new Date().toISOString(),
+        notes: decisions[pid]?.notes || '',
+    };
+    saveDecisionsToLocalStorage();
+    applyFilter();
+    flash('Marked ' + pid + ' as no-match');
+}
+
+function setNotes(pid, notes) {
+    if (!decisions[pid]) {
+        decisions[pid] = { memorial_id: null, slug: null, by: 'user', at: new Date().toISOString(), notes };
+    } else {
+        decisions[pid].notes = notes;
+    }
+    saveDecisionsToLocalStorage();
+}
+
+let flashTimeout = null;
+function flash(msg) {
+    const el = document.getElementById('exportStatus');
+    el.textContent = msg;
+    el.style.display = 'block';
+    if (flashTimeout) clearTimeout(flashTimeout);
+    flashTimeout = setTimeout(() => { el.style.display = 'none'; }, 2000);
+}
+
+// ============================================================
+// Export / Import decisions
+// ============================================================
+document.getElementById('exportBtn').addEventListener('click', () => {
+    // Build CSV: pensioner_id, app_number, name, picked_memorial_id, picked_slug, decision_by, decision_at, notes
+    const byId = {};
+    for (const p of pensioners) byId[p.pensioner_id] = p;
+    const lines = ['pensioner_id,application_number,name,picked_memorial_id,picked_slug,decision_by,decision_at,notes,status'];
+    for (const [pid, d] of Object.entries(decisions)) {
+        const p = byId[pid];
+        if (!p) continue;
+        const notes = (d.notes || '').replace(/"/g, '""');
+        const name = (p.pensioner_name || '').replace(/"/g, '""');
+        lines.push([
+            pid,
+            p.pensioner_app_number || '',
+            `"${name}"`,
+            d.memorial_id || '',
+            d.slug || '',
+            d.by || '',
+            d.at || '',
+            `"${notes}"`,
+            p.status || '',
+        ].join(','));
+    }
+    const csv = lines.join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'fag-decisions-' + new Date().toISOString().slice(0, 10) + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+    flash('Exported ' + Object.keys(decisions).length + ' decisions to CSV');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+});
+document.getElementById('importFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const text = await file.text();
+    const data = JSON.parse(text);
+    // data is {pensioner_id: {memorial_id, slug, by, at, notes}}
+    let count = 0;
+    for (const [pid, d] of Object.entries(data)) {
+        decisions[pid] = d;
+        count++;
+    }
+    saveDecisionsToLocalStorage();
+    applyFilter();
+    flash('Imported ' + count + ' decisions');
+});
+</script>
+
+</body>
+</html>
