@@ -4,6 +4,25 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: extract strategy ladder from search_fag.py (T017)
+
+First cut at splitting the 1631-LoC search_fag.py along
+deep-module boundaries. The 10 strategy_* functions +
+STRATEGIES ladder move to scripts/search/strategies.py;
+search_fag.py imports them and keeps the original names
+as back-compat re-exports.
+
+- scripts/search/strategies.py (new) — 237 LoC, 10 pure
+  strategy functions + STRATEGIES ordered list
+- scripts/search/__init__.py (new) — package marker
+- scripts/search_fag.py — strategy defs removed; re-imports
+  from scripts.search.strategies (back-compat shim)
+- tests/test_strategies.py (new) — 14 tests covering all 10
+  strategies + the module-level STRATEGIES list invariant
+
+Down from 1631 -> 1432 LoC in search_fag.py. T021's
+subpackage restructure will move more.
+
 ### Refactor: extract name_utils (T016)
 
 scripts/phonetic_match.py imported `normalise` and `soundex`
