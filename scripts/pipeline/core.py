@@ -23,6 +23,20 @@ DECISION POLICY (LOCKED 2026-07-16):
 
   If you are tempted to add a "skip FaG if CGR strong" gate:
   STOP. Open an issue instead. Do not gate the FaG search.
+
+FOLLOW-UP PHASE (LOCKED 2026-07-16):
+
+  Rows whose first pass resulted in a low-confidence match
+  (best_score < 0.85, or fag_status in {ambiguous, too_many,
+  no_results}) are eligible for a follow-up phase that runs
+  additional FaG strategies until either (a) a top candidate
+  scores > 0.85 or (b) all follow-up strategies are exhausted.
+
+  Follow-up strategies include (but are not limited to): spouse
+  cross-search (if CGR row has spouse data), birth-state
+  narrowing, nickname/initial-swap, regiment-bio with
+  death-year. See scripts/pipeline/leftover_investigation.py
+  for the implementation.
 """
 from __future__ import annotations
 

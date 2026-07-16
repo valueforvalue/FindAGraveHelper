@@ -17,19 +17,19 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class TestNormalization:
     def test_norm_lowercases_and_strips_punctuation(self):
-        from scripts.cgr_dedup import _norm
+        from scripts.cgr.cgr_dedup import _norm
         assert _norm("OBrien") == "obrien"
         assert _norm("O'Brien") == "obrien"
         assert _norm("Mc Donald") == "mcdonald"
         assert _norm("Smith-Jones") == "smithjones"
 
     def test_norm_strips_accents(self):
-        from scripts.cgr_dedup import _norm
+        from scripts.cgr.cgr_dedup import _norm
         assert _norm("Müller") == "muller"
         assert _norm("García") == "garcia"
 
     def test_norm_empty(self):
-        from scripts.cgr_dedup import _norm
+        from scripts.cgr.cgr_dedup import _norm
         assert _norm("") == ""
         assert _norm(None) == ""
 

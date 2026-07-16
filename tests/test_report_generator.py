@@ -275,7 +275,7 @@ def test_report_to_markdown_includes_application_links():
 
 def test_exemplar_payload_includes_both_backlinks():
     """Top-both-match payload includes pensioncard_backlink + backlink."""
-    from scripts.report_generator import _both_match_exemplars
+    from scripts.state.report_generator import _both_match_exemplars
     exemplars = _both_match_exemplars(_sample_records())
     assert len(exemplars) >= 2
     for ex in exemplars:

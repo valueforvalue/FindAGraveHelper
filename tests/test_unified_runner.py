@@ -283,7 +283,7 @@ class TestAlwaysRunFaGPolicy:
         record lives.
         """
         import inspect
-        from scripts import unified_pipeline
+        from scripts.pipeline import core as unified_pipeline
         docstring = unified_pipeline.__doc__ or ""
         # Must mention "always" + "FaG" + "LOCKED 2026-07-16"
         assert "ALWAYS run FaG" in docstring or "always" in docstring.lower(), (
@@ -333,7 +333,7 @@ class TestAlwaysRunFaGPolicy:
         low-confidence criterion (best_score < 0.85 OR
         fag_status in {ambiguous, too_many, no_results}).
         """
-        from scripts import unified_pipeline
+        from scripts.pipeline import core as unified_pipeline
         docstring = unified_pipeline.__doc__ or ""
         # Lowercase + collapsed whitespace for the search.
         normalized = " ".join(docstring.lower().split())

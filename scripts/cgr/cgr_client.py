@@ -1,0 +1,182 @@
+"""CGR HTTP client.
+
+Thin wrapper over urllib.request that handles:
+  - Building search URLs with the right field names
+  - GET requests to results.php and the detail pages
+  - Throttling between requests
+  - Returning parsed data, not raw HTML
+
+The site has no bot detection (we confirmed this with several
+manual fetches in 2026-07-16). It uses standard HTTP, no JS,
+no auth. We still throttle to be polite.
+
+We send a User-Agent so we're identifiable as our project. The
+site doesn't care, but it's good citizenship.
+
+This client does NOT match records to local data — that's the
+matcher's job (cgr_matcher.py). It just fetches and parses.
+"""
+import time
+import urllib.parse
+import urllib.request
+
+
+_BASE_URL = "https://cgr.scv.org"
+_USER_AGENT = "FindAGraveHelper/0.1 (research; contact: jeremy@example.com)"
+
+
+class CGRClient:
+    """Client for the Confederate Graves Registry site."""
+
+    def __init__(self, throttle_seconds: float = 0.0):
+        self.throttle_seconds = throttle_seconds
+        self._request_count = 0  # first request is "free" (warmup)
+
+    def _get(self, url: str) -> str:
+        """GET a URL with our user-agent and throttle. Returns raw HTML."""
+        if self._request_count > 0 and self.throttle_seconds > 0:
+            time.sleep(self.throttle_seconds)
+        self._request_count += 1
+        req = urllib.request.Request(url, headers={"User-Agent": _USER_AGENT})
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            data = resp.read()
+        # CGR pages are latin-1 / iso-8859-1. Try that first; fall back.
+        try:
+            return data.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            return data.decode("utf-8", errors="replace")
+
+    def search_by_name(
+        self,
+        fname: str = "",
+        lname: str = "",
+        ordinal: str = "",
+        unit_state: str = "",
+        unit_type: str = "",
+        unit_aka: str = "",
+        born_county: str = "",
+        cem_state: str = "",
+        cem_country: str = "",
+    ) -> list[dict]:
+        """Search CGR for veterans matching the given parameters.
+
+        Returns a list of {id, name, unit, born} dicts. Empty list
+        if no matches.
+        """
+        # Import here to avoid circular dependency at module load.
+        from scripts.cgr_results import parse_cgr_results
+        params = {
+            "fname": fname,
+            "lname": lname,
+            "ordinal": ordinal,
+            "unit_state": unit_state,
+            "unit_type": unit_type,
+            "unit_aka": unit_aka,
+            "born_county": born_county,
+            "cem_state": cem_state,
+            "cem_country": cem_country,
+        }
+        # Drop empty values so the URL stays clean
+        params = {k: v for k, v in params.items() if v}
+        url = f"{_BASE_URL}/results.php?" + urllib.parse.urlencode(params)
+        html = self._get(url)
+        return parse_cgr_results(html)
+
+    def get_vet_details(self, vet_id: int) -> dict:
+        """Fetch and parse a vet details page. Returns a dict (possibly empty)."""
+        from scripts.cgr_vet import parse_cgr_vet
+        url = f"{_BASE_URL}/vetDetails.php?id={vet_id}"
+        html = self._get(url)
+        return parse_cgr_vet(html)
+
+    def get_cemetery_details(self, vet_id: int) -> dict:
+        """Fetch and parse a cemetery details page.
+
+        Note: the cemetery id is in the same URL as the vet (the
+        search uses vet id; the cemetery is associated). CGR's
+        cemDetails.php?id=X expects the vet id, not a separate
+        cemetery id.
+        """
+        from scripts.cgr_cem import parse_cgr_cem
+        url = f"{_BASE_URL}/cemDetails.php?id={vet_id}"
+        html = self._get(url)
+        return parse_cgr_cem(html)
+
+    def list_cemeteries_in_state(self, state_code: str) -> list[dict]:
+        """List all cemeteries in a state.
+
+        POSTs 'state=<CODE>' to ajax_cemeteryDrop.php. Returns
+        list of {id, name, county, raw_label} dicts (parsed by
+        parse_cemeteries_html).
+        """
+        from scripts.cgr_cemeteries import parse_cemeteries_html
+        url = f"{_BASE_URL}/ajax_cemeteryDrop.php"
+        # Throttle applies to all requests except the first
+        if self._request_count > 0 and self.throttle_seconds > 0:
+            time.sleep(self.throttle_seconds)
+        self._request_count += 1
+        data = f"state={state_code}".encode("ascii")
+        req = urllib.request.Request(
+            url, data=data, method="POST",
+            headers={
+                "User-Agent": _USER_AGENT,
+                "Content-Type": "application/x-www-form-urlencoded",
+            },
+        )
+        with urllib.request.urlopen(req, timeout=20) as resp:
+            raw = resp.read()
+        try:
+            html = raw.decode("iso-8859-1")
+        except UnicodeDecodeError:
+            html = raw.decode("utf-8", errors="replace")
+        return parse_cemeteries_html(html)
+
+    def list_veterans_in_cemetery(self, cemetery_id: int) -> list[dict]:
+        """List all veterans buried in a cemetery.
+
+        GETs results.php?cemetery_id=X. Returns list of
+        {id, name, unit, born} dicts (parsed by parse_cgr_results).
+        """
+        from scripts.cgr_results import parse_cgr_results
+        url = f"{_BASE_URL}/results.php?cemetery_id={cemetery_id}"
+        html = self._get(url)
+        return parse_cgr_results(html)
+
+    def list_all_veterans_in_cemetery(
+        self, cemetery_id: int, max_pages: int = 200,
+    ) -> list[dict]:
+        """List ALL veterans buried in a cemetery, paginating as needed.
+
+        CGR caps results.php at 30 records per page. For larger
+        cemeteries, this method fetches subsequent pages with
+        offset=30, offset=60, etc. until the page count + offset
+        reaches the total.
+
+        max_pages is a safety limit so we don't loop forever if
+        the site reports an absurd total. At 30 records/page,
+        max_pages=200 covers up to 6000 vets per cemetery.
+        """
+        from scripts.cgr_results import parse_cgr_results, extract_record_count
+        all_vets: list[dict] = []
+        offset = 0
+        page_size = 30
+        for page_num in range(max_pages):
+            url = (
+                f"{_BASE_URL}/results.php?"
+                f"cemetery_id={cemetery_id}&offset={offset}"
+            )
+            html = self._get(url)
+            vets = parse_cgr_results(html)
+            if not vets:
+                break
+            all_vets.extend(vets)
+            # Check total via the page header
+            total = extract_record_count(html)
+            if total is not None and len(all_vets) >= total:
+                break
+            if total is None:
+                # No count info — assume this page was the last
+                if len(vets) < page_size:
+                    break
+            offset += page_size
+        return all_vets

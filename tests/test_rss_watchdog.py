@@ -36,7 +36,7 @@ def fake_rss_env(monkeypatch):
     # is platform-agnostic — the ctypes machinery is what fails on
     # Linux. We sidestep that by monkeypatching _get_rss_bytes
     # directly).
-    monkeypatch.setattr("scripts.rss_watchdog._get_rss_bytes", lambda: next_reading())
+    monkeypatch.setattr("scripts.fag.rss_watchdog._get_rss_bytes", lambda: next_reading())
     iterator = iter(readings)
 
     def next_reading():

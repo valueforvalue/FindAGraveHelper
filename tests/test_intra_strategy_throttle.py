@@ -35,7 +35,7 @@ class TestIntraStrategyThrottleWiring:
     def test_fag_browser_passes_throttle(self):
         """fag_browser must call search_one_pensioner with throttle_seconds."""
         import inspect
-        from scripts import fag_browser
+        from scripts.fag import fag_browser
         src = inspect.getsource(fag_browser)
         assert "throttle_seconds=throttle" in src, (
             "fag_browser.make_fag_search_fn closure must pass "

@@ -4,6 +4,29 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: restructure scripts/ into subpackages (T021)
+
+41 files moved from flat scripts/*.py into 8 subpackages
+(fag, cgr, matching, pipeline, state, ingest, analysis,
+search, _archive) per the audit proposal. Each subpackage
+gets an __init__.py; scripts/__init__.py re-exports 5
+cross-package public symbols.
+
+All moved files retain their original locations as
+back-compat shims (`from scripts.fag.fag_browser import *`),
+so existing callers `from scripts.X import Y` keep working.
+
+Deep-module rule applied: each subpackage has a single
+package-level facade (the canonical __init__.py), not a
+flat namespace.
+
+Tests that imported private symbols (`_norm`, `_get_rss_bytes`,
+`_both_match_exemplars`, `_spouse_cross_search_params`, etc.)
+were updated to import from the new subpackage locations.
+Tests that read module docstrings were updated similarly.
+
+700 non-integration tests green (was 699).
+
 ### Refactor: orphan-library audit + fix search_fag bare imports (T020)
 
 The audit found ZERO true orphan libraries. The four modules

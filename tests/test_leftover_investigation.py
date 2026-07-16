@@ -59,7 +59,7 @@ class TestTriggerLogic:
 
 class TestStrategyParameterBuilders:
     def test_spouse_cross_search_requires_spouse_name(self):
-        from scripts.leftover_investigation import _spouse_cross_search_params
+        from scripts.pipeline.leftover_investigation import _spouse_cross_search_params
         # No spouse name -> None
         assert _spouse_cross_search_params({}, {}) is None
         # Only first name in spouse -> None (need last)
@@ -73,7 +73,7 @@ class TestStrategyParameterBuilders:
         assert params["isVeteran"] == "true"
 
     def test_spouse_cross_search_with_partner_in_cgr(self):
-        from scripts.leftover_investigation import _spouse_cross_search_params
+        from scripts.pipeline.leftover_investigation import _spouse_cross_search_params
         pensioner = {"spouse_name": "Mary Smith"}
         cgr_row = {"spouse": "John Smith"}
         params = _spouse_cross_search_params(pensioner, cgr_row)
@@ -82,7 +82,7 @@ class TestStrategyParameterBuilders:
         assert "firstname" in params
 
     def test_birth_state_narrowing_requires_state(self):
-        from scripts.leftover_investigation import _birth_state_narrowing_params
+        from scripts.pipeline.leftover_investigation import _birth_state_narrowing_params
         assert _birth_state_narrowing_params({}) is None
         assert _birth_state_narrowing_params({"birth_state": ""}) is None
         params = _birth_state_narrowing_params({
@@ -92,7 +92,7 @@ class TestStrategyParameterBuilders:
         assert "VA" in params["bio"]
 
     def test_regiment_bio_death_year_requires_both(self):
-        from scripts.leftover_investigation import _regiment_bio_death_year_params
+        from scripts.pipeline.leftover_investigation import _regiment_bio_death_year_params
         # No regiment
         assert _regiment_bio_death_year_params({}) is None
         # No death year
@@ -109,7 +109,7 @@ class TestStrategyParameterBuilders:
         assert "Confederate" in params["bio"]
 
     def test_nickname_variants(self):
-        from scripts.leftover_investigation import _nickname_variants
+        from scripts.pipeline.leftover_investigation import _nickname_variants
         # Wm -> William
         assert "william" in _nickname_variants("Wm")
         # William -> Wm
@@ -226,7 +226,7 @@ class TestPolicyAlignment:
     """Phase 3 must respect the always-run-FaG policy."""
 
     def test_module_docstring_states_policy_alignment(self):
-        from scripts import leftover_investigation
+        from scripts.pipeline import leftover_investigation
         docstring = leftover_investigation.__doc__ or ""
         assert "always-run-FaG" in docstring or "policy" in docstring.lower(), (
             "leftover_investigation.py module must reference the "
@@ -236,7 +236,7 @@ class TestPolicyAlignment:
     def test_no_skip_fast_path(self):
         """No code path skips the strategies when conditions are met."""
         import inspect
-        from scripts import leftover_investigation
+        from scripts.pipeline import leftover_investigation
         src = inspect.getsource(leftover_investigation)
         # If a 'skip_fast_path' function or class appeared, that's
         # policy drift.
@@ -249,7 +249,7 @@ class TestPolicyAlignment:
         """All disposition values must appear in the docstring so a
         reader of the output file knows what they mean.
         """
-        from scripts import leftover_investigation
+        from scripts.pipeline import leftover_investigation
         docstring = leftover_investigation.__doc__ or ""
         for d in ("found_conclusive", "no_fag_memorial", "skipped"):
             assert d in docstring, (
