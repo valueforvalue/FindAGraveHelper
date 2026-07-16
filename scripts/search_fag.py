@@ -58,7 +58,7 @@ import sys
 import time
 from dataclasses import dataclass, field, asdict
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 # Allow imports from this script's directory when run as a script.
 sys.path.insert(0, str(Path(__file__).parent))
@@ -1142,8 +1142,18 @@ def warmup_session(page: Page, log_) -> bool:
 # Per-pensioner search
 # ============================================================
 
-def search_one_pensioner(page: Page, pensioner: dict) -> dict:
-    """Run the strategy ladder for one pensioner. Return a state record."""
+def search_one_pensioner(page: Page, pensioner: dict,
+                          throttle_seconds: Optional[float] = None) -> dict:
+    """Run the strategy ladder for one pensioner. Return a state record.
+
+    throttle_seconds: if provided, sleep this long between
+    strategy navigations as well as between pensioners. The
+    fag_browser wrapper already throttles between pensioners, but
+    each pensioner runs ~10 strategies back-to-back. Without an
+    intra-pensioner pause, popular-name records slam FaG with
+    10+ requests in 5-10 seconds flat, hitting Cloudflare's
+    burst-rate limit.
+    """
     first = pensioner.get("first_name", "")
     middle = pensioner.get("middle_name", "")
     last = pensioner.get("last_name", "")
@@ -1201,6 +1211,14 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
             continue
         url = BASE_URL + "?" + urlencode(params)
         record["strategies_run"].append(name)
+
+        # Inter-strategy throttle. Without this, a single pensioner
+        # with 10 strategies issues 10 page.goto() calls in ~5-10
+        # seconds flat, which trips FaG's burst rate limit. Cap the
+        # inter-strategy pause at the same throttle as inter-
+        # pensioner; the outer wrapper handles inter-pensioner.
+        if throttle_seconds and throttle_seconds > 0 and strategy_runs:
+            time.sleep(throttle_seconds)
 
         try:
             page.goto(url, wait_until='domcontentloaded', timeout=20000)

@@ -252,7 +252,10 @@ def make_fag_search_fn(
             state["last_request_at"] = time.time()
 
             try:
-                record = search_one_pensioner(state["page"], pensioner)
+                record = search_one_pensioner(
+                    state["page"], pensioner,
+                    throttle_seconds=throttle,
+                )
             except Exception as e:
                 state["consecutive_errors"] += 1
                 if _is_target_closed(e):
