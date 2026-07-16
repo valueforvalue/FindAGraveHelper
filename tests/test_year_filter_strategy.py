@@ -77,7 +77,7 @@ def test_strategy_with_birth_year_uses_exact_when_close():
 # ============================================================
 def test_strategy_with_death_year_returns_params():
     """Death year filter strategy."""
-    params = strategy_with_death_year("William", "", "Looney", "1932")
+    params = strategy_with_death_year("William", "", "Looney", None, "1932")
     assert params is not None
     assert params["deathyear"] == "1932"
     assert params["deathyearfilter"] in ("1", "3", "5", "10", "25", "exact")
@@ -85,19 +85,19 @@ def test_strategy_with_death_year_returns_params():
 
 def test_strategy_with_death_year_no_year_returns_none():
     """No death year → skip strategy."""
-    assert strategy_with_death_year("William", "", "Looney", "") is None
-    assert strategy_with_death_year("William", "", "Looney", None) is None
-    assert strategy_with_death_year("William", "", "Looney", "0") is None
+    assert strategy_with_death_year("William", "", "Looney", None, "") is None
+    assert strategy_with_death_year("William", "", "Looney", None, None) is None
+    assert strategy_with_death_year("William", "", "Looney", None, "0") is None
 
 
 def test_strategy_with_death_year_widens_window_for_old_deaths():
     """Died before 1930: use 10-year window (poor records).
     Died 1930+: use 5-year window (better records)."""
     # 1924 (CW era veteran): widen
-    p = strategy_with_death_year("Hugh", "H", "Akers", "1924")
+    p = strategy_with_death_year("Hugh", "H", "Akers", None, "1924")
     assert p["deathyearfilter"] in ("5", "10", "25")
     # Recent (20th century late): tighter
-    p = strategy_with_death_year("William", "", "Looney", "1932")
+    p = strategy_with_death_year("William", "", "Looney", None, "1932")
     assert p["deathyearfilter"] in ("5", "10", "25")
 
 

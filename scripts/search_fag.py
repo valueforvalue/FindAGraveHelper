@@ -238,7 +238,7 @@ def strategy_with_birth_year(first, middle, last, birth_year, exact=False):
     return params
 
 
-def strategy_with_death_year(first, middle, last, death_year):
+def strategy_with_death_year(first, middle, last, birth_year, death_year):
     """F1b: Death year filter strategy.
 
     Uses deathyearfilter. Default window is 5y; for veterans who
@@ -320,10 +320,8 @@ STRATEGIES = [
     ("C1-cw-context",         strategy_c1_cw_context),
     ("F1a-birthyear-exact",   strategy_with_birth_year),
     ("F1b-deathyear",         strategy_with_death_year),
-    ("F1c-year-sniper",       lambda f, m, l, b, d=None: strategy_year_sniper(f, m, l, b, d)),
-    ("F1d-year-window",       lambda f, m, l, b, d=None: strategy_with_year_window(f, m, l, b, d)),
-    ("F2-regiment-bio",       lambda f, m, l, b, d=None: strategy_regiment_bio(f, m, l, pensioner.get("regiment", ""), d)),
-    ("F3-nickname",           lambda f, m, l, b, d=None: strategy_with_nickname(f, m, l, b, d, pensioner)),
+    ("F1c-year-sniper",       strategy_year_sniper),
+    ("F1d-year-window",       strategy_with_year_window),
 ] 
 
 
@@ -1089,7 +1087,13 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
     any_error = False
 
     for name, fn in STRATEGIES:
-        params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
+        # Build per-strategy closure for F2/F3 which need pensioner
+        if name == "F2-regiment-bio":
+            params = strategy_regiment_bio(first, middle, last, pensioner.get("regiment", ""), pensioner.get("death_year"))
+        elif name == "F3-nickname":
+            params = strategy_with_nickname(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"), pensioner)
+        else:
+            params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
         if params is None:
             continue
         url = BASE_URL + "?" + urlencode(params)
