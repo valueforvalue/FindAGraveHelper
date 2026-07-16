@@ -141,3 +141,42 @@ class CGRClient:
         url = f"{_BASE_URL}/results.php?cemetery_id={cemetery_id}"
         html = self._get(url)
         return parse_cgr_results(html)
+
+    def list_all_veterans_in_cemetery(
+        self, cemetery_id: int, max_pages: int = 200,
+    ) -> list[dict]:
+        """List ALL veterans buried in a cemetery, paginating as needed.
+
+        CGR caps results.php at 30 records per page. For larger
+        cemeteries, this method fetches subsequent pages with
+        offset=30, offset=60, etc. until the page count + offset
+        reaches the total.
+
+        max_pages is a safety limit so we don't loop forever if
+        the site reports an absurd total. At 30 records/page,
+        max_pages=200 covers up to 6000 vets per cemetery.
+        """
+        from scripts.cgr_results import parse_cgr_results, extract_record_count
+        all_vets: list[dict] = []
+        offset = 0
+        page_size = 30
+        for page_num in range(max_pages):
+            url = (
+                f"{_BASE_URL}/results.php?"
+                f"cemetery_id={cemetery_id}&offset={offset}"
+            )
+            html = self._get(url)
+            vets = parse_cgr_results(html)
+            if not vets:
+                break
+            all_vets.extend(vets)
+            # Check total via the page header
+            total = extract_record_count(html)
+            if total is not None and len(all_vets) >= total:
+                break
+            if total is None:
+                # No count info — assume this page was the last
+                if len(vets) < page_size:
+                    break
+            offset += page_size
+        return all_vets

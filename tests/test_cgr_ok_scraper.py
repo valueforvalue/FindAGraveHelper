@@ -31,7 +31,7 @@ def _mock_client_with_data():
         {"id": 100, "name": "Cem A", "county": "Adair", "raw_label": "Adair Co.: Cem A"},
         {"id": 101, "name": "Cem B", "county": "Adair", "raw_label": "Adair Co.: Cem B"},
     ]
-    client.list_veterans_in_cemetery.side_effect = [
+    client.list_all_veterans_in_cemetery.side_effect = [
         [{"id": 1, "name": "John Smith", "unit": "5 AL", "born": "1840"}],
         [],  # empty cemetery
     ]
@@ -99,7 +99,7 @@ def test_scrape_handles_per_cemetery_error():
         {"id": 100, "name": "Cem A", "county": "Adair", "raw_label": "Adair Co.: Cem A"},
         {"id": 101, "name": "Cem B", "county": "Adair", "raw_label": "Adair Co.: Cem B"},
     ]
-    client.list_veterans_in_cemetery.side_effect = [
+    client.list_all_veterans_in_cemetery.side_effect = [
         RuntimeError("boom"),
         [{"id": 2, "name": "Jane Doe", "unit": "10 TN", "born": "1842"}],
     ]
@@ -195,7 +195,7 @@ def test_scrape_handles_vet_details_error_gracefully():
     client.list_cemeteries_in_state.return_value = [
         {"id": 100, "name": "Cem A", "county": "Adair", "raw_label": "Adair Co.: Cem A"},
     ]
-    client.list_veterans_in_cemetery.return_value = [
+    client.list_all_veterans_in_cemetery.return_value = [
         {"id": 1, "name": "John Smith", "unit": "5 AL", "born": "1840"},
         {"id": 2, "name": "Jane Doe", "unit": "10 TN", "born": "1842"},
     ]

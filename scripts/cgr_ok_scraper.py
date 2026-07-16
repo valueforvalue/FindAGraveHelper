@@ -131,10 +131,10 @@ def scrape_ok_cemeteries(
         }
 
         try:
-            vets = cgr_client.list_veterans_in_cemetery(cid)
+            vets = cgr_client.list_all_veterans_in_cemetery(cid)
         except Exception as e:
             log.error("  Failed to list vets for cemetery %d: %s", cid, e)
-            record["error"] = f"list_veterans_in_cemetery failed: {str(e)[:200]}"
+            record["error"] = f"list_all_veterans_in_cemetery failed: {str(e)[:200]}"
             records.append(record)
             _append(output_path, record)
             continue

@@ -76,15 +76,26 @@ def parse_cgr_results(html: str) -> list[dict]:
 
 
 def extract_record_count(html: str) -> Optional[int]:
-    """Pull the "N records returned" line out of the results page.
+    """Pull the total record count out of a results page.
 
-    Returns None if the count line isn't found. Used for diagnostics
-    and pagination decisions.
+    CGR uses two patterns interchangeably:
+      "38 records returned"
+      "(1-30 of 38 Records)"
+
+    Returns None if neither pattern is found.
     """
+    # Pattern 1: "N records returned"
     m = re.search(r"(\d+)\s+records?\s+returned", html, re.IGNORECASE)
-    if not m:
-        return None
-    try:
-        return int(m.group(1))
-    except ValueError:
-        return None
+    if m:
+        try:
+            return int(m.group(1))
+        except ValueError:
+            pass
+    # Pattern 2: "(A-B of N Records)"
+    m = re.search(r"of\s+(\d+)\s+Records?", html, re.IGNORECASE)
+    if m:
+        try:
+            return int(m.group(1))
+        except ValueError:
+            pass
+    return None
