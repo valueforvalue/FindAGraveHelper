@@ -23,6 +23,25 @@ DECISION POLICY (LOCKED 2026-07-16):
   today (different-last-name matches sharing first-name phonetic
   codes), so a "strong" threshold alone is not reliable.
 
+  EXTENSION (LOCKED 2026-07-16, follow-on discussion):
+
+  The policy is interpreted as 'every pensioner gets searched as
+  deeply as we have strategies'. The main run uses a 12-strategy
+  ladder. Rows whose first pass resulted in a low-confidence match
+  (e.g. best_score < 0.85, or fag_status in {ambiguous, too_many,
+  no_results}) are eligible for a FOLLOW-UP phase that runs
+  additional FaG strategies until either:
+
+    (a) a top candidate scores > 0.85 (conclusive "found"), OR
+    (b) all follow-up strategies are exhausted (conclusive
+        "no FaG memorial page exists for this pensioner").
+
+  Follow-up strategies include (but are not limited to): spouse
+  cross-search (if the CGR row has spouse data), birth-state
+  narrowing, nickname/initial-swap, regiment-bio with death-year.
+  See docs/learnings/2026-07-16-run-2-learnings.md for the policy
+  discussion that produced this extension.
+
   Future work (separate phase): once FaG state is available, the
   CGR data may be used to (1) find duplicates in CGR and
   (2) reduce human-review work in view.html. Neither of these
@@ -30,9 +49,6 @@ DECISION POLICY (LOCKED 2026-07-16):
 
   If you are tempted to add a "skip FaG if CGR strong" gate:
   STOP. Open an issue instead. Do not gate the FaG search.
-
-  See docs/learnings/2026-07-16-run-2-learnings.md for the
-  policy discussion that produced this decision.
 
 The FaG browser search is injected (dependency injection)
 so this module is testable without Playwright.

@@ -321,3 +321,28 @@ class TestAlwaysRunFaGPolicy:
         assert callable(should_skip_fag)
         # It returns False for empty input.
         assert should_skip_fag([]) is False
+
+    def test_unified_pipeline_docstring_endorses_followup_searches(self):
+        """DOCUMENTATION guard: the always-run-FaG policy must
+        explicitly endorse follow-up FaG strategies on low-
+        confidence rows. Without this clause, Phase 3
+        (leftover-investigation) would conflict with the policy.
+
+        The clause language must mention both 'follow-up' (or
+        'follow-up phase' / 'additional strategies') AND the
+        low-confidence criterion (best_score < 0.85 OR
+        fag_status in {ambiguous, too_many, no_results}).
+        """
+        from scripts import unified_pipeline
+        docstring = unified_pipeline.__doc__ or ""
+        # Lowercase + collapsed whitespace for the search.
+        normalized = " ".join(docstring.lower().split())
+        assert "follow-up" in normalized or "additional strategies" in normalized, (
+            "scripts/unified_pipeline.py docstring must explicitly "
+            "mention follow-up FaG strategies on low-confidence rows. "
+            "Without this endorsement, Phase 3 (leftover-investigation) "
+            "would conflict with the always-run-FaG policy."
+        )
+        assert "0.85" in docstring, (
+            "Docstring must document the 0.85 hard-target threshold."
+        )

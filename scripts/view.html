@@ -117,6 +117,16 @@
     50% { opacity: 0.7; }
   }
 
+  /* Post-run Phase 3 leftover-investigation badges */
+  .lo-badge { display: inline-block; padding: 2px 8px; border-radius: 10px;
+              font-size: 11px; font-weight: bold; margin-left: 8px; }
+  .lo-badge.found_conclusive { background: #28a745; color: #fff; }
+  .lo-badge.no_fag_memorial { background: #6c757d; color: #fff; }
+  .lo-badge.skipped { background: #adb5bd; color: #fff; }
+  .lo-badge .disposition-title {
+    font-weight: normal; font-size: 10px; opacity: 0.85; margin-left: 4px;
+  }
+
   .candidate .pick { white-space: nowrap; }
   .candidate .pick button { padding: 4px 10px; font-size: 12px; cursor: pointer; }
   .candidate .pick button.primary { background: #28a745; color: #fff; border: none; }
@@ -589,6 +599,12 @@ function renderPensioner(p) {
                 <span class="status ${statusClass}">${statusLabel}</span>
                 ${p.dd_in_local === true ? '<span class="dd-badge in">✓ in DD</span>'
                   : p.dd_in_local === false ? '<span class="dd-badge new">★ NEW FIND</span>' : ''}
+                ${p.leftover_pass && p.leftover_pass.disposition === 'found_conclusive'
+                    ? `<span class="lo-badge found_conclusive">✓ Phase 3 found<span class="disposition-title">${escapeHtml(String(p.leftover_pass.best_score ?? ''))}</span></span>` : ''}
+                ${p.leftover_pass && p.leftover_pass.disposition === 'no_fag_memorial'
+                    ? `<span class="lo-badge no_fag_memorial">∅ no FaG memorial<span class="disposition-title">Phase 3 exhausted</span></span>` : ''}
+                ${p.leftover_pass && p.leftover_pass.disposition === 'skipped'
+                    ? `<span class="lo-badge skipped">· skipped<span class="disposition-title">no applicable strategy</span></span>` : ''}
             </h2>
             <div class="meta">
                 ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
