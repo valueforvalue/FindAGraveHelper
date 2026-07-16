@@ -1,4 +1,27 @@
 <!DOCTYPE html>
+<!--
+  view.html: static review UI for state.jsonl (Find a Grave Helper)
+
+  state.jsonl SCHEMA — fields read by this file
+  ==============================================
+  Source of truth: scripts/state/schema.py::PensionerRecord (T018).
+  If you change the dataclass, also update the JS normalizer below
+  and the drift test in tests/test_view_html.py.
+
+  Direct (read from JSONL as-is):
+    pensioner_id, pensioner_name, pensioner_first, pensioner_middle,
+    pensioner_last, pensioner_app_number, pensioner_birth_year,
+    pensioner_death_year, regiment, company,
+    pensioncard_backlink, backlink,
+    fag_records, fag_status, cgr_records, cgr_status,
+    both_match, timestamp, error
+
+  Derived (computed by state_normalize.py before this file reads it):
+    status, ranked_candidates, best_score, best_candidate,
+    cgr_skipped_fag, strategies_run
+
+  Tests: tests/test_view_html.py::test_view_html_field_set_matches_schema
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">

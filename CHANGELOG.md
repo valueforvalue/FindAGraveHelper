@@ -4,6 +4,27 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Fix #9: view.html schema doc + drift test
+
+scripts/view.html's JS normalizer reads state.jsonl fields
+that come from scripts/state/schema.py::PensionerRecord
+(T018). The two were drifting silently — the Python side
+could add a field and the UI would never see it.
+
+- scripts/view.html — added a top-of-file comment listing
+  every field the JS normalizer reads (direct + derived),
+  with the schema source-of-truth reference
+- tests/test_view_html.py — new
+  test_view_html_field_set_matches_schema asserts the JS
+  set is a superset of the Python PensionerRecord set;
+  drift fails the build
+
+The reverse direction (JS reads more fields than Python
+types) is allowed: those are aliases or fallbacks the JS
+normalizer tolerates from legacy state.jsonl files.
+
+702 non-integration tests green.
+
 ### Fix #8: finish search_fag split (T008)
 
 scripts/fag/search.py was 1432 LoC after T017 strategies

@@ -137,3 +137,59 @@ def test_dd_field_in_js():
     """JS reads p.dd_in_local to render the badge."""
     assert re.search(r"p\.dd_in_local", VIEW_HTML) or re.search(r"dd_in_local", VIEW_HTML), \
         "expected dd_in_local referenced in view.html"
+
+
+# ============================================================
+# Schema drift guard (issue #9)
+# ============================================================
+# scripts/view.html's JS normalizer must read every field that
+# scripts/state/schema.py::PensionerRecord (plus the derived
+# fields from state_normalize.py) carries. Drift here means a
+# JSONL field changes on the Python side and the UI silently
+# misses it.
+def _view_html_field_set() -> set:
+    """Extract the set of rec.X field references from the JS
+    normalizer in view.html."""
+    m = re.search(
+        r"function normalizeStateRecord\(rec\) \{(.*?)^}",
+        VIEW_HTML,
+        re.DOTALL | re.MULTILINE,
+    )
+    assert m, "normalizeStateRecord function not found in view.html"
+    return set(re.findall(r"rec\.([a-z_][a-z_0-9]*)", m.group(1)))
+
+
+def _python_field_set() -> set:
+    """Set of field names in scripts/state/schema.PensionerRecord
+    (typed front) plus the derived fields from state_normalize."""
+    from scripts.state.schema import PensionerRecord
+    from dataclasses import fields
+    typed = {f.name for f in fields(PensionerRecord())}
+    # Derived fields — produced by state_normalize.normalize_state_record
+    derived = {
+        "status", "ranked_candidates", "best_score",
+        "best_candidate", "cgr_skipped_fag", "strategies_run",
+    }
+    return typed | derived
+
+
+def test_view_html_field_set_matches_schema():
+    """JS normalizer must read every Python-typed PensionerRecord field.
+
+    Failure indicates a drift between scripts/state/schema.py and
+    scripts/view.html — the Python side added a field but the JS
+    side never picked it up, so the UI silently misses it.
+
+    The reverse direction (JS reads more fields than Python types)
+    is allowed: those are typically aliases or fallbacks the JS
+    normalizer tolerates from legacy state.jsonl files.
+    """
+    py_set = _python_field_set()
+    js_set = _view_html_field_set()
+    missing_in_js = py_set - js_set
+    assert not missing_in_js, (
+        f"view.html JS normalizer does not read these "
+        f"PensionerRecord fields: {sorted(missing_in_js)}. "
+        f"Either add the read in normalizeStateRecord, or remove "
+        f"the field from scripts/state/schema.py."
+    )
