@@ -181,10 +181,19 @@
   .empty { color: #888; font-style: italic; padding: 8px 0; }
   .mark-decided { display: inline-block; background: #28a745; color: #fff; padding: 2px 6px;
                    border-radius: 3px; font-size: 10px; margin-left: 8px; }
-  .actions { margin-top: 8px; }
+  .actions { margin-top: 8px; display: flex; gap: 6px; align-items: center;
+              flex-wrap: wrap; }
   .actions button { font-size: 12px; padding: 4px 8px; }
-  .notes { margin-top: 6px; }
-  .notes input { width: 100%; padding: 4px 6px; font-size: 12px; }
+  .actions input[data-action="notes"] { flex: 1 1 220px; min-width: 0;
+                                        font-size: 12px; padding: 4px 6px;
+                                        max-width: 480px; }
+  /* J8: per-candidate notes input — sits below the candidate
+     row, full width of the card, but the card itself is
+     capped by the candidates scroll container. */
+  .candidate-notes { flex-basis: 100%; margin-top: 4px; }
+  .candidate-notes input { width: 100%; font-size: 11px;
+                           padding: 3px 6px; border: 1px solid #ddd;
+                           border-radius: 3px; box-sizing: border-box; }
   .pager { display: flex; gap: 8px; align-items: center; justify-content: center;
             margin: 20px 0; padding: 12px; }
   .pager button { font-size: 12px; }
@@ -244,6 +253,13 @@
 </header>
 
 <main id="results"></main>
+
+<!-- J9: placeholder. Replaced at copy time with a <script
+     type="application/json"> block containing the matching
+     results.jsonl. The page reads from it first; falls back
+     to fetch() of sibling results.jsonl (works under http://,
+     not file://). -->
+<!--EMBEDDED_RESULTS_JSONL-->
 
 <!-- J8: modal for the digitalprairie "View source" button.
      Populated by fetchSourceJson(url) and dismissed via the
@@ -726,13 +742,12 @@ function renderPensioner(p) {
                             ${isRemoved ? '✕ removed' : '✕ remove'}
                         </button>
                     </div>
-                    <div class="candidate-notes" style="flex-basis:100%;margin-top:6px;">
+                    <div class="candidate-notes">
                         <input type="text"
                                data-action="candidate-notes"
                                data-pid="${pid}" data-mid="${escapeHtml(c.memorial_id)}"
                                placeholder="Notes (e.g. 'wrong unit', 'duplicate of #123')..."
-                               value="${escapeHtml(candNotes[c.memorial_id] || '')}"
-                               style="width:100%;font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:3px;" />
+                               value="${escapeHtml(candNotes[c.memorial_id] || '')}" />
                     </div>
                 </div>
             `;
@@ -755,8 +770,7 @@ function renderPensioner(p) {
                 <button data-action="none" data-pid="${pid}">No match</button>
                 <input type="text" data-action="notes" data-pid="${pid}"
                        placeholder="Per-pensioner notes..."
-                       value="${escapeHtml(decision?.notes || '')}"
-                       style="flex:1;min-width:200px;font-size:11px;padding:3px 6px;" />
+                       value="${escapeHtml(decision?.notes || '')}" />
             </div>
         `;
 
@@ -1138,15 +1152,29 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
 });
 
 // ============================================================
-// J8: Auto-load results.jsonl from same dir
+// J9: Auto-load results.jsonl — embedded block first, then fetch.
 // ============================================================
-// When the page opens, attempt to fetch a sibling results.jsonl.
-// If found, parse + render. If not, the user can still pick via
-// the file input. Silently no-ops on fetch failure (e.g. CORS
-// when opened directly from a network share).
+// The runner (scripts/pipeline/run_unified.py) injects a
+// <script type="application/json" id="embedded-results-jsonl">
+// block at copy time so the page works under file:// (where
+// fetch() of sibling files is blocked). If the embedded block
+// is absent (e.g. the user copied view.html by hand), fall back
+// to fetch() of results.jsonl in the same directory.
 async function tryAutoLoad() {
-    // Derive the same-directory URL. location.pathname ends in
-    // '/view.html' when served, or '/view.html' under file://
+    // 1) Embedded JSONL block (works under file://).
+    const embedded = document.getElementById('embedded-results-jsonl');
+    if (embedded && embedded.textContent.trim()) {
+        const text = embedded.textContent;
+        rawPensioners = parseInput(text);
+        pensioners = rawPensioners.map(normalizeStateRecord);
+        document.getElementById('fileStatus').textContent =
+            `Auto-loaded ${pensioners.length} records (embedded)`;
+        loadDecisionsFromLocalStorage();
+        applyFilter();
+        updateStats();
+        return;
+    }
+    // 2) Fetch from same dir (works under http://, not file://).
     const here = new URL(window.location.href);
     const candidates = [
         new URL('results.jsonl', here).toString(),

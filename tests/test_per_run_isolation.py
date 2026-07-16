@@ -101,7 +101,11 @@ def test_view_html_copied_to_run_dir(tmp_path):
 
 
 def test_view_html_copy_byte_identical(tmp_path):
-    """The copy is byte-identical to the source (no mutation)."""
+    """The view.html copy preserves the source structure. The
+    J9 embed step may replace the EMBEDDED_DATA_PLACEHOLDER
+    with a <script> block (when results exist) or drop it
+    entirely (when results don't exist yet). Either way, the
+    rest of the page must be byte-identical."""
     out_dir = tmp_path / "out"
     out_dir.mkdir()
     src = Path("scripts/view.html")
@@ -114,7 +118,16 @@ def test_view_html_copy_byte_identical(tmp_path):
     )
     run_batch(pensioners=_sample_pensioners(1), cemeteries=_sample_cems(),
               config=cfg)
-    assert (out_dir / "view.html").read_bytes() == src.read_bytes()
+    src_text = src.read_text(encoding="utf-8")
+    dst_text = (out_dir / "view.html").read_text(encoding="utf-8")
+    # Drop the J9 placeholder from BOTH for fair comparison.
+    src_text_stripped = src_text.replace("<!--EMBEDDED_RESULTS_JSONL-->", "")
+    dst_text_stripped = dst_text.replace("<!--EMBEDDED_RESULTS_JSONL-->", "")
+    assert src_text_stripped == dst_text_stripped, (
+        "view.html copy diverged from source outside the "
+        "J9 embedded-data placeholder; copy_view_html_if_missing "
+        "should only mutate the placeholder region."
+    )
 
 
 def test_view_html_copy_skipped_if_exists(tmp_path):

@@ -4,6 +4,61 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J9: layout fix + embedded JSONL for file:// auto-load
+
+Two bug fixes from user feedback after J8:
+
+1. **Notes input was stretching the page.** The per-pensioner
+   notes `<input>` had `style="flex:1;min-width:200px"` inside
+   a non-flex `.actions` parent, so the input rendered as a
+   full-width block element — pushing the action buttons off
+   screen. Fixed by:
+   - Making `.actions` a flex container
+   - Adding `flex: 1 1 220px; max-width: 480px` to the
+     per-pensioner notes input via CSS class
+   - Stripping the inline `style="flex:1;..."` so the CSS
+     rule applies
+   - Same for the per-candidate notes input (now uses the
+     `.candidate-notes` CSS class with `box-sizing: border-box`)
+
+2. **view.html wasn't auto-loading results.jsonl from file://.**
+   The browser blocks `fetch()` of sibling files under the
+   `file://` protocol. Fixed by embedding the JSONL directly
+   into the page at copy time:
+   - `scripts/view.html` has a `<!--EMBEDDED_RESULTS_JSONL-->`
+     placeholder
+   - `scripts/pipeline/run_unified.copy_view_html_if_missing`
+     replaces the placeholder with a
+     `<script type="application/json" id="embedded-results-jsonl">`
+     block containing the matching results.jsonl
+   - `tryAutoLoad()` reads the embedded block first; falls back
+     to `fetch()` of `results.jsonl` (works under `http://`)
+
+To refresh the embedded data, delete the existing
+`output/<runname>/view.html` and re-run the pipeline (the
+no-overwrite policy means the copy is only made once).
+
+- scripts/view.html: CSS for `.actions` (flex) + `.candidate-notes`
+  (box-sizing); stripped inline styles; embedded JSONL
+  placeholder + `tryAutoLoad` reads from embedded first
+- scripts/pipeline/run_unified.py: `EMBEDDED_DATA_PLACEHOLDER`
+  constant + `copy_view_html_if_missing(results_path=...)`
+  injects the data
+- tests/test_view_ux_j9.py (new): 10 tests covering layout,
+  placeholder, embedded read order, runner embedding
+- tests/test_per_run_isolation.py: updated the byte-identical
+  test to allow the J9 placeholder substitution
+
+Tests: 10 new pass; 783 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Laws honored:
+  L7 docstrings: copy_view_html_if_missing keeps the contract
+    docstring; new parameters documented.
+  L4 stable key order: no JSONL key order changes.
+  L3 flush-per-pensioner: copy happens once at run start; data
+    read from results.jsonl after all pensioners flushed.
+
 ### J8: view.html UX — scrollable candidates, per-candidate remove + notes, "View source" modal, auto-load, best-match labeling
 
 User feedback after reviewing the test batch: the candidates

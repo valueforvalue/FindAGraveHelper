@@ -111,14 +111,29 @@ class UnifiedRunnerConfig:
 
 
 # ============================================================
-# view.html copy (J5-S2)
+# view.html copy (J5-S2 + J9 embed)
 # ============================================================
+# J9: when the runner copies view.html into the run dir, it also
+# embeds the matching results.jsonl as a <script type="application/json">
+# block. This makes the page work standalone when opened from
+# file:// (where fetch() of sibling files is blocked by the
+# browser) or from a simple http server. The view.html JS
+# reads from the embedded block first, then falls back to fetch.
+EMBEDDED_DATA_PLACEHOLDER = "<!--EMBEDDED_RESULTS_JSONL-->"
+
+
 def copy_view_html_if_missing(
     source: Optional[Path],
     dest_dir: Path,
     dest_filename: str = "view.html",
+    results_path: Optional[Path] = None,
 ) -> bool:
     """Copy source → dest_dir/dest_filename iff dest doesn't exist.
+
+    If `results_path` is provided AND the source view.html contains
+    the EMBEDDED_DATA_PLACEHOLDER, the matching JSONL content is
+    injected as a <script type="application/json"> block so the
+    page works from file:// without needing a server.
 
     Returns True if a copy happened, False otherwise (skipped because
     dest exists, or source missing, or source/dest identical path).
@@ -135,9 +150,28 @@ def copy_view_html_if_missing(
     if not source.exists():
         return False
     dest_dir.mkdir(parents=True, exist_ok=True)
-    # Byte-copy; shutil.copyfile preserves bytes exactly.
-    import shutil
-    shutil.copyfile(source, dest)
+
+    text = source.read_text(encoding="utf-8")
+    # Embed the results.jsonl as a JSON script block (J9).
+    if results_path is not None and EMBEDDED_DATA_PLACEHOLDER in text:
+        if results_path.exists():
+            embedded = results_path.read_text(encoding="utf-8")
+            # Escape </script> inside the JSON to keep the script
+            # block well-formed (the JSON itself shouldn't contain
+            # it, but defense in depth).
+            safe = embedded.replace("</script>", "<\\/script>")
+            block = (
+                f'<script type="application/json" id="embedded-results-jsonl">\n'
+                f'{safe}\n'
+                f'</script>\n'
+            )
+            text = text.replace(EMBEDDED_DATA_PLACEHOLDER, block)
+        else:
+            # No results yet; drop the placeholder so the page
+            # still loads (the user can pick a file manually).
+            text = text.replace(EMBEDDED_DATA_PLACEHOLDER, "")
+
+    dest.write_text(text, encoding="utf-8")
     return True
 
 
@@ -475,9 +509,18 @@ def run_batch(
     state_path = out_dir / config.results_filename
     outliers_path = out_dir / "outliers.jsonl"
 
-    # view.html copy (J5-S2). No-op if source missing or dest exists.
+    # view.html copy (J5-S2 + J9 embed). No-op if source missing or
+    # dest exists. When embedding, also pass the just-opened state_path
+    # so the matching results.jsonl is injected into the page.
     if config.view_html_source is not None:
-        copy_view_html_if_missing(config.view_html_source, out_dir)
+        # state_path is the per-run results file (results.jsonl
+        # by default after S2; state.jsonl if --results-filename
+        # was set to that). Pass it for embedding.
+        copy_view_html_if_missing(
+            config.view_html_source,
+            out_dir,
+            results_path=state_path,
+        )
 
     # Resume support
     tracker = ResumeTracker(state_path)
