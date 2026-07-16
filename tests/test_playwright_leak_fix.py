@@ -72,5 +72,5 @@ class TestLeakFixModule:
             'setattr(task, "__pw_stack__", [])' in src
         ), f"expected patched __pw_stack__ assignment in:\n{src}"
         assert (
-            'setattr(task, "__pw_stack_trace__", [])' in src
+            'setattr(task, "__pw_stack_trace__", _DummyTrace())' in src
         ), f"expected patched __pw_stack_trace__ assignment in:\n{src}"

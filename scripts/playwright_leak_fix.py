@@ -63,6 +63,20 @@ from __future__ import annotations
 _LEAK_FIX_APPLIED = False
 
 
+class _DummyTrace:
+    """Dummy replacement for __pw_stack_trace__ that supports .format().
+
+    Playwright's error-handling path calls callback.stack_trace.format()
+    on the __pw_stack_trace__ attribute. A plain list [] crashes with
+    AttributeError: 'list' object has no attribute 'format'.
+
+    This dummy returns an empty list from .format(), satisfying the
+    interface without capturing any frame data.
+    """
+    def format(self):
+        return []
+
+
 def apply_playwright_leak_fix() -> bool:
     """Apply the leak fix to SyncBase._sync. Idempotent.
 
@@ -97,9 +111,10 @@ def apply_playwright_leak_fix() -> bool:
 
         g_self = _greenlet_getcurrent()
         task = self._loop.create_task(coro)
-        # Use empty list so the task is fully GC-eligible when done.
+        # Empty attrs so task is GC-eligible. __pw_stack_trace__
+        # must support .format() for Playwright error paths.
         setattr(task, "__pw_stack__", [])
-        setattr(task, "__pw_stack_trace__", [])
+        setattr(task, "__pw_stack_trace__", _DummyTrace())
 
         task.add_done_callback(lambda _: g_self.switch())
         while not task.done():
@@ -122,7 +137,7 @@ def apply_playwright_leak_fix() -> bool:
             for t in list(_asyncio.all_tasks(loop=running_loop)):
                 try:
                     t.__pw_stack__ = []
-                    t.__pw_stack_trace__ = []
+                    t.__pw_stack_trace__ = _DummyTrace()
                 except Exception:
                     pass
     except Exception:
