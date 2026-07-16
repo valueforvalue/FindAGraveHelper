@@ -38,9 +38,9 @@ last tagged release (Run #2, 2026-07-16).
   `scripts/scrape_digitalprairie.py`. Pulls the OK Board of
   Pension Commissioners 1915-act index from
   digitalprairie.ok.gov. 7,758 unique records. Output:
-  `docs/research/digitalprairie/unified.json` (committed).
+  `docs/research/digitalprairie/ok_pensioners.json` (committed).
 - **F6 — Batch FaG search** — `scripts/search_fag.py` +
-  `scripts/run_unified.py`. Iterates the unified.json, hits
+  `scripts/run_unified.py`. Iterates the ok_pensioners.json, hits
   FaG with v4.x strategy ladder, writes per-pensioner record
   to `state.jsonl`. Resume-safe. Throttle-aware. Auto-accept
   at score ≥ 0.85.
@@ -200,7 +200,7 @@ TX, AR, MO, etc.
 
 - `--target-state` CLI flag
 - Pension list pulls for TX/AR/MO committed to
-  `docs/research/<state>/unified.json`
+  `docs/research/<state>/ok_pensioners.json`
 - End-to-end test on a TX sample
 
 **Estimate:** ~1 day for the flag + ~1 day per state for

@@ -169,7 +169,7 @@ If hit rate plateaus at 88%, options:
 4. **Birth year derivation** from regiment era (most CW soldiers
    were 16-25 when they enlisted; enlistment year is often known)
 5. **Cemetery name match** — if local has "buried_in" (the local
-   CSV does; unified.json doesn't), match against candidate's
+   CSV does; ok_pensioners.json doesn't), match against candidate's
    cemetery. Currently unused because unified has no cemetery data.
 
 The current 88% is good enough for human review on the small

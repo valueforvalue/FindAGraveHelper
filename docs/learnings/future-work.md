@@ -192,7 +192,7 @@ browser automation.
 ## 6. Run the full batch
 
 We have all the pieces. The actual run is:
-- ~3.2h for the full unified.json
+- ~3.2h for the full ok_pensioners.json
 - 84% rank-1 hit rate = 6,500 records that auto-pick
 - 16% = 1,250 records that need human review (~30 min of clicking)
 - 0% would be the "we didn't try" case (CAPTCHA at scale)

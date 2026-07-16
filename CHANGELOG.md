@@ -4,6 +4,21 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Refactor: sweep doc references to new data file names (T023)
+
+Swept 30 references to unified.json/unified.csv across 10
+doc files (docs/PRD.md, docs/RESEARCH.md, docs/learnings/*,
+docs/research/*, docs/agents/cross-layer-contract.md).
+All replaced with ok_pensioners.json/ok_pensioners.csv.
+
+Acceptable remaining references (historical, not data-flow):
+- CHANGELOG.md (historical entries about the rename itself)
+- CONTEXT.md Historical section (narrative of the rename)
+- scripts/pipeline/rename_to_ok_names.py (the migrate script's
+  own docstring describing what it did)
+- tests/test_backfill_backlinks.py (tmp filenames inside
+  tmp_path, not real paths)
+
 ### Refactor: search_fag.py to 11-LoC compat shim (T022)
 
 scripts/search_fag.py (1432 LoC) is now an 11-line back-compat

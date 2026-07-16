@@ -41,11 +41,11 @@ Confederate pensioners we know about.
 | `pensions.csv` | same, flat CSV |
 | `pensioncard.json` | 11,987 index card metadata records |
 | `pensioncard.csv` | same, flat CSV |
-| `unified.json` | **7,558 merged records — the canonical list** |
-| `unified.csv` | same, flat CSV |
+| `ok_pensioners.json` | **7,558 merged records — the canonical list** |
+| `ok_pensioners.csv` | same, flat CSV |
 | `scrape.log` | scrape run log |
 
-Each record in `unified.json` has:
+Each record in `ok_pensioners.json` has:
 
 - **Parsed name fields**: `first_name`, `middle_name`, `last_name`
 - **Spouse name** (parsed): `spouse_first_name`, `spouse_middle_name`, `spouse_last_name`
@@ -71,7 +71,7 @@ See `scripts/scrape_digitalprairie.py`. It:
    pre-extracted in the API response)
 4. Saves per-collection JSON + CSV
 5. Merges `pensions` + `pensioncard` on `application_number` (or
-   fallback to `pension_number` or `(last, first)`) into `unified.json`
+   fallback to `pension_number` or `(last, first)`) into `ok_pensioners.json`
 6. Resume-safe: re-running skips already-fetched IDs
 
 Scrape rate: ~50 records/sec with concurrency 15. Full run is
@@ -96,7 +96,7 @@ The unified JSON is the input to a batch FaG search. The
 (matching each pensioner against FaG), or a Python harness can be
 written that:
 
-1. Iterates `unified.json`
+1. Iterates `ok_pensioners.json`
 2. Builds a search URL for each soldier using the v5.0 strategy ladder
 3. Submits the URL, parses the results page
 4. If a high-confidence match (score ≥ 0.85) is found, records the

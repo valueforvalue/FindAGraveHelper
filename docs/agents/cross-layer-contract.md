@@ -59,7 +59,7 @@ One JSON object per line, written by Python, consumed by
 
 | Key | Type | Notes |
 |---|---|---|
-| `pensioner_id` | string | The pensioner ID from `digitalprairie/unified.json`. Stable across runs. |
+| `pensioner_id` | string | The pensioner ID from `digitalprairie/ok_pensioners.json`. Stable across runs. |
 | `outcome` | enum | `BOTH_MATCH`, `auto_accept`, `too_many`, `ambiguous`, `no_results`, `error`. |
 | `ranked_candidates` | array | Empty for `no_results` and `error`. |
 | `scraped_at` | ISO 8601 | When this record was written. |

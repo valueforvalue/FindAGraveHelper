@@ -163,8 +163,8 @@ docs/research/
 │   └── rosters/                         # source CSVs (gitignored)
 ├── digitalprairie/                     # 7,558 OK Confederate pensioners
 │   ├── README.md
-│   ├── unified.json                     # canonical list (committed)
-│   ├── unified.csv
+│   ├── ok_pensioners.json                     # canonical list (committed)
+│   ├── ok_pensioners.csv
 │   ├── unified_sample_50.csv
 │   └── unified_sample_50.json
 └── learnings/                           # this directory
@@ -202,14 +202,14 @@ process_ledger.py                       # JSON export → CSV + Markdown
 
 ## Operational how-to
 
-### Run the batch search (full unified.json)
+### Run the batch search (full ok_pensioners.json)
 
 ```bash
-# Pull the unified.json (already committed in repo)
+# Pull the ok_pensioners.json (already committed in repo)
 # 1. Open a Chrome window (must be visible; headless is blocked)
 # 2. Run the harness — keep the browser window open during the run
 python scripts/search_fag.py \
-  --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/unified.json \
+  --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json \
   --state C:/tmp/full_search.jsonl
 
 # Takes ~3.2h for 7,709 pensioners at 1.5s throttle.
@@ -267,7 +267,7 @@ python scripts/search_fag.py \
   --limit 50
 ```
 
-### Scrape a fresh unified.json from digitalprairie.ok.gov
+### Scrape a fresh ok_pensioners.json from digitalprairie.ok.gov
 
 ```bash
 python scripts/scrape_digitalprairie.py \

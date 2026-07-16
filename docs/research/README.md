@@ -113,7 +113,7 @@ lack. Merged into 7,558 unified records.
 Each record has backlinks to the source card on digitalprairie.ok.gov
 and IIIF image URLs for visual verification.
 
-→ Output: `digitalprairie/unified.json` (canonical list) + sample
+→ Output: `digitalprairie/ok_pensioners.json` (canonical list) + sample
   of 50 records (`unified_sample_50.json`) for quick reference
 
 ## Next: Batch FaG search
@@ -121,7 +121,7 @@ and IIIF image URLs for visual verification.
 With the canonical 7,558-OK-pensioner list, the next step is to
 build a batch FaG search harness:
 
-1. Iterate `digitalprairie/unified.json`
+1. Iterate `digitalprairie/ok_pensioners.json`
 2. For each pensioner, build a search URL using the v5.0 strategy
    ladder
 3. Submit, parse results, score candidates

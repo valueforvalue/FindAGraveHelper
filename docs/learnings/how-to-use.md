@@ -27,7 +27,7 @@ project for the first time, read this first.
                             │   ~5 min, ~7,758 records
                             │
 ┌─────────────────────────────────────────────────────────────┐
-│ docs/research/digitalprairie/unified.json                   │
+│ docs/research/digitalprairie/ok_pensioners.json                   │
 │ 7,558 OK CW pensioners with regiment, company, name, app#   │
 └─────────────────────────────────────────────────────────────┘
                             │
@@ -73,7 +73,7 @@ playwright install chromium
 
 # 2. Run the harness
 python scripts/search_fag.py \
-  --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/unified.json \
+  --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json \
   --state C:/tmp/full_search.jsonl
 
 # 3. Watch the logs. On CAPTCHA, the script backs off 30s and retries.
@@ -210,7 +210,7 @@ dixiedata).
 
 ## Step-by-step: re-pull the digitalprairie data
 
-The `unified.json` in the repo is already current. To re-pull
+The `ok_pensioners.json` in the repo is already current. To re-pull
 (faster than downloading the 30MB from GitHub):
 
 ```bash
@@ -221,7 +221,7 @@ python scripts/scrape_digitalprairie.py \
 ```
 
 ~5 minutes. Outputs `pensions.json`, `pensioncard.json`,
-`unified.json`, `unified.csv` in the out-dir.
+`ok_pensioners.json`, `ok_pensioners.csv` in the out-dir.
 
 The pensions/ + pensioncard/ files are gitignored (reproducible).
 The unified.{json,csv} files are committed (canonical list).

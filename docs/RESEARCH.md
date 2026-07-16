@@ -14,7 +14,7 @@
 
 - **OK Digital Prairie pensioner index**: 7,558 unique records
   pulled and committed at
-  [`research/digitalprairie/unified.json`](research/digitalprairie/unified.json).
+  [`research/digitalprairie/ok_pensioners.json`](research/digitalprairie/ok_pensioners.json).
   Each record has the soldier/widow name, regiment, company,
   application number, and backlinks to the source card on
   digitalprairie.ok.gov. Re-pull via
@@ -95,7 +95,7 @@
 - **digitalprairie.ok.gov stability**: the OK pension records
   are public domain (state archive), but the site has no API.
   The scraper is single-shot; if the site redesigns, the
-  `unified.json` snapshot is the fallback.
+  `ok_pensioners.json` snapshot is the fallback.
 - **CW record completeness**: birth year + birthplace are
   absent from the OK pension records. Census cross-reference
   would help but is out of scope (no bulk census access).
@@ -116,7 +116,7 @@
 
 | Risk | Severity | Mitigation |
 |---|---|---|
-| FaG redesign breaks the scraper | High | Document the params + HTML structure in `docs/research/findagrave-params/`; commit a snapshot of `unified.json` |
+| FaG redesign breaks the scraper | High | Document the params + HTML structure in `docs/research/findagrave-params/`; commit a snapshot of `ok_pensioners.json` |
 | Cloudflare escalation to a stronger challenge | Medium | Stealth config in `fag_browser.py`; manual fallback to headful browser |
 | OK Board of Pension records retracted | Low | Data is public domain + state archive; unlikely but possible |
 | Browser-based run is not CI-friendly | Medium | Mock the browser in CI; run `test_real_fag_memory.py` only on manual trigger |
@@ -152,7 +152,7 @@ short version:
 python scripts/scrape_digitalprairie.py --out-dir docs/research/digitalprairie --min-id 1 --max-id 13000 --no-probe --concurrency 15 --save-every 500
 
 # 2. Run the batch FaG search
-python scripts/search_fag.py --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/unified.json --state C:/tmp/full_search.jsonl
+python scripts/search_fag.py --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json --state C:/tmp/full_search.jsonl
 
 # 3. Review in browser
 # Open scripts/view.html, load the JSONL, click Pick on candidates

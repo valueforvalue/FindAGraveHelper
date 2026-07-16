@@ -6,7 +6,7 @@ problem space.
 
 ## The problem
 
-Given a list of OK CW pensioners (~7,758 from `unified.json`),
+Given a list of OK CW pensioners (~7,758 from `ok_pensioners.json`),
 find the same person in:
 - Find a Grave (~500K+ CW vets, search API only)
 - Confederate Graves Registry (~204K CW vets, bulk-scrapeable)
@@ -298,7 +298,7 @@ matches have scores in the 0.55-0.70 range.
 ### What changed in the pipeline
 
 ```
-unified.json (7,758 pensioners)
+ok_pensioners.json (7,758 pensioners)
        ↓
    search_fag.py
        ↓
@@ -313,7 +313,7 @@ unified.json (7,758 pensioners)
 
 The 4 algorithm improvements mainly affect the **CGR xref path**:
 ```
-unified.json + ok_cemeteries.jsonl
+ok_pensioners.json + ok_cemeteries.jsonl
        ↓
    blocking.py — pre-compute phonetic index
        ↓
