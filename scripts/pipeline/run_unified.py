@@ -514,26 +514,51 @@ def _load_cems(cgr_path: Path) -> list[dict]:
     return list(by_cem.values())
 
 
-def cli_main() -> int:
+def cli_main(argv: Optional[list[str]] = None) -> int:
     """CLI entry point: parse args, init Playwright, run batch.
 
     Usage:
+      # Ad-hoc (legacy flags)
       python scripts/run_unified.py \\
         --input docs/research/digitalprairie/ok_pensioners.json \\
         --cgr docs/research/cgr/ok_vets_enriched.jsonl \\
         --out data/results/run_2026_07_16/ \\
         [--limit N] [--throttle 2.5] [--shuffle]
+
+      # Batch config (preferred)
+      python scripts/run_unified.py --config output/<runname>/config.json
+
+      # Scaffold a new run
+      python scripts/run_unified.py init-batch <runname>
     """
     import argparse
     parser = argparse.ArgumentParser(description="Unified runner CLI")
+    # Subcommand: init-batch
+    subparsers = parser.add_subparsers(dest="subcommand")
+    init_p = subparsers.add_parser(
+        "init-batch",
+        help="Scaffold output/<runname>/config.json for a new run",
+    )
+    init_p.add_argument("runname", help="Slug identifying the run")
+    init_p.add_argument(
+        "--root", type=Path, default=Path("output"),
+        help="Parent directory (default: output/)",
+    )
+
+    # Main parser (default subcommand = run)
     parser.add_argument("--input", type=Path,
                         help="Local path to ok_pensioners.json")
     parser.add_argument("--input-csv", type=Path,
                         help="Local path to a generic CSV (dixiedata-style)")
-    parser.add_argument("--cgr", type=Path, required=True,
-                        help="Enriched CGR JSONL (ok_vets_enriched.jsonl)")
-    parser.add_argument("--out", type=Path, required=True,
-                        help="Output directory (will be created)")
+    parser.add_argument("--cgr", type=Path, required=False,
+                        help="Enriched CGR JSONL (ok_vets_enriched.jsonl). "
+                             "Required unless --config is used.")
+    parser.add_argument("--config", type=Path, default=None,
+                        help="Path to a batch config.json (output/<runname>/config.json). "
+                             "When set, --input / --cgr / --out are derived from it.")
+    parser.add_argument("--out", type=Path, default=None,
+                        help="Output directory (will be created). "
+                             "When --config is used, defaults to output/<runname>/.")
     parser.add_argument("--limit", type=int, default=None,
                         help="Process only first N pensioners (for tests)")
     parser.add_argument("--throttle", type=float, default=2.5,
@@ -569,7 +594,79 @@ def cli_main() -> int:
                              "records to bound Chromium RSS growth "
                              "(default 250; 500 was the old default "
                              "before the memory leak investigation)")
-    args = parser.parse_args()
+    args = parser.parse_args(argv)
+
+    # ============================================================
+    # Subcommand dispatch: init-batch
+    # ============================================================
+    if args.subcommand == "init-batch":
+        from scripts.batch_config import init_batch as _init_batch, ConfigError
+        try:
+            created = _init_batch(args.runname, root=args.root)
+        except ConfigError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        print(f"Initialized run: {created}")
+        return 0
+
+    # ============================================================
+    # --config: load batch config and merge into args
+    # ============================================================
+    if args.config is not None:
+        from scripts.batch_config import (
+            load_config as _load_config,
+            validate_config_against_dir as _validate_cfg_dir,
+            ConfigError,
+        )
+        try:
+            batch_cfg = _load_config(args.config)
+        except ConfigError as e:
+            print(f"error loading config: {e}", file=sys.stderr)
+            return 1
+        # Derive --out from config if not provided
+        if args.out is None:
+            args.out = args.config.parent
+        # Validate runname matches out_dir basename
+        try:
+            _validate_cfg_dir(batch_cfg, args.out)
+        except ConfigError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+        # Apply config to args (CLI overrides config)
+        if args.input is None and args.input_csv is None:
+            args.input = batch_cfg.input_path
+        if args.cgr is None:
+            args.cgr = batch_cfg.cgr_path
+        if args.throttle == 2.5:  # default sentinel
+            args.throttle = batch_cfg.throttle
+        if args.low_score_threshold == 0.40:  # default sentinel
+            args.low_score_threshold = batch_cfg.low_score_threshold
+        # start_row / end_row → start_from + limit
+        if args.start_from == 0:
+            args.start_from = batch_cfg.start_row
+        if args.limit is None and batch_cfg.end_row is not None:
+            size = batch_cfg.end_row - batch_cfg.start_row
+            if size > 0:
+                args.limit = size
+        args.batch_cfg = batch_cfg
+    else:
+        args.batch_cfg = None
+
+    # --cgr is required when --config is not used
+    if args.config is None and args.cgr is None:
+        print("error: --cgr is required (or pass --config)", file=sys.stderr)
+        return 1
+    # --input OR --input-csv is required when --config is not used
+    if args.config is None and args.input is None and args.input_csv is None:
+        print(
+            "error: provide --input (ok_pensioners.json) or --input-csv",
+            file=sys.stderr,
+        )
+        return 1
+    # --out is required when --config is not used
+    if args.config is None and args.out is None:
+        print("error: --out is required (or pass --config)", file=sys.stderr)
+        return 1
 
     # Setup logger
     out_dir = Path(args.out)

@@ -1,0 +1,228 @@
+"""Tests for J5-S1: batch config.json + init-batch subcommand.
+
+RED tests written first per tdd.md. Each test pins one acceptance
+criterion from the feature spec. No browser / Playwright required.
+"""
+import json
+import sys
+from pathlib import Path
+
+import pytest
+
+ROOT = Path(__file__).parent.parent
+sys.path.insert(0, str(ROOT))
+
+from scripts.batch_config import (  # noqa: E402
+    BatchConfig,
+    ConfigError,
+    init_batch,
+    load_config,
+    validate_config_against_dir,
+)
+
+
+# ============================================================
+# init-batch subcommand
+# ============================================================
+def test_init_batch_writes_config_template(tmp_path, monkeypatch):
+    """init-batch <runname> creates output/<runname>/config.json with defaults."""
+    monkeypatch.chdir(tmp_path)
+    created = init_batch("foo")
+
+    expected = tmp_path / "output" / "foo" / "config.json"
+    assert created == expected
+    assert expected.exists()
+
+    cfg = json.loads(expected.read_text(encoding="utf-8"))
+    # Required keys from the feature spec
+    for key in (
+        "runname",
+        "input",
+        "cgr",
+        "start_row",
+        "end_row",
+        "throttle",
+        "low_score_threshold",
+    ):
+        assert key in cfg, f"missing required key: {key}"
+    assert cfg["runname"] == "foo"
+    # Defaults
+    assert cfg["throttle"] == 2.5
+    assert cfg["low_score_threshold"] == 0.40
+    assert cfg["start_row"] == 0
+    assert cfg["end_row"] is None  # sentinel for "no upper bound"
+
+
+def test_init_batch_creates_dir_layout(tmp_path, monkeypatch):
+    """init-batch creates output/<runname>/ with config.json inside."""
+    monkeypatch.chdir(tmp_path)
+    init_batch("bar")
+    assert (tmp_path / "output" / "bar").is_dir()
+    assert (tmp_path / "output" / "bar" / "config.json").is_file()
+
+
+def test_init_batch_rejects_existing_dir(tmp_path, monkeypatch):
+    """init-batch refuses to clobber an existing run dir (no accidental overwrite)."""
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "output" / "foo").mkdir(parents=True)
+    with pytest.raises(ConfigError, match="already exists"):
+        init_batch("foo")
+
+
+def test_init_batch_rejects_bad_runname(tmp_path, monkeypatch):
+    """Non-slug runnames (spaces, uppercase, leading hyphen) are rejected."""
+    monkeypatch.chdir(tmp_path)
+    with pytest.raises(ConfigError, match="invalid runname"):
+        init_batch("Bad Name")
+    with pytest.raises(ConfigError, match="invalid runname"):
+        init_batch("FOO")
+    with pytest.raises(ConfigError, match="invalid runname"):
+        init_batch("-leading-hyphen")
+
+
+def test_init_batch_accepts_various_slugs(tmp_path, monkeypatch):
+    """Hyphens, digits, underscores in runname are accepted."""
+    monkeypatch.chdir(tmp_path)
+    for slug in ("a", "abc", "with-hyphens", "x1", "two_words"):
+        init_batch(slug)
+        assert (tmp_path / "output" / slug / "config.json").exists()
+
+
+# ============================================================
+# load_config round-trip
+# ============================================================
+def test_load_config_round_trip(tmp_path):
+    """Config dict → JSON file → BatchConfig dataclass → all keys preserved."""
+    cfg_path = tmp_path / "config.json"
+    raw = {
+        "runname": "test-run",
+        "input": "docs/research/digitalprairie/ok_pensioners.json",
+        "cgr": "docs/research/cgr/ok_vets_enriched.jsonl",
+        "start_row": 100,
+        "end_row": 500,
+        "throttle": 3.0,
+        "low_score_threshold": 0.45,
+    }
+    cfg_path.write_text(json.dumps(raw), encoding="utf-8")
+
+    cfg = load_config(cfg_path)
+    assert isinstance(cfg, BatchConfig)
+    assert cfg.runname == "test-run"
+    assert cfg.input_path == Path("docs/research/digitalprairie/ok_pensioners.json")
+    assert cfg.cgr_path == Path("docs/research/cgr/ok_vets_enriched.jsonl")
+    assert cfg.start_row == 100
+    assert cfg.end_row == 500
+    assert cfg.throttle == 3.0
+    assert cfg.low_score_threshold == 0.45
+
+
+def test_load_config_minimal_required(tmp_path):
+    """Only runname + input + cgr are required; rest have defaults."""
+    cfg_path = tmp_path / "config.json"
+    raw = {
+        "runname": "minimal",
+        "input": "data/x.json",
+        "cgr": "data/x.jsonl",
+    }
+    cfg_path.write_text(json.dumps(raw), encoding="utf-8")
+    cfg = load_config(cfg_path)
+    assert cfg.runname == "minimal"
+    assert cfg.start_row == 0
+    assert cfg.end_row is None
+    assert cfg.throttle == 2.5
+    assert cfg.low_score_threshold == 0.40
+
+
+def test_load_config_missing_required_key(tmp_path):
+    """Missing runname / input / cgr → ConfigError."""
+    cfg_path = tmp_path / "config.json"
+    cfg_path.write_text(json.dumps({"runname": "x", "input": "i"}),
+                       encoding="utf-8")
+    with pytest.raises(ConfigError, match="cgr"):
+        load_config(cfg_path)
+
+
+def test_load_config_bad_json(tmp_path):
+    """Unparseable JSON → ConfigError."""
+    cfg_path = tmp_path / "config.json"
+    cfg_path.write_text("{not valid", encoding="utf-8")
+    with pytest.raises(ConfigError, match="invalid JSON"):
+        load_config(cfg_path)
+
+
+def test_load_config_type_coercion_safe(tmp_path):
+    """Numeric strings are NOT silently coerced (strict typing)."""
+    cfg_path = tmp_path / "config.json"
+    cfg_path.write_text(json.dumps({
+        "runname": "x",
+        "input": "i",
+        "cgr": "c",
+        "throttle": "3.0",  # string, not float
+    }), encoding="utf-8")
+    with pytest.raises(ConfigError, match="throttle"):
+        load_config(cfg_path)
+
+
+# ============================================================
+# validate_config_against_dir
+# ============================================================
+def test_validate_config_against_dir_match(tmp_path):
+    """Config runname matches out_dir basename → ok."""
+    out_dir = tmp_path / "output" / "foo"
+    out_dir.mkdir(parents=True)
+    cfg = BatchConfig(
+        runname="foo",
+        input_path=Path("i"),
+        cgr_path=Path("c"),
+        start_row=0,
+        end_row=None,
+        throttle=2.5,
+        low_score_threshold=0.40,
+    )
+    # Should not raise
+    validate_config_against_dir(cfg, out_dir)
+
+
+def test_config_validates_runname_matches_dir(tmp_path):
+    """Config runname="bar" inside output/foo/ → ConfigError."""
+    out_dir = tmp_path / "output" / "foo"
+    out_dir.mkdir(parents=True)
+    cfg = BatchConfig(
+        runname="bar",
+        input_path=Path("i"),
+        cgr_path=Path("c"),
+        start_row=0,
+        end_row=None,
+        throttle=2.5,
+        low_score_threshold=0.40,
+    )
+    with pytest.raises(ConfigError, match="runname.*bar.*dir.*foo"):
+        validate_config_against_dir(cfg, out_dir)
+
+
+# ============================================================
+# Slug validation (used by init_batch)
+# ============================================================
+def test_runname_is_slug_property():
+    """BatchConfig.runname_is_slug returns True for valid, False for invalid."""
+    valid = BatchConfig(
+        runname="abc-def_123",
+        input_path=Path("i"),
+        cgr_path=Path("c"),
+        start_row=0,
+        end_row=None,
+        throttle=2.5,
+        low_score_threshold=0.40,
+    )
+    assert valid.runname_is_slug() is True
+
+    invalid = BatchConfig(
+        runname="Bad Name",
+        input_path=Path("i"),
+        cgr_path=Path("c"),
+        start_row=0,
+        end_row=None,
+        throttle=2.5,
+        low_score_threshold=0.40,
+    )
+    assert invalid.runname_is_slug() is False

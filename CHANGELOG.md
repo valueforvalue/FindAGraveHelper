@@ -4,6 +4,41 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J5-S1: batch config.json + init-batch subcommand + --config arg
+
+Each run now lives in its own `output/<runname>/` folder with
+a `config.json` carrying the run's parameters. The new
+`init-batch <runname>` subcommand scaffolds that config;
+`--config output/<runname>/config.json` on the main CLI loads
+it and derives `--out` / `--input` / `--cgr` /
+`--throttle` / `--low-score-threshold` / `start_row` /
+`end_row` from it. CLI flags still override config values
+when both are supplied. Per-run results isolation and the
+resume.sh artifact land in S2 and S3 respectively.
+
+- scripts/batch_config.py — new `BatchConfig` dataclass +
+  `init_batch` + `load_config` +
+  `validate_config_against_dir` + `ConfigError`. The slug
+  regex (`^[a-z0-9](?:[a-z0-9_-]*[a-z0-9])?$`) rejects
+  uppercase, spaces, and leading/trailing separators.
+- scripts/pipeline/run_unified.py — added `init-batch`
+  argparse subcommand; `--config` arg merged into args
+  before the existing pipeline runs (no behavior change for
+  callers using the legacy `--input / --cgr / --out` flags).
+- tests/test_batch_config.py — 13 unit tests covering
+  init-batch scaffold, slug validation, config round-trip,
+  required-key enforcement, strict type checking, and
+  runname/dir consistency.
+- tests/test_cli_batch_config.py — 4 CLI integration tests
+  covering `init-batch` happy-path + rejection, full batch
+  via `--config` (no-fag mode), and runname/dir mismatch
+  exit code.
+
+718 tests pass + 17 new = 735 total. The single pre-existing
+failure in `test_view_html.py::test_view_html_field_set_matches_schema`
+is unrelated (issue #9 closed but the drift persisted; not
+in scope for J5).
+
 ### Fix #9: view.html schema doc + drift test
 
 scripts/view.html's JS normalizer reads state.jsonl fields
