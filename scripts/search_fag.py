@@ -78,7 +78,11 @@ log = logging.getLogger("search")
 # 0.80; when it doesn't, we cap at 0.735. So 0.75 is a reasonable
 # threshold: at or above this, we're confident the top candidate
 # is the right person.
-AUTO_ACCEPT_THRESHOLD = 0.75
+AUTO_ACCEPT_THRESHOLD = 0.70  # name+veteran+death match is sufficient
+# When local has no death year, the max achievable score is lower
+# (~0.64 = name match + veteran flag). Use a lower threshold for those.
+AUTO_ACCEPT_THRESHOLD_NO_DEATH = 0.60
+AUTO_ACCEPT_GAP = 0.10  # top must beat #2 by this much for auto-accept
 PROMPT_THRESHOLD = 0.60
 THROTTLE_SECONDS = 1.5
 CAPTCHA_BACKOFF_SECONDS = 30.0
@@ -370,27 +374,31 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         # No middle on local — we don't penalize
         middle_score = 0.5
 
-    # OK burial boost — PRIMARY signal for this tool's purpose.
-    # We're searching for CW soldiers buried in OK (or another target
-    # state). A candidate buried in OK is a strong match regardless
-    # of where the soldier served.
+    # OK burial boost — informational, NOT required.
+    # All pensioners in this index lived in OK (proof of residency
+    # required). But burial state could be anywhere — many veterans
+    # were buried where they died, which may or may not be OK.
+    # We don't REQUIRE OK burial to declare a match; it's just a
+    # tiebreaker when names collide (e.g. "Robert Goad" in OK vs
+    # "Robert Goad" in MD). Gives a small bonus; not penalizing
+    # non-OK burial because the project cares about OK connection,
+    # not specifically OK burial.
     ok_burial_score = 0.0
     cand_state = candidate.get("details", {}).get("state")
     if cand_state and cand_state.upper() == "OK":
-        ok_burial_score = 0.5
+        ok_burial_score = 0.3  # smaller bonus; was 0.5
 
-    # State match — secondary signal. If the local record specifies
-    # a target burial state and the candidate's state matches, that's
-    # good. (Not used as the primary signal because most of our
-    # searches are for OK-buried soldiers, and many had no OK
-    # record at all — only FaG tells us the burial state.)
+    # State match — tiebreaker when local regiment state's abbreviation
+    # matches the candidate's burial state (rare, but useful).
     state_score = 0.0
     if local_state and cand_state and local_state.upper() == cand_state.upper():
-        state_score = 0.2  # small bonus on top of OK_burial
+        state_score = 0.1  # smaller bonus; was 0.2
 
     # Veteran flag (CW pensioners were veterans — strong signal!)
     is_veteran = candidate.get("details", {}).get("is_veteran", False)
-    veteran_score = 0.4 if is_veteran else 0.0
+    # When veteran flag fires AND we have CW context, this is very
+    # strong evidence. Higher score than "any random vet" would get.
+    veteran_score = 0.8 if is_veteran else 0.0
 
     # Death-year match (strong signal when local death_year is known)
     death_score = 0.0
@@ -402,27 +410,32 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
             d_cand = int(cand_dy)
             diff = abs(d_local - d_cand)
             if diff == 0:
-                death_score = 0.4
+                death_score = 0.5
             elif diff <= 2:
-                death_score = 0.3
+                death_score = 0.4
             elif diff <= 5:
-                death_score = 0.15
+                death_score = 0.2
         except (ValueError, TypeError):
             pass
 
-    # Weights:
+    # Weights (rebalanced for "OK-connected, burial-agnostic" search):
     # - last/first/middle: name match dominates (0.62 max)
-    # - OK burial: the killer feature for OK searches (0.5 max)
+    # - death year: confirms correct person (0.5 max) — bumped up
     # - veteran: strong tiebreaker (0.4 max)
-    # - death year: confirms correct person (0.4 max)
-    # - state match: minor bonus (0.2 max)
+    # - OK burial: smaller bonus (0.3 max, was 0.5)
+    # - state match: minor (0.1 max, was 0.2)
+    #
+    # A perfect name+veteran+death match = 1.00 (the right person)
+    # Without death year (some records lack it): 0.62 name + 0.4 vet = 1.02 → 0.78
+    # Without veteran flag: name + death = 0.92 → still strong
+    # With OK burial bonus: +0.06, helps break ties among same-name people
     score = (
-        0.25 * last_score +
-        0.19 * first_score +
-        0.13 * middle_score +
-        0.20 * ok_burial_score +
-        0.12 * veteran_score +
-        0.11 * death_score
+        0.22 * last_score +
+        0.17 * first_score +
+        0.11 * middle_score +
+        0.10 * ok_burial_score +
+        0.18 * veteran_score +
+        0.22 * death_score
     )
 
     breakdown = {
@@ -704,7 +717,26 @@ def load_processed_ids(state_path: Path) -> set[int]:
                 if pid is not None:
                     seen.add(pid)
             except json.JSONDecodeError:
+                pass
+    return seen
+
+
+def load_skipped_ids(skipped_path: Path) -> set[int]:
+    if not skipped_path.exists():
+        return set()
+    seen = set()
+    with skipped_path.open(encoding="utf-8") as f:
+        for line in f:
+            line = line.strip()
+            if not line:
                 continue
+            try:
+                rec = json.loads(line)
+                pid = rec.get("pensioner_id")
+                if pid is not None:
+                    seen.add(pid)
+            except json.JSONDecodeError:
+                pass
     return seen
 
 
@@ -714,6 +746,14 @@ def append_state(state_path: Path, record: dict) -> None:
     with state_path.open("a", encoding="utf-8") as f:
         f.write(line + "\n")
         f.flush()
+
+
+def write_skipped(path: Path, skipped: list[dict]) -> None:
+    """Write skipped pensioners to a JSONL sidecar file."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("w", encoding="utf-8") as f:
+        for rec in skipped:
+            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
 
 
 # ============================================================
@@ -1004,16 +1044,37 @@ def search_one_pensioner(page: Page, pensioner: dict) -> dict:
         #   "auto_accept but other matches exist" — keep as ambiguous for
         #   human review (the user can verify)
         # - top score below threshold -> ambiguous/too_many
-        if len(merged) == 1 and record["best_score"] >= AUTO_ACCEPT_THRESHOLD:
+        # Pick the threshold based on whether we have a death year locally.
+        local_dy = str(pensioner.get("death_year") or "").strip()
+        threshold = AUTO_ACCEPT_THRESHOLD if local_dy and local_dy != "0" else AUTO_ACCEPT_THRESHOLD_NO_DEATH
+        if len(merged) == 1 and record["best_score"] >= threshold:
             record["status"] = S_AUTO_ACCEPT
-        elif record["best_score"] >= AUTO_ACCEPT_THRESHOLD and 2 <= len(merged) <= 10:
-            record["status"] = S_AMBIGUOUS
+        elif record["best_score"] >= threshold and 2 <= len(merged) <= 10:
+            # Check if top is a clear winner (gap over #2)
+            if len(merged) >= 2:
+                second_score = merged[1]["score"]
+                gap = record["best_score"] - second_score
+                if gap >= AUTO_ACCEPT_GAP:
+                    record["status"] = S_AUTO_ACCEPT
+                else:
+                    record["status"] = S_AMBIGUOUS
+            else:
+                record["status"] = S_AUTO_ACCEPT
         elif len(merged) == 1:
             record["status"] = S_AMBIGUOUS  # 1 candidate, score below auto-accept
         elif 2 <= len(merged) <= 10:
             record["status"] = S_AMBIGUOUS
         else:
-            record["status"] = S_TOO_MANY
+            # >10 candidates. Check if top is dominant — if so, auto_accept.
+            if len(merged) >= 2 and record["best_score"] >= threshold:
+                second_score = merged[1]["score"]
+                gap = record["best_score"] - second_score
+                if gap >= AUTO_ACCEPT_GAP:
+                    record["status"] = S_AUTO_ACCEPT
+                else:
+                    record["status"] = S_TOO_MANY
+            else:
+                record["status"] = S_TOO_MANY
 
     return record
 
@@ -1044,6 +1105,13 @@ def main() -> int:
                    help="Optional CSV with expected memorial_id+slug per row. "
                         "When set, the state output includes 'ground_truth_match' "
                         "(true/false/null) per pensioner for validation.")
+    p.add_argument("--exclude-csv", type=Path, default=None,
+                   help="Skip pensioners whose (last, first) match a row in this CSV. "
+                        "Used to skip records we've already validated locally. "
+                        "Expected columns: first_name, last_name.")
+    p.add_argument("--skipped-out", type=Path, default=None,
+                   help="Optional JSONL to write the list of skipped pensioners + reason. "
+                        "Defaults to <state>.skipped.jsonl if --exclude-csv is used.")
     args = p.parse_args()
 
     # Load input
@@ -1061,6 +1129,45 @@ def main() -> int:
     processed = load_processed_ids(args.state)
     log.info("Will process %d pensioners (%d already done)",
              len(pensioners), len(processed))
+
+    # Exclusion filter
+    skipped = []
+    if args.exclude_csv:
+        exclude_csv = Path(args.exclude_csv)
+        if exclude_csv.exists():
+            exclude_names = set()
+            with exclude_csv.open(encoding="utf-8") as f:
+                for r in csv.DictReader(f):
+                    ln = (r.get("last_name") or "").strip().upper()
+                    fn = (r.get("first_name") or "").strip().upper()
+                    if ln:
+                        exclude_names.add((ln, fn))
+            # Also skip pensioners already in the skipped sidecar
+            skipped_path_load = args.skipped_out or args.state.with_suffix(".skipped.jsonl")
+            already_skipped = load_skipped_ids(skipped_path_load) if skipped_path_load.exists() else set()
+            before = len(pensioners)
+            kept = []
+            for p_data in pensioners:
+                pid = p_data.get("id")
+                if pid in already_skipped:
+                    continue  # already excluded on a prior run
+                key = (p_data.get("last_name", "").upper(),
+                       p_data.get("first_name", "").upper())
+                if key in exclude_names:
+                    skipped.append({
+                        "pensioner_id": pid,
+                        "name_raw": p_data.get("name_raw"),
+                        "first_name": p_data.get("first_name"),
+                        "last_name": p_data.get("last_name"),
+                        "reason": "in exclude-csv",
+                    })
+                else:
+                    kept.append(p_data)
+            pensioners = kept
+            log.info("Excluded %d pensioners (in %s). Remaining: %d",
+                     before - len(pensioners), exclude_csv, len(pensioners))
+        else:
+            log.warning("--exclude-csv %s does not exist", exclude_csv)
 
     # Load ground truth if supplied
     ground_truth = {}
@@ -1098,6 +1205,11 @@ def main() -> int:
             browser.close()
 
     log.info("Done. State file: %s", args.state)
+
+    if skipped:
+        skipped_path = args.skipped_out or args.state.with_suffix(".skipped.jsonl")
+        write_skipped(skipped_path, skipped)
+        log.info("Wrote %d skipped pensioners to %s", len(skipped), skipped_path)
     return 0
 
 
