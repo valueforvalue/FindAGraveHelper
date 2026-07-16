@@ -19,8 +19,17 @@ def test_search_module_imports_without_name_error():
         "S_NO_RESULTS missing from scripts.fag.search namespace (issue #12)"
     assert hasattr(fag_search, "S_ERROR"), \
         "S_ERROR missing from scripts.fag.search namespace (issue #12)"
+    # T008 split regression: also assert S_AUTO_ACCEPT, S_AMBIGUOUS,
+    # S_TOO_MANY, S_CAPTCHA, S_SKIP all resolve (commit c217eff
+    # dropped them when the file was split).
+    for name in ("S_NO_RESULTS", "S_ERROR", "S_AUTO_ACCEPT",
+                 "S_AMBIGUOUS", "S_TOO_MANY", "S_CAPTCHA", "S_SKIP"):
+        assert hasattr(fag_search, name), \
+            f"{name} missing from scripts.fag.search namespace"
     assert fag_search.S_NO_RESULTS == "no_results"
     assert fag_search.S_ERROR == "error"
+    assert fag_search.S_AUTO_ACCEPT == "auto_accept"
+    assert fag_search.S_CAPTCHA == "captcha"
 
 
 def test_search_module_no_undefined_names_at_module_level():

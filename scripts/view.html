@@ -13,6 +13,8 @@
     pensioner_last, pensioner_app_number, pensioner_birth_year,
     pensioner_death_year, regiment, company,
     pensioncard_backlink, backlink,
+    pensioncard_pages,  // [page_id, ...] from the sidecar; used to
+                         //   embed IIIF images directly (J6, issue #13)
     fag_records, fag_status, cgr_records, cgr_status,
     both_match, timestamp, error
 
@@ -329,6 +331,7 @@ function normalizeStateRecord(rec) {
             company: rec.company || '',
             pensioncard_backlink: rec.pensioncard_backlink || '',
             backlink: rec.backlink || '',
+            pensioncard_pages: rec.pensioncard_pages || [],
             ranked_candidates: fag.slice(0, 20),
             best_score: best,
             best_candidate: bestC,
@@ -351,6 +354,7 @@ function normalizeStateRecord(rec) {
         company: rec.company || '',
         pensioncard_backlink: rec.pensioncard_backlink || '',
         backlink: rec.backlink || '',
+        pensioncard_pages: rec.pensioncard_pages || [],
         ranked_candidates: rec.ranked_candidates || [],
         best_score: rec.best_score || 0,
         best_candidate: rec.best_candidate || null,
@@ -635,10 +639,11 @@ function renderPensioner(p) {
                 ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
                 ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
-                ${p.pensioncard_backlink ? `<a href="${escapeHtml(p.pensioncard_backlink)}" target="_blank">source card</a>` : ''}
-                ${p.backlink ? `<a href="${escapeHtml(p.backlink)}" target="_blank">application</a>` : ''}
+                ${p.pensioncard_backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.pensioncard_backlink))}" target="_blank">source card</a>` : ''}
+                ${p.backlink ? `<a href="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" target="_blank">application</a>` : ''}
                 ${p.cgr_skipped_fag ? '<span class="badge skipped">FaG skipped — CGR strong match</span>' : ''}
             </div>
+            ${renderPensionerCardImage(p)}
             ${renderBothMatchBanner(p)}
             <div class="candidates">${candsHtml}</div>
             ${renderCgrPanel(p)}
@@ -739,6 +744,51 @@ function escapeHtml(s) {
     return String(s).replace(/[&<>"']/g, c => ({
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     }[c]));
+}
+
+// fixDigitalPrairieUrl: rewrite legacy digitalprairie.ok.gov URLs that
+// now return soft-404 pages to the working /digital/api/... endpoint.
+//
+// As of 2026-07, digitalprairie.ok.gov migrated its URL structure:
+//   /digital/singleitem/collection/{col}/id/{id}  -> 200 with 404 body
+//   /digital/api/singleitem/collection/{col}/id/{id}  -> 200 with real JSON
+// The /api/ endpoint returns JSON, not a browsable page, but at least
+// the link doesn't lie to the user with a 404. See issue #13.
+function fixDigitalPrairieUrl(url) {
+    if (typeof url !== 'string') return url;
+    if (url.includes('digitalprairie.ok.gov/digital/singleitem/')) {
+        return url.replace('/digital/singleitem/', '/digital/api/singleitem/');
+    }
+    return url;
+}
+
+// buildIiifThumbnailUrl(page_id): returns a 300px-wide IIIF thumbnail
+// URL for the given pensioncard page. Used by renderPensionerCardImage
+// to embed the actual pension card scan directly in the review UI.
+//
+// Pattern (verified working 2026-07):
+//   https://digitalprairie.ok.gov/iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg
+//
+// See issue #13.
+function buildIiifThumbnailUrl(page_id) {
+    return `https://digitalprairie.ok.gov/iiif/2/pensioncard:${page_id}/full/300,/0/default.jpg`;
+}
+
+// renderPensionerCardImage(pensioner): returns HTML <img> tag(s) for
+// each cached pensioncard page, or empty string if none.
+function renderPensionerCardImage(p) {
+    const pages = p.pensioncard_pages || [];
+    if (!pages.length) return '';
+    return pages.map((page_id, i) => {
+        const src = buildIiifThumbnailUrl(page_id);
+        const alt = `${escapeHtml(p.pensioner_name || '')} pension card ${i + 1}`;
+        return `<a href="${src.replace('/300,/', '/full/')}" target="_blank" title="Click for full size">
+                    <img src="${src}" alt="${alt}" loading="lazy"
+                         style="max-width:240px; max-height:160px; margin:4px 6px 0 0;
+                                border:1px solid #ccc; border-radius:3px;
+                                vertical-align:top; background:#fafafa;" />
+                </a>`;
+    }).join('');
 }
 
 // ============================================================

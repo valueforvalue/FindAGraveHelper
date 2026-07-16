@@ -103,6 +103,53 @@ def test_backlink_in_search_haystack():
         "expected backlink in search haystack"
 
 
+def test_digital_prairie_backlink_rewrite_helper():
+    """The digitalprairie.ok.gov URL migration (post-2026-07) left
+    /digital/singleitem/... URLs returning soft-404 pages. The
+    /digital/api/singleitem/... URLs still work (they return JSON,
+    not a browsable page, but at least not a 404).
+
+    view.html MUST rewrite pensioncard_backlink and backlink URLs
+    from /digital/singleitem/ → /digital/api/singleitem/ at render
+    time so the link isn't broken. See issue #13.
+    """
+    # A helper function or inline rewrite must exist
+    assert re.search(
+        r"/digital/singleitem/.*?/digital/api/singleitem/",
+        VIEW_HTML, re.DOTALL,
+    ) or "fixDigitalPrairieUrl" in VIEW_HTML or "rewriteDigitalPrairie" in VIEW_HTML, \
+        "expected a URL rewrite from /digital/singleitem/ to /digital/api/singleitem/"
+
+
+def test_iiif_thumbnail_helper_present():
+    """view.html must embed IIIF pension card thumbnails directly
+    (the digitalprairie human-facing page URLs all 404). The
+    IIIF image endpoint works: /iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg.
+    """
+    # buildIiifThumbnailUrl helper exists
+    assert "buildIiifThumbnailUrl" in VIEW_HTML, \
+        "expected buildIiifThumbnailUrl helper for IIIF image embedding"
+    # Pattern uses the pensioncard: collection + page_id
+    assert re.search(
+        r"iiif/2/pensioncard:\$\{[^}]+\}|iiif/2/pensioncard:.*page_id",
+        VIEW_HTML,
+    ), "expected IIIF URL pattern with pensioncard: prefix and page_id"
+
+
+def test_pensioncard_image_renderer():
+    """renderPensionerCardImage builds <img> tags from pensioncard_pages."""
+    assert "renderPensionerCardImage" in VIEW_HTML, \
+        "expected renderPensionerCardImage function"
+    # It must read pensioncard_pages from the record
+    assert re.search(r"pensioncard_pages", VIEW_HTML), \
+        "expected pensioncard_pages field to be read in view.html"
+    # It must produce <img> tags
+    assert re.search(r"<img\s+src=", VIEW_HTML), \
+        "expected <img src=...> rendering"
+    assert "buildIiifThumbnailUrl" in VIEW_HTML, \
+        "IIIF URL builder must be wired into the renderer"
+
+
 def test_found_by_strategy_and_params_visible():
     """The render must show both strategy name and params."""
     # Look for _found_by (possibly destructured as fb) and strategy usage

@@ -47,12 +47,26 @@ from urllib.error import HTTPError, URLError
 # API base
 API_BASE_PENSIONS = "https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensions/id"
 API_BASE_PENSIONCARD = "https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensioncard/id"
-# Public-facing URL for the record page
-PUBLIC_URL_PENSIONS = "https://digitalprairie.ok.gov/digital/singleitem/collection/pensions/id/{id}"
-PUBLIC_URL_PENSIONCARD = "https://digitalprairie.ok.gov/digital/singleitem/collection/pensioncard/id/{id}"
+# Public-facing URL for the record page. As of 2026-07, the legacy
+# /digital/singleitem/... path returns a soft-404 body. The
+# /digital/api/singleitem/... endpoint still returns 200 with JSON
+# content (not a browsable page, but at least not a 404). We point
+# the backlink at the API endpoint until digitalprairie.ok.gov
+# publishes a new human-facing URL pattern. See issue #13.
+PUBLIC_URL_PENSIONS = "https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensions/id/{id}"
+PUBLIC_URL_PENSIONCARD = "https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensioncard/id/{id}"
 # IIIF image URL
 IIIF_URL_PENSIONS = "https://digitalprairie.ok.gov/iiif/2/pensions:{id}/full/full/0/default.jpg"
 IIIF_URL_PENSIONCARD = "https://digitalprairie.ok.gov/iiif/2/pensioncard:{id}/full/full/0/default.jpg"
+
+
+def _format_public_url(prefix: str, item_id) -> str:
+    """Insert `item_id` into a PUBLIC_URL_* format string.
+
+    Centralized so the format placeholder ({id}) is not duplicated
+    at every call site.
+    """
+    return prefix.format(id=item_id)
 
 # CSV columns (in order)
 CSV_FIELDS = [
@@ -165,11 +179,11 @@ def build_record(item_id: int, data: dict[str, Any],
     sp_first, sp_mid, sp_last = parse_spouse_name(spouse)
 
     if collection == "pensions":
-        backlink = PUBLIC_URL_PENSIONS.format(id=item_id)
+        backlink = _format_public_url(PUBLIC_URL_PENSIONS, item_id)
         iiif = IIIF_URL_PENSIONS.format(id=item_id)
         api_url = f"{API_BASE_PENSIONS}/{item_id}"
     else:
-        backlink = PUBLIC_URL_PENSIONCARD.format(id=item_id)
+        backlink = _format_public_url(PUBLIC_URL_PENSIONCARD, item_id)
         iiif = IIIF_URL_PENSIONCARD.format(id=item_id)
         api_url = f"{API_BASE_PENSIONCARD}/{item_id}"
 

@@ -4,6 +4,70 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Fix #13: digitalprairie.ok.gov backlink migration + IIIF embed
+
+digitalprairie.ok.gov migrated its URL structure in mid-2026.
+The legacy `/digital/singleitem/collection/{col}/id/{id}` URLs
+now return soft-404 pages (HTTP 200 with `"404: Page not
+found"` body). The legacy `/digital/collection/{alias}/id/{id}`
+human-facing URLs and `/digital/search/collection/{alias}`
+search URLs are also broken. The only working endpoint is the
+JSON API at `/digital/api/singleitem/...`. The user-suggested
+browsable URL `/digital/search/collection/pensions!pensioncard`
+was verified broken.
+
+Fix has two parts (per user request — both immediate UX + source
+of truth):
+
+**Immediate (view.html):** New `fixDigitalPrairieUrl(url)`
+helper rewrites `/digital/singleitem/...` → `/digital/api/singleitem/...`
+at render time so the existing `source card` and `application`
+links aren't 404.
+
+**Embedded IIIF images (J6):** The IIIF image endpoint
+`/iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg` still
+works (returns real JPEGs of the actual pension card scans).
+New `scripts/ingest/fetch_pensioncard_pages.py` pre-fetches the
+page IDs from the API for every pensioner (cached in a sidecar
+JSON; resumable; throttled). The runner loads the sidecar and
+writes `pensioncard_pages: [page_id, ...]` into each results.jsonl
+record. view.html embeds the IIIF thumbnails directly inline via
+a new `renderPensionerCardImage(p)` helper — no broken link, no
+need to navigate to digitalprairie.
+
+For pensioners with two-sided cards, both Side 1 and Side 2 are
+embedded. Click a thumbnail for the full-size IIIF image.
+
+**Source of truth (scraper):** Updated
+`PUBLIC_URL_PENSIONS` / `PUBLIC_URL_PENSIONCARD` in
+`scripts/ingest/scrape_digitalprairie.py` to use the working
+`/digital/api/singleitem/...` paths. Future re-scrapes inherit
+the fix. Centralized `_format_public_url(prefix, id)` helper
+replaces inline `.format(id=item_id)` at the two call sites.
+
+- scripts/view.html — `fixDigitalPrairieUrl` rewrite helper,
+  `buildIiifThumbnailUrl` / `renderPensionerCardImage` IIIF
+  embed helpers, schema doc updated to mention
+  `pensioncard_pages`.
+- scripts/ingest/fetch_pensioncard_pages.py (new) — CLI that
+  populates the sidecar; resumable; throttled.
+- scripts/ingest/scrape_digitalprairie.py — `PUBLIC_URL_*`
+  point at /api/ path; `_format_public_url` helper.
+- scripts/pipeline/run_unified.py — `UnifiedRunnerConfig`
+  gains `pensioncard_pages_path`; `--pensioncard-pages` CLI
+  flag; `result_to_dict` adds `pensioncard_pages` field from
+  sidecar.
+- tests/test_view_html.py — 3 new tests for the IIIF embed +
+  URL rewrite helper.
+- tests/test_scrape_digitalprairie.py (new) — 4 tests pinning
+  the URL builders + `PUBLIC_URL_*` no longer uses broken path.
+- tests/test_fetch_pensioncard_pages.py (new) — 15 tests for
+  the fetcher (extract_page_ids, cache load/save, fetch
+  failure handling, --refresh, --limit, network mocked).
+
+Tests: 35 new pass; 749 adjacent pass; 1 pre-existing failure
+unrelated.
+
 ### Bug: FaG locationId scoped to regiment state, not OK
 
 The v5 strategy ladder scoped FaG searches to the

@@ -87,6 +87,11 @@ class UnifiedRunnerConfig:
     # Behavioral
     write_outliers_separately: bool = True
     write_heartbeat_every: int = 50  # every N pensioners
+    # Pensioncard pages sidecar (J6). Built by
+    # scripts/ingest/fetch_pensioncard_pages.py. Maps
+    # pensioner_id (str) -> [page_id, ...] (the IIIF image IDs for
+    # Side 1, Side 2, ...). view.html embeds the images directly.
+    pensioncard_pages_path: Optional[Path] = None
     # Browser (kept abstract; the actual FaG search is injected)
     fag_search_fn: Optional[Callable] = None
     # Per-run isolation (J5-S2)
@@ -307,9 +312,18 @@ def run_one_pensioner_cgr_only(
     return record
 
 
-def result_to_dict(result: PipelineResult) -> dict:
-    """Convert a PipelineResult into a JSON-serializable dict."""
-    return {
+def result_to_dict(result: PipelineResult,
+                  pensioncard_pages_cache: Optional[dict] = None) -> dict:
+    """Convert a PipelineResult into a JSON-serializable dict.
+
+    pensioncard_pages_cache: optional {pensioner_id_str: [page_ids]}
+        from the sidecar built by scripts/ingest/fetch_pensioncard_pages.py.
+        When provided and the pensioner has cached page IDs, the
+        record carries `pensioncard_pages: [page_ids]` so view.html
+        can embed the IIIF images directly. When None or missing
+        for this pensioner, the field is omitted.
+    """
+    record = {
         "pensioner_id": result.pensioner.get("id"),
         "pensioner_app_number": result.pensioner.get("application_number", ""),
         "pensioner_name": " ".join([
@@ -340,6 +354,13 @@ def result_to_dict(result: PipelineResult) -> dict:
         "timestamp": result.timestamp,
         "error": result.error,
     }
+    if pensioncard_pages_cache:
+        pages = pensioncard_pages_cache.get(
+            str(result.pensioner.get("id"))
+        )
+        if pages:
+            record["pensioncard_pages"] = pages
+    return record
 
 
 # ============================================================
@@ -456,6 +477,22 @@ def run_batch(
 
     # Resume support
     tracker = ResumeTracker(state_path)
+
+    # Pensioncard pages sidecar (J6). Loaded once at start; per-record
+    # lookup happens in the pensioner loop. Missing file = no
+    # enrichment (view.html falls back to no embedded image).
+    pensioncard_pages_cache: dict = {}
+    if config.pensioncard_pages_path and config.pensioncard_pages_path.exists():
+        try:
+            pensioncard_pages_cache = json.loads(
+                config.pensioncard_pages_path.read_text(encoding="utf-8")
+            )
+            log.info(
+                "Loaded pensioncard_pages cache: %d entries from %s",
+                len(pensioncard_pages_cache), config.pensioncard_pages_path,
+            )
+        except (json.JSONDecodeError, OSError) as e:
+            log.warning("pensioncard_pages cache load failed: %s", e)
     if tracker.count() > 0:
         log.info(
             "Resume: %d pensioners already in state file %s",
@@ -510,7 +547,10 @@ def run_batch(
                 fag_search_fn=config.fag_search_fn,
                 prebuilt_cgr_index=prebuilt_cgr_index,
             )
-            record = result_to_dict(pipeline_result)
+            record = result_to_dict(
+                pipeline_result,
+                pensioncard_pages_cache=pensioncard_pages_cache,
+            )
             # Track stats
             result.processed += 1
             if pipeline_result.cgr_records and pipeline_result.fag_records:
@@ -698,6 +738,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--config", type=Path, default=None,
                         help="Path to a batch config.json (output/<runname>/config.json). "
                              "When set, --input / --cgr / --out are derived from it.")
+    parser.add_argument("--pensioncard-pages", type=Path, default=None,
+                        help="Path to ok_pensioners.pensioncard_pages.json (the "
+                             "sidecar built by scripts/ingest/fetch_pensioncard_pages.py). "
+                             "When present, each results.jsonl record carries "
+                             "pensioncard_pages: [page_id, ...] so view.html can "
+                             "embed the IIIF images directly. See issue #13.")
     parser.add_argument("--out", type=Path, default=None,
                         help="Output directory (will be created). "
                              "When --config is used, defaults to output/<runname>/.")
@@ -906,6 +952,8 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # Default results.jsonl; CLI/config can override.
         results_filename=getattr(args, "results_filename", "results.jsonl"),
         view_html_source=getattr(args, "view_html_source", Path("scripts/view.html")),
+        # J6: pensioncard pages sidecar (view.html embeds IIIF images).
+        pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
     )
 
     try:

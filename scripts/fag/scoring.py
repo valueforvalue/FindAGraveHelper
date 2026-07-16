@@ -8,7 +8,7 @@ Public surface:
   - tag_candidates_with_found_by(candidates) -> None (in-place)
 """
 import re
-from scripts.fag.filters import parse_slug
+from scripts.fag.filters import parse_slug, normalise, soundex
 
 
 def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:

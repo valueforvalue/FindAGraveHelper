@@ -13,6 +13,16 @@ from scripts.fag.filters import _STATE_NAMES_LOWER  # state name -> abbr lookup
 # Cap on the number of result pages we parse. FaG soft-caps at 200
 # results per page; this constant is the per-strategy total.
 MAX_FAG_RESULTS_TO_PARSE = 20
+
+# Regex constants (T008 split regression: restored from pre-split
+# scripts/search_fag.py — they were inlined before the split and
+# not migrated when the file was split into private modules.)
+_MEMORIAL_PATH_RE = re.compile(
+    r'(?:^|[\"\'])'
+    r'((?:https?://www\.findagrave\.com)?/memorial/(\d+)/([^/?\"\'#]+))',
+    re.I,
+)
+DATE_RANGE_RE = re.compile(r"(\d{4})\s*[\u2013\-]\s*(\d{4})")
 def parse_results_page(page: Page) -> tuple[int, list[dict]]:
     """Parse the search results page.
 
