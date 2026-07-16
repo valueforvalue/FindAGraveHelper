@@ -18,9 +18,8 @@ from typing import Callable, Optional
 
 from scripts.search_fag import (
     search_one_pensioner,
-    build_browser,
+    setup_browser,
     warmup_session,
-    BASE_URL,
 )
 
 
@@ -36,16 +35,23 @@ def make_fag_search_fn(throttle: float = 1.5) -> Callable:
 
     Returns a closure suitable for UnifiedRunnerConfig.fag_search_fn.
     """
-    log.info("Building browser...")
-    browser, ctx, page = build_browser(log)
+    from playwright.sync_api import sync_playwright
+    log.info("Building browser (visible Chromium + playwright-stealth)...")
+    pw = sync_playwright().__enter__()
+    try:
+        browser, ctx, page = setup_browser(pw)
+    except Exception:
+        pw.stop()
+        raise
     warmup_ok = warmup_session(page, log)
 
     last_request_at = 0.0
 
-    def fag_search(pensioner: dict, config) -> tuple[Optional[dict], str]:
+    def fag_search(pensioner: dict, config) -> tuple[list, str]:
         """Run FaG search for one pensioner.
 
-        Returns (record_dict_or_None, status_str).
+        Returns (list_of_candidates, status_str). Empty list means
+        no_results/error.
         """
         nonlocal last_request_at
 
@@ -60,12 +66,12 @@ def make_fag_search_fn(throttle: float = 1.5) -> Callable:
             record = search_one_pensioner(page, pensioner)
         except Exception as e:
             log.warning("FaG search failed for #%d: %s", pensioner.get("id"), e)
-            return None, "error"
+            return [], "error"
 
+        # search_one_pensioner returns a state record. We want
+        # the candidates inside, not the wrapper.
+        candidates = record.get("ranked_candidates", []) or []
         status = record.get("status", "no_results")
-        # Return the FaG-searched record as-is (legacy FaG-only format).
-        # The unified runner sees it and stores both formats
-        # (ranked_candidates + fag_records).
-        return record, status
+        return candidates, status
 
     return fag_search

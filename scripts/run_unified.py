@@ -32,12 +32,23 @@ from __future__ import annotations
 
 import json
 import logging
+import sys
 import time
 import traceback
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, Optional
+
+# Ensure the scripts/ directory is on the path so this file can be
+# executed directly via `python scripts/run_unified.py`.
+_SCRIPTS_DIR = Path(__file__).parent
+if str(_SCRIPTS_DIR) not in sys.path:
+    sys.path.insert(0, str(_SCRIPTS_DIR))
+# Also the project root for `scripts.X` imports
+_ROOT = Path(__file__).parent.parent
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 
 from scripts.unified_pipeline import (
     run_pipeline_for_pensioner,
