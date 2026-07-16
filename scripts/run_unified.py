@@ -352,6 +352,19 @@ def run_batch(
         processed=0,
     )
 
+    # Build CGR blocking index ONCE for the whole batch. Without this,
+    # the pipeline rebuilds a 2,593-vet phonetic index per pensioner
+    # which allocates MB-sized dicts on every call and prevents the
+    # OS from reclaiming the pages — observed RSS growth was ~85 MB/min
+    # over a 7709-record run, regardless of FaG activity.
+    prebuilt_cgr_index = build_cgr_blocking_index(cemeteries)
+    if len(remaining) > 100:
+        log.info(
+            "CGR blocking index pre-built once: %d vet IDs across %d blocks",
+            len(prebuilt_cgr_index[1]),
+            len(prebuilt_cgr_index[0]),
+        )
+
     pipeline_cfg = PipelineConfig(throttle_seconds=config.throttle_seconds)
     outlier_cfg = OutlierConfig(low_score_threshold=config.low_score_threshold)
     last_heartbeat = result.started_at
@@ -365,6 +378,7 @@ def run_batch(
                 cgr_index_vets=cemeteries,
                 config=pipeline_cfg,
                 fag_search_fn=config.fag_search_fn,
+                prebuilt_cgr_index=prebuilt_cgr_index,
             )
             record = result_to_dict(pipeline_result)
             # Track stats
@@ -546,6 +560,11 @@ def cli_main() -> int:
     parser.add_argument("--max-consecutive-errors", type=int, default=10,
                         help="Stop the run after this many in-a-row "
                              "FaG errors (default 10; 0 to disable)")
+    parser.add_argument("--reset-browser-every", type=int, default=250,
+                        help="Periodically reopen the browser every N "
+                             "records to bound Chromium RSS growth "
+                             "(default 250; 500 was the old default "
+                             "before the memory leak investigation)")
     args = parser.parse_args()
 
     # Setup logger
@@ -606,6 +625,7 @@ def cli_main() -> int:
         log.info("Initializing Playwright (visible browser, takes ~10s)...")
         fag_search_fn = make_fag_search_fn(
             throttle=args.throttle,
+            reset_browser_every=args.reset_browser_every,
             watchdog=watchdog,
             max_consecutive_errors=args.max_consecutive_errors,
         )

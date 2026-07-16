@@ -178,6 +178,7 @@ def retry_main(
     throttle_seconds: float = 1.0,
     watchdog: Optional["object"] = None,
     max_consecutive_errors: int = 10,
+    reset_browser_every: int = 250,
 ) -> RetryResult:
     """Convenience: load inputs by path, then run retry_error_pensioners.
 
@@ -197,6 +198,7 @@ def retry_main(
     if fag_search_fn is None and not no_fag:
         fag_search_fn = make_fag_search_fn(
             throttle=throttle_seconds,
+            reset_browser_every=reset_browser_every,
             watchdog=watchdog,
             max_consecutive_errors=max_consecutive_errors,
         )

@@ -51,6 +51,8 @@ def main() -> int:
                         help="Hard-exit threshold in MB (default 6144)")
     parser.add_argument("--max-consecutive-errors", type=int, default=10,
                         help="Stop after this many in-a-row FaG errors (default 10)")
+    parser.add_argument("--reset-browser-every", type=int, default=250,
+                        help="Periodic browser reopen cadence (default 250)")
     args = parser.parse_args()
 
     log = logging.getLogger("retry")
@@ -87,6 +89,7 @@ def main() -> int:
         no_fag=args.no_fag,
         watchdog=watchdog,
         max_consecutive_errors=args.max_consecutive_errors,
+        reset_browser_every=args.reset_browser_every,
     )
     log.info("Retry result: %s", result.to_dict())
     log.info("Recovered: %d | Still error: %d | Total retried: %d",

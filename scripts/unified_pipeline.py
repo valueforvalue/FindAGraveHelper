@@ -66,6 +66,7 @@ def run_pipeline_for_pensioner(
     cgr_index_vets: list[dict],
     config: PipelineConfig,
     fag_search_fn: Optional[FagSearchFn] = None,
+    prebuilt_cgr_index: Optional[tuple] = None,
 ) -> PipelineResult:
     """Run the unified pipeline for one pensioner.
 
@@ -75,6 +76,11 @@ def run_pipeline_for_pensioner(
         config: Pipeline configuration
         fag_search_fn: Callable that performs FaG search. REQUIRED
                         for normal runs. None = CGR-only test mode.
+        prebuilt_cgr_index: Optional pre-built (block_index, vets_by_id)
+                            tuple. If provided, the per-pensioner
+                            build is skipped — saves ~85 MB/min of
+                            RSS churn over 7709 records. Build it once
+                            in run_batch() and pass it down.
 
     Returns:
         PipelineResult with all sources populated.
@@ -85,11 +91,16 @@ def run_pipeline_for_pensioner(
         timestamp=time.strftime("%Y-%m-%dT%H:%M:%S"),
     )
 
-    # Step 1+2: CGR lookup (always)
+    # Step 1+2: CGR lookup (always). Use the pre-built index when
+    # supplied so we don't rebuild the 2,593-vet blocking index on
+    # every record (which was the primary Python RSS leak).
     try:
-        block_index, vets_by_id = build_cgr_blocking_index(cgr_index_vets)
+        if prebuilt_cgr_index is not None:
+            cgr_index = prebuilt_cgr_index
+        else:
+            cgr_index = build_cgr_blocking_index(cgr_index_vets)
         raw_matches = lookup_cgr_for_pensioner(
-            (block_index, vets_by_id),
+            cgr_index,
             pensioner.get("first_name", ""),
             pensioner.get("last_name", ""),
             limit=config.max_cgr_candidates,

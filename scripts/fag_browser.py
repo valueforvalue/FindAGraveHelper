@@ -75,7 +75,7 @@ def _is_target_closed(exc: BaseException) -> bool:
 
 def make_fag_search_fn(
     throttle: float = 1.5,
-    reset_browser_every: int = 500,
+    reset_browser_every: int = 250,
     watchdog: Optional["object"] = None,
     max_consecutive_errors: int = 10,
 ) -> Callable:
@@ -102,7 +102,8 @@ def make_fag_search_fn(
 
     log.info(
         "Building browser (visible Chromium + playwright-stealth, "
-        "reset every %d records, target-closed auto-recovery=enabled)...",
+        "reset every %d records [250 = conservative for memory leak "
+        "prevention], target-closed auto-recovery=enabled)...",
         reset_browser_every,
     )
     pw = sync_playwright().__enter__()
