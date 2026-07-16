@@ -543,6 +543,7 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         0.17 * first_score +
         0.11 * middle_score +
         0.10 * ok_burial_score +
+        0.05 * state_score +
         0.18 * veteran_score +
         0.22 * death_score
     )
@@ -588,7 +589,7 @@ RESULT_LINK_RE = re.compile(
 _STATE_NAMES_UPPER = {
     'ALABAMA': 'AL', 'MISSISSIPPI': 'MS', 'TENNESSEE': 'TN', 'TEXAS': 'TX',
     'GEORGIA': 'GA', 'FLORIDA': 'FL', 'ARKANSAS': 'AR', 'SOUTH CAROLINA': 'SC',
-    'NORTH CAROLINA': 'NC', 'VIRGINIA': 'VA', 'LOUISIANI': 'LA',
+    'NORTH CAROLINA': 'NC', 'VIRGINIA': 'VA',
     'LOUISIANA': 'LA', 'KENTUCKY': 'KY',
     'MISSOURI': 'MO', 'MARYLAND': 'MD', 'OKLAHOMA': 'OK', 'INDIANA': 'IN',
     'ILLINOIS': 'IL', 'OHIO': 'OH', 'PENNSYLVANIA': 'PA', 'NEW YORK': 'NY',
@@ -604,6 +605,17 @@ _STATE_NAMES_UPPER = {
 # Lowercase-keys variant for parse_results_page (state names are
 # matched case-insensitively against the candidate text).
 _STATE_NAMES_LOWER = {k.lower(): v for k, v in _STATE_NAMES_UPPER.items()}
+
+
+# A simpler compiled regex used inside parse_results_page where the
+# href attribute is the relative /memorial/<id>/<slug> form (we strip
+# the `href=...` prefix in get_attribute). The full RESULT_LINK_RE
+# above expects an `href="..."` wrapper which we don't get here.
+_MEMORIAL_PATH_RE = re.compile(
+    r'(?:^|[\"\'])'  # leading boundary or quote char
+    r'((?:https?://www\.findagrave\.com)?/memorial/(\d+)/([^/?\"\'#]+))',
+    re.I,
+)
 
 # Death-year pattern (en dash or hyphen): "1890 – 9 Apr 1917" or "1890 - 1917"
 DATE_RANGE_RE = re.compile(r"(\d{4})\s*[–\-]\s*(\d{4})")
@@ -647,9 +659,18 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
     is_veteran, dates, cemetery.
     """
     # Wait for at least one result link to appear (the result list is
-    # client-rendered after a few hundred ms).
+    # client-rendered after a few hundred ms). wait_for_selector()
+    # returns an ElementHandle; dispose it explicitly so the page's
+    # DOM ref count doesn't grow across strategies (otherwise each
+    # strategy leak adds a small handle allocation that accumulates
+    # over the 7709-record run).
     try:
-        page.wait_for_selector('a[href*="/memorial/"]', timeout=15000)
+        handle = page.wait_for_selector('a[href*="/memorial/"]', timeout=15000)
+        if handle:
+            try:
+                handle.dispose()
+            except Exception:
+                pass
     except PWTimeout:
         pass
 
@@ -713,10 +734,10 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
             href = link.get_attribute("href") or ""
         except Exception:
             continue
-        m = re.search(r'/memorial/(\d+)/([^/?\#]+)', href)
+        m = _MEMORIAL_PATH_RE.search(href)
         if not m:
             continue
-        mem_id, slug = m.group(1), m.group(2)
+        mem_id, slug = m.group(2), m.group(3)
         if mem_id in seen:
             continue
         seen.add(mem_id)

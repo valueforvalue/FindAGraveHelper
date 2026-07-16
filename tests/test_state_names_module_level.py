@@ -82,3 +82,69 @@ def test_parse_results_page_does_not_recreate_dict():
         "parse_results_page still has an inline state_names dict; "
         "should reference _STATE_NAMES_LOWER instead."
     )
+
+
+class TestStateScoreNowUsed:
+    """Bug 2.2: state_score was computed but not added to score sum."""
+
+    def test_score_candidate_includes_state_score(self):
+        import inspect
+        from scripts import search_fag
+        src = inspect.getsource(search_fag.score_candidate)
+        # The score formula must reference state_score; previously it didn't.
+        assert "state_score" in src, (
+            "score_candidate must reference state_score in the score "
+            "formula. The current formula at line ~534 omits it (Bug 2.2)."
+        )
+        # And the score formula itself should include a coefficient for it.
+        import re
+        match = re.search(r"score\s*=\s*\(([^)]+)\)", src, re.DOTALL)
+        assert match is not None, "Could not find score formula in score_candidate"
+        formula = match.group(1)
+        assert "state_score" in formula, (
+            f"state_score is computed but not added to the score formula:\n{formula}"
+        )
+
+
+class TestLouisianaTypo:
+    """Bug 2.1: 'LOUISIANI' typo in module-level dict."""
+
+    def test_louisiana_typo_removed(self):
+        from scripts.search_fag import _STATE_NAMES_UPPER
+        assert "LOUISIANI" not in _STATE_NAMES_UPPER, (
+            "Bug 2.1: 'LOUISIANI' typo present in _STATE_NAMES_UPPER."
+        )
+        # The correct entry should still be there.
+        assert _STATE_NAMES_UPPER.get("LOUISIANA") == "LA"
+
+
+class TestMemorialPathRegexIsCompiled:
+    """Bug 2.4: re.search with string pattern in hot loop.
+    parse_results_page() should use the module-level compiled
+    _MEMORIAL_PATH_RE, not a literal re.search() per call.
+    """
+
+    def test_uses_compiled_pattern(self):
+        import inspect
+        from scripts import search_fag
+        src = inspect.getsource(search_fag.parse_results_page)
+        # The compiled pattern must be referenced.
+        assert "_MEMORIAL_PATH_RE" in src, (
+            "parse_results_page should reference the compiled "
+            "_MEMORIAL_PATH_RE, not call re.search with a string literal."
+        )
+
+
+class TestWaitForSelectorDisposesHandle:
+    """Bug 2.3: ElementHandle from wait_for_selector was leaked."""
+
+    def test_handle_is_disposed(self):
+        import inspect
+        from scripts import search_fag
+        src = inspect.getsource(search_fag.parse_results_page)
+        # Must call .dispose() on the handle returned by wait_for_selector.
+        # The phrase "dispose" should appear at least once.
+        assert "dispose" in src, (
+            "wait_for_selector return value should be disposed via "
+            ".dispose() to avoid ElementHandle leak (Bug 2.3)."
+        )
