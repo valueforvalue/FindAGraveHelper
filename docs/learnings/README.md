@@ -27,18 +27,22 @@ This was the single biggest hit-rate improvement. The v5 strategy
 ladder sends `middlename` as a primary search parameter, recovering
 **24 of 41** exact-sniper failures in our validation.
 
-### 2. The goal is OK-burial, not served-state
+### 2. The goal is OK-connection, not specifically OK burial
 
-Most CW veterans in our data served in TX, AR, AL, etc. but ended
-up buried in OK. The pensioner data tells us *where they served*,
-not *where they're buried*. The **only way to know burial state** is
-to look at the FaG result card (which contains the cemetery's
-city/county/state).
+The pension records document that applicants had to provide proof
+of at least 1 year's residency in OK. So every pensioner **lived
+in OK**. But burial state could be anywhere — many veterans were
+buried where they died.
+
+The project goal is **OK-connection** (residency, family ties,
+life history), not specifically OK burial. So we should not
+require OK burial for high confidence in the match.
 
 **Critical correction:** do NOT compare local `regiment state` to
 candidate `burial state`. These are different things. Compare local
 `pension_state` (e.g. "Oklahoma") or fall back to a default
-OK-burial target.
+OK-burial target. OK burial is a tiebreaker in scoring, not a
+requirement.
 
 ### 3. The CW-era search needs three features
 
@@ -115,7 +119,8 @@ beats `bio=Civil War` (495,958 hits).
 | v5.0 Strategy 1 only (exact sniper) | 92.9% | cold start, no metadata |
 | v5.0 Strategies 1-2 (exact + middlename) | 97.1% | middlename-initial fuzzy |
 | v5.0 full ladder (1-7) | 99.5% | validated against 577 local pairs |
-| **Current harness (with OK_burial boost)** | **84% (any state) / 4/5 (OK-buried)** | tested on 50 records from dixiedata |
+| v5 with OK_burial as primary signal | 86% / 0 auto_accepts | OK burial required for high score |
+| **v5 burial-agnostic (current)** | **88% / 29 auto_accepts (100% precision)** | OK burial is tiebreaker only |
 
 The current harness doesn't hit 100% because:
 - **Data quality** issues (local CSV missing middle names; spelling
@@ -125,9 +130,10 @@ The current harness doesn't hit 100% because:
 - **State extraction** doesn't catch all format variants
   ("Cherokee Indian Territory" has no state code)
 
-The harness is a **first-pass filter** that surfaces 84-86% of
-correct matches at rank 1. The HTML viewer is the human-review
-layer for the rest.
+The harness is a **first-pass filter** that surfaces 88% of
+correct matches at rank 1 (and auto-accepts 29 of those with
+100% precision). The HTML viewer is the human-review layer for
+the remaining 11% (mostly close matches with no clear winner).
 
 ## File-by-file what each artifact does
 
