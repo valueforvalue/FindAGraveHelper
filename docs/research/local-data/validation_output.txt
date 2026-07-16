@@ -1,0 +1,90 @@
+Total (soldier, memorial) pairs: 577
+
+=== Slug parser sanity ===
+  OK  william_pickney-looney                   -> {'first': 'william', 'middle': 'pickney', 'last': 'looney'}  (expected {'first': 'william', 'middle': 'pickney', 'last': 'looney'})
+  OK  greenberry-rozell                        -> {'first': 'greenberry', 'middle': '', 'last': 'rozell'}  (expected {'first': 'greenberry', 'middle': '', 'last': 'rozell'})
+  OK  william-jasper-shelton                   -> {'first': 'william', 'middle': 'jasper', 'last': 'shelton'}  (expected {'first': 'william', 'middle': 'jasper', 'last': 'shelton'})
+  OK  jesse_carter_farrar-pruitt               -> {'first': 'jesse', 'middle': 'carter farrar', 'last': 'pruitt'}  (expected {'first': 'jesse', 'middle': 'carter farrar', 'last': 'pruitt'})
+  OK  frank_c_a-troop                          -> {'first': 'frank', 'middle': 'c a', 'last': 'troop'}  (expected {'first': 'frank', 'middle': 'c a', 'last': 'troop'})
+
+=== COLD START simulation (no prior ID/URL) ===
+   536 ( 92.9%)  3. exact sniper                ############################################################
+     2 (  0.3%)  4. first-initial exact         #
+    22 (  3.8%)  5. middlename-initial fuzzy    ###########
+    10 (  1.7%)  6. first-initial fuzzy         #####
+     4 (  0.7%)  7. fuzzy last only             ##
+     3 (  0.5%)  13. CW context                 #
+     0 (  0.0%)  14. Confederate Home           
+     0 (  0.0%)  15. unit+state                 
+     0 (  0.0%)  17. abbreviation exp           
+     0 (  0.0%)  18. apostrophe norm            
+     0 (  0.0%)  (no strategy hit)
+
+=== Cumulative tier hit rate (cold start) ===
+  After strategy  1 (3. exact sniper               ):  536 / 577 = 92.9%
+  After strategy  2 (4. first-initial exact        ):  538 / 577 = 93.2%
+  After strategy  3 (5. middlename-initial fuzzy   ):  560 / 577 = 97.1%
+  After strategy  4 (6. first-initial fuzzy        ):  570 / 577 = 98.8%
+  After strategy  5 (7. fuzzy last only            ):  574 / 577 = 99.5%
+  After strategy  6 (13. CW context                ):  577 / 577 = 100.0%
+  After strategy  7 (14. Confederate Home          ):  577 / 577 = 100.0%
+  After strategy  8 (15. unit+state                ):  577 / 577 = 100.0%
+  After strategy  9 (17. abbreviation exp          ):  577 / 577 = 100.0%
+  After strategy 10 (18. apostrophe norm           ):  577 / 577 = 100.0%
+
+=== WARM START simulation (FaG URL/ID already in DB) ===
+  Direct ID lookup succeeds: 577 / 577 = 100.0%
+
+=== Middlename-strategy impact (Strategy 5) ===
+  hits middlename-initial fuzzy: 508 / 577 = 88.0%
+  exact fails: 41
+  of which middlename-fuzzy recovers: 24
+  of which NOT recovered: 17
+
+=== Misses (cold start, 0 records) — sample ===
+
+=== Records where slug_first differs from local first ===
+  count: 16
+  local first='E.'  slug first='edward'  mem=50691054
+  local first='Francis'  slug first='frances'  mem=135910725
+  local first='William'  slug first='w'  mem=90780998
+  local first='David'  slug first='d'  mem=20604449
+  local first='William'  slug first='william-pierce'  mem=36328772
+  local first='James'  slug first='j'  mem=44986607
+  local first='William'  slug first='w'  mem=292113111
+  local first='Leonidas'  slug first='l'  mem=39829392
+  local first='Benjamin'  slug first='b'  mem=22993070
+  local first='Capt'  slug first='burton'  mem=54663068
+  local first='Susannah "Susan"'  slug first='susan'  mem=73840563
+  local first='Thomas'  slug first='stonewall'  mem=536
+  local first='Chief'  slug first='samuel'  mem=11237574
+  local first='Capt'  slug first='james'  mem=13398592
+  local first='John'  slug first='permelia'  mem=84250581
+  local first='William'  slug first='william-wilson'  mem=282089961
+
+=== Records where slug_last differs from local last ===
+  count: 19
+  local last='Rozell'              slug last='rozzell'             mem=38979849
+  local last='Harris Sr.'          slug last='harris'              mem=21635214
+  local last='St. John'            slug last='john'                mem=134329627
+  local last='St. John'            slug last='john'                mem=134329929
+  local last='Williams'            slug last='williamsk'           mem=26722151
+  local last='Dooley'              slug last='dooleyd'             mem=46653782
+  local last='Boucher'             slug last='boucherd'            mem=16166094
+  local last='Sansom-Johnson'      slug last='johnson'             mem=10788038
+  local last='Sr.'                 slug last='blacknall'           mem=54583464
+  local last='VETERAN'             slug last='mcalester'           mem=13398592
+  local last='VETERAN'             slug last='mcdonald'            mem=125670650
+  local last='VETERAN'             slug last='melton'              mem=30842151
+  local last='VETERAN'             slug last='milton'              mem=43813922
+  local last='VETERAN'             slug last='mitchell'            mem=6287116
+  local last='VETERAN'             slug last='moore'               mem=90061816
+  local last='VETERAN'             slug last='morris'              mem=22212241
+  local last='VETERAN'             slug last='nunn'                mem=18098246
+  local last='VETERAN'             slug last='o&'                  mem=42795434
+  local last='VETERAN'             slug last='cabe'                mem=44478249
+
+=== Records with no local first name ===
+  count: 0 / 577 = 0.0%
+  Strategy 3 (exact) hit-rate among these: 0 / 0
+  Strategy 7 (last-only fuzzy) hit-rate among these: 0 / 0

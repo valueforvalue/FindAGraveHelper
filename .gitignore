@@ -1,1 +1,11 @@
+# Local tooling
 .antigravitycli/
+
+# Research artifacts that are large and reproducible from public sources.
+# See docs/research/broadened-set/README.md for the URLs to re-download.
+docs/research/broadened-set/rosters/
+
+# Local exports of the user's dixiedata database. May contain
+# personal/family-tree data the user does not want to publish.
+docs/research/local-data/local_soldiers_with_fag.csv
+docs/research/local-data/local_fag_records.csv

@@ -1,0 +1,61 @@
+Local records (soldiers with FaG URL): 1147
+Broadened CW records: 43834
+Broadened index size (last, first-letter): 27115
+
+Matched (last+initial+state): 584/1147 = 50.9%
+No match: 563
+
+=== Reasons for no-match (top 10) ===
+   499 no broad match
+    64 state mismatch
+
+=== 20 sample no-match records ===
+  local=(William        , Looney         ) unit=Co. I, 4th TN Cav. Rgmnt., C.S.A. reason=state mismatch (local=TN, broad candidates from {'AL'})
+  local=(James          , Newby          ) unit=Capt. William Parks's Co., Burford's Regiment, 19th TX Cavalry, C.S.A. reason=state mismatch (local=TX, broad candidates from {'MA'})
+  local=(John           , Newby          ) unit=Capt. William K. Mastin's Company, 2nd TX Cavalry, C.S.A. reason=state mismatch (local=TX, broad candidates from {'MA'})
+  local=(Samuel         , Newby          ) unit=Co. A, 19th TX Cavalry, Burford's Regiment reason=no broad match (last+initial)
+  local=(Lacey          , White          ) unit=Capt. Nolan's Mounted TX Rangers, Rio Grande Regiment, C.S.A. reason=no broad match (last+initial)
+  local=(Newton         , Anderson       ) unit=Co. A, 27th TX Cavalry Regiment, C.S.A. reason=no broad match (last+initial)
+  local=(Hugh           , Cherry         ) unit=Co. E, 16th Missouri Infantry Regiment, C.S.A. reason=no broad match (last+initial)
+  local=(Jesse          , Cherry         ) unit=Co. G, 1st Battalion, AR Infantry Regiment, C.S.A. reason=state mismatch (local=AR, broad candidates from {'AL', 'MD',
+  local=(D.             , Feely          ) unit=General Price                  reason=no broad match (last+initial)
+  local=(Anderson       , Gaston         ) unit=Co. D, Palmetto Sharp Shooters, South Carolina, C.S.A. reason=no broad match (last+initial)
+  local=(James          , Goad           ) unit=Co. G, 1st TX Infantry Regiment, C.S.A. reason=no broad match (last+initial)
+  local=(Robert         , Goad           ) unit=Co. K, 22nd TX Infantry Regiment, C.S.A. reason=no broad match (last+initial)
+  local=(John           , Pate           ) unit=Co. K, 22nd TX Infantry Regiment reason=state mismatch (local=TX, broad candidates from {'AL'})
+  local=(Greenberry     , Rozell         ) unit=Co. C, 21st TX Brigade, Texas State Troops, C.S.A. reason=no broad match (last+initial)
+  local=(James          , Rozell         ) unit=Co. B, 10th TX Cavalry Regiment (Locke's), C.S.A. reason=state mismatch (local=TX, broad candidates from {'AL'})
+  local=(James          , Rozell         ) unit=Co. A, 15th TX Cavalry Regiment, C.S.A.  reason=state mismatch (local=TX, broad candidates from {'AL'})
+  local=(John           , Rozell         ) unit=Co. B, 10th TX Cavalry Regiment, C.S.A. reason=state mismatch (local=TX, broad candidates from {'AL'})
+  local=(William        , Rozell         ) unit=                               reason=no broad match (last+initial)
+  local=(Peter          , Rozell         ) unit=Unknown                        reason=no broad match (last+initial)
+  local=(James          , Walston        ) unit=Co. D, 31st AL Infantry Regiment, C.S.A. reason=state mismatch (local=AL, broad candidates from {'FL'})
+
+=== For matches: which state does the broad match come from? ===
+   2275 Alabama
+    514 Tennessee
+    343 Massachusetts
+    259 Georgia
+    212 South Carolina
+    206 Ohio
+    202 Texas
+    194 Florida
+    173 Mississippi
+    157 New York
+    148 Arkansas
+    130 Kentucky
+     93 Maryland
+     60 Pennsylvania
+     51 Louisiana
+
+=== Matches-per-local distribution ===
+   169 local records matched 1 broad soldiers
+    92 local records matched 2 broad soldiers
+    61 local records matched 3 broad soldiers
+    53 local records matched 4 broad soldiers
+    21 local records matched 5 broad soldiers
+    33 local records matched 6 broad soldiers
+    13 local records matched 7 broad soldiers
+    13 local records matched 8 broad soldiers
+    14 local records matched 9 broad soldiers
+    10 local records matched 10 broad soldiers

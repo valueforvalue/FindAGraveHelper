@@ -1,0 +1,199 @@
+Total (soldier, memorial) pairs: 577
+
+=== Slug part-count distribution ===
+  1 parts: 92
+  2 parts: 471
+  3 parts: 14
+
+=== Last slug-token vs local last-name ===
+  last_token exact matches local last: 2
+  partial-prefix: 10
+  missing local last: 92
+  mismatch: 473
+
+=== Hyphenated slug-last tokens ===
+  count of 2-part slugs with hyphenated last: 471
+  local=('William', mid='Pickney', 'Looney')  slug='william_pickney-looney'  mem=50923719
+  local=('James', mid='Hillard', 'Newby')  slug='james_hillard-newby'  mem=15131195
+  local=('Elbert', mid='Dixon', 'Anderson')  slug='elbert_dixon-anderson'  mem=11523031
+  local=('James', mid='Milligan', 'Anderson')  slug='james_milligan-anderson'  mem=30700125
+  local=('Newton', mid='Rufus', 'Anderson')  slug='newton_rufus-anderson'  mem=78439699
+  local=('Hugh', mid='Martin', 'Cherry')  slug='hugh_martin-cherry'  mem=18949313
+  local=('D.', mid='Henry', 'Feely')  slug='d_henry-feely'  mem=63040341
+  local=('Anderson', mid='Lewers', 'Gaston')  slug='anderson_lewers-gaston'  mem=11299347
+  local=('James', mid='Osborn', 'Goad')  slug='james_osborn-goad'  mem=285266561
+  local=('Robert', mid='W.', 'Goad')  slug='robert_w-goad'  mem=41999287
+  local=('Thomas', mid='Crayton', 'Howell')  slug='thomas_crayton-howell'  mem=61465872
+  local=('John', mid='D.', 'Pate')  slug='john_d-pate'  mem=285269207
+  local=('James', mid='Marion', 'Rozell')  slug='james_marion-rozell'  mem=7361695
+  local=('James', mid='Nathaniel', 'Rozell')  slug='james_nathaniel-rozell'  mem=242671793
+  local=('John', mid='Wesley', 'Rozell')  slug='john_wesley-rozell'  mem=30907759
+  local=('William', mid='Jasper', 'Rozell')  slug='william_jasper-rozell'  mem=41748986
+  local=('Peter', mid='Wildman', 'Rozell')  slug='peter_wildman-rozzell'  mem=38979849
+  local=('James', mid='Knox', 'Walston')  slug='james_knox-walston'  mem=20628523
+  local=('Andrew', mid='Jackson', 'Ables')  slug='andrew_jackson-ables'  mem=23126976
+  local=('James', mid='A.', 'Myers')  slug='james_a-myers'  mem=11558933
+
+=== 3-part slugs (first_middle_last OR first_maiden-married) ===
+  count: 14
+  local=('Jesse', mid='Carter Farrar', 'Pruitt')  slug='jesse_carter_farrar-pruitt'  mem=11841130
+  local=('William', mid='J.', 'St. John')  slug='william_j-st_john'  mem=134329627
+  local=('Margaret', mid='Jane', 'St. John')  slug='margaret_jane-st_john'  mem=134329929
+  local=('Frank', mid='C. A.', 'Troop')  slug='frank_c_a-troop'  mem=37997921
+  local=('James', mid='A. J.', 'Williams')  slug='james_andrew_jackson-williamsk'  mem=26722151
+  local=('Amanda', mid='Effie Elizabeth', 'Jarvis')  slug='amanda_effie_elizabeth-jarvis'  mem=108681484
+  local=('Francis', mid='Ann', 'Bradshaw')  slug='francis_ann-fitzgerald_bradshaw'  mem=7729961
+  local=('Robert', mid='H J', 'Hacker')  slug='robert_h_j-hacker'  mem=41539818
+  local=('James', mid='Goldsmith Whitehouse', 'Hewitt')  slug='james_goldsmith_whitehouse-hewitt'  mem=17050135
+  local=('Martin', mid='Van Buren', 'King')  slug='martin_van_buren-king'  mem=19986668
+  local=('Jacob', mid='F. W.', 'Rozell')  slug='jacob_f_w-rozell'  mem=56909198
+  local=('William', mid='Thomas Jackson', 'Abercrombie')  slug='william_thomas_jackson-abercrombie'  mem=16811212
+  local=('Nancy', mid='Ann', 'Powers')  slug='nancy_ann-blue_powers'  mem=46970066
+  local=('James', mid='Madison Fay', 'Loyd')  slug='james_madison_fay-loyd'  mem=20504966
+
+=== 1-part slugs (just surname) ===
+  count: 92
+  local=('Greenberry', mid='', 'Rozell')  slug='greenberry-rozell'  mem=24093195
+  local=('William', mid='Jasper', 'Shelton')  slug='william-jasper-shelton'  mem=34717308
+  local=('Thomas', mid='Jefferson', 'Shelton')  slug='thomas-jefferson-shelton'  mem=15399535
+  local=('Henry', mid='Martin', 'McCann')  slug='henry-martin-mccann'  mem=150476582
+  local=('Aaron', mid='', 'Odom')  slug='aaron-odom'  mem=20597553
+  local=('Clark', mid='', 'Smith')  slug='clark-smith'  mem=24141121
+  local=('Mary', mid='Jane', 'Carter')  slug='mary-jane-carter'  mem=285988777
+  local=('William', mid='', 'Ritter')  slug='william-ritter'  mem=24140875
+  local=('Robert', mid='Hutchings', 'Carter')  slug='robert-hutchings-carter'  mem=11411566
+  local=('William', mid='Columbus', 'Driver')  slug='william-columbus-driver'  mem=286047555
+  local=('William', mid='', 'Jones')  slug='william-jones'  mem=18255926
+  local=('Abner', mid='', 'Pipes')  slug='abner-pipes'  mem=111797984
+  local=('Mary', mid='', 'Webb')  slug='mary-webb'  mem=47290948
+  local=('Thomas', mid='', 'Edwards')  slug='thomas-edwards'  mem=23745055
+  local=('James', mid='', 'Driscol')  slug='james-driscol'  mem=29792810
+  local=('Isabella', mid='', 'Garretson')  slug='isabella-garretson'  mem=23745709
+  local=('David', mid='P.', 'Smith')  slug='d-p-smith'  mem=20604449
+  local=('John', mid='', 'Casmos')  slug='john-casmos'  mem=20287123
+  local=('Valda', mid='', 'Barnett')  slug='valda-barnett'  mem=35708923
+  local=('James', mid='', 'Barter')  slug='james-barter'  mem=35708968
+  local=('George', mid='', 'Byrd')  slug='george-byrd'  mem=137304544
+  local=('John', mid='', 'Calley')  slug='john-calley'  mem=95099819
+  local=('L.', mid='', 'Coleman')  slug='l-coleman'  mem=137313518
+  local=('A.', mid='', 'Daniel')  slug='a-daniel'  mem=14623283
+  local=('Isaac', mid='', 'Garrison')  slug='isaac-garrison'  mem=137313738
+  local=('James', mid='', 'Griffith')  slug='james-griffith'  mem=104657951
+  local=('William', mid='', 'Griffith')  slug='william-griffith'  mem=68055996
+  local=('Jane', mid='', 'Higginbotham')  slug='jane-higginbotham'  mem=94922615
+  local=('David', mid='Maltravers', 'Rumph')  slug='david-maltravers-rumph'  mem=8016958
+  local=('Mark', mid='', 'Jackson')  slug='mark-jackson'  mem=24887239
+
+=== Local middle-name presence ===
+  records with local middle name: 522/577 (90.5%)
+  top 20 middle names:
+     14  'H.'
+     14  'Washington'
+     12  'W.'
+     12  'Jackson'
+     12  'M.'
+     11  'Henry'
+     10  'R.'
+      9  'A.'
+      9  'C.'
+      9  'L.'
+      7  'Marion'
+      7  'F.'
+      7  'Jane'
+      7  'B.'
+      6  'T.'
+      6  'Monroe'
+      5  'Martin'
+      5  'Franklin'
+      5  'William'
+      4  'D.'
+
+=== Prefix/suffix coverage ===
+  has prefix: 68
+  has suffix: 10
+  prefix values: [('Mrs.', 52), ('Rev.', 10), ('Dr.', 3), ('Judge', 2), ('General', 1)]
+  suffix values: [('Sr.', 7), ('Jr.', 3)]
+
+=== Pension state distribution ===
+   324 'N/A'
+   220 'Oklahoma'
+    26 'Texas'
+     3 'Alabama'
+     2 'Arkansas'
+     1 'Tennessee'
+     1 'Oklahoma (widow)'
+
+=== Unit-derived state (first comma segment after C.S.A./U.S.A.) ===
+   485 ?
+    32 TX
+    13 TN
+    13 AL
+    13 MS
+     8 GA
+     7 MO
+     5 AR
+     1 VA
+
+=== birth_date format distribution ===
+   574 MM/DD/YYYY
+     3 empty/zero
+
+=== Sample of 40 random slug forms ===
+  Anthony         Lawson          -> anthony_washington-lawson                      mem=221691995
+  Benjamin        Lee             -> benjamin_franklin-lee                          mem=58379506
+  Bettie          Coffman         -> bettie_c-coffman                               mem=16467746
+  Charles         Heald           -> charles_hobart-heald                           mem=114466503
+  Dallas          Berry           -> dallas_butler-berry                            mem=117874625
+  Daniel          Hailey          -> daniel_morris-hailey                           mem=9322046
+  David           Lawrence        -> david_mcgill-lawrence                          mem=86191733
+  Donie           Scott           -> donie_ann-scott                                mem=83698665
+  Dudley          Hopkins         -> dudley_simmons-hopkins                         mem=31813964
+  Elmore          Moody           -> elmore_c-moody                                 mem=22199306
+  Henry           Littlefield     -> henry_clay-littlefield                         mem=49046140
+  Ida             Culbertson      -> ida_h-culbertson                               mem=290550670
+  J.              Bartee          -> j_l-bartee                                     mem=35708947
+  J               Martin          -> j_m-martin                                     mem=65153153
+  Jacob           Skaggs          -> jacob_smith-skaggs                             mem=42837979
+  James           Newby           -> james_hillard-newby                            mem=15131195
+  James           Renshaw         -> james_l-renshaw                                mem=70162784
+  James           Kennedy         -> james_leonidas-kennedy                         mem=9791900
+  James           Rozell          -> james_nathaniel-rozell                         mem=242671793
+  James           Farlow          -> james_r-farlow                                 mem=41681693
+  James           Baugh           -> james_t-baugh                                  mem=68643054
+  James           Avery           -> james_tomme-avery                              mem=228737161
+  John            Rutledge        -> john_j-rutledge                                mem=24133586
+  John            Sharrock        -> john_wesley-sharrock                           mem=10564208
+  Joseph          Wilson          -> joseph_johnson-wilson                          mem=5079251
+  Monroe          Wheeler         -> monroe-wheeler                                 mem=8317789
+  Robert          Brown           -> robert_b-brown                                 mem=29908872
+  Robert          Carothers       -> robert_simeon-carothers                        mem=301288628
+  Samuel          Hargis          -> samuel_houston-hargis                          mem=16302801
+  Chief           Mayes           -> samuel_houston-mayes                           mem=11237574
+  Samuel          Blankenship     -> samuel_sampson-blankenship                     mem=16315486
+  Spencer         Cherry          -> spencer_clifton-cherry                         mem=18649374
+  Thomas          Cameron         -> thomas_a-cameron                               mem=10487330
+  Thomas          Hardeman        -> thomas_elezar-hardeman                         mem=20599084
+  Wiley           Wood            -> wiley_r-wood                                   mem=42576472
+  William         Ginn            -> william_joshua-ginn                            mem=197518448
+  William         Price           -> william_m-price                                mem=18336557
+  William         Guy             -> william_malcolm-guy                            mem=69829577
+  William         Johnson         -> william_marvin-johnson                         mem=51911315
+  William         Golden          -> william_r-golden                               mem=23746398
+
+=== Memorabilia of interest: soldiers with prefix/suffix in slug ===
+  slugs with single-letter middle in hyphenated form: 145
+  local=('Robert', mid='W.', 'Goad')  slug='robert_w-goad'  mem=41999287
+  local=('John', mid='D.', 'Pate')  slug='john_d-pate'  mem=285269207
+  local=('James', mid='A.', 'Myers')  slug='james_a-myers'  mem=11558933
+  local=('John', mid='N.', 'Welter')  slug='john_n-welter'  mem=107895119
+  local=('Alexander ', mid='C.', 'Carpenter')  slug='alexander_c-carpenter'  mem=285712894
+  local=('George', mid='T.', 'Fowler')  slug='george_t-fowler'  mem=20870847
+  local=('James', mid='H. ', 'Magness')  slug='james_h-magness'  mem=206900924
+  local=('Martin', mid='L.', 'Newman')  slug='martin_l-newman'  mem=15441053
+  local=('William', mid='M. ', 'Price')  slug='william_m-price'  mem=18336557
+  local=('James', mid='Oliver', 'Dobbs')  slug='james_o-dobbs'  mem=14843466
+  local=('G.', mid='W.', 'Thompson')  slug='g_w-thompson'  mem=20362546
+  local=('Jane', mid='G.', 'Traywick')  slug='jane_g-traywick'  mem=285782171
+  local=('Ellen', mid='E', 'Walker')  slug='ellen_e-walker'  mem=14059521
+  local=('Andrew', mid='J', 'Couch')  slug='andrew_j-couch'  mem=16547972
+  local=('Jesse', mid='M.', 'Bull')  slug='jesse_m-bull'  mem=290658111

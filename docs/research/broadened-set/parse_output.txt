@@ -1,0 +1,299 @@
+Rosters to process: 22
+  Confederate  10st Alabama Infantry
+  Confederate  10th Georgia Infantry
+  Confederate  10th Tennessee Infantry
+  Union        10th Tennessee Infantry
+  Confederate  10th Texas Infantry
+  Confederate  15st Alabama Infantry
+  Confederate  19st Alabama Infantry
+  Confederate  1st Alabama Infantry
+  Confederate  1st Florida Infantry
+  Confederate  1st Kentucky Infantry
+  Confederate  1st Maryland Infantry
+  Confederate  20th Mississippi Infantry
+  Union        23th Ohio Infantry
+  Confederate  25st Alabama Infantry
+  Union        54th Massachusetts Infantry
+  Confederate  5st Alabama Infantry
+  Confederate  5th Arkansas Infantry
+  Confederate  5th Louisiana Infantry
+  Union        5th New York Infantry
+  Confederate  5th South Carolina Infantry
+  Confederate  5th Tennessee Infantry
+  Union        7th Pennsylvania Infantry
+  10st Alabama Infantry                    Confederate  parsed 2656 soldiers
+  10th Georgia Infantry                    Confederate  parsed 1915 soldiers
+  10th Tennessee Infantry                  Confederate  parsed 1273 soldiers
+  10th Tennessee Infantry                  Union        parsed 1961 soldiers
+  10th Texas Infantry                      Confederate  parsed 1887 soldiers
+  15st Alabama Infantry                    Confederate  parsed 3022 soldiers
+  19st Alabama Infantry                    Confederate  parsed 2774 soldiers
+  1st Alabama Infantry                     Confederate  parsed 3841 soldiers
+  1st Florida Infantry                     Confederate  parsed 1567 soldiers
+  1st Kentucky Infantry                    Confederate  parsed 1007 soldiers
+  1st Maryland Infantry                    Confederate  parsed 934 soldiers
+  20th Mississippi Infantry                Confederate  parsed 1719 soldiers
+  23th Ohio Infantry                       Union        parsed 2517 soldiers
+  25st Alabama Infantry                    Confederate  parsed 2360 soldiers
+  54th Massachusetts Infantry              Union        parsed 1873 soldiers
+  5st Alabama Infantry                     Confederate  parsed 3816 soldiers
+  5th Arkansas Infantry                    Confederate  parsed 1444 soldiers
+  5th Louisiana Infantry                   Confederate  parsed 987 soldiers
+  5th New York Infantry                    Union        parsed 2401 soldiers
+  5th South Carolina Infantry              Confederate  parsed 1326 soldiers
+  5th Tennessee Infantry                   Confederate  parsed 1699 soldiers
+  7th Pennsylvania Infantry                Union        parsed 855 soldiers
+
+Total broadened soldiers: 43834
+
+Wrote C:\tmp\broadened_cw_training.csv (43834 rows)
+
+Confederate: 34227
+Union:       9607
+
+=== First-name parsing patterns ===
+  14754 full + initial (William T.)
+  14467 single word (William)
+  11170 double initial (W. T.)
+   1987 single initial (J.)
+    373 two words (Mary Jane)
+    191 initial + full (J. William)
+     17 other: William H. H.
+      9 other: Wm.
+      8 other: W.H.H.
+      7 other: Geo. W.
+      7 other: Thos. J.
+      7 other: Wm. J.
+      7 other: W. H. H.
+      6 other: Thos.
+      6 other: William H.H.
+
+=== Two-word first names (Confederate, first 30) ===
+  Alamoth Byers
+  Henry Hillard
+  George Isbell
+  Doctor Franklin
+  La Fayette
+  Andrew Jackson
+  Ignatius Garvin
+  John Ross
+  John William
+  William Young
+  John Jackson
+  John Hodges
+  Albert Harrison
+  John Allen
+  John Lee
+  Jackson Joseph
+  Henry John
+  Henry Jefferson
+  Owen Walker
+  Francis Marion
+  Reuben Anderson
+  Elder Ed
+  Wiley West
+  Joe Berry
+  Robert James
+  James Satter
+  James Augustus
+  Andrew Jackson
+  Andrew Jackson
+  Andrew Jackson
+
+=== Surname patterns (all) ===
+  43505 plain
+    185 apostrophe
+    143 space
+      1 hyphenated
+
+=== Confederate-specific first-name patterns ===
+  11277 full + initial
+   8623 single word
+   1975 single initial
+    279 two words
+    237 other: J.W.
+    173 other: J.M.
+    168 initial + full
+    166 other: J. W.
+    152 other: W.H.
+    150 other: J.H.
+
+=== Soundex clusters — Confederate only (top 15) ===
+  SX M250:  82 names | ['Machen', 'Mackin', 'Macon', 'Maquoine', 'Mason', 'Maughan']
+  SX M200:  66 names | ['Macay', 'Macey', 'Mack', 'Mackey', 'Mackie', 'Macoy']
+  SX M245:  60 names | ['Macilwane', 'Mc Lain', 'McAllen', 'McCallen', 'McCallum', 'McCalmon']
+  SX H200:  55 names | ['Haegis', 'Hago', 'Hague', 'Hagy', 'Haig', 'Haize']
+  SX M252:  54 names | ['Mackingham', 'Maginnis', 'Magness', 'Massengale', 'Massengie', 'Massengule']
+  SX M260:  46 names | ['Magher', 'Maguire', 'Major', 'Maquire', 'Mc Guire', 'McAury']
+  SX L500:  42 names | ['Lain', 'Lamei', 'Lamon', 'Lanahan', 'Lane', 'Laney']
+  SX M240:  42 names | ['Macauley', 'Mackall', 'Masley', 'Maxwell', 'Mc Gill', 'Mc Guill']
+  SX B650:  41 names | ['Barnum', 'Barron', 'Beorum', 'Bernan', 'Berney', 'Bernham']
+  SX B620:  40 names | ['Barrise', 'Barrs', 'Beers', 'Bergess', 'Birch', 'Birk']
+  SX D200:  40 names | ['Dacus', 'Dake', 'Dashe', 'Daus', 'Dawes', 'Dawsey']
+  SX S500:  39 names | ['Sahm', 'Sain', 'Sanon', 'Seaman', 'Sem', 'Semm']
+  SX M520:  37 names | ['Mains', 'Maning', 'Maninx', 'Manix', 'Mannakee', 'Manning']
+  SX B500:  37 names | ['Bain', 'Baine', 'Bane', 'Bannon', 'Banyan', 'Bauman']
+  SX R200:  37 names | ['Raigh', 'Rasco', 'Rascoe', 'Rase', 'Reece', 'Rees']
+
+=== Top 10 surnames by Confederate state ===
+
+  [Alabama] (18469 soldiers)
+     246 Smith
+     145 Jones
+     139 Johnson
+     120 Williams
+     109 Brown
+      96 Davis
+      94 Moore
+      73 Martin
+      73 Jackson
+      70 Wilson
+
+  [Arkansas] (1444 soldiers)
+      19 Smith
+      16 Davis
+      14 Jones
+      12 Johnson
+      11 Arnold
+      10 Taylor
+       8 Harris
+       8 Thompson
+       7 Williams
+       6 Clark
+
+  [Florida] (1567 soldiers)
+      21 Smith
+      20 Brown
+      19 Williams
+      14 Walker
+      12 Turner
+      11 Jones
+      10 Johnson
+      10 McDonald
+      10 Davis
+       9 Thompson
+
+  [Georgia] (1915 soldiers)
+      31 Smith
+      20 Brown
+      19 Jones
+      19 Johnson
+      18 Morris
+      16 Adams
+      13 Cobb
+      11 Wilson
+       9 Thompson
+       9 Taylor
+
+  [Kentucky] (1007 soldiers)
+      17 Jones
+      11 Smith
+      11 Taylor
+       8 Duncan
+       8 Thompson
+       8 Anderson
+       8 Johnson
+       6 Jordan
+       5 Young
+       5 Walker
+
+  [Louisiana] (987 soldiers)
+      13 Brown
+       8 Murphy
+       6 O'Brien
+       6 Parker
+       6 Davis
+       6 Williams
+       6 Taylor
+       6 Jones
+       5 Berry
+       5 Stewart
+
+  [Maryland] (934 soldiers)
+      11 Smith
+       7 Ryan
+       7 Howard
+       7 Thomas
+       6 Stewart
+       6 Murray
+       5 Green
+       5 Wilson
+       5 Briscoe
+       4 Brown
+
+  [Mississippi] (1719 soldiers)
+      20 Smith
+      17 Williams
+      15 Allen
+      13 Johnson
+      13 Jones
+      11 White
+      10 Cooper
+      10 Roberts
+      10 Davis
+       8 Boyd
+
+  [South Carolina] (1326 soldiers)
+      23 Moore
+      22 Foster
+      21 McDowell
+      17 Johnson
+      16 Walker
+      16 Brown
+      15 Davis
+      15 Williams
+      14 Jackson
+      13 White
+
+  [Tennessee] (2972 soldiers)
+      33 Jones
+      26 Smith
+      20 Thompson
+      20 Wilson
+      19 Williams
+      15 Sullivan
+      15 Alexander
+      13 Allen
+      13 Johnson
+      12 King
+
+  [Texas] (1887 soldiers)
+      36 Smith
+      14 Lee
+      13 Robinson
+      11 Johnson
+      11 Harris
+      10 Taylor
+      10 Lewis
+      10 Jones
+      10 Roberson
+       9 Clark
+
+=== Predicted FaG slug shape distribution ===
+  23198 first-last
+  20248 first_m-last
+    376 first_m_m_m...-last (3 parts)
+      9 first_m_m_m...-last (4 parts)
+      3 (skip — empty first or last)
+
+=== Multi-part first names that produce complex slugs (Conf, first 20) ===
+  J. W. J.                  McRea                Alabama
+  J. R. P.                  Lavey                Alabama
+  Elijah L. L.              Milican              Alabama
+  W. T. J.                  Abercrombie          Alabama
+  William T. J.             Abercroumbie         Alabama
+  J. W. J.                  McKey                Alabama
+  J. A. T.                  Sappington           Alabama
+  Jas. A. A.                Abercroumby          Alabama
+  F. H. G.                  League               Alabama
+  Martin V. B.              Greer                Alabama
+  William H. H.             Gay                  Georgia
+  F. H. W.                  Robertson            Georgia
+  James K. P.               Palmour              Georgia
+  Michael B. F.             Roff                 Georgia
+  W. T. C.                  Brannen              Georgia
+  J. F. C.                  Clark                Georgia
+  J. H. N.                  Campbell             Georgia
+  D. W. D.                  Hally                Georgia
+  J. Q. H.                  Mitchell             Georgia
+  D. Mc D.                  Thally               Georgia

@@ -1,0 +1,144 @@
+Total rows: 1147
+Total (soldier, memorial) pairs: 577
+Unique soldiers with FaG URL: 575
+Unique FaG memorial IDs: 572
+
+=== Slug-vs-local-name match rate ===
+  last_mismatch: 575
+  last_match: 2
+
+--- Last-name mismatch samples ---
+  local=('William','Looney')  slug='william_pickney-looney'  mem=50923719
+  local=('James','Newby')  slug='james_hillard-newby'  mem=15131195
+  local=('Elbert','Anderson')  slug='elbert_dixon-anderson'  mem=11523031
+  local=('James','Anderson')  slug='james_milligan-anderson'  mem=30700125
+  local=('Newton','Anderson')  slug='newton_rufus-anderson'  mem=78439699
+  local=('Hugh','Cherry')  slug='hugh_martin-cherry'  mem=18949313
+  local=('D.','Feely')  slug='d_henry-feely'  mem=63040341
+  local=('Anderson','Gaston')  slug='anderson_lewers-gaston'  mem=11299347
+  local=('James','Goad')  slug='james_osborn-goad'  mem=285266561
+  local=('Robert','Goad')  slug='robert_w-goad'  mem=41999287
+  local=('Thomas','Howell')  slug='thomas_crayton-howell'  mem=61465872
+  local=('John','Pate')  slug='john_d-pate'  mem=285269207
+  local=('Greenberry','Rozell')  slug='greenberry-rozell'  mem=24093195
+  local=('James','Rozell')  slug='james_marion-rozell'  mem=7361695
+  local=('James','Rozell')  slug='james_nathaniel-rozell'  mem=242671793
+  local=('John','Rozell')  slug='john_wesley-rozell'  mem=30907759
+  local=('William','Rozell')  slug='william_jasper-rozell'  mem=41748986
+  local=('Peter','Rozell')  slug='peter_wildman-rozzell'  mem=38979849
+  local=('James','Walston')  slug='james_knox-walston'  mem=20628523
+  local=('Andrew','Ables')  slug='andrew_jackson-ables'  mem=23126976
+  local=('James','Myers')  slug='james_a-myers'  mem=11558933
+  local=('John','Welter')  slug='john_n-welter'  mem=107895119
+  local=('Samuel','Beckham')  slug='samuel_westbrook-beckham'  mem=42550949
+  local=('Benjamin','Carter')  slug='benjamin_franklin-carter'  mem=285988975
+  local=('William','Shelton')  slug='william-jasper-shelton'  mem=34717308
+  local=('Thomas','Shelton')  slug='thomas-jefferson-shelton'  mem=15399535
+  local=('Robert','Briscoe')  slug='robert_kyle-briscoe'  mem=20870276
+  local=('Evan','Brown')  slug='evan_aaron-brown'  mem=83650522
+  local=('Alexander ','Carpenter')  slug='alexander_c-carpenter'  mem=285712894
+  local=('William','Choate')  slug='william_nathan-choate'  mem=14223505
+
+=== First-name slug-vs-local ===
+  exact_match: 474
+  no_first_in_slug: 92
+  partial_match: 8
+  mismatch: 2
+  initial_match: 1
+
+--- First-name mismatch samples ---
+  local=('Chief','Mayes')  slug='samuel_houston-mayes'  mem=11237574
+  local=('Capt','VETERAN')  slug='james_jackson-mcalester'  mem=13398592
+
+=== Slug shape distribution ===
+  parts=2 kind=simple: 471
+  parts=1 kind=simple: 92
+  parts=3 kind=middle: 14
+
+=== Date coverage ===
+  birth_date present: 577/577 (100.0%)
+  death_year present: 577/577 (100.0%)
+  buried_in present:  552/577 (95.7%)
+  unit present:       462/577 (80.1%)
+
+=== Birth-year distribution (decade buckets) ===
+
+=== Death-year distribution (decade buckets) ===
+  0s:    1 #
+  1860s:    4 ####
+  1870s:    5 #####
+  1880s:    1 #
+  1890s:   33 #################################
+  1900s:  100 ################################################################################
+  1910s:  170 ################################################################################
+  1920s:  173 ################################################################################
+  1930s:   74 ##########################################################################
+  1940s:   12 ############
+  1950s:    3 ###
+  2020s:    1 #
+
+=== Vowel-trap strategy heuristic signal ===
+(checking if local-last contains vowels that the slug's last name normalises differently)
+  unique (local,slug) vowel-mismatch pairs: 439
+    2  local='looney'              slug='pickney-looney'
+    2  local='briscoe'             slug='kyle-briscoe'
+    2  local='driscol'             slug='james-driscol'
+    2  local='avery'               slug='tomme-avery'
+    2  local='abercrombie'         slug='jackson-abercrombie'
+    2  local='fletcher'            slug='willoughby-randolph-fletcher'
+    1  local='newby'               slug='hillard-newby'
+    1  local='anderson'            slug='dixon-anderson'
+    1  local='anderson'            slug='milligan-anderson'
+    1  local='anderson'            slug='rufus-anderson'
+    1  local='cherry'              slug='martin-cherry'
+    1  local='feely'               slug='henry-feely'
+    1  local='gaston'              slug='lewers-gaston'
+    1  local='goad'                slug='osborn-goad'
+    1  local='howell'              slug='crayton-howell'
+    1  local='rozell'              slug='greenberry-rozell'
+    1  local='rozell'              slug='marion-rozell'
+    1  local='rozell'              slug='nathaniel-rozell'
+    1  local='rozell'              slug='wesley-rozell'
+    1  local='rozell'              slug='jasper-rozell'
+
+=== Burial location word-frequency (top tokens) ===
+   533 county
+   526 cemetery
+   524 usa
+   463 oklahoma
+   201 carter
+   101 pooleville
+    96 hill
+    79 ardmore
+    78 rose
+    57 jefferson
+    53 texas
+    34 cornish
+    33 wilson
+    30 ryan
+    26 addington
+    23 grove
+    22 love
+    22 orr
+    22 url
+    21 lone
+    19 hewitt
+    18 garvin
+    16 stephens
+    16 city
+    15 pontotoc
+
+=== Slug quirks ===
+  slug contains '-': 577/577 (100.0%)
+
+=== Same (first,last) -> multiple distinct memorials ===
+  ambiguous (first,last) keys: 9
+  local=('james', 'rozell')  -> 2 distinct memorials: ['242671793', '7361695']
+  local=('george', 'roberts')  -> 2 distinct memorials: ['20893982', '68646007']
+  local=('w', 'williams')  -> 2 distinct memorials: ['14270237', '14623639']
+  local=('james', 'williams')  -> 2 distinct memorials: ['263563684', '26722151']
+  local=('william', 'golden')  -> 2 distinct memorials: ['23746398', '40539449']
+  local=('james', 'kennedy')  -> 2 distinct memorials: ['44986607', '9791900']
+  local=('john', 'jordan')  -> 2 distinct memorials: ['31137893', '42178228']
+  local=('william', 'walker')  -> 2 distinct memorials: ['17051127', '22657187']
+  local=('robert', 'carothers')  -> 2 distinct memorials: ['301288628', '65141606']
