@@ -64,7 +64,40 @@
   .status.skip { background: #dee2e6; color: #495057; }
   .status.error { background: #f8d7da; color: #721c24; }
 
-  .candidates { margin: 12px 0 0; }
+  /* J8: scrollable candidate list with optional expand */
+  .candidates { margin: 12px 0 0; max-height: 400px; overflow-y: auto;
+                border: 1px solid #e0e0e0; border-radius: 4px;
+                padding: 4px 8px; background: #fafafa; resize: vertical; }
+  .candidates.expanded { max-height: none; }
+  .candidates-controls { display: flex; gap: 8px; align-items: center;
+                         margin: 4px 0; font-size: 11px; color: #666; }
+  .candidates-controls button { font-size: 11px; padding: 2px 6px; }
+  /* J8: per-candidate state badges */
+  .best-match-badge { background: #007bff; color: #fff; padding: 1px 6px;
+                      border-radius: 3px; font-size: 10px; margin-left: 6px; }
+  .ambig-badge { background: #ffc107; color: #333; padding: 1px 6px;
+                border-radius: 3px; font-size: 10px; margin-left: 4px; }
+  .removed-badge { background: #dc3545; color: #fff; padding: 1px 6px;
+                   border-radius: 3px; font-size: 10px; margin-left: 4px; }
+  .candidate.removed { opacity: 0.5; text-decoration: line-through; }
+  .candidate.removed .name, .candidate.removed .slug { text-decoration: line-through; }
+  /* J8: modal overlay (View source) */
+  .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+                   background: rgba(0,0,0,0.5); z-index: 1000;
+                   display: flex; align-items: center; justify-content: center; }
+  .modal-content { background: #fff; border-radius: 6px; padding: 20px;
+                   max-width: 800px; max-height: 80vh; overflow-y: auto;
+                   box-shadow: 0 4px 24px rgba(0,0,0,0.2); }
+  .modal-content h2 { margin: 0 0 8px; font-size: 18px; }
+  .modal-content .modal-field { display: grid;
+                                grid-template-columns: 180px 1fr;
+                                gap: 4px 12px; margin: 8px 0;
+                                font-size: 13px; }
+  .modal-content .modal-field-key { color: #666; }
+  .modal-content .modal-field-val { color: #222; word-break: break-all; }
+  .modal-content .modal-close { float: right; font-size: 18px;
+                                background: none; border: none;
+                                cursor: pointer; color: #888; }
   .candidate { border: 1px solid #e0e0e0; border-radius: 4px; padding: 10px; margin-bottom: 8px;
                display: flex; align-items: center; gap: 12px; }
   .candidate.decided { background: #d4edda; border-color: #c3e6cb; }
@@ -211,6 +244,17 @@
 </header>
 
 <main id="results"></main>
+
+<!-- J8: modal for the digitalprairie "View source" button.
+     Populated by fetchSourceJson(url) and dismissed via the
+     close button or clicking the overlay. -->
+<div id="sourceModal" class="modal-overlay" style="display:none;">
+    <div class="modal-content">
+        <button class="modal-close" title="Close">&times;</button>
+        <h2 id="sourceModalTitle">Source record</h2>
+        <div id="sourceModalBody">Loading…</div>
+    </div>
+</div>
 
 <script>
 // ============================================================
@@ -538,13 +582,46 @@ function render() {
     results.querySelectorAll('[data-action="notes"]').forEach(input => {
         input.addEventListener('change', () => {
             const pid = parseInt(input.dataset.pid, 10);
-            setNotes(pid, input.value);
+            setPensionerNote(pid, input.value);
         });
     });
     results.querySelectorAll('[data-action="pickrank1"]').forEach(btn => {
         btn.addEventListener('click', () => {
             const pid = parseInt(btn.dataset.pid, 10);
             pickRank1(pid);
+        });
+    });
+    // J8: per-candidate actions
+    results.querySelectorAll('[data-action="remove-candidate"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            const mid = btn.dataset.mid;
+            toggleRemoveCandidate(pid, mid);
+        });
+    });
+    results.querySelectorAll('[data-action="candidate-notes"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const pid = parseInt(input.dataset.pid, 10);
+            const mid = input.dataset.mid;
+            setCandidateNote(pid, mid, input.value);
+        });
+    });
+    results.querySelectorAll('[data-action="expand-candidates"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            expandCandidates(pid);
+        });
+    });
+    results.querySelectorAll('[data-action="collapse-candidates"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const pid = parseInt(btn.dataset.pid, 10);
+            collapseCandidates(pid);
+        });
+    });
+    results.querySelectorAll('[data-action="view-source"]').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const url = btn.dataset.url;
+            if (url) fetchSourceJson(url);
         });
     });
 }
@@ -563,9 +640,33 @@ function renderPensioner(p) {
         candsHtml = '<div class="empty">No candidates found in this run. Try running with more strategies or longer wait.</div>';
     } else {
         const visible = cands.slice(0, showTop);
+        // J8: per-candidate removal + notes live in
+        // decision.removed_candidates (array of memorial_ids) and
+        // decision.candidate_notes ({memorial_id: note}).
+        const removedSet = new Set((decision && decision.removed_candidates) || []);
+        const candNotes = (decision && decision.candidate_notes) || {};
         candsHtml = visible.map((c, idx) => {
             const scoreClass = c.score >= 0.85 ? 'high' : c.score >= 0.70 ? 'mid' : 'low';
             const isPicked = decision && decision.memorial_id === c.memorial_id;
+            const isRemoved = removedSet.has(c.memorial_id);
+            // J8: best-match label on the top candidate. Helps
+            // disambiguate when multiple candidates are close in
+            // score. Also: when top 2 are within 0.05, show an
+            // AMBIGUOUS warning so the reviewer doesn't
+            // auto-trust the top pick.
+            const isBest = idx === 0;
+            const isAmbiguous = isBest && cands.length > 1 &&
+                (cands[1].score || 0) > 0 &&
+                Math.abs((c.score || 0) - (cands[1].score || 0)) < 0.05;
+            const bestLabel = isBest
+                ? `<span class="best-match-badge" title="Highest score">★ Best match</span>`
+                : '';
+            const ambigLabel = isAmbiguous
+                ? `<span class="ambig-badge" title="Top 2 within 0.05; verify which is correct">⚠ ambiguous</span>`
+                : '';
+            const removedLabel = isRemoved
+                ? `<span class="removed-badge">REMOVED</span>`
+                : '';
             const bd = c.score_breakdown || {};
             const fb = c._found_by || {};
             const fbStr = fb.strategy
@@ -596,11 +697,12 @@ function renderPensioner(p) {
                 `;
             }).join('');
             return `
-                <div class="candidate ${isPicked ? 'decided' : ''}">
+                <div class="candidate ${isPicked ? 'decided' : ''} ${isRemoved ? 'removed' : ''}">
                     <div class="rank">#${idx + 1}</div>
                     <div class="info">
                         <div><span class="name">${escapeHtml(c.name || '')}</span>
                              <span class="slug">${escapeHtml(c.slug)}</span>
+                             ${bestLabel}${ambigLabel}${removedLabel}
                              <span class="mark-decided" style="display:${isPicked ? 'inline-block' : 'none'}">PICKED</span>
                         </div>
                         <div class="breakdown">${barsHtml}</div>
@@ -617,11 +719,46 @@ function renderPensioner(p) {
                     <div class="pick">
                         <button data-action="pick" data-pid="${pid}" data-mid="${escapeHtml(c.memorial_id)}" data-slug="${escapeHtml(c.slug)}"
                                 class="primary">Pick</button>
+                        <button data-action="remove-candidate"
+                                data-pid="${pid}" data-mid="${escapeHtml(c.memorial_id)}"
+                                title="Mark this candidate as removed (strikethrough + exported in CSV)"
+                                style="background:${isRemoved ? '#dc3545' : '#f0f0f0'};color:${isRemoved ? '#fff' : '#333'};">
+                            ${isRemoved ? '✕ removed' : '✕ remove'}
+                        </button>
+                    </div>
+                    <div class="candidate-notes" style="flex-basis:100%;margin-top:6px;">
+                        <input type="text"
+                               data-action="candidate-notes"
+                               data-pid="${pid}" data-mid="${escapeHtml(c.memorial_id)}"
+                               placeholder="Notes (e.g. 'wrong unit', 'duplicate of #123')..."
+                               value="${escapeHtml(candNotes[c.memorial_id] || '')}"
+                               style="width:100%;font-size:11px;padding:3px 6px;border:1px solid #ddd;border-radius:3px;" />
                     </div>
                 </div>
             `;
         }).join('');
     }
+
+    // J8: candidates container with expand/collapse controls
+    const candidatesHtml = cands.length === 0
+        ? `<div class="candidates">${candsHtml}</div>`
+        : `
+            <div class="candidates-controls">
+                <span>${cands.length} candidate${cands.length === 1 ? '' : 's'}${cands.length > showTop ? ` (showing top ${showTop}; increase "Show top" in header to see more)` : ''}</span>
+                <button data-action="expand-candidates" data-pid="${pid}" title="Expand this list to its full height">Expand ⤓</button>
+                <button data-action="collapse-candidates" data-pid="${pid}" title="Restore the scrollable fixed height">Collapse ⤒</button>
+            </div>
+            <div class="candidates" id="cands-${pid}">${candsHtml}</div>
+            <div class="actions" style="margin-top:6px;">
+                <button data-action="pickrank1" data-pid="${pid}">Pick rank 1</button>
+                ${p.backlink ? `<button data-action="view-source" data-pid="${pid}" data-url="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" title="Fetch + display the digitalprairie pension JSON">View source</button>` : ''}
+                <button data-action="none" data-pid="${pid}">No match</button>
+                <input type="text" data-action="notes" data-pid="${pid}"
+                       placeholder="Per-pensioner notes..."
+                       value="${escapeHtml(decision?.notes || '')}"
+                       style="flex:1;min-width:200px;font-size:11px;padding:3px 6px;" />
+            </div>
+        `;
 
     return `
         <div class="pensioner" id="p-${pid}">
@@ -646,16 +783,7 @@ function renderPensioner(p) {
             </div>
             ${renderPensionerCardImage(p)}
             ${renderBothMatchBanner(p)}
-            <div class="candidates">${candsHtml}</div>
-            <div class="actions">
-                ${cands.length > 0 ? `<button data-action="pickrank1" data-pid="${pid}">Pick rank 1</button>` : ''}
-                <button data-action="none" data-pid="${pid}">Mark: no FaG match</button>
-                ${decision ? `<button data-action="unpick" data-pid="${pid}">Clear decision</button>` : ''}
-            </div>
-            <div class="notes">
-                <input data-action="notes" data-pid="${pid}" placeholder="notes…"
-                       value="${escapeHtml(decision?.notes || '')}">
-            </div>
+            ${candidatesHtml}
         </div>
     `;
 }
@@ -814,6 +942,121 @@ function noneMatch(pid) {
     flash('Marked ' + pid + ' as no-match');
 }
 
+// ============================================================
+// J8: per-candidate actions
+// ============================================================
+function toggleRemoveCandidate(pid, mid) {
+    if (!decisions[pid]) decisions[pid] = {removed_candidates: [], candidate_notes: {}};
+    if (!decisions[pid].removed_candidates) decisions[pid].removed_candidates = [];
+    const list = decisions[pid].removed_candidates;
+    const idx = list.indexOf(mid);
+    if (idx >= 0) {
+        list.splice(idx, 1);
+    } else {
+        list.push(mid);
+    }
+    saveDecisionsToLocalStorage();
+    render();
+}
+
+function setCandidateNote(pid, mid, value) {
+    if (!decisions[pid]) decisions[pid] = {removed_candidates: [], candidate_notes: {}};
+    if (!decisions[pid].candidate_notes) decisions[pid].candidate_notes = {};
+    if (value) {
+        decisions[pid].candidate_notes[mid] = value;
+    } else {
+        delete decisions[pid].candidate_notes[mid];
+    }
+    saveDecisionsToLocalStorage();
+    // No re-render — the input is in use; just persist.
+}
+
+function setPensionerNote(pid, value) {
+    if (!decisions[pid]) decisions[pid] = {removed_candidates: [], candidate_notes: {}};
+    decisions[pid].notes = value;
+    saveDecisionsToLocalStorage();
+    flash('Saved note for ' + pid);
+}
+
+function expandCandidates(pid) {
+    const el = document.getElementById('cands-' + pid);
+    if (el) el.classList.add('expanded');
+}
+function collapseCandidates(pid) {
+    const el = document.getElementById('cands-' + pid);
+    if (el) el.classList.remove('expanded');
+}
+
+// ============================================================
+// J8: View source modal — fetch the digitalprairie JSON and
+// render its fields in a readable popup.
+// ============================================================
+async function fetchSourceJson(url) {
+    const modal = document.getElementById('sourceModal');
+    const body = document.getElementById('sourceModalBody');
+    const title = document.getElementById('sourceModalTitle');
+    title.textContent = 'Source record';
+    body.textContent = 'Loading…';
+    modal.style.display = 'flex';
+    try {
+        const r = await fetch(url);
+        if (!r.ok) {
+            body.textContent = `Failed to load: HTTP ${r.status}`;
+            return;
+        }
+        const data = await r.json();
+        body.innerHTML = renderSourceJson(data);
+    } catch (e) {
+        body.textContent = `Failed to fetch: ${e.message}`;
+    }
+}
+
+function renderSourceJson(data) {
+    if (!data || typeof data !== 'object') {
+        return `<pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    }
+    // First: the top-level metadata fields
+    const topKeys = ['contentType', 'filename', 'downloadUri', 'imageUri',
+                     'thumbnailUri', 'iiifInfoUri', 'parentId'];
+    let html = '<div>';
+    for (const k of topKeys) {
+        if (data[k] != null) {
+            html += `<div class="modal-field">
+                        <span class="modal-field-key">${escapeHtml(k)}</span>
+                        <span class="modal-field-val">${escapeHtml(String(data[k]))}</span>
+                     </div>`;
+        }
+    }
+    // Then: the fields array (key, label, value)
+    if (Array.isArray(data.fields) && data.fields.length) {
+        html += '<h3 style="margin-top:14px;font-size:14px;">Fields</h3>';
+        for (const f of data.fields) {
+            if (f == null) continue;
+            const key = f.label || f.key || '?';
+            const val = f.value != null ? String(f.value) : '';
+            if (!val) continue;  // skip empty
+            html += `<div class="modal-field">
+                        <span class="modal-field-key">${escapeHtml(key)}</span>
+                        <span class="modal-field-val">${escapeHtml(val)}</span>
+                     </div>`;
+        }
+    }
+    // objectInfo (for compound objects like pension cards)
+    if (data.objectInfo && (data.objectInfo.page || data.objectInfo.type)) {
+        html += '<h3 style="margin-top:14px;font-size:14px;">Object info</h3>';
+        html += `<pre style="font-size:11px;background:#f5f5f5;padding:6px;
+                           border-radius:3px;overflow-x:auto;">${escapeHtml(JSON.stringify(data.objectInfo, null, 2))}</pre>`;
+    }
+    // Raw JSON collapse for the curious
+    html += '<details style="margin-top:14px;font-size:11px;">';
+    html += '<summary style="cursor:pointer;color:#666;">Raw JSON</summary>';
+    html += `<pre style="background:#f5f5f5;padding:6px;border-radius:3px;
+                          overflow-x:auto;">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    html += '</details>';
+    html += '</div>';
+    return html;
+}
+
 function setNotes(pid, notes) {
     if (!decisions[pid]) {
         decisions[pid] = { memorial_id: null, slug: null, by: 'user', at: new Date().toISOString(), notes };
@@ -836,15 +1079,20 @@ function flash(msg) {
 // Export / Import decisions
 // ============================================================
 document.getElementById('exportBtn').addEventListener('click', () => {
-    // Build CSV: pensioner_id, app_number, name, picked_memorial_id, picked_slug, decision_by, decision_at, notes
+    // Build CSV: pensioner_id, app_number, name, picked_memorial_id, picked_slug,
+    // decision_by, decision_at, notes, status, removed_candidates, candidate_notes
     const byId = {};
     for (const p of pensioners) byId[p.pensioner_id] = p;
-    const lines = ['pensioner_id,application_number,name,picked_memorial_id,picked_slug,decision_by,decision_at,notes,status'];
+    const lines = ['pensioner_id,application_number,name,picked_memorial_id,picked_slug,decision_by,decision_at,notes,status,removed_candidates,candidate_notes'];
     for (const [pid, d] of Object.entries(decisions)) {
         const p = byId[pid];
         if (!p) continue;
         const notes = (d.notes || '').replace(/"/g, '""');
         const name = (p.pensioner_name || '').replace(/"/g, '""');
+        // J8: per-candidate state — semicolon-separated
+        // memorial_ids for removed, JSON for the notes map
+        const removed = (d.removed_candidates || []).join(';');
+        const candNotes = JSON.stringify(d.candidate_notes || {}).replace(/"/g, '""');
         lines.push([
             pid,
             p.pensioner_app_number || '',
@@ -855,6 +1103,8 @@ document.getElementById('exportBtn').addEventListener('click', () => {
             d.at || '',
             `"${notes}"`,
             p.status || '',
+            `"${removed}"`,
+            `"${candNotes}"`,
         ].join(','));
     }
     const csv = lines.join('\n');
@@ -886,6 +1136,65 @@ document.getElementById('importFile').addEventListener('change', async (e) => {
     applyFilter();
     flash('Imported ' + count + ' decisions');
 });
+
+// ============================================================
+// J8: Auto-load results.jsonl from same dir
+// ============================================================
+// When the page opens, attempt to fetch a sibling results.jsonl.
+// If found, parse + render. If not, the user can still pick via
+// the file input. Silently no-ops on fetch failure (e.g. CORS
+// when opened directly from a network share).
+async function tryAutoLoad() {
+    // Derive the same-directory URL. location.pathname ends in
+    // '/view.html' when served, or '/view.html' under file://
+    const here = new URL(window.location.href);
+    const candidates = [
+        new URL('results.jsonl', here).toString(),
+        new URL('./results.jsonl', here).toString(),
+    ];
+    for (const url of candidates) {
+        try {
+            const r = await fetch(url);
+            if (!r.ok) continue;
+            const text = await r.text();
+            rawPensioners = parseInput(text);
+            pensioners = rawPensioners.map(normalizeStateRecord);
+            document.getElementById('fileStatus').textContent =
+                `Auto-loaded ${pensioners.length} records from ${url.split('/').pop()}`;
+            loadDecisionsFromLocalStorage();
+            applyFilter();
+            updateStats();
+            return;
+        } catch (e) {
+            // try next candidate
+        }
+    }
+    // No auto-load succeeded; user can still pick a file manually.
+    document.getElementById('fileStatus').textContent =
+        'No results.jsonl found alongside view.html — pick a file to load.';
+}
+tryAutoLoad();
+
+// ============================================================
+// J8: modal dismiss (close button + click outside the content)
+// ============================================================
+(function setupModal() {
+    const modal = document.getElementById('sourceModal');
+    if (!modal) return;
+    modal.querySelector('.modal-close').addEventListener('click', () => {
+        modal.style.display = 'none';
+    });
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+        }
+    });
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.style.display !== 'none') {
+            modal.style.display = 'none';
+        }
+    });
+})();
 </script>
 
 </body>

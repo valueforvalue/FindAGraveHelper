@@ -4,6 +4,67 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J8: view.html UX — scrollable candidates, per-candidate remove + notes, "View source" modal, auto-load, best-match labeling
+
+User feedback after reviewing the test batch: the candidates
+list was hard to scan (no scroll, all candidates expanded);
+the top match was unclear (which person was the auto-accept
+actually for?); no way to flag a candidate as wrong without
+picking a different one; the digitalprairie pension JSON was
+invisible (only the source card image embedded inline).
+File picker required manual selection every time.
+
+Six changes in one slice:
+
+1. **Auto-load** — view.html fetches `results.jsonl` from the
+   same directory as itself on page load. The file picker
+   remains for swapping to a different file.
+2. **Scrollable + expandable candidates** — each candidate
+   list is wrapped in a `max-height: 400px; overflow-y: auto;
+   resize: vertical` container. "Expand" / "Collapse" buttons
+   per pensioner add/remove the `.expanded` class (no max-height).
+3. **Per-candidate remove + notes** — each candidate has a
+   "✕ remove" button (strikethrough + REMOVED badge when
+   active) and a per-candidate notes input. Both persist
+   in `decision.removed_candidates` + `decision.candidate_notes`
+   (localStorage). Both export in the decisions.csv (new
+   `removed_candidates` + `candidate_notes` columns).
+4. **"View source" modal** — a button next to the per-pensioner
+   actions fetches the digitalprairie pension JSON
+   (`/digital/api/singleitem/collection/pensions/id/{id}`)
+   and renders its fields (contentType, filename, fields
+   table, objectInfo) in a modal popup. Closes via ✕,
+   click-outside, or Escape.
+5. **Best-match labeling** — top-ranked candidate gets a
+   "★ Best match" badge. When top 2 are within 0.05 score,
+   an "⚠ ambiguous" warning appears so the reviewer doesn't
+   auto-trust the pick. The "Top match" line in the meta row
+   now clearly labels the top pick.
+6. **Rich actions row** — the per-pensioner actions row now
+   includes: Pick rank 1, View source, No match, Clear
+   decision, and a per-pensioner notes input. All persist
+   via the existing decision system.
+
+Files:
+- scripts/view.html: +309 lines (modal, badge CSS, candidate
+  controls, fetchSourceJson, toggleRemoveCandidate,
+  setCandidateNote, setPensionerNote, expandCandidates /
+  collapseCandidates, modal dismiss, expanded CSV export).
+- tests/test_view_ux_j8.py (new): 13 tests covering all
+  six changes.
+
+Tests: 13 new pass; 773 adjacent pass; 1 pre-existing failure
+unrelated.
+
+Laws honored:
+  L7 docstrings: every new public function carries a contract
+    docstring (toggleRemoveCandidate, setCandidateNote, etc.)
+  L4 stable key order: per-pensioner decisions now carry
+    `removed_candidates` + `candidate_notes` (new keys
+    appended; existing fields unchanged).
+  L3 flush-per-pensioner: candidate state changes persist
+    to localStorage on every action (no in-memory-only state).
+
 ### J7: CGR <-> FaG post-run dedup (CGR no longer in view.html)
 
 Reframed the CGR role. The CGR (Confederate Graves Registry)
