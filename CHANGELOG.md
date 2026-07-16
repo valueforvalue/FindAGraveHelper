@@ -4,6 +4,23 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### Fix #5: mark test_real_fag_memory.py as integration
+
+test_real_fag_memory.py opens a real Playwright browser mid-
+suite, which was blocking fast local runs (and agents running
+the full suite). Marked the file's tests with
+`@pytest.mark.integration` and added `-m "not integration"`
+to pytest.ini addopts so it skips by default.
+
+Run intentionally:
+  pytest -m integration
+  pytest tests/test_real_fag_memory.py -v
+
+- tests/test_real_fag_memory.py — `pytestmark = pytest.mark.integration`
+- pytest.ini — markers section + default addopts skip
+
+701 tests pass by default; 1 deselected.
+
 ### Refactor: sweep doc references to new data file names (T023)
 
 Swept 30 references to unified.json/unified.csv across 10

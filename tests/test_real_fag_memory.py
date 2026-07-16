@@ -25,6 +25,14 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# All tests in this file require a real Playwright browser + FaG
+# access. They are skipped by default; run with:
+#   pytest -m integration tests/test_real_fag_memory.py
+# or:
+#   pytest tests/test_real_fag_memory.py --no-header -v
+pytestmark = pytest.mark.integration
+
+
 
 def _rss_mb():
     """Total RSS for THIS process (Win32 binding)."""
