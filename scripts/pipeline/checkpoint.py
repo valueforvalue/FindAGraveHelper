@@ -14,6 +14,7 @@ provides two helpers:
 These are unit-tested in tests/test_checkpoint.py.
 """
 import json
+import os
 import time
 from pathlib import Path
 from typing import Optional
@@ -89,3 +90,104 @@ def record_failure(
     # is now honoured; the previous implementation only flushed.
     from scripts.state.repository import JsonlStateRepository
     JsonlStateRepository(state_path).append(record)
+
+
+# ============================================================
+# Issue #21: state-file snapshot checkpoints for --rollback-to
+#
+# These are full copies of state.jsonl taken periodically. The
+# operator can rollback state.jsonl to any snapshot via the CLI.
+# Naming: <state>.checkpoint-<label>.jsonl, e.g.
+#   state.jsonl  ->  state.checkpoint-before-v2.jsonl
+# ============================================================
+
+import re as _re
+from datetime import datetime as _datetime, timezone as _timezone
+
+
+CHECKPOINT_SUFFIX = ".checkpoint"
+CHECKPOINT_PREFIX = CHECKPOINT_SUFFIX  # alias for tests
+
+
+def _state_to_snapshot_path(state_path: Path, label: str) -> Path:
+    """Compute the snapshot path for a given state.jsonl and label.
+
+    Naming: state.checkpoint-<label>.jsonl
+    Label must be filesystem-safe (no path separators, no '..').
+    """
+    if not label or "/" in label or "\\" in label or ".." in label:
+        raise ValueError(
+            f"unsafe checkpoint label: {label!r} "
+            "(must be non-empty, no '/' or '\\' or '..')"
+        )
+    name = f"{state_path.stem}{CHECKPOINT_SUFFIX}-{label}{state_path.suffix}"
+    return state_path.parent / name
+
+
+def write_checkpoint_snapshot(state_path: Path, label: str | None = None) -> Path:
+    """Copy state.jsonl to a snapshot file. Returns the snapshot path.
+
+    If label is None, an auto-label is generated from the current
+    record count + ISO timestamp.
+    """
+    state_path = Path(state_path)
+    if not state_path.exists():
+        raise FileNotFoundError(f"state file does not exist: {state_path}")
+
+    if label is None:
+        # Count records for auto-label
+        from scripts.state.repository import JsonlStateRepository
+        n = sum(1 for _ in JsonlStateRepository(state_path).iter_all())
+        stamp = _datetime.now(_timezone.utc).strftime("%Y%m%dT%H%M%S")
+        label = f"auto-{n}records-{stamp}"
+
+    snap_path = _state_to_snapshot_path(state_path, label)
+    snap_path.write_bytes(state_path.read_bytes())
+    return snap_path
+
+
+def list_checkpoints(state_path: Path) -> list[Path]:
+    """List all checkpoint snapshot files for the given state file.
+
+    Sorts by mtime (oldest first) so 'latest' = last element.
+    """
+    state_path = Path(state_path)
+    if not state_path.exists():
+        return []
+    pattern = _re.compile(
+        _re.escape(f"{state_path.stem}{CHECKPOINT_SUFFIX}-")
+        + r"[^\/\\]+"
+        + _re.escape(state_path.suffix)
+    )
+    snapshots = []
+    for p in state_path.parent.iterdir():
+        if p.is_file() and pattern.fullmatch(p.name):
+            snapshots.append(p)
+    snapshots.sort(key=lambda p: p.stat().st_mtime)
+    return snapshots
+
+
+def rollback_to_checkpoint(state_path: Path, label: str) -> None:
+    """Restore state_path from a named checkpoint. Atomic.
+
+    Special label 'latest' rolls back to the most recent snapshot.
+    Raises FileNotFoundError if the label doesn't exist.
+    """
+    state_path = Path(state_path)
+
+    if label == "latest":
+        snapshots = list_checkpoints(state_path)
+        if not snapshots:
+            raise FileNotFoundError(
+                f"no checkpoints found for {state_path}"
+            )
+        snap_path = snapshots[-1]
+    else:
+        snap_path = _state_to_snapshot_path(state_path, label)
+        if not snap_path.exists():
+            raise FileNotFoundError(
+                f"checkpoint {label!r} not found at {snap_path}"
+            )
+
+    # Atomic restore via os.replace
+    os.replace(snap_path, state_path)

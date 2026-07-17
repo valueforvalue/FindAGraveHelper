@@ -4,6 +4,65 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Feat: reversibility flags — --dry-run, --state-replay, --rollback-to
+
+Closed issue #21. Per pragmatic-programmer §6 Reversibility: a wedged
+FaG run must be recoverable in under 5 minutes. Three new CLI flags:
+
+- **`--dry-run`**: exercise the non-FaG pipeline (matching, scoring,
+  CGR cross-reference, BOTH MATCH) against an existing state.jsonl.
+  NEVER makes a FaG network request. Writes `<out>/dry_run_diff.jsonl`
+  comparing predicted outcomes to current ones. Useful for verifying
+  a strategy change before committing to a live run.
+- **`--state-replay PATH`**: read OLD state.jsonl from PATH, apply
+  the non-FaG pipeline (matching + scoring), write NEW state.jsonl
+  in --out. Useful for A/B testing strategy changes against
+  historical state without re-running FaG.
+- **`--rollback-to LABEL`**: restore state.jsonl from a named
+  checkpoint snapshot. Special label 'latest' rolls back to the
+  most recent. Raises FileNotFoundError if the label doesn't exist.
+  Exit 0 on success, 1 on missing label.
+- **`--checkpoint-every N`** (default 1000): auto-write a
+  state.jsonl checkpoint snapshot every N records inside run_batch.
+  Set 0 to disable. Bounded data-loss window: rollback loses at
+  most N records of work.
+- **`--write-checkpoint`** + **`--checkpoint-label LABEL`**: write
+  a snapshot of the current state.jsonl and exit (no pipeline run).
+  Operator use case: 'tag a known-good state'.
+- **`--list-checkpoints`**: list all snapshots for the current run.
+
+What changed:
+
+- **NEW** `scripts/pipeline/dry_run.py`: diff writer + outcome
+  predictor. 12 tests in `tests/test_dry_run.py`.
+- **NEW** `scripts/pipeline/state_replay.py`: replay engine. 8 tests
+  in `tests/test_state_replay.py`.
+- **NEW** functions in `scripts/pipeline/checkpoint.py`:
+  `write_checkpoint_snapshot`, `list_checkpoints`,
+  `rollback_to_checkpoint`. 9 tests in
+  `tests/test_checkpoint_rollback.py`. Adds `checkpoint_every` to
+  `UnifiedRunnerConfig`.
+- **MODIFIED** `scripts/pipeline/run_unified.py`: 6 new argparse
+  flags + 4 code paths (dry-run diff, state-replay early exit,
+  rollback-to early exit, write-checkpoint early exit,
+  list-checkpoints early exit, auto-checkpoint inside run_batch).
+
+Verification:
+
+- `pytest tests/`: **966 passed**, 1 deselected, 2 pre-existing
+  failures unrelated (view.html markup tests).
+- `python scripts/run_unified.py --help`: shows all 6 new flags.
+- Net change vs baseline (937): +29 tests (12 dry-run + 8 replay
+  + 9 checkpoint-rollback).
+
+What was left alone:
+
+- The FaG search loop is unchanged. --dry-run works by setting
+  `fag_search_fn = None` (already supported by --no-fag).
+- No new dependencies.
+- ADRs: `docs/agents/adr/0006-reversibility-flags.md` documents
+  the design rationale.
+
 ### Iteration on issue #22: rip out adapter wrappers + add InMemoryStateRepository
 
 Follow-up to the StateRepository work. Three changes:
