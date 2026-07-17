@@ -4,6 +4,96 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J15-S3: spouse-match badge + filter in view.html
+
+The user's headline ask: 'i want spouse match to have a
+special badge in view.html'. Wired.
+
+**Two badges in the pensioner card h2 row:**
+
+  1. **Spouse known** (grey pill): shown when ok_pensioners
+     carried spouse_first_name + spouse_last_name for this
+     pensioner. Sourced from new pensioner_spouse_*
+     fields that J15-S1's URL filter relied on (and that
+     scripts/pipeline/run_unified.py::result_to_dict now
+     copies into the per-pensioner JSONL record). Hover
+     shows the local spouse name + (if S2 has populated
+     it) the captured FaG spouse for at-a-glance compare.
+
+  2. **Spouse match** (gold pill with ♥): shown when a
+     post-pipeline comparison found the FaG-captured
+     spouse AND it agrees with the pensioner's known
+     spouse. Hover shows the captured name, captured
+     memorial #id, and match strength. This is the badge
+     the user asked for. The data field is `p.spouse_match`
+     on each pensioner record; populated by the J15-S2
+     memorial-page scrape (slice not yet built; see next
+     steps).
+
+**Filter dropdown:**
+
+  - `spouse_matched` - shows only pensioners whose
+    `spouse_match` field is set. Reviewer can scope to the
+    verified-across-FaG set.
+  - `spouse_pending` - shows only those WITHOUT a match.
+    Useful for first-pass triage ('we know their spouse;
+    not yet verified').
+
+**Stats bar:** two new pills - 'Spouse matched N' (gold)
+and 'Spouse known N / M' (grey; M = total).
+
+**Pipeline plumbing:**
+
+  - scripts/pipeline/run_unified.py::result_to_dict now
+    copies pensioner.get('spouse_first_name'),
+    ['spouse_middle_name'], ['spouse_last_name'] into the
+    output record (previously dropped). Without this the
+    badge had nothing to render.
+
+  - view.html reads `p.pensioner_spouse_first` /
+    `p.pensioner_spouse_last` for the known badge; reads
+    `p.spouse_match` for the match badge. Both return ''
+    when empty (no crash on old records).
+
+**Tests:** 12 new pass in tests/test_spouse_badge_j15.py
+(pinning badge presence, filter dropdown options, filter
+logic, stats pills, the no-crash contract when fields are
+missing).
+
+Plus a one-off `tests/spouse_badge_smoke.py` that headlessly
+renders 3 fixture pensioners and confirms:
+  - With spouse_match set: BOTH badges render with correct
+    memorial id + heart symbol.
+  - With only pensioner_spouse_*: only the grey 'Spouse
+    known' badge renders.
+  - Without any spouse data: neither renders.
+
+The next slice (J15-S2) will populate `p.spouse_match` by
+scraping the top-1 candidate's memorial page for Family
+Members > Spouse and comparing to the pensioner's known
+spouse. Until then, the gold badge never actually appears
+in real runs - the JS contract is correct but the data
+isn't yet filled.
+
+Files:
+- scripts/view.html: 4 changes (badges, CSS, filter
+  dropdown, filter handler, stats pills)
+- scripts/pipeline/run_unified.py: result_to_dict copies
+  pensioner_spouse_* (3 lines)
+- tests/test_spouse_badge_j15.py (new, 12 tests)
+- tests/spouse_badge_smoke.py (new; manual / on-demand)
+
+Laws honored:
+  L4 stable key order: pensioner_spouse_* added at end of
+    per-record dict (insertion-order semantics).
+  L7 docstrings: both new badge renderers have L7-spec
+    docstrings explaining the trigger field, the local
+    data source, and when the badge is silent.
+  Backward compat: records that lack pensioner_spouse_*
+    or spouse_match render no badge (no crash). Old
+    results.jsonl without these fields still loads +
+    renders cleanly.
+
 ### J15-S1: spouse name URL-param pre-filter (ok_pensioners -> FaG search)
 
 ok_pensioners.json has spouse data on ~49% of pensioners

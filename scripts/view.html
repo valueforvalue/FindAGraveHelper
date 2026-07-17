@@ -64,6 +64,20 @@
                     font-weight: bold; margin-left: 4px;
                     background: #cce5ff; color: #004085;
                     border: 1px solid #b8daff; cursor: help; }
+  /* J15: Spouse badges. Grey ('Spouse known') when ok_pensioners
+     has the spouse on file; gold ('Spouse match') when the
+     post-pipeline comparison confirmed the FaG side agrees. */
+  .spouse-known-badge { display: inline-block; padding: 2px 8px;
+                        border-radius: 10px; font-size: 11px;
+                        font-weight: bold; margin-left: 4px;
+                        background: #e2e3e5; color: #383d41;
+                        border: 1px solid #c4c5c7; cursor: help; }
+  .spouse-match-badge { display: inline-block; padding: 2px 10px;
+                        border-radius: 10px; font-size: 11px;
+                        font-weight: bold; margin-left: 4px;
+                        background: #fff3cd; color: #856404;
+                        border: 1px solid #ffe69c;
+                        cursor: help; }
   /* J13: 'missing' badge for pensioners with no birth/death year.
      The reviewer should treat these specially: the FaG match
      set is not date-anchored, so ambiguous results are more
@@ -258,6 +272,8 @@
         <option value="cgr_no_match">CGR+FaG miss</option>
         <option value="dd_tracked">DD tracked (already in your DB)</option>
         <option value="dd_pending">DD pending (need review)</option>
+        <option value="spouse_matched">Spouse matched</option>
+        <option value="spouse_pending">Spouse pending</option>
       </select>
     </label>
     <label>Search: <input type="text" id="searchBox" placeholder="name, regiment, app #…"></label>
@@ -691,6 +707,13 @@ function applyFilter() {
         // review set).
         if (statusVal === 'dd_tracked' && !p.dd_match) continue;
         if (statusVal === 'dd_pending' && p.dd_match) continue;
+        // J15: spouse filter. 'spouse_matched' shows only
+        // pensioners whose FaG-captured spouse matches the local
+        // pensioner_spouse_* fields (filled by the post-pipeline
+        // comparison in J15-S2/S3). 'spouse_pending' shows only
+        // ones that DON'T match (the actual review set).
+        if (statusVal === 'spouse_matched' && !p.spouse_match) continue;
+        if (statusVal === 'spouse_pending' && p.spouse_match) continue;
         if (q) {
             const haystack = [
                 p.pensioner_name, p.pensioner_first, p.pensioner_middle, p.pensioner_last,
@@ -713,6 +736,8 @@ function updateStats() {
                      captcha: 0, skip: 0, error: 0 };
     const cgrCounts = { duplicate: 0, follow_up_candidate: 0, clear: 0, no_fag_match: 0 };
     let ddMatched = 0;
+    let spouseKnown = 0;
+    let spouseMatched = 0;
     let decided = 0;
     for (const p of pensioners) {
         counts[p.status] = (counts[p.status] || 0) + 1;
@@ -720,6 +745,8 @@ function updateStats() {
             cgrCounts[p.cgr_dedup_status] = (cgrCounts[p.cgr_dedup_status] || 0) + 1;
         }
         if (p.dd_match) ddMatched++;
+        if (p.pensioner_spouse_first && p.pensioner_spouse_last) spouseKnown++;
+        if (p.spouse_match) spouseMatched++;
         if (decisions[p.pensioner_id]) decided++;
     }
     const s = document.getElementById('statsBar');
@@ -737,6 +764,8 @@ function updateStats() {
         <span class="pill" style="background:#f8d7da;color:#721c24">CGR+FaG miss ${cgrCounts.no_fag_match}</span>
         <span class="pill" style="background:#cce5ff;color:#004085">DD tracked ${ddMatched}</span>
         <span class="pill" style="background:#e2e3e5;color:#383d41">DD pending ${total - ddMatched}</span>
+        <span class="pill" style="background:#fff3cd;color:#856404">Spouse matched ${spouseMatched}</span>
+        <span class="pill" style="background:#e2e3e5;color:#383d41">Spouse known ${spouseKnown} / ${total}</span>
     `;
 }
 
@@ -968,7 +997,7 @@ function renderPensioner(p) {
         <div class="pensioner" id="p-${pid}">
             <h2>${escapeHtml(p.pensioner_name || '?')}
                 <span class="id">id=${pid}${p.pensioner_app_number ? ' &middot; app# ' + escapeHtml(p.pensioner_app_number) : ''}</span>
-                <span class="status ${statusClass}">${statusLabel}</span>${renderCgrDedupBadge(p)}${renderDdBadge(p)}
+                <span class="status ${statusClass}">${statusLabel}</span>${renderCgrDedupBadge(p)}${renderDdBadge(p)}${renderSpouseKnownBadge(p)}${renderSpouseMatchBadge(p)}
                 ${p.dd_in_local === true ? '<span class="dd-badge in">✓ in DD</span>'
                   : p.dd_in_local === false ? '<span class="dd-badge new">★ NEW FIND</span>' : ''}
                 ${p.leftover_pass && p.leftover_pass.disposition === 'found_conclusive'
@@ -1054,6 +1083,50 @@ function renderDdBadge(p) {
     const rtype = dd.dd_record_type || '';
     const title = `Already in your dixiedata DB: memorial #${mid}, ${dd.dd_soldier_first || ''} ${dd.dd_soldier_last || ''}, source=${rtype}. Top candidate at rank ${rank}; strength=${dd.match_strength || 'weak'}`;
     return `<span class="dd-match-badge" title="${escapeHtml(title)}">DD ✓ (mem ${escapeHtml(String(mid))})</span>`;
+}
+
+// renderSpouseKnownBadge: shown whenever ok_pensioners.json had
+// spouse data for this pensioner (49% of records). Tells the
+// reviewer 'their spouse is on file - a high-quality piece of
+// evidence to look for when scanning candidates.' Hover shows
+// the local spouse name + the linked-FaG memorial (if known).
+function renderSpouseKnownBadge(p) {
+    const sp_first = p.pensioner_spouse_first || '';
+    const sp_last  = p.pensioner_spouse_last || '';
+    if (!sp_first || !sp_last) return '';
+    const local_name = (sp_first + (p.pensioner_spouse_middle ? ' ' + p.pensioner_spouse_middle : '') + ' ' + sp_last).replace(/\s+/g, ' ').trim();
+    // If we already captured a spouse from FaG (S2/S3 populated
+    // p.spouse_match), append it for at-a-glance comparison.
+    let extra = '';
+    const m = p.spouse_match;
+    if (m && (m.captured_spouse_first || m.captured_spouse_last)) {
+        const cap_first = m.captured_spouse_first || '';
+        const cap_last  = m.captured_spouse_last || '';
+        extra = ` | FaG captured: ${cap_first} ${cap_last}`;
+    }
+    const title = `Spouse known from ok_pensioners: ${local_name}.${extra}`;
+    return `<span class="spouse-known-badge" title="${escapeHtml(title)}">Spouse known</span>`;
+}
+
+// renderSpouseMatchBadge: gold pill shown when the post-pipeline
+// comparison (J15-S2/S3) confirmed the FaG-captured spouse
+// matches the pensioner's known spouse. The user's headline ask
+// ('i want spouse match to have a special badge in view.html').
+// Hidden when p.spouse_match is null (the field is filled in
+// after the FaG memorial page is scraped).
+function renderSpouseMatchBadge(p) {
+    const m = p.spouse_match;
+    if (!m) return '';
+    const mid = m.dd_memorial_id || m.memorial_id || '?';
+    const captured_first = m.captured_spouse_first || '';
+    const captured_last  = m.captured_spouse_last || '';
+    const captured = (captured_first + ' ' + captured_last).trim();
+    const local_first = p.pensioner_spouse_first || '';
+    const local_last  = p.pensioner_spouse_last || '';
+    const local = (local_first + (p.pensioner_spouse_middle ? ' ' + p.pensioner_spouse_middle : '') + ' ' + local_last).replace(/\s+/g, ' ').trim();
+    const strength = m.match_strength || 'strong';
+    const title = `Spouse match verified: '${local}' (ok_pensioners) == '${captured}' (FaG memorial #${mid}, captured from Family Members section). Strength: ${strength}.`;
+    return `<span class="spouse-match-badge" title="${escapeHtml(title)}">♥ Spouse match (mem ${escapeHtml(String(mid))})</span>`;
 }
 
 function escapeHtml(s) {

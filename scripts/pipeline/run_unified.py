@@ -400,6 +400,13 @@ def result_to_dict(result: PipelineResult,
         "company": result.pensioner.get("company", ""),
         "pensioncard_backlink": result.pensioner.get("pensioncard_backlink", ""),
         "backlink": result.pensioner.get("backlink", ""),
+        # J15: pensioner's known spouse carried into the record so
+        # view.html + the post-pipeline comparison can use it.
+        # populated only when the source data has spouse_first
+        # + spouse_last (default empty otherwise; see J15-S1).
+        "pensioner_spouse_first": result.pensioner.get("spouse_first_name", "") or "",
+        "pensioner_spouse_middle": result.pensioner.get("spouse_middle_name", "") or "",
+        "pensioner_spouse_last": result.pensioner.get("spouse_last_name", "") or "",
         "cgr_records": result.cgr_records,
         "cgr_status": result.cgr_status,
         "fag_records": result.fag_records,
