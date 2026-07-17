@@ -4,6 +4,120 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J15-S2: FaG memorial-page scrape + spouse comparison (gold badge data)
+
+The gold "♥ Spouse match" badge is now populated by an
+actual end-to-end scrape of the top-1 candidate's memorial
+page. Read-only on FaG; opt-in via `FAG_SCRAPE_SPOUSE=1`.
+
+**Pipeline:**
+
+  - scripts/fag/spouse_scrape.py (new, ~19KB):
+    - parse_spouse_from_html(html): walks a memorial page's
+      Family Members section. Handles BOTH the legacy
+      `<p><strong>Spouse</strong></p>` markup AND the current
+      `<b id="spouseLabel" class="label-relation">Spouse</b>`
+      pattern (verified 2026-07 from a real memorial fetch).
+    - _split_name (first/middle/last), _norm (lowercase +
+      suffix strip), _strip_tags (HTML cleanup).
+    - compare_spouses(local, captured): returns a compare dict
+      on match, None otherwise. Three match strengths:
+        - `strong` (first + last + middle all match)
+        - `medium` (last name + first-initial match; tolerates
+          middle variations and 'Mitchel' vs 'Mitchell'
+          spelling drift)
+        - `weak` (last name only)
+    - scrape_and_compare(page, candidate, local_spouse): the
+      top-level helper. Navigates the page, parses, compares,
+      returns the match dict.
+    - CLI: `python -m scripts.fag.spouse_scrape --memorial
+      <id> [--expected "Name Last"]` for one-off smoke tests.
+
+  - scripts/cgr/spouse_compare.py (new, ~9KB):
+    - The post-pipeline orchestrator. Walks results.jsonl,
+    reads top-1 fag_records for each pensioner that has
+    pensioner_spouse_* populated, scrapes the memorial,
+    writes `spouse_match` back to the record.
+    - Spins a fresh chromium+stealth+warmup browser (the
+      per-record search loop's browser has already closed
+      by this point; reusing sync_playwright in the same
+      process fails with 'Playwright Sync API inside the
+      asyncio loop').
+    - Opt-in via env var `FAG_SCRAPE_SPOUSE=1`. No-op
+      otherwise.
+
+  - scripts/pipeline/run_unified.py:
+    - Wires the spouse scrape via SUBPROCESS so it gets a
+      fresh asyncio event loop + python interpreter
+      (avoids the playwright-sync-asyncio reuse bug).
+    - Added EMBEDDED_SPOUSE_MATCH_PLACEHOLDER + sidecar
+      embed mirroring the dd_match.json pattern.
+
+  - scripts/view.html:
+    - renderSpouseMatchBadge reads m.dd_memorial_id OR
+      m.captured_memorial_id (both paths supported).
+    - Renders captured_display (full name) over the
+      reconstructed first+last, so the tooltip shows
+      'Mitchell Ward Slemp' not 'Mitchell Slemp'.
+    - New <!--EMBEDDED_SPOUSE_MATCH_JSON--> placeholder +
+      id="embedded-spouse-match" script block (J15-S2).
+
+**Live verification on test-batch-spouse (25 widow records):**
+
+  $ time FAG_SCRAPE_SPOUSE=1 ... python scripts/run_unified.py ...
+
+  Scrape: 11 / 25 matched in 33 seconds at 1.5s throttle
+  Breakdown: 5 strong, 6 medium, 0 weak
+
+  Strong hits (first + last both exact):
+    - Lucinda M. Whatley -> 'Jonathan Sanders Whatley' (mem 76424346)
+    - Leah Beckett        -> 'James Beckett' (memorial ID)
+    - Palmira Brown       -> 'Andrew Alfred Brown'
+    - Martha Calhoun      -> 'Samuel Calhoun' (mem 18498537)
+    - Emley Carnes        -> 'Richard H. Carnes' (mem 33157274)
+
+  Medium hits (last + first-initial):
+    - Margaret Slemp      -> Mitchell Ward Slemp (mem 42943226)
+    - Nancy H. Smith      -> Martha J. Lemasters Smith
+    - Isabella R. Ward    -> Oscar Leland Alexander Ward
+    - Ann Williams        -> Sarah Philena Stickleman Williams
+    - Victoria T. Bean    -> Sgt Mark P. Bean
+    - Emily M. Bowlin     -> Pvt David Russell Bowlin
+
+  Remaining 14: top-1 candidate's memorial doesn't have a
+  Family Members > Spouse section (record's spouse_match
+  stays None; the 'Spouse known' badge still renders).
+
+Cost: ~33s for 25 pensioners at 1.5s throttle. For a
+7,709-record full run with ~50% having spouse data =
+~3,800 extra page hits = ~95 min added. Future: cull
+already-confirmed-strong matches, batch throttles, allow
+top-N > 1 (compare against more than just the top-1).
+
+**Tests:**
+
+  - tests/test_spouse_scrape_j15.py (new, 21 tests): parser
+    unit tests on a canonical fixture of Margaret McClure
+    Slemp's memorial + 6 other fixtures + the compare_spouses
+    + _split_name + _norm helpers. End-to-end via a fake
+    page stub.
+  - tests/test_spouse_badge_j15.py: +2 new tests pinning
+    renderSpouseMatchBadge's field-name flexibility
+    (dd_memorial_id + captured_memorial_id + captured_display).
+  - tests/test_per_run_isolation.py: updated to strip the
+    new EMBEDDED_SPOUSE_MATCH_JSON placeholder (alongside
+    the existing J9/J14 placeholders) for fair comparison.
+  - Tests: 21 + 2 = 23 new pass; 878 adjacent pass.
+
+**Laws honored:**
+  L4 stable key order: only ADDS `spouse_match` per record;
+  no existing keys reorder.
+  L7 docstrings: every new public function carries an
+  L7-spec docstring with Args/Returns.
+  Backward compat: when FAG_SCRAPE_SPOUSE isn't set, the
+  scrape is silently skipped (records end with spouse_match=None).
+  No DB writes. Read-only on FaG.
+
 ### J15-S3: spouse-match badge + filter in view.html
 
 The user's headline ask: 'i want spouse match to have a

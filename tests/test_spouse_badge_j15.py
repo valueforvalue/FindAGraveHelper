@@ -123,6 +123,40 @@ def test_spouse_match_badge_includes_captured_name():
     )
 
 
+def test_spouse_match_badge_reads_captured_display():
+    """renderSpouseMatchBadge should prefer m.captured_display
+    (the full string captured from FaG's spouse link) over a
+    reconstructed first+last, because the captured display is
+    what the reviewer can compare against visually."""
+    m = re.search(
+        r"function\s+renderSpouseMatchBadge\s*\(\s*p\s*\)[\s\S]{0,2000}?\n\s*\}\s*\n",
+        VIEW,
+    )
+    assert m, "renderSpouseMatchBadge body not found"
+    body = m.group(0)
+    assert "captured_display" in body, (
+        "renderSpouseMatchBadge should use captured_display when present"
+    )
+
+
+def test_spouse_match_badge_reads_dd_or_captured_memorial_id():
+    """Two upstream paths populate spouse_match: dd_match (which
+    uses 'dd_memorial_id') and spouse_compare (which uses
+    'captured_memorial_id'). The badge renderer must handle both.
+    """
+    m = re.search(
+        r"function\s+renderSpouseMatchBadge\s*\(\s*p\s*\)[\s\S]{0,2000}?\n\s*\}\s*\n",
+        VIEW,
+    )
+    body = m.group(0)
+    assert "dd_memorial_id" in body, (
+        "renderSpouseMatchBadge must read m.dd_memorial_id (dd_match path)"
+    )
+    assert "captured_memorial_id" in body, (
+        "renderSpouseMatchBadge must read m.captured_memorial_id (spouse_compare path)"
+    )
+
+
 def test_spouse_match_badge_called_in_pensioner_card():
     """The badge must be rendered inside the pensioner card."""
     rp = VIEW[VIEW.find("function renderPensioner"):]

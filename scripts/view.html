@@ -325,6 +325,14 @@
      not file://). -->
 <!--EMBEDDED_DD_MATCH_JSON-->
 
+<!-- J15-S2: placeholder. Replaced at copy time with a <script
+     type="application/json"> block containing the matching
+     spouse_match.json sidecar (post-pipeline comparison of
+     FaG-captured spouse vs local pensioner spouse). Used to
+     render the gold 'Spouse match' badge + filter; falls back
+     to fetch(). -->
+<!--EMBEDDED_SPOUSE_MATCH_JSON-->
+
 <!-- J8: modal for the digitalprairie "View source" button.
      Populated by fetchSourceJson(url) and dismissed via the
      close button or clicking the overlay. -->
@@ -1134,10 +1142,16 @@ function renderSpouseKnownBadge(p) {
 function renderSpouseMatchBadge(p) {
     const m = p.spouse_match;
     if (!m) return '';
-    const mid = m.dd_memorial_id || m.memorial_id || '?';
-    const captured_first = m.captured_spouse_first || '';
-    const captured_last  = m.captured_spouse_last || '';
-    const captured = (captured_first + ' ' + captured_last).trim();
+    // Memorial id is stored under different names depending on
+    // which side populated the field (dd_match uses
+    // dd_memorial_id; spouse_compare uses captured_memorial_id).
+    // Try each; fall back to '?'.
+    const mid = m.dd_memorial_id || m.captured_memorial_id || m.memorial_id || '?';
+    const captured_first = m.captured_spouse_first || m.captured_first || '';
+    const captured_last  = m.captured_spouse_last  || m.captured_last  || '';
+    const captured = (m.captured_display || (
+        captured_first + ' ' + (m.captured_middle || '') + ' ' + captured_last
+    ).replace(/\s+/g, ' ').trim()).trim();
     const local_first = p.pensioner_spouse_first || '';
     const local_last  = p.pensioner_spouse_last || '';
     const local = (local_first + (p.pensioner_spouse_middle ? ' ' + p.pensioner_spouse_middle : '') + ' ' + local_last).replace(/\s+/g, ' ').trim();

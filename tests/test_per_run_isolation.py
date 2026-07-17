@@ -120,9 +120,19 @@ def test_view_html_copy_byte_identical(tmp_path):
               config=cfg)
     src_text = src.read_text(encoding="utf-8")
     dst_text = (out_dir / "view.html").read_text(encoding="utf-8")
-    # Drop the J9 placeholder from BOTH for fair comparison.
-    src_text_stripped = src_text.replace("<!--EMBEDDED_RESULTS_JSONL-->", "")
-    dst_text_stripped = dst_text.replace("<!--EMBEDDED_RESULTS_JSONL-->", "")
+    # Drop ALL known placeholder regions from BOTH for fair
+    # comparison. The second-pass embed (J14 second-pass, J15-S2)
+    # may replace these with script blocks; with no DD / spouse
+    # sidecars present, the second pass drops them entirely.
+    for placeholder in (
+        "<!--EMBEDDED_RESULTS_JSONL-->",
+        "<!--EMBEDDED_DD_MATCH_JSON-->",
+        "<!--EMBEDDED_SPOUSE_MATCH_JSON-->",
+    ):
+        src_text = src_text.replace(placeholder, "")
+        dst_text = dst_text.replace(placeholder, "")
+    src_text_stripped = src_text
+    dst_text_stripped = dst_text
     assert src_text_stripped == dst_text_stripped, (
         "view.html copy diverged from source outside the "
         "J9 embedded-data placeholder; copy_view_html_if_missing "

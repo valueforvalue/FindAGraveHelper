@@ -34,6 +34,7 @@ import json
 import logging
 import os
 import stat
+import subprocess
 import sys
 import time
 import traceback
@@ -122,6 +123,7 @@ class UnifiedRunnerConfig:
 # reads from the embedded block first, then falls back to fetch.
 EMBEDDED_DATA_PLACEHOLDER = "<!--EMBEDDED_RESULTS_JSONL-->"
 EMBEDDED_DD_MATCH_PLACEHOLDER = "<!--EMBEDDED_DD_MATCH_JSON-->"
+EMBEDDED_SPOUSE_MATCH_PLACEHOLDER = "<!--EMBEDDED_SPOUSE_MATCH_JSON-->"
 
 
 def copy_view_html_if_missing(
@@ -192,6 +194,21 @@ def copy_view_html_if_missing(
         else:
             # No DD sidecar yet (e.g. no DD source configured).
             text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, "")
+
+    # J15-S2: spouse_match sidecar (gold 'Spouse match' badge data).
+    spouse_match_path = dest_dir / "spouse_match.json"
+    if spouse_match_path is not None and EMBEDDED_SPOUSE_MATCH_PLACEHOLDER in text:
+        if spouse_match_path.exists():
+            sidecar = spouse_match_path.read_text(encoding="utf-8")
+            safe = sidecar.replace("</script>", "<\\/script>")
+            block = (
+                f'<script type="application/json" id="embedded-spouse-match">\n'
+                f'{safe}\n'
+                f'</script>\n'
+            )
+            text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, block)
+        else:
+            text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, "")
 
     dest.write_text(text, encoding="utf-8")
     return True
@@ -777,6 +794,54 @@ def run_batch(
             )
     except Exception as e:
         log.warning("DD match skipped: %s", e)
+
+    # J15-S2: post-pipeline spouse scrape (opt-in via FAG_SCRAPE_SPOUSE=1).
+    # Walks the just-written results.jsonl, fetches the top-1 candidate's
+    # memorial page, parses Family Members > Spouse, compares with the
+    # pensioner's known spouse, writes spouse_match per record. Read-only
+    # on FaG + the existing results file.
+    #
+    # The scrape is invoked as a SUBPROCESS so it gets a fresh asyncio
+    # event loop. The per-pensioner search loop above already opened
+    # and closed a sync_playwright session; reusing sync_playwright
+    # in the same Python process for this second step fails with
+    # "It looks like you are using Playwright Sync API inside the
+    # asyncio loop."
+    if os.environ.get("FAG_SCRAPE_SPOUSE", "").strip() in ("1", "true", "yes"):
+        try:
+            sp_sidecar = out_dir / "spouse_match.json"
+            # Use the same Python interpreter that's running us.
+            py = sys.executable
+            cmd = [
+                py, "-m", "scripts.cgr.spouse_compare",
+                "--results", str(state_path),
+                "--sidecar-out", str(sp_sidecar),
+                "--top-n", "1",
+                "--throttle", str(config.throttle_seconds),
+            ]
+            log.info("Spouse scrape: launching subprocess %s", " ".join(cmd))
+            rc = subprocess.call(cmd)
+            log.info("Spouse scrape subprocess exit code: %s", rc)
+            if sp_sidecar.exists():
+                try:
+                    sp_stats = json.loads(sp_sidecar.read_text(encoding="utf-8"))
+                    log.info(
+                        "Spouse scrape: %d/%d pensioners matched "
+                        "(%s) — sidecar=%s",
+                        sp_stats.get("matched", 0),
+                        sp_stats.get("total_with_spouse", 0),
+                        sp_stats.get("matched_strength_breakdown", {}),
+                        sp_sidecar,
+                    )
+                except Exception:
+                    log.warning("Spouse sidecar JSON unreadable")
+        except Exception as e:
+            log.warning("Spouse scrape skipped: %s", e)
+    else:
+        log.info(
+            "Spouse scrape: skipped (FAG_SCRAPE_SPOUSE not set; "
+            "set to 1 to enable)"
+        )
 
     # J5-S3: resume.sh artifact. Written after the report so the
     # final state is captured by the next resume.
