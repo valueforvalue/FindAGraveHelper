@@ -30,6 +30,8 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
+from scripts.state.repository import JsonlStateRepository
+
 
 def load_unified_index(unified_path: Path) -> dict[int, str]:
     """Build {pensioner_id: backlink} from ok_pensioners.json.
@@ -62,29 +64,25 @@ def backfill(
     - skipped: records that already had backlink (kept as-is).
     - missing: records whose pensioner_id is not in unified_index.
     """
-    output_path = output_path or state_path
-    tmp_path = output_path.with_suffix(output_path.suffix + ".tmp")
-
+    src_repo = JsonlStateRepository(state_path)
     filled = skipped = missing = 0
-    with state_path.open("r", encoding="utf-8") as fin, \
-         tmp_path.open("w", encoding="utf-8") as fout:
-        for line in fin:
-            line = line.rstrip("\n")
-            if not line.strip():
-                continue
-            rec = json.loads(line)
-            pid = rec.get("pensioner_id")
-            existing = rec.get("backlink", "")
-            if existing:
-                skipped += 1
-            elif pid in unified_index and unified_index[pid]:
-                rec["backlink"] = unified_index[pid]
-                filled += 1
-            else:
-                rec["backlink"] = ""
-                missing += 1
-            fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            fout.flush()
+    new_records = []
+    for rec in src_repo.iter_all():
+        pid = rec.get("pensioner_id")
+        existing = rec.get("backlink", "")
+        if existing:
+            skipped += 1
+        elif pid in unified_index and unified_index[pid]:
+            rec["backlink"] = unified_index[pid]
+            filled += 1
+        else:
+            rec["backlink"] = ""
+            missing += 1
+        new_records.append(rec)
+
+    output_path = output_path or state_path
+    JsonlStateRepository(output_path).replace_all(new_records)
+    return filled, skipped, missing
 
     # Atomic replace
     tmp_path.replace(output_path)

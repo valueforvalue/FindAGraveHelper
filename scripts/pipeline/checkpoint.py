@@ -85,8 +85,7 @@ def record_failure(
     }
     if extra:
         record.update(extra)
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    line = json.dumps(record, ensure_ascii=False)
-    with state_path.open("a", encoding="utf-8") as f:
-        f.write(line + "\n")
-        f.flush()
+    # Issue #22: routed through JsonlStateRepository. L3 (flush + fsync)
+    # is now honoured; the previous implementation only flushed.
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(state_path).append(record)

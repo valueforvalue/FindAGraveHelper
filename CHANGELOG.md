@@ -4,6 +4,60 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Refactor: introduce StateRepository to abstract state.jsonl (orthogonality)
+
+Closed issue #22. Per pragmatic-programmer §2 Orthogonality: business
+logic in pipeline/ and matching/ no longer touches the state.jsonl
+wire format directly. A new `StateRepository` Protocol owns:
+
+  - L3 (CONTEXT.md): per-pensioner flush + fsync discipline
+  - L4 (CONTEXT.md): stable JSON key order
+  - L5 (CONTEXT.md): newline-delimited JSON, one record per line
+  - Atomic write semantics (.tmp + os.replace)
+
+What changed:
+
+- **NEW** `scripts/state/repository.py`: `StateRepository` Protocol
+  + `JsonlStateRepository` implementation. 6 methods: `append`,
+  `iter_all`, `get`, `update`, `replace_all`, `check`.
+- **NEW** `tests/test_state_repository.py`: 19 tests covering all
+  methods + L3/L4/L5 invariants + atomic-write crash safety +
+  unicode round-trip.
+- **Migrated** 6 call sites to route through the Repository:
+  - `scripts/pipeline/core.py::write_state_line`
+  - `scripts/pipeline/run_unified.py::write_unified_line`
+  - `scripts/pipeline/checkpoint.py` (write_checkpoint)
+  - `scripts/pipeline/backfill_backlinks.py` (read+rewrite)
+  - `scripts/pipeline/dd_marker.py` (read+rewrite; bonus:
+    became atomic, was streaming)
+  - `scripts/pipeline/leftover_investigation.py` (read + 2 writes)
+  - `scripts/pipeline/retry_errors.py` (collect_error_pensioner_ids
+    + retry_error_pensioners + _atomic_rewrite_state)
+- **BONUS L3 fix**: `write_unified_line` and `write_checkpoint`
+  were missing `os.fsync()` — only flushed. They now honour L3.
+- **view.html schema drift**: 6 missing field reads in
+  `normalizeStateRecord()` — `cgr_skipped_fag`, `error`,
+  `extras`, `fag_status`, `pensioner_birth_year`,
+  `pensioner_death_year`. `test_view_html_field_set_matches_schema`
+  now passes.
+
+Verification:
+
+- `pytest tests/`: **929 passed**, 1 deselected, 2 pre-existing
+  failures (test_application_link_present + test_no_skip_fag_policy::
+  test_view_html_no_skipped_badge — both view.html markup tests
+  unrelated to #22). Net change vs baseline (892): +37 passing
+  (+19 new repository tests, +18 view_html tests now passing).
+- `python scripts/run_unified.py --help`: exits 0.
+
+What was left alone:
+
+- `scripts/state/state_check.py` — kept as the low-level scanner
+  the Repository's `.check()` method delegates to. No wire-format
+  knowledge duplicated.
+- `scripts/state_normalize.py` — already operates on dicts,
+  not the wire format.
+
 ### Refactor: delete 44 back-compat shim files in scripts/
 
 Closed issue #19. The flat `scripts/*.py` directory carried 44

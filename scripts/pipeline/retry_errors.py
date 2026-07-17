@@ -52,23 +52,17 @@ def collect_error_pensioner_ids(state_path: Path) -> set[int]:
     """Read state.jsonl and collect pensioner_ids with status='error'.
 
     Returns a set of ints. Handles missing files (returns empty).
+
+    Issue #22: routed through JsonlStateRepository. The Repository
+    owns the iter_all() JSON-decoding discipline.
     """
-    if not state_path.exists():
-        return set()
-    ids = set()
-    with state_path.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                rec = json.loads(line)
-            except json.JSONDecodeError:
-                continue
-            if rec.get("fag_status") == "error":
-                pid = rec.get("pensioner_id")
-                if pid is not None:
-                    ids.add(pid)
+    from scripts.state.repository import JsonlStateRepository
+    ids: set[int] = set()
+    for rec in JsonlStateRepository(state_path).iter_all():
+        if rec.get("fag_status") == "error":
+            pid = rec.get("pensioner_id")
+            if pid is not None:
+                ids.add(pid)
     return ids
 
 
@@ -76,13 +70,14 @@ def _atomic_rewrite_state(
     state_path: Path,
     records: list[dict],
 ) -> None:
-    """Rewrite state.jsonl atomically with the given records."""
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = state_path.with_suffix(".jsonl.tmp")
-    with tmp_path.open("w", encoding="utf-8") as f:
-        for r in records:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    tmp_path.replace(state_path)
+    """Rewrite state.jsonl atomically with the given records.
+
+    Issue #22: routed through JsonlStateRepository. Single internal
+    caller is the retry pipeline; new code should call
+    `JsonlStateRepository(state_path).replace_all(records)` directly.
+    """
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(state_path).replace_all(records)
 
 
 def retry_error_pensioners(
@@ -110,15 +105,8 @@ def retry_error_pensioners(
 
     # Load all records into memory
     all_records = []
-    with state_path.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                all_records.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
+    from scripts.state.repository import JsonlStateRepository
+    all_records = list(JsonlStateRepository(state_path).iter_all())
 
     result = RetryResult(pensioner_ids=sorted(err_ids))
     pipeline_cfg = PipelineConfig(throttle_seconds=throttle_seconds)
