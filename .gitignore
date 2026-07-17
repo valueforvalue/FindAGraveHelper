@@ -14,7 +14,7 @@ docs/research/broadened-set/rosters/
 docs/research/local-data/local_soldiers_with_fag.csv
 docs/research/local-data/local_fag_records.csv
 
-# Digital Prairie pension records — large and reproducible by
+# Digital Prairie pension records - large and reproducible by
 # re-running scripts/scrape_digitalprairie.py. The unified canonical
 # list (unified.{json,csv}) IS committed; the per-collection files
 # and the scrape log are gitignored.
@@ -23,6 +23,14 @@ docs/research/digitalprairie/pensions.json
 docs/research/digitalprairie/pensioncard.csv
 docs/research/digitalprairie/pensioncard.json
 docs/research/digitalprairie/scrape.log
+# J13 enriched input - same 30MB roster + ~636 birth/death_year
+# fields added. Reproducible from ok_pensioners.json +
+# ok_pensioners.dixiedata_match.json via scripts/enrich/dixiedata_dates.py.
+# Don't commit; rebuild in 4s.
+docs/research/digitalprairie/ok_pensioners.with_dates.json
+# Same provenance as the .ddbak sidecar - the join report.
+# Reproducible from the .ddbak in 1s.
+docs/research/dixiedata/enrich_report.json
 
 # CGR (Confederate Graves Registry) bulk scrapes — research data
 # is COMMITTED to the repo for future reference and cross-state

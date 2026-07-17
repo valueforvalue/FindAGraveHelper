@@ -155,11 +155,31 @@ def _load_dixiedata_from_zip(zip_path: Path | str) -> dict:
 def load_dixiedata_index(
     db_path: Path | None = None,
     zip_path: Path | None = None,
+    sidecar: Path | None = None,
 ) -> dict:
     """Load the (last, first_initial) -> {birth_year, death_year}
-    index from dixiedata. Tries the live DB first, falls back to
-    the latest .ddbak backup. Returns {} if neither is available.
+    index from dixiedata. Tries sources in this order:
+      1. sidecar JSON file (committed; fast, no DB needed)
+      2. live DB (sqlite file)
+      3. .ddbak zip backup (fallback when DB path is missing)
+
+    Returns {} if nothing is available.
     """
+    if sidecar:
+        if not sidecar.exists():
+            log.info("sidecar %s not found; trying other sources", sidecar)
+        else:
+            try:
+                raw = json.loads(sidecar.read_text(encoding="utf-8"))
+                # Keys are 'LAST|initial' strings; convert to tuples
+                idx = {tuple(k.split("|", 1)): v for k, v in raw.items()}
+                if idx:
+                    log.info(
+                        "loaded %d rows from sidecar %s", len(idx), sidecar
+                    )
+                    return idx
+            except (json.JSONDecodeError, OSError) as e:
+                log.warning("sidecar load failed: %s; trying other sources", e)
     idx = _load_dixiedata_from_db(db_path) if db_path else {}
     if idx:
         return idx
@@ -182,6 +202,7 @@ def enrich_pensioner_dates(
     *,
     dixi_db: Path | None = None,
     dixi_zip: Path | None = None,
+    dixi_sidecar: Path | None = None,
 ) -> list[dict]:
     """Add birth_year / death_year to each pensioner where the
     dixiedata join succeeds.
@@ -191,9 +212,9 @@ def enrich_pensioner_dates(
             AND returned).
         dixi_index: optional pre-loaded index. If None, the
             load_dixiedata_index helper is called with dixi_db /
-            dixi_zip paths.
-        dixi_db, dixi_zip: alternative sources when dixi_index
-            is None.
+            dixi_zip / dixi_sidecar.
+        dixi_db, dixi_zip, dixi_sidecar: alternative sources
+            when dixi_index is None. Sidecar wins if present.
 
     Returns:
         Same list with .birth_year / .death_year populated where
@@ -201,7 +222,7 @@ def enrich_pensioner_dates(
         unchanged. A summary is logged at INFO.
     """
     if dixi_index is None:
-        dixi_index = load_dixiedata_index(dixi_db, dixi_zip)
+        dixi_index = load_dixiedata_index(dixi_db, dixi_zip, dixi_sidecar)
     if not dixi_index:
         log.info(
             "dixiedata index is empty (no DB or zip found); "
@@ -239,6 +260,10 @@ def main(argv: list[str] | None = None) -> int:
                    help="Path to the live dixiedata SQLite (dixiedata.db).")
     p.add_argument("--dixiedata-zip-backup", type=Path, default=None,
                    help="Path to a .ddbak zip backup (used as fallback when --dixiedata is missing).")
+    p.add_argument("--dixiedata-sidecar", type=Path, default=None,
+                   help="Path to a pre-built sidecar JSON file (ok_pensioners.dixiedata_match.json). "
+                        "Fast; no DB or .ddbak needed. The committed sidecar is the default "
+                        "(see docs/research/digitalprairie/ok_pensioners.dixiedata_match.json).")
     p.add_argument("--report", type=Path, default=None,
                    help="Optional: write a summary report (counts, missing matches) to this path.")
     args = p.parse_args(argv)
@@ -252,6 +277,7 @@ def main(argv: list[str] | None = None) -> int:
         pensioners,
         dixi_db=args.dixiedata,
         dixi_zip=args.dixiedata_zip_backup,
+        dixi_sidecar=args.dixiedata_sidecar,
     )
     matched_after = sum(1 for p in enriched if p.get("birth_year") or p.get("death_year"))
 

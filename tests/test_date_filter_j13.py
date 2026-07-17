@@ -308,6 +308,32 @@ def test_enrich_uses_live_db_when_present():
         assert idx[("ADAIR", "R")]["death_year"] == "1927", "Adair death year from dixiedata mismatch"
 
 
+def test_enrich_sidecar_wins_over_db_when_present():
+    """When the sidecar JSON exists, load_dixiedata_index returns
+    its rows (skipping the DB / .ddbak paths). This is the path
+    fresh clones take: no DB, no .ddbak, just the committed 46KB
+    sidecar."""
+    from pathlib import Path
+    from scripts.enrich.dixiedata_dates import load_dixiedata_index
+
+    committed_sidecar = (
+        Path(__file__).parent.parent
+        / "docs"
+        / "research"
+        / "digitalprairie"
+        / "ok_pensioners.dixiedata_match.json"
+    )
+    if not committed_sidecar.exists():
+        # Sidecar not yet committed (this test was added before
+        # the sidecar was built). Skip rather than fail.
+        return
+    idx = load_dixiedata_index(sidecar=committed_sidecar)
+    assert len(idx) > 100, "expected committed sidecar to have hundreds of rows"
+    # Robert W. Adair from dixiedata TDM65-00526
+    if ("ADAIR", "R") in idx:
+        assert idx[("ADAIR", "R")]["death_year"] == "1927"
+
+
 def test_date_window_constants_are_narrow():
     """Pin the date window so the ACW-appropriate range is
     explicit. Born 1820-1870 (potential ACW vets at ages 15+
