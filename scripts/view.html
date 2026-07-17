@@ -586,6 +586,18 @@ function normalizeStateRecord(rec) {
             cgr_records: rec.cgr_records || [],
             cgr_status: rec.cgr_status || '',
             both_match: rec.both_match || null,
+            // J14: copy DD match (carries the dd_match object
+            // post-pipeline comparison marks per record).
+            dd_match: rec.dd_match || null,
+            // J15: carry through the OK pensioner's known
+            // spouse so the 'Spouse known' badge can render.
+            // Empty strings mean 'no spouse data' (badge silent).
+            pensioner_spouse_first:  rec.pensioner_spouse_first  || '',
+            pensioner_spouse_middle: rec.pensioner_spouse_middle || '',
+            pensioner_spouse_last:   rec.pensioner_spouse_last   || '',
+            // J15: post-pipeline comparison flag (set by S2/S3
+            // scrape); null when not yet compared.
+            spouse_match: rec.spouse_match || null,
             timestamp: rec.timestamp || '',
         };
     }
@@ -608,6 +620,11 @@ function normalizeStateRecord(rec) {
         cgr_records: [],
         cgr_status: '',
         both_match: null,
+        dd_match: rec.dd_match || null,
+        pensioner_spouse_first:  rec.pensioner_spouse_first  || '',
+        pensioner_spouse_middle: rec.pensioner_spouse_middle || '',
+        pensioner_spouse_last:   rec.pensioner_spouse_last   || '',
+        spouse_match: rec.spouse_match || null,
         timestamp: rec.timestamp || '',
     };
 }

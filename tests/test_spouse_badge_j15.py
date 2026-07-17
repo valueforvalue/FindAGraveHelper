@@ -218,6 +218,39 @@ def test_stats_bar_includes_spouse_pills():
 # ============================================================
 # Pensioner-record shape: spouse_match field
 # ============================================================
+def test_normalize_state_record_carries_spouse_fields():
+    """Regression guard: normalizeStateRecord must carry
+    pensioner_spouse_first + pensioner_spouse_middle +
+    pensioner_spouse_last + dd_match + spouse_match through
+    to the badge renderers. Discovered while running test-batch-spouse:
+    the badge renderer silently returned '' because the
+    normalizer dropped the spouse fields (so the badges
+    couldn't be rendered). This test pins the field-through
+    contract.
+    """
+    import re
+    # Locate normalizeStateRecord body
+    m = re.search(
+        r"function\s+normalizeStateRecord[\s\S]+?\n\s*\}\s*\n\s*//\s*===+\s*\n\s*//\s*Decisions",
+        VIEW,
+    )
+    assert m, "normalizeStateRecord body not found"
+    body = m.group(0)
+    # Both branches of the if/else must carry the spouse fields
+    assert "pensioner_spouse_first" in body, (
+        "normalizeStateRecord must carry pensioner_spouse_first through"
+    )
+    assert "pensioner_spouse_middle" in body, (
+        "normalizeStateRecord must carry pensioner_spouse_middle through"
+    )
+    assert "pensioner_spouse_last" in body, (
+        "normalizeStateRecord must carry pensioner_spouse_last through"
+    )
+    assert "spouse_match" in body, (
+        "normalizeStateRecord must carry spouse_match (for S2/S3 badge) through"
+    )
+
+
 def test_view_html_spouse_match_field_handled():
     """The view.html must not crash if a pensioner record lacks
     the spouse_match field (forward compat with older results.jsonl)."""
