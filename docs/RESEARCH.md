@@ -45,6 +45,13 @@
   strategies in execution order. Validated at 100% cold-start
   hit rate on the local 577 pairs; not yet shipped as the
   production harness.
+- **IIIF pension-card images embedded in view.html** —
+  uses the IIIF Image API to show the actual pension card
+  scan inline. Working URL pattern documented in
+  [`research/digitalprairie/README.md` § IIIF image embedding](research/digitalprairie/README.md#iiif-image-embedding--current-working-pattern-2026-07-17).
+  Single-page items (73% of records) need a separate code
+  path (use pcid as page_id) — see the README for the bug
+  history that bit us twice.
 
 ### What's pending (the gap)
 

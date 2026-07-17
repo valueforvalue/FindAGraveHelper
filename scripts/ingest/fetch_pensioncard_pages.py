@@ -58,16 +58,44 @@ def fetch_pensioncard_json(pensioncard_id: int) -> dict | None:
         return None
 
 
-def extract_page_ids(api_json: dict | None) -> list[int]:
+def extract_page_ids(api_json: dict | None, pcid: int) -> list[int]:
     """Pull page IDs from the digitalprairie API JSON.
 
-    The API returns `objectInfo.page[]` with `pageptr` values which
-    are the IIIF image IDs. Compound objects have multiple pages
-    (Side 1 / Side 2); simple records have one.
+    The API has two shapes:
+
+    1. Compound objects (e.g. two-sided postcards): objectInfo.page[]
+       contains pageptr values that ARE the IIIF image IDs. Use those.
+       Example for pcid=11486:
+         objectInfo.page[0].pageptr == 11484  (Side 1)
+         objectInfo.page[1].pageptr == 11485  (Side 2)
+
+    2. Single-page objects: objectInfo.code == -2 ("Requested item
+       is not compound") and objectInfo.page is missing. In that case,
+       the IIIF image IS the pcid itself.
+
+    The IIIF URL pattern that works for both:
+       https://digitalprairie.ok.gov/iiif/2/pensioncard:{id}/full/300,/0/default.jpg
+
+    Historical bug: the old version of this function only looked at
+    objectInfo.page[].pageptr and returned [] for single-page items.
+    That left 73% of pensioncards (mostly single-page) without an
+    image in view.html even though the IIIF URL worked.
+
+    Args:
+        api_json: parsed JSON from
+            https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensioncard/id/{pcid}
+        pcid: the pensioncard_id for the item. Used as the page ID
+            for single-page items (where objectInfo.page is missing).
+
+    Returns:
+        list[int]: 1 page ID for single-page items, 2 for compound,
+            empty list if the API JSON is malformed or has neither
+            pageptr entries nor an imageUri to fall back on.
     """
     if not api_json:
         return []
-    pages = api_json.get("objectInfo", {}).get("page", [])
+    obj_info = api_json.get("objectInfo", {})
+    pages = obj_info.get("page") or []
     out = []
     for p in pages:
         ptr = p.get("pageptr")
@@ -76,7 +104,14 @@ def extract_page_ids(api_json: dict | None) -> list[int]:
                 out.append(int(ptr))
             except (TypeError, ValueError):
                 continue
-    return out
+    if out:
+        return out
+    # No compound pages. If the API returned an imageUri, fall back
+    # to using pcid as the single page ID. This is the path for
+    # single-page items (objectInfo.code == -2).
+    if api_json.get("imageUri"):
+        return [pcid]
+    return []
 
 
 def load_cache(cache_path: Path) -> dict[str, list[int]]:
@@ -152,7 +187,7 @@ def main(argv: list[str] | None = None) -> int:
             time.sleep(args.throttle)
 
         api_json = fetch_pensioncard_json(pcid)
-        page_ids = extract_page_ids(api_json)
+        page_ids = extract_page_ids(api_json, pcid)
         if page_ids:
             cache[key] = page_ids
             fetched += 1

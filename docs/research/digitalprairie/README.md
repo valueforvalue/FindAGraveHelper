@@ -145,3 +145,117 @@ This soldier:
 - Application # A4, Pension # P1
 - Backlinks to the original pension file and card at digitalprairie.ok.gov
 - IIIF image URLs for visual verification of the source records
+
+## IIIF image embedding — current working pattern (2026-07-17)
+
+The view.html review UI embeds the actual pension card scan
+inline using the IIIF Image API. The pattern was discovered
+the hard way after `scripts/ingest/fetch_pensioncard_pages.py`
+silently failed for 73% of records and the rendered view.html
+showed no images.
+
+### Working IIIF URL (verified 2026-07-17)
+
+```
+https://digitalprairie.ok.gov/iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg
+```
+
+Where `page_id` is one of:
+
+  - For **compound** pension cards (two-sided postcards, mostly):
+    a `pageptr` value from the API's `objectInfo.page[]`. These
+    are DIFFERENT from `pensioncard_id`. Example for pcid=11486:
+    - Side 1 page_id = 11484
+    - Side 2 page_id = 11485
+  - For **single-page** pension cards (most records): the
+    `pensioncard_id` itself. The API returns
+    `objectInfo.code == -2` ("Requested item is not compound")
+    and the `objectInfo.page[]` is absent.
+
+The full URL works for BOTH cases — the difference is just
+which page id you use.
+
+### API endpoint
+
+The only endpoint that returns JSON metadata is:
+
+```
+https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensioncard/id/{pcid}
+```
+
+It returns:
+
+```json
+{
+  "filename": "11487.cpd",
+  "imageUri": "https://digitalprairie.ok.gov/iiif/2/pensioncard:11486/full/full/0/default.jpg",
+  "iiifInfoUri": "/iiif/2/pensioncard:11486/info.json",
+  "objectInfo": {
+    "code": "0",
+    "message": "Compound object",
+    "page": [
+      {"pagetitle": "Side 1", "pagefile": "11485.jp2", "pageptr": "11484"},
+      {"pagetitle": "Side 2", "pagefile": "11486.jp2", "pageptr": "11485"}
+    ],
+    "type": "Postcard"
+  }
+}
+```
+
+For single-page items, `objectInfo.code == -2` and `objectInfo.page[]`
+is missing entirely (NOT empty — missing). Check `imageUri` for
+the fallback path.
+
+### URL patterns that DON'T work (verified 2026-07-17)
+
+  - `/iiif/2/pensioncard:{pcid}/full/full/0/default.jpg` with the
+    PARENT `pcid` (when it has compound children) → 501 "Unsupported
+    source format" (server can't render JP2 at full size for compound
+    parents).
+  - `/iiif/2/pensioncard:{pcid}/info.json` → 501 for compound pcids
+  - `/api/image/{pcid}` → 403
+  - `?size=300,` (size in query string instead of IIIF path segment) → 501
+
+### Bug history
+
+**Bug A (compound-vs-single):** `scripts/ingest/fetch_pensioncard_pages.py::extract_page_ids()`
+only looked at `objectInfo.page[].pageptr` and returned `[]` when
+that was missing. For single-page items (73% of records), this
+returned an empty list, so `view.html` had no images to embed.
+The fix: when `objectInfo.page[]` is empty but `imageUri` exists,
+use the `pcid` as a single-page id. Implemented 2026-07-17.
+
+**Bug B (URL prefix):** The React SPA's `imageUri` field comes
+pre-prefixed with `/digital` in the JS bundle, but the API JSON
+returns it as a full URL `https://digitalprairie.ok.gov/iiif/...`.
+Don't double-prefix.
+
+**Bug C (pensioncard_pages was unused in view.html):** Even when
+`pensioncard_pages: [9182, 9183]` was populated, the IIIF URL
+construction used a different formula. Old URL pattern tried
+`/pensioncard/{page_id}` (no `:` colon) which 404'd.
+
+### How the cache is populated
+
+```
+python scripts/ingest/fetch_pensioncard_pages.py \
+    --input docs/research/digitalprairie/ok_pensioners.json \
+    --output docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json
+```
+
+This populates a sidecar JSON `{str(pensioner_id): [page_id, ...]}`
+that's loaded by `scripts/pipeline/run_unified.py` and injected
+into each results.jsonl record's `pensioncard_pages` field.
+view.html reads `record.pensioncard_pages` and builds IIIF URLs
+via `buildIiifThumbnailUrl(page_id)`.
+
+At 0.25s throttle, ingesting the full 7,709 records takes ~32 min.
+The sidecar is cached; re-runs are instant.
+
+### Where the bug was rediscovered (twice)
+
+The fix shipped in commit `1534ca2` (Fix #13, 2026-07-16) but the
+ingest script's `extract_page_ids()` only handled the compound
+case, leaving single-page items with no images. Discovered again
+during the es-fresh-run view.html review (2026-07-17) when 0/177
+cards showed images.

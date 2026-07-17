@@ -4,6 +4,52 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Pension card images: single-page fallback fix
+
+The view.html review UI embeds the actual pension card scan
+inline via the IIIF Image API. The IIIF URL pattern is:
+
+  https://digitalprairie.ok.gov/iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg
+
+For two-sided (compound) cards, the {page_id} is the
+objectInfo.page[].pageptr value from the API response
+(different from the parent pensioncard_id). For single-page
+cards (73% of records), the {page_id} IS the pensioncard_id.
+
+**Bug (rediscovered during es-fresh-run review):**
+scripts/ingest/fetch_pensioncard_pages.py::extract_page_ids()
+only looked at objectInfo.page[].pageptr and returned [] for
+single-page records. The ingest script's API success messages
+made it look like everything worked, but only 47/174 records
+got populated with page IDs.
+
+**Fix:** When objectInfo.page[] is empty/missing but imageUri
+exists, fall back to using the pcid as a single page id.
+After fix, 174/174 records populate correctly (127 single-page
++ 47 compound).
+
+  - scripts/ingest/fetch_pensioncard_pages.py: extract_page_ids
+    signature changed to (api_json, pcid); fallback added when
+    objectInfo.page is absent but imageUri is present.
+  - tests/test_pensioncard_iiif.py (new, 7 tests): pins the
+    compound and single-page paths against recorded API
+    fixtures; pins the IIIF URL pattern that actually works.
+  - tests/test_fetch_pensioncard_pages.py: updated existing
+    tests to the new signature.
+  - docs/research/digitalprairie/README.md: added a 60-line
+    section "IIIF image embedding — current working pattern"
+    documenting the working URL, the API endpoint, what does
+    NOT work, the bug history, and the population step.
+    Pinning this so future agents don't have to rediscover it.
+  - docs/RESEARCH.md: added bullet "IIIF pension-card images
+    embedded in view.html" with a cross-link to the detailed
+    pattern doc.
+
+**Live verification:** es-fresh-run view.html now renders 40
+<img> tags across 25 visible cards. First image is
+pensioncard:11484 (Side 1 of pcid=11486 Nancy Eads) — HTTP
+200 image/jpeg, 12KB. Working end-to-end.
+
 ### es-fresh-run: 177 E-last-name pensioners, end-to-end pipeline
 
 First run with ALL features enabled (auto-relax + spouse scrape

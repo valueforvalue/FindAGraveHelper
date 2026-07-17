@@ -30,21 +30,21 @@ def test_extract_page_ids_compound_object():
             ]
         }
     }
-    assert fpp.extract_page_ids(api) == [96, 97]
+    assert fpp.extract_page_ids(api, pcid=123) == [96, 97]
 
 
 def test_extract_page_ids_single_page():
     """Single-page records return a single-element list."""
     api = {"objectInfo": {"page": [{"pageptr": "42", "pagefile": "x.jp2"}]}}
-    assert fpp.extract_page_ids(api) == [42]
+    assert fpp.extract_page_ids(api, pcid=42) == [42]
 
 
 def test_extract_page_ids_handles_missing_keys():
     """Malformed/missing keys yield empty list, not exception."""
-    assert fpp.extract_page_ids(None) == []
-    assert fpp.extract_page_ids({}) == []
-    assert fpp.extract_page_ids({"objectInfo": {}}) == []
-    assert fpp.extract_page_ids({"objectInfo": {"page": []}}) == []
+    assert fpp.extract_page_ids(None, pcid=999) == []
+    assert fpp.extract_page_ids({}, pcid=999) == []
+    assert fpp.extract_page_ids({"objectInfo": {}}, pcid=999) == []
+    assert fpp.extract_page_ids({"objectInfo": {"page": []}}, pcid=999) == []
 
 
 def test_extract_page_ids_skips_invalid_pageptrs():
@@ -55,7 +55,7 @@ def test_extract_page_ids_skips_invalid_pageptrs():
         {"pageptr": None},            # missing
         {},                            # empty
     ]}}
-    assert fpp.extract_page_ids(api) == [5]
+    assert fpp.extract_page_ids(api, pcid=999) == [5]
 
 
 # ============================================================
