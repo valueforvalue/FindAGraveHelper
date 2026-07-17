@@ -4,6 +4,50 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Refactor: route dry_run + state_replay through StateRepository (issue #28)
+
+Re-audit of the #21 reversibility work found an orthogonality
+regression: `scripts/pipeline/dry_run.py` and
+`scripts/pipeline/state_replay.py` bypassed the StateRepository
+Protocol that #22 created to own the state.jsonl wire format.
+They re-implemented 3 things the Repository already owns:
+
+  1. JSON serialisation (`json.dumps(record, ensure_ascii=False)`)
+  2. Atomic-write discipline (`.tmp + os.fsync + os.replace`)
+  3. Newline-delimited format (`+ "\n"`)
+
+Same anti-pattern as #19's back-compat shims — the Repository
+was designed to be the single point of change for the wire
+format, and the new modules undercut that.
+
+What changed:
+
+- **MODIFIED** `scripts/pipeline/dry_run.py`: `write_dry_run_diff`
+  now calls `JsonlStateRepository(out_path).replace_all(diffs)`
+  instead of the manual `json.dumps + .tmp + fsync + replace`
+  block. Removed `import json` and `import os` (no longer used).
+- **MODIFIED** `scripts/pipeline/state_replay.py`: `replay_state`
+  now calls `JsonlStateRepository(new_state_path).replace_all(new_records)`.
+  Same `import json`/`os` cleanup.
+- **DELETED** `tests/test_dry_run.py::test_write_dry_run_diff_atomic_via_tmp_rename`:
+  the Repository's `test_replace_all_atomic_writes_via_tmp_then_rename`
+  already covers atomicity — testing it from every caller would be
+  redundant.
+
+What was NOT fixed (out of scope):
+
+- `predict_outcome_from_state` still has its own scoring/status
+  logic that mirrors production. The drift risk remains but the
+  fix would require extracting constants from production code
+  and is a separate concern.
+
+Verification:
+
+- `pytest tests/`: **965 passed**, 1 deselected (was 966 — one
+  redundant atomicity test removed). Same 2 pre-existing failures.
+- `grep 'json\.dumps\|os\.fsync\|os\.replace' scripts/pipeline/dry_run.py scripts/pipeline/state_replay.py`:
+  0 matches (all wire-format code now lives in the Repository).
+
 ### Chore: refresh doc references after shim deletion (issue #19 + #22)
 
 Following the code-side migration to canonical subpackage paths,
