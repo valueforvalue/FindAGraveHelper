@@ -17,7 +17,7 @@ support:
 - **Streaming reads**: `view.html` reads the file lazily
   (currently synchronous; lazy-load is T002). One object
   per line is the only format that streams cleanly.
-- **Round-trip to dixiedata**: `scripts/dd_marker_run.py`
+- **Round-trip to dixiedata**: `scripts/pipeline/dd_marker_run.py`
   consumes a `decisions.csv` exported from `view.html`. The
   CSV columns must match the state.jsonl keys.
 

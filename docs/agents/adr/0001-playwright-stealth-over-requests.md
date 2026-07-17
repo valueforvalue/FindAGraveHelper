@@ -45,7 +45,7 @@ The forces in tension:
 ## Decision
 
 All FaG requests go through Playwright + `playwright-stealth`
-with `headless=False`. The `scripts/fag_browser.py` module is
+with `headless=False`. The `scripts/fag/fag_browser.py` module is
 the only sanctioned path. `requests.get()` against any FaG URL
 is a bug.
 

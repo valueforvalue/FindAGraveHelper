@@ -37,7 +37,7 @@ and were each earned by a real bug.
 
 ---
 
-## Playwright layer (`scripts/fag_browser.py`, `scripts/search_fag.py`)
+## Playwright layer (`scripts/fag/fag_browser.py`, `scripts/search_fag.py`)
 
 ### Locator refs leak into the body string retention
 
@@ -61,7 +61,7 @@ but Context and Page refs are still held by the harness. RSS
 keeps growing through resets. After 4 resets, Playwright
 throws "too many open contexts".
 
-**Find it:** `grep -n 'browser.close\|context.close\|page.close' scripts/fag_browser.py`
+**Find it:** `grep -n 'browser.close\|context.close\|page.close' scripts/fag/fag_browser.py`
 
 **Earned by:** Run #2 (2026-07-16) — see
 [`../docs/learnings/2026-07-16-run-2-learnings.md`](../docs/learnings/2026-07-16-run-2-learnings.md).
@@ -76,7 +76,7 @@ A recovery check that matches the literal text "Target page,
 context or browser has been closed" breaks on the next
 Playwright release.
 
-**Find it:** `grep -n 'target.*closed\|browser.*closed' scripts/fag_browser.py`
+**Find it:** `grep -n 'target.*closed\|browser.*closed' scripts/fag/fag_browser.py`
 
 **Earned by:** Run #2 — the original check used the literal text.
 After a Playwright bump the recovery stopped triggering.
@@ -218,7 +218,7 @@ scraping past the cap.
 after a `view.html` change. The user has 1,000+ decisions
 exported under the old schema.
 
-**Find it:** `grep -n 'slug\|memorial_id' scripts/dd_marker_run.py`
+**Find it:** `grep -n 'slug\|memorial_id' scripts/pipeline/dd_marker_run.py`
 
 **Earned by:** Phase 2 → Phase 3 transition (2026-07-15) —
 schema drift between view.html and the marker script.
@@ -256,7 +256,7 @@ the search succeeded.
 
 **Fix shape:** Don't use `requests` for FaG — always go
 through Playwright + stealth. The
-[`scripts/fag_browser.py`](../../scripts/fag_browser.py)
+[`scripts/fag/fag_browser.py`](../../scripts/fag/fag_browser.py)
 module is the only sanctioned path.
 
 ### A state abbreviation match grabs "Co."
@@ -264,7 +264,7 @@ module is the only sanctioned path.
 **Symptom:** Unit string `Co. I, 4th TN Cav. Rgmnt., C.S.A.`
 parses as "Colorado" (CO) because the regex matches "Co.".
 
-**Find it:** `grep -n 'state\|CO\|Colorado' scripts/state_check.py scripts/state_normalize.py`
+**Find it:** `grep -n 'state\|CO\|Colorado' scripts/state/state_check.py scripts/state_normalize.py`
 
 **Earned by:** Phase 1 research, 2026-07-08.
 
