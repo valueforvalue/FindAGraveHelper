@@ -4,6 +4,34 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### view.html corruption: root cause identified
+
+es-fresh-run's view.html was rendering a 434,442px-tall
+wall of naked JSON text alongside the normal cards. Root
+cause:
+
+The pipeline's second-pass embed produces a CLEAN
+view.html (logged once: "Embedded missing sidecars").
+The corruption was introduced by a manual re-embed script
+(investigating the J9 embed bug earlier) that used a
+broken regex: `<script type="application/json" id="..."
+[^>]*>\s*\{` — this only matched the OPENING 62 chars of
+the existing embed, not the full block. The `sub('', text)`
+left 99.998% of the JSONL in place, then the script
+re-inserted a new embed before </head>. Result: a 4.8MB
+duplicate of the JSONL naked in <body> + the new <script>
+block.
+
+Fix: the pipeline run's view.html is canonical. If you
+need to re-embed sidecars manually, use the same regex
+as `run_unified.py::copy_view_html_if_missing` (the FULL
+block pattern, not just the opening tag).
+
+Lesson: ad-hoc re-embed scripts in the shell are
+fragile. The right surface is `python -m scripts.run_unified
+--config <runname>/config.json --resume`, which re-runs
+the full pipeline including the embed step.
+
 ### Pension card images: single-page fallback fix
 
 The view.html review UI embeds the actual pension card scan
