@@ -24,6 +24,7 @@ unified_pipeline, which expects either:
 from __future__ import annotations
 
 import logging
+import os
 import threading
 import time
 from typing import Callable, Optional
@@ -71,6 +72,44 @@ def _is_target_closed(exc: BaseException) -> bool:
         pass
     msg = str(exc).lower()
     return any(p in msg for p in _TARGET_CLOSED_PATTERNS)
+
+
+def _should_broaden(record: dict, threshold: float = 0.3) -> bool:
+    """True when the narrowed FaG search returned no useful candidate.
+
+    Used by auto-relax (issue #15) to decide whether to retry the
+    search with a broader state_filter. 'No useful candidate' means:
+      - status is not auto_accept, AND
+      - either no candidates at all, OR
+      - no candidate scored above `threshold` (default 0.3).
+
+    Args:
+        record: the dict returned by search_one_pensioner
+            (has 'ranked_candidates', 'status', etc.).
+        threshold: minimum per-candidate score to count as 'useful'.
+            The strategy ladder weights names, dates, and burial
+            location. A score >= 0.3 means we found a candidate
+            whose name matches at least partially. Below that,
+            candidates are typically modern same-name people who
+            happened to rank by name.
+
+    Returns True if broadening to US (or global) is worth attempting.
+    """
+    if record.get("status") == "auto_accept":
+        return False
+    cands = record.get("ranked_candidates", []) or []
+    if not cands:
+        return True
+    for c in cands:
+        score = c.get("score")
+        if score is None:
+            continue
+        try:
+            if float(score) >= threshold:
+                return False
+        except (TypeError, ValueError):
+            continue
+    return True
 
 
 def make_fag_search_fn(
@@ -308,6 +347,44 @@ def make_fag_search_fn(
                     )
                     raise
                 return [], "error"
+
+            # Auto-relax state filter (issue #15). When the
+            # narrowed search returns nothing useful (no
+            # high-score candidate AND not auto_accept), try the
+            # broader scope before giving up. Opt-in via env var
+            # FAG_AUTO_RELAX=1. Skipped silently otherwise.
+            # Throttle-gated: only runs when the search took the
+            # full timeout window, to avoid penalising fast searches.
+            if (
+                os.environ.get("FAG_AUTO_RELAX", "").strip() in ("1", "true", "yes")
+                and state_filter == "OK"
+                and record.get("status") != "auto_accept"
+                and _should_broaden(record)
+            ):
+                log.info(
+                    "Auto-relax: broadening #%d to US (OK returned no high-score)",
+                    pensioner.get("id"),
+                )
+                try:
+                    broader_record = search_one_pensioner(
+                        state["page"], pensioner,
+                        throttle_seconds=throttle,
+                        state_filter="US",
+                    )
+                except Exception as e:
+                    log.warning("Auto-relax US search failed for #%d: %s",
+                                pensioner.get("id"), e)
+                    broader_record = None
+                if broader_record is not None:
+                    ok_cands = record.get("ranked_candidates", []) or []
+                    us_cands = broader_record.get("ranked_candidates", []) or []
+                    if len(us_cands) > len(ok_cands):
+                        record = broader_record
+                        log.info("Auto-relax: US returned %d > OK's %d; using US",
+                                 len(us_cands), len(ok_cands))
+                    else:
+                        log.info("Auto-relax: US returned %d <= OK's %d; keeping OK",
+                                 len(us_cands), len(ok_cands))
 
             # search_one_pensioner returns a state record. We want
             # the candidates inside, not the wrapper.

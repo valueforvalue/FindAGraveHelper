@@ -2,7 +2,77 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-16
+## [Unreleased] — 2026-07-17
+
+### Enhancement #14: top-N>1 in scripts/cgr/spouse_compare.py
+
+When the top-1 FaG candidate is a same-name modern person
+(name collision) and the ACW-era veteran is at rank 2+, the
+previous top_n=1 cap dropped that match silently. Now:
+
+  - scripts/cgr/spouse_compare.py:annotate_records iterates
+    top_n candidates in rank order; first match wins.
+  - Each candidate's outcome is recorded in a new
+    `spouse_candidates` array on the per-record state:
+    `[{rank, memorial_id, slug, captured_first/middle/last,
+    captured_display, match: {matched, matched_via,
+    match_strength, matched_via_rank, skipped}}]`
+  - Once a match is found, remaining candidates in the
+    top-N window are marked `match.skipped: true` (no
+    wasted cycles, but the audit trail shows what we tried).
+  - The stats sidecar now includes `matched_rank_histogram`
+    so the reviewer can see how many matches came from
+    each rank position.
+  - scripts/view.html:renderSpouseMatchBadge surfaces rank
+    > 1 with a "matched at rank N" note in both the badge
+    text AND the tooltip. The reviewer sees explicitly that
+    the top candidate was different.
+
+Live behavior unchanged at top_n=1 (default).
+
+Tests: tests/test_spouse_compare_topn.py (6 new) — top_n=1
+default skips non-top, top_n=3 finds rank-2 match, top_n=3
+with no match records all 3 candidates as None, top_n caps
+at fag_records length, no spouse data writes empty
+candidates, view.html rank note pin.
+
+Issue: https://github.com/valueforvalue/FindAGraveHelper/issues/14
+
+### Enhancement #15: auto-relax FaG state filter
+
+When --fag-state-filter OK returns nothing useful (no
+high-score candidate AND not auto_accept), retry the search
+with state_filter="US" and use whichever candidate set is
+larger. Opt-in via env var FAG_AUTO_RELAX=1. Skipped
+silently otherwise.
+
+  - scripts/fag/fag_browser.py:
+    - New helper _should_broaden(record, threshold=0.3):
+      returns True when the narrowed search returned no
+      useful candidate (status != auto_accept AND no
+      candidate scored >= 0.3).
+    - New auto-relax block in fag_search(): gated on
+      FAG_AUTO_RELAX=1 AND state_filter == "OK" AND
+      _should_broaden(record). When triggered, runs a
+      second search_one_pensioner with state_filter="US",
+      compares candidate set sizes, and replaces the OK
+      record with the broader one only when US returned
+      strictly more candidates.
+  - Why env-var-gated: legacy OK-only behavior is
+    preserved by default. Operators who want auto-relax
+    opt in.
+  - Why US (country_4) and not global: US-wide is the
+    smallest broadening step that's still meaningful for
+    an ACW-vet search; global would include international
+    candidates that are almost certainly wrong.
+
+Tests: tests/test_auto_relax_j15.py (14 new) —
+_should_broaden happy paths + edge cases (missing score,
+non-numeric score, custom threshold), env-var gating
+(default off, =1 on, =true on, =0 off), source-code pins
+for FAG_AUTO_RELAX gating + US scope + length comparison.
+
+Issue: https://github.com/valueforvalue/FindAGraveHelper/issues/15
 
 ### J15-S2: FaG memorial-page scrape + spouse comparison (gold badge data)
 

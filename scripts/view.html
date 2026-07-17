@@ -1156,8 +1156,15 @@ function renderSpouseMatchBadge(p) {
     const local_last  = p.pensioner_spouse_last || '';
     const local = (local_first + (p.pensioner_spouse_middle ? ' ' + p.pensioner_spouse_middle : '') + ' ' + local_last).replace(/\s+/g, ' ').trim();
     const strength = m.match_strength || 'strong';
-    const title = `Spouse match verified: '${local}' (ok_pensioners) == '${captured}' (FaG memorial #${mid}, captured from Family Members section). Strength: ${strength}.`;
-    return `<span class="spouse-match-badge" title="${escapeHtml(title)}">♥ Spouse match (mem ${escapeHtml(String(mid))})</span>`;
+    // matched_via_rank > 1 means the match wasn't the top-1
+    // FaG candidate — surface that explicitly so the reviewer
+    // knows to verify (issue #14).
+    const rank = m.matched_via_rank || 1;
+    const rankNote = rank > 1
+        ? ` (matched at rank ${rank}; the top candidate was different)`
+        : '';
+    const title = `Spouse match verified: '${local}' (ok_pensioners) == '${captured}' (FaG memorial #${mid}, captured from Family Members section). Strength: ${strength}.${rankNote}`;
+    return `<span class="spouse-match-badge" title="${escapeHtml(title)}">♥ Spouse match (mem ${escapeHtml(String(mid))}${rankNote ? ', rank ' + rank : ''})</span>`;
 }
 
 function escapeHtml(s) {

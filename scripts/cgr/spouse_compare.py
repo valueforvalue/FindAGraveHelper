@@ -131,35 +131,96 @@ def annotate_records(
                     local_last  = (rec.get("pensioner_spouse_last") or "").strip()
                     local_mid   = (rec.get("pensioner_spouse_middle") or "").strip()
                     fag_records = rec.get("fag_records") or []
-                    top = fag_records[0] if fag_records else None
-                    if not local_first or not local_last or not top:
+                    if not local_first or not local_last or not fag_records:
                         rec["spouse_match"] = None
+                        rec["spouse_candidates"] = []
                         fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
                         continue
-                    total_attempted += 1
-                    try:
-                        match = scrape_and_compare(
-                            page,
-                            top,
-                            {"first": local_first,
+                    # Top-N: try candidates in rank order; first
+                    # match wins. We always emit a spouse_candidates
+                    # array (one entry per scraped candidate) so the
+                    # reviewer can see what we tried.
+                    n = max(1, min(top_n, len(fag_records)))
+                    candidates: list[dict] = []
+                    winning_match = None
+                    winning_rank = None
+                    local = {"first": local_first,
                              "middle": local_mid,
-                             "last": local_last},
-                            throttle_seconds=0,
-                        )
-                    except Exception as e:
-                        log.warning("Spouse scrape failed for pensioner %s: %s",
-                                    rec.get("pensioner_id"), e)
-                        match = None
-                        errors += 1
-                    if match:
+                             "last": local_last}
+                    for rank_idx in range(n):
+                        cand = fag_records[rank_idx]
+                        rank = rank_idx + 1
+                        candidate_entry: dict = {
+                            "rank": rank,
+                            "memorial_id": cand.get("memorial_id") or cand.get("id"),
+                            "slug": cand.get("slug") or "",
+                            "captured_first": "",
+                            "captured_middle": "",
+                            "captured_last": "",
+                            "captured_display": "",
+                            "match": None,
+                        }
+                        mem_id = candidate_entry["memorial_id"]
+                        if not mem_id or not candidate_entry["slug"]:
+                            candidates.append(candidate_entry)
+                            continue
+                        total_attempted += 1
+                        try:
+                            cm = scrape_and_compare(
+                                page,
+                                cand,
+                                local,
+                                throttle_seconds=0,
+                            )
+                        except Exception as e:
+                            log.warning("Spouse scrape failed for pensioner %s rank %d: %s",
+                                        rec.get("pensioner_id"), rank, e)
+                            errors += 1
+                            cm = None
+                        if cm:
+                            # Capture parsed fields for the audit trail
+                            candidate_entry["captured_first"] = cm.get("captured_first", "")
+                            candidate_entry["captured_middle"] = cm.get("captured_middle", "")
+                            candidate_entry["captured_last"] = cm.get("captured_last", "")
+                            candidate_entry["captured_display"] = cm.get("captured_display", "")
+                            candidate_entry["match"] = {
+                                "matched": True,
+                                "matched_via": cm.get("matched_via", "first_and_last"),
+                                "match_strength": cm.get("match_strength", "medium"),
+                                "matched_via_rank": rank,
+                            }
+                            if winning_match is None:
+                                winning_match = cm
+                                winning_rank = rank
+                        candidates.append(candidate_entry)
+                        if winning_match is not None and rank < n:
+                            # We found a match before exhausting top_n;
+                            # don't waste cycles on the remaining
+                            # candidates. Mark them as skipped so the
+                            # audit trail still records the full top-N
+                            # we considered.
+                            for skipped_rank in range(rank + 1, n + 1):
+                                cand = fag_records[skipped_rank - 1]
+                                candidates.append({
+                                    "rank": skipped_rank,
+                                    "memorial_id": cand.get("memorial_id") or cand.get("id"),
+                                    "slug": cand.get("slug") or "",
+                                    "captured_first": "",
+                                    "captured_middle": "",
+                                    "captured_last": "",
+                                    "captured_display": "",
+                                    "match": {"matched": False, "skipped": True,
+                                              "match_strength": None},
+                                })
+                            break
+                    rec["spouse_candidates"] = candidates
+                    if winning_match:
+                        winning_match["matched_via_rank"] = winning_rank
                         matched += 1
-                        matched_ranks.append(match.get("matched_via_rank", 1))
-                        ms = match.get("match_strength", "medium")
+                        matched_ranks.append(winning_rank)
+                        ms = winning_match.get("match_strength", "medium")
                         matched_strength[ms] = matched_strength.get(ms, 0) + 1
-                        # Also store the local fields the renderer wants
-                        match["captured_first"] = match.pop("captured_first", match.get("captured_first"))
-                        match["captured_last"] = match.pop("captured_last", match.get("captured_last"))
-                    rec["spouse_match"] = match
+                    rec["spouse_match"] = winning_match
                     if throttle_seconds > 0 and total_attempted % 5 == 0:
                         time.sleep(throttle_seconds)
                     fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
@@ -167,11 +228,15 @@ def annotate_records(
         finally:
             browser.close()
     tmp_path.replace(results_path)
+    rank_hist = {}
+    for r in matched_ranks:
+        rank_hist[str(r)] = rank_hist.get(str(r), 0) + 1
     return {
         "matched": matched,
         "total_with_spouse": total_attempted,
         "errors": errors,
         "matched_strength_breakdown": matched_strength,
+        "matched_rank_histogram": rank_hist,
         "throttle_seconds": throttle_seconds,
         "top_n": top_n,
     }
