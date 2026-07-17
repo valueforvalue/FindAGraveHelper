@@ -4,6 +4,94 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J14: replace auto-enrichment with post-pipeline DD comparison
+
+The user uses a parallel SQLite research DB (`dixiedata.db` or its
+.ddbak backup) where they've already paired ~611 Confederate
+vets with verified Find a Grave memorials. We previously tried
+**auto-enriching** `ok_pensioners.json` from that DB at the start
+of the pipeline (J13-script enrich/dixiedata_dates.py). That
+approach was wrong: silent bad joins could poison the input
+without the reviewer realizing.
+
+**Replacement: a READ-ONLY post-pipeline comparison.**
+
+  - `scripts/cgr/dixiedata_match.py` (NEW, ~10KB, 19 tests).
+    Reads the user's dixiedata DB or .ddbak backup, then walks
+    every results.jsonl record. For each pensioner, checks if
+    the top-ranked FaG candidate's memorial_id matches one of
+    the FaG IDs already tracked in DD (in any of the 3 storage
+    conventions DD uses: `app_id = "FaG ID: 9121410"`, bare
+    integer `app_id`, or `details = https://.../memorial/.../`).
+  - Writes `dd_match: {...}` to each matched results.jsonl
+    record in place. Sidecar summary at `output/<runname>/dd_match.json`.
+  - Wired into `scripts/pipeline/run_unified.py` as a new step
+    AFTER `cgr_fag_dedup.py`. Triggered by env vars
+    `DIXIEDATA_ZIP_BACKUP` / `DIXIEDATA_DB`; silently skipped
+    when neither is set. Reads dixiedata as read-only;
+    **never mutates it**.
+  - Match-strength: `weak` (memorial_id only) or `strict`
+    (also requires DD-side slug to match - guard against
+    memorial collisions/merges).
+
+**view.html changes (J14):**
+  - New `DD ✓ (mem #)` badge on pensioners whose top FaG
+    match is already tracked in DD. Hover shows the DD row
+    info (memorial_id, source record type, matched candidate
+    rank).
+  - Stats bar gets two new pills: `DD tracked N` (blue) and
+    `DD pending N` (grey).
+  - Status filter dropdown gets two new options:
+    `DD tracked` and `DD pending`. Reviewer can hide DD-tracked
+    rows for a fast first pass, or scope to them for verification.
+  - New view.html placeholder (`<!--EMBEDDED_DD_MATCH_JSON-->`)
+    embedded as a `<script type="application/json">` block by
+    the runner (second pass, after the sidecar exists). This
+    makes the page work from `file://` like the results.jsonl
+    embed.
+
+**Cleanup (J14):**
+  - DELETED `scripts/enrich/dixiedata_dates.py` + the
+    `ok_pensioners.dixiedata_match.json` sidecar (auto-enricher).
+  - Removed 6 enricher tests from `tests/test_date_filter_j13.py`.
+  - pipeline: imports `os` (was missing).
+
+**Why this approach is safer than the old enricher:**
+  - **Post-pipeline**: the comparison runs AFTER results.jsonl
+    is final. The input (`ok_pensioners.json`) is never touched.
+  - **Read-only on dixiedata**: the script only reads from
+    the source sqlite file (or extracts the .ddbak to a temp
+    dir). No writes.
+  - **Visible to the reviewer**: every pensioner that the
+    comparison marked gets a `dd_match` field + a badge.
+    If a row was wrongly marked, the reviewer sees it
+    immediately and can disagree (the badge doesn't make
+    auto-decisions; it's a flag).
+  - **Filterable**: the reviewer can show or hide DD-tracked
+    rows at will. No silent data flow.
+
+**Files:**
+- `scripts/cgr/dixiedata_match.py` (NEW, ~10KB)
+- `tests/test_dixiedata_match_j14.py` (NEW, 19 tests)
+- `scripts/pipeline/run_unified.py`: wire dd match step +
+  import os
+- `scripts/view.html`: dd badge + filter + sidecar embed
+- `tests/test_date_filter_j13.py`: remove enricher tests
+- DELETED: `scripts/enrich/dixiedata_dates.py`,
+  `docs/research/digitalprairie/ok_pensioners.dixiedata_match.json`,
+  `docs/research/digitalprairie/ok_pensioners.with_dates.json`
+
+**Tests:** 19 new pass; 834 adjacent pass; 1 pre-existing
+failure unrelated.
+
+**Laws honored.**
+  L3: dd match writes results.jsonl in place via tmp+rename.
+  L4: only ADDS `dd_match` field per record. No existing
+    keys reordered or removed.
+  L7: every new public function has an Args/Returns docstring
+    + a "why this is safer than the old way" paragraph where
+    relevant.
+
 ### J13-research: ACW-vet date ranges from real local data
 
 The date-window constants that drive J13's URL filter and

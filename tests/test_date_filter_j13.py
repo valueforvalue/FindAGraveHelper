@@ -20,8 +20,9 @@ Fix:
   1. apply_date_filter(candidates, hard=True) drops
      candidates whose date_attribution is outside the project-
      appropriate window for an American Civil War Confederate
-     pensioner. ACW era: birth 1820-1870, death 1861-1950.
-     Outside = hostile name-collision; drop it.
+     pensioner. ACW era (research-backed, see
+     docs/research/acw-vet-date-ranges.md): birth 1810-1880,
+     death 1861-1955. Outside = hostile name-collision; drop it.
 
   2. score_candidate treats any candidate with
      death_year > 1950 as a HARD miss (score 0) even when
@@ -223,115 +224,10 @@ def test_scoring_keeps_plausible_match():
 
 
 # ============================================================
-# Layer 3: date enrichment from dixiedata
+# Layer 3: REMOVED in J14 — automatic enrichment was a poison
+# risk (silent bad joins). Replaced with a post-pipeline
+# comparison in scripts/cgr/dixiedata_match.py (see J14).
 # ============================================================
-def test_enrich_pensioner_dates_returns_input_when_no_db():
-    """enrich_pensioner_dates(pensioners) is robust when
-    dixiedata DB is absent  -  must return the input list
-    unchanged (no crash, no dates added)."""
-    from scripts.enrich.dixiedata_dates import enrich_pensioner_dates
-    pensioners = [{"id": 1, "first_name": "John", "last_name": "Smith"}]
-    out = enrich_pensioner_dates(pensioners)
-    assert out == pensioners
-    for p in out:
-        assert "birth_year" not in p, "no birth_year should appear when no DB"
-
-
-def test_enrich_pensioner_dates_adds_known_match():
-    """When given a pre-loaded index with a matching (last, initial),
-    enrich_pensioner_dates must populate birth_year + death_year
-    on the matched pensioner."""
-    from scripts.enrich.dixiedata_dates import enrich_pensioner_dates
-    idx = {("ADAIR", "R"): {"birth_year": "1835", "death_year": "1927"}}
-    pensioners = [{"id": 3, "first_name": "R.", "last_name": "Adair"}]
-    out = enrich_pensioner_dates(pensioners, dixi_index=idx)
-    p = out[0]
-    assert p["birth_year"] == "1835"
-    assert p["death_year"] == "1927"
-
-
-def test_enrich_pensioner_dates_uses_initial_match():
-    """First initial match: 'R.' -> 'R' matches 'Robert'."""
-    from scripts.enrich.dixiedata_dates import enrich_pensioner_dates
-    idx = {("ADAIR", "R"): {"birth_year": "1835", "death_year": "1927"}}
-    pensioners = [{"id": 3, "first_name": "Robert", "last_name": "Adair"}]
-    out = enrich_pensioner_dates(pensioners, dixi_index=idx)
-    assert out[0]["death_year"] == "1927"
-
-
-def test_enrich_preserves_existing_dates():
-    """Pre-populated dates on pensioners must NOT be overwritten
-    by the enrichment (caller's data wins)."""
-    from scripts.enrich.dixiedata_dates import enrich_pensioner_dates
-    idx = {("ADAIR", "R"): {"birth_year": "1835", "death_year": "1927"}}
-    pensioners = [{
-        "id": 3,
-        "first_name": "R.",
-        "last_name": "Adair",
-        "birth_year": "1800",  # already present
-        "death_year": "1900",
-    }]
-    out = enrich_pensioner_dates(pensioners, dixi_index=idx)
-    assert out[0]["birth_year"] == "1800"
-    assert out[0]["death_year"] == "1900"
-
-
-def test_enrich_skips_no_last_name():
-    """Pensioners with no last_name must be skipped (not crash)."""
-    from scripts.enrich.dixiedata_dates import enrich_pensioner_dates
-    idx = {("SMITH", "J"): {"birth_year": "1830", "death_year": "1900"}}
-    pensioners = [
-        {"id": 1, "first_name": "John", "last_name": ""},
-        {"id": 2, "first_name": "", "last_name": "Smith"},
-    ]
-    out = enrich_pensioner_dates(pensioners, dixi_index=idx)
-    for p in out:
-        assert "birth_year" not in p
-
-
-def test_enrich_uses_live_db_when_present():
-    """If a live DB path is given AND exists, it should be used
-    (skipping the .ddbak fallback). Smoke test against the
-    user's dixiedata .ddbak backup. Skipped when no fixture."""
-    from pathlib import Path
-    from scripts.enrich.dixiedata_dates import load_dixiedata_index
-
-    candidates = list(Path(r"C:/development/dixiedata").glob("dixiedata-backup-*.ddbak"))
-    if not candidates:
-        idx = load_dixiedata_index(db_path=Path("/nonexistent/path.db"))
-        assert idx == {}
-        return
-    idx = load_dixiedata_index(zip_path=max(candidates, key=lambda p: p.stat().st_mtime))
-    assert len(idx) > 100, "expected hundreds of rows from dixiedata"
-    if ("ADAIR", "R") in idx:
-        assert idx[("ADAIR", "R")]["birth_year"] == "1835", "Adair birth year from dixiedata mismatch"
-        assert idx[("ADAIR", "R")]["death_year"] == "1927", "Adair death year from dixiedata mismatch"
-
-
-def test_enrich_sidecar_wins_over_db_when_present():
-    """When the sidecar JSON exists, load_dixiedata_index returns
-    its rows (skipping the DB / .ddbak paths). This is the path
-    fresh clones take: no DB, no .ddbak, just the committed 46KB
-    sidecar."""
-    from pathlib import Path
-    from scripts.enrich.dixiedata_dates import load_dixiedata_index
-
-    committed_sidecar = (
-        Path(__file__).parent.parent
-        / "docs"
-        / "research"
-        / "digitalprairie"
-        / "ok_pensioners.dixiedata_match.json"
-    )
-    if not committed_sidecar.exists():
-        # Sidecar not yet committed (this test was added before
-        # the sidecar was built). Skip rather than fail.
-        return
-    idx = load_dixiedata_index(sidecar=committed_sidecar)
-    assert len(idx) > 100, "expected committed sidecar to have hundreds of rows"
-    # Robert W. Adair from dixiedata TDM65-00526
-    if ("ADAIR", "R") in idx:
-        assert idx[("ADAIR", "R")]["death_year"] == "1927"
 
 
 def test_date_window_constants_are_narrow():

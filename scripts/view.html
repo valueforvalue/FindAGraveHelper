@@ -55,11 +55,19 @@
   .pensioner h2 .id { color: #888; font-weight: normal; font-size: 12px; }
   .meta { color: #666; font-size: 12px; margin-bottom: 12px; }
   .meta span { margin-right: 12px; }
+  /* J14: DD-match badge - shown when the top FaG candidate
+     is already tracked in the user's dixiedata research DB.
+     Reviewer can fast-track these (already paired by the
+     user previously). */
+  .dd-match-badge { display: inline-block; padding: 2px 8px;
+                    border-radius: 10px; font-size: 11px;
+                    font-weight: bold; margin-left: 4px;
+                    background: #cce5ff; color: #004085;
+                    border: 1px solid #b8daff; cursor: help; }
   /* J13: 'missing' badge for pensioners with no birth/death year.
      The reviewer should treat these specially: the FaG match
      set is not date-anchored, so ambiguous results are more
-     likely. After running scripts/enrich/dixiedata_dates.py,
-     this disappears for matched pensioners. */
+     likely. */
   .meta .life-dates.missing { color: #999; font-style: italic; }
   .meta .life-dates.missing em { font-style: italic; color: #999; }
   /* J12: source-card / application buttons in the meta row
@@ -248,6 +256,8 @@
         <option value="cgr_follow_up">CGR follow-up</option>
         <option value="cgr_clear">CGR clear</option>
         <option value="cgr_no_match">CGR+FaG miss</option>
+        <option value="dd_tracked">DD tracked (already in your DB)</option>
+        <option value="dd_pending">DD pending (need review)</option>
       </select>
     </label>
     <label>Search: <input type="text" id="searchBox" placeholder="name, regiment, app #…"></label>
@@ -287,6 +297,14 @@
      not file://). -->
 <!--EMBEDDED_RESULTS_JSONL-->
 
+<!-- J14: placeholder. Replaced at copy time with a <script
+     type="application/json"> block containing the matching
+     dd_match.json sidecar (post-pipeline comparison against
+     the user's dixiedata). Used to render the 'DD tracked'
+     badge + filter; falls back to fetch() (works under http://,
+     not file://). -->
+<!--EMBEDDED_DD_MATCH_JSON-->
+
 <!-- J8: modal for the digitalprairie "View source" button.
      Populated by fetchSourceJson(url) and dismissed via the
      close button or clicking the overlay. -->
@@ -305,6 +323,7 @@
 let rawPensioners = [];   // original input
 let pensioners = [];      // after normalization (rendering)
 let decisions = {};      // {pensioner_id: {memorial_id, slug, by, at, notes}}
+let ddMatchById = {};    // J14: {pensioner_id: dd_match_obj} from dd_match.json
 let filteredIds = [];
 let currentPage = 1;
 let perPage = 25;
@@ -661,6 +680,13 @@ function applyFilter() {
         if (statusVal === 'cgr_follow_up' && p.cgr_dedup_status !== 'follow_up_candidate') continue;
         if (statusVal === 'cgr_clear' && p.cgr_dedup_status !== 'clear') continue;
         if (statusVal === 'cgr_no_match' && p.cgr_dedup_status !== 'no_fag_match') continue;
+        // J14: dixiedata match filter. 'dd_tracked' shows only
+        // pensioners whose top FaG match is already in the user's
+        // DD research database (reviewer can fast-track these).
+        // 'dd_pending' shows only ones that aren't (the actual
+        // review set).
+        if (statusVal === 'dd_tracked' && !p.dd_match) continue;
+        if (statusVal === 'dd_pending' && p.dd_match) continue;
         if (q) {
             const haystack = [
                 p.pensioner_name, p.pensioner_first, p.pensioner_middle, p.pensioner_last,
@@ -682,12 +708,14 @@ function updateStats() {
     const counts = { auto_accept: 0, ambiguous: 0, too_many: 0, no_results: 0,
                      captcha: 0, skip: 0, error: 0 };
     const cgrCounts = { duplicate: 0, follow_up_candidate: 0, clear: 0, no_fag_match: 0 };
+    let ddMatched = 0;
     let decided = 0;
     for (const p of pensioners) {
         counts[p.status] = (counts[p.status] || 0) + 1;
         if (p.cgr_dedup_status) {
             cgrCounts[p.cgr_dedup_status] = (cgrCounts[p.cgr_dedup_status] || 0) + 1;
         }
+        if (p.dd_match) ddMatched++;
         if (decisions[p.pensioner_id]) decided++;
     }
     const s = document.getElementById('statsBar');
@@ -703,6 +731,8 @@ function updateStats() {
         <span class="pill" style="background:#fff3cd;color:#856404">CGR follow-up ${cgrCounts.follow_up_candidate}</span>
         <span class="pill" style="background:#e2e3e5;color:#383d41">CGR clear ${cgrCounts.clear}</span>
         <span class="pill" style="background:#f8d7da;color:#721c24">CGR+FaG miss ${cgrCounts.no_fag_match}</span>
+        <span class="pill" style="background:#cce5ff;color:#004085">DD tracked ${ddMatched}</span>
+        <span class="pill" style="background:#e2e3e5;color:#383d41">DD pending ${total - ddMatched}</span>
     `;
 }
 
@@ -934,7 +964,7 @@ function renderPensioner(p) {
         <div class="pensioner" id="p-${pid}">
             <h2>${escapeHtml(p.pensioner_name || '?')}
                 <span class="id">id=${pid}${p.pensioner_app_number ? ' &middot; app# ' + escapeHtml(p.pensioner_app_number) : ''}</span>
-                <span class="status ${statusClass}">${statusLabel}</span>${renderCgrDedupBadge(p)}
+                <span class="status ${statusClass}">${statusLabel}</span>${renderCgrDedupBadge(p)}${renderDdBadge(p)}
                 ${p.dd_in_local === true ? '<span class="dd-badge in">✓ in DD</span>'
                   : p.dd_in_local === false ? '<span class="dd-badge new">★ NEW FIND</span>' : ''}
                 ${p.leftover_pass && p.leftover_pass.disposition === 'found_conclusive'
@@ -1004,6 +1034,22 @@ function renderCgrDedupBadge(p) {
         title += ')';
     }
     return `<span class="cgr-dedup-badge ${escapeHtml(status)}" title="${escapeHtml(title)}">${escapeHtml(label)}</span>`;
+}
+
+// renderDdBadge: shows when the top FaG match is already tracked
+// in the user's dixiedata research DB. A green 'DD ✓' badge means
+// the reviewer can fast-track: someone has already paired this
+// pensioner with a verified memorial. Hover for the DD row ID +
+// source record type. Filter dropdown has 'DD tracked' / 'DD
+// pending' to scope the review set.
+function renderDdBadge(p) {
+    const dd = p.dd_match;
+    if (!dd) return '';
+    const mid = dd.dd_memorial_id || '?';
+    const rank = dd.matched_candidate_rank;
+    const rtype = dd.dd_record_type || '';
+    const title = `Already in your dixiedata DB: memorial #${mid}, ${dd.dd_soldier_first || ''} ${dd.dd_soldier_last || ''}, source=${rtype}. Top candidate at rank ${rank}; strength=${dd.match_strength || 'weak'}`;
+    return `<span class="dd-match-badge" title="${escapeHtml(title)}">DD ✓ (mem ${escapeHtml(String(mid))})</span>`;
 }
 
 function escapeHtml(s) {
@@ -1371,6 +1417,13 @@ async function tryAutoLoad() {
     if (embedded && embedded.textContent.trim()) {
         const text = embedded.textContent;
         applyLoaded(loadFromText(text, 'embedded'));
+        // J14: try to load embedded dd_match first; fall back to fetch.
+        const embeddedDd = document.getElementById('embedded-dd-match');
+        if (embeddedDd && embeddedDd.textContent.trim()) {
+            applyDdMatchFromText(embeddedDd.textContent, 'embedded');
+        } else {
+            await loadDdMatchSidecar();
+        }
         return;
     }
     // 2) Fetch from same dir (works under http://, not file://).
@@ -1388,6 +1441,8 @@ async function tryAutoLoad() {
             if (!r.ok) continue;
             const text = await r.text();
             applyLoaded(loadFromText(text, url.split('/').pop()));
+            // J14: also try to fetch the dd_match sidecar (best effort).
+            await loadDdMatchSidecar();
             return;
         } catch (e) {
             // try next candidate
@@ -1398,6 +1453,62 @@ async function tryAutoLoad() {
         'No results.jsonl found alongside view.html — pick a file to load.';
 }
 tryAutoLoad();
+
+// J14: load the dd_match.json sidecar produced by the post-
+// pipeline comparison script. Best-effort: silently no-op when
+// the file is missing (reviewer can still use view.html without
+// the DD-match badge / filter).
+async function loadDdMatchSidecar() {
+    const here = new URL(window.location.href);
+    const urls = [
+        new URL('dd_match.json', here).toString(),
+        new URL('./dd_match.json', here).toString(),
+        new URL('dixiedata_match.json', here).toString(),
+        new URL('./dixiedata_match.json', here).toString(),
+    ];
+    for (const url of urls) {
+        try {
+            const r = await fetch(url);
+            if (!r.ok) continue;
+            const text = await r.text();
+            applyDdMatchFromText(text, url.split('/').pop());
+            return;
+        } catch (e) {
+            // try next URL
+        }
+    }
+    // No sidecar found - that's fine, the badge/filter just won't activate.
+}
+
+// applyDdMatchFromText: parses a dd_match.json sidecar text and
+// applies it. Used both for the embedded block (file://) and the
+// http/s fetch path. Format: stats + an optional `matched_pairs`
+// array of `{pensioner_id, dd_match}` dicts.
+function applyDdMatchFromText(text, sourceLabel) {
+    let obj;
+    try {
+        obj = JSON.parse(text);
+    } catch (e) {
+        console.warn('dd_match sidecar parse failed (' + sourceLabel + '):', e);
+        return;
+    }
+    if (obj && obj.matches && typeof obj.matches === 'object') {
+        ddMatchById = obj.matches;
+    } else if (obj && obj.matched_pairs && Array.isArray(obj.matched_pairs)) {
+        ddMatchById = {};
+        for (const pair of obj.matched_pairs) {
+            if (pair.pensioner_id) ddMatchById[pair.pensioner_id] = pair.dd_match;
+        }
+    } else {
+        return;  // unrecognized shape
+    }
+    for (const p of pensioners) {
+        if (ddMatchById[p.pensioner_id]) {
+            p.dd_match = ddMatchById[p.pensioner_id];
+        }
+    }
+    render(); updateStats();
+}
 
 // ============================================================
 // J8: modal dismiss (close button + click outside the content)

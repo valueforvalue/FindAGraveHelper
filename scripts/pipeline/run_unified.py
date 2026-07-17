@@ -32,6 +32,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import stat
 import sys
 import time
@@ -120,6 +121,7 @@ class UnifiedRunnerConfig:
 # browser) or from a simple http server. The view.html JS
 # reads from the embedded block first, then falls back to fetch.
 EMBEDDED_DATA_PLACEHOLDER = "<!--EMBEDDED_RESULTS_JSONL-->"
+EMBEDDED_DD_MATCH_PLACEHOLDER = "<!--EMBEDDED_DD_MATCH_JSON-->"
 
 
 def copy_view_html_if_missing(
@@ -127,6 +129,7 @@ def copy_view_html_if_missing(
     dest_dir: Path,
     dest_filename: str = "view.html",
     results_path: Optional[Path] = None,
+    dd_match_path: Optional[Path] = None,
 ) -> bool:
     """Copy source → dest_dir/dest_filename iff dest doesn't exist.
 
@@ -134,6 +137,10 @@ def copy_view_html_if_missing(
     the EMBEDDED_DATA_PLACEHOLDER, the matching JSONL content is
     injected as a <script type="application/json"> block so the
     page works from file:// without needing a server.
+
+    If `dd_match_path` is provided AND the source contains the
+    EMBEDDED_DD_MATCH_PLACEHOLDER, the matching JSON sidecar is
+    similarly embedded (J14).
 
     Returns True if a copy happened, False otherwise (skipped because
     dest exists, or source missing, or source/dest identical path).
@@ -170,6 +177,21 @@ def copy_view_html_if_missing(
             # No results yet; drop the placeholder so the page
             # still loads (the user can pick a file manually).
             text = text.replace(EMBEDDED_DATA_PLACEHOLDER, "")
+
+    # J14: same embed pattern for the dd_match sidecar.
+    if dd_match_path is not None and EMBEDDED_DD_MATCH_PLACEHOLDER in text:
+        if dd_match_path.exists():
+            sidecar = dd_match_path.read_text(encoding="utf-8")
+            safe = sidecar.replace("</script>", "<\\/script>")
+            block = (
+                f'<script type="application/json" id="embedded-dd-match">\n'
+                f'{safe}\n'
+                f'</script>\n'
+            )
+            text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, block)
+        else:
+            # No DD sidecar yet (e.g. no DD source configured).
+            text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, "")
 
     dest.write_text(text, encoding="utf-8")
     return True
@@ -712,6 +734,43 @@ def run_batch(
         except Exception as e:
             log.error("CGR dedup failed: %s", e)
 
+    # J14: dixiedata post-pipeline comparison. For each pensioner,
+    # check if the top-ranked FaG candidate's memorial_id is
+    # already tracked in the user's dixiedata DB. Marks matching
+    # records with `dd_match: {...}` so view.html can show a
+    # 'DD tracked' badge and a filter to hide them. Read-only on
+    # dixiedata; never mutates it. Skipped silently when no DD
+    # source is configured (env vars or common default paths).
+    try:
+        from scripts.cgr.dixiedata_match import annotate_results_with_dd, load_dd_index
+        # Read env vars; empty string -> skip
+        raw_zip = os.environ.get("DIXIEDATA_ZIP_BACKUP", "").strip()
+        raw_db = os.environ.get("DIXIEDATA_DB", "").strip()
+        dd_zip = Path(raw_zip) if raw_zip else None
+        dd_db = Path(raw_db) if raw_db else None
+        dd_index = load_dd_index(db_path=dd_db, zip_path=dd_zip)
+        if dd_index:
+            dd_stats = annotate_results_with_dd(
+                results_path=state_path,
+                dd_index=dd_index,
+                match_strength="weak",
+            )
+            dd_sidecar = out_dir / "dd_match.json"
+            dd_stats["dd_index_size"] = len(dd_index)
+            dd_stats["dd_zip_backup"] = raw_zip
+            dd_stats["dd_db"] = raw_db
+            dd_sidecar.write_text(json.dumps(dd_stats, indent=2), encoding="utf-8")
+            log.info(
+                "DD match: %d/%d pensioners already in dixiedata (sidecar=%s)",
+                dd_stats["matched"], dd_stats["total"], dd_sidecar,
+            )
+        else:
+            log.info(
+                "DD match: skipped (DIXIEDATA_DB / DIXIEDATA_ZIP_BACKUP not set or paths invalid)"
+            )
+    except Exception as e:
+        log.warning("DD match skipped: %s", e)
+
     # J5-S3: resume.sh artifact. Written after the report so the
     # final state is captured by the next resume.
     if config_path_for_resume is not None:
@@ -724,6 +783,36 @@ def run_batch(
             log.info("Resume artifact: %s", resume_path)
         except Exception as e:
             log.error("Resume artifact write failed: %s", e)
+
+    # J14: copy view.html again, this time with the dd_match.json
+    # sidecar embedded (the initial copy at the start of run_batch
+    # happened BEFORE dd_match.json existed; that first copy
+    # embedded results.jsonl only). We don't overwrite an existing
+    # customized view.html; we only do the second copy when the
+    # embedded-block variant is missing.
+    try:
+        dd_sidecar_path = out_dir / "dd_match.json"
+        # Only do the second copy if the first copy exists AND we
+        # have a sidecar AND the sidecar wasn't embedded (the
+        # first copy would have left the placeholder empty). The
+        # easy heuristic: look for the embedded-dd-match id in the
+        # current view.html; if not present, do a sidecar embed pass.
+        view_path = out_dir / "view.html"
+        if view_path.exists() and dd_sidecar_path.exists():
+            text = view_path.read_text(encoding="utf-8")
+            if 'id="embedded-dd-match"' not in text and EMBEDDED_DD_MATCH_PLACEHOLDER in text:
+                embedded = dd_sidecar_path.read_text(encoding="utf-8")
+                safe = embedded.replace("</script>", "<\\/script>")
+                block = (
+                    f'<script type="application/json" id="embedded-dd-match">\n'
+                    f'{safe}\n'
+                    f'</script>\n'
+                )
+                text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, block)
+                view_path.write_text(text, encoding="utf-8")
+                log.info("Embedded dd_match sidecar in view.html (second pass)")
+    except Exception as e:
+        log.warning("Second-pass view.html embed failed: %s", e)
 
     return result
 
