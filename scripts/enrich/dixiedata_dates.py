@@ -166,6 +166,7 @@ def load_dixiedata_index(
     Returns {} if nothing is available.
     """
     if sidecar:
+        sidecar = Path(sidecar)
         if not sidecar.exists():
             log.info("sidecar %s not found; trying other sources", sidecar)
         else:

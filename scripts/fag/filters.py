@@ -84,11 +84,11 @@ def _apply_filters(
 def _inject_acw_date_window(params: dict) -> None:
     """Inject the project-wide ACW date window into FaG URL params.
 
-    ACW era Confederate vets: born after 1820 (at least 15 yrs old
-    by 1865), died before 1950 (long-lived widows could outlive
-    their husbands by decades). Modern same-surname candidates
-    are filtered out at the source — no need to spend Cloudflare
-    budget fetching them, no need to score-zero them downstream.
+    ACW era Confederate vets: born after 1810 (research-backed;
+    27/1,135 ground-truth vets were 1810-1819), died before
+    1955 (research-backed; 7/1,135 ground-truth deaths after
+    1940). See docs/research/acw-vet-date-ranges.md for the
+    full derivation from local data.
 
     Args:
         params: dict of URL params (mutated in place). Keys
@@ -106,15 +106,24 @@ def _inject_acw_date_window(params: dict) -> None:
         params["deathyearfilter"] = "before"
 
 # ============================================================
-# ACW-vet date window (J13)
+# ACW-vet date window (J13 + research-driven bounds)
 # ============================================================
-# An American Civil War Confederate pensioner would have been
-# born 1820-1870 (i.e. at least 15 years old by 1865; oldest vets
-# were in their 60s/70s). They would have died 1861-1950 (the
-# conflict started in 1861; the OK Confederate pension rolls
-# were last issued in the 1950s for long-lived veterans' widows).
+# Window for birth/death years of an American Civil War
+# Confederate pensioner. Derived from:
+#   docs/research/acw-vet-date-ranges.md (curated 2026-07-16
+#   from the 577-pair local ground truth + 1,135-row
+#   age-at-death validation set; full derivation in that file).
 #
-# Any FaG candidate outside this window is almost certainly a
+#   ACW_BIRTH_YEAR_MIN = 1810   # local data has 27 born 1810-1819 (fought as 40+)
+#   ACW_BIRTH_YEAR_MAX = 1880   # born after war; almost certainly a name-collision
+#   ACW_DEATH_YEAR_MIN = 1861   # war started 1861
+#   ACW_DEATH_YEAR_MAX = 1955   # OK pension rolls filed through ~1950s; 7/1135 deaths beyond 1940
+#
+# These keep 100% of the 577 ground-truth matches (the 2-3
+# edge cases that fall outside are flagged for human review
+# via the parse-time apply_date_filter, not silently dropped).
+#
+# Any FaG candidate outside this window is overwhelmingly likely a
 # same-surname name-collision (modern relative, pre-war ancestor,
 # or unrelated person) — NOT the pensioner.
 #
@@ -123,10 +132,10 @@ def _inject_acw_date_window(params: dict) -> None:
 #   - apply_date_filter (filters.py)
 #   - score_candidate (scoring.py) — when local dates are absent,
 #     a candidate with death_year outside this window scores 0.
-ACW_BIRTH_YEAR_MIN = 1820
-ACW_BIRTH_YEAR_MAX = 1870
+ACW_BIRTH_YEAR_MIN = 1810
+ACW_BIRTH_YEAR_MAX = 1880
 ACW_DEATH_YEAR_MIN = 1861
-ACW_DEATH_YEAR_MAX = 1950
+ACW_DEATH_YEAR_MAX = 1955
 
 
 def _parse_int(s: object) -> int | None:

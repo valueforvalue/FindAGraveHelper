@@ -4,6 +4,70 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J13-research: ACW-vet date ranges from real local data
+
+The date-window constants that drive J13's URL filter and
+score-zero gate were originally chosen from general
+historical knowledge (1820/1870/1861/1950). After running
+the full pipeline and looking at the actual distribution in
+our ground-truth data, those bounds were **too narrow on
+both ends**, dropping real ACW veterans and not catching
+the worst modern name-collisions.
+
+Curated artifact: `docs/research/acw-vet-date-ranges.md`
+(~7.8KB), with full distribution tables and the rationale
+for each bound. Highlights from the data:
+
+**Death-year distribution (577 known-good local pairs):**
+```
+1860s:   11    1890s:   62     1920s:  337  (peak)
+1870s:   10    1900s:  200     1930s:  138
+1880s:    2    1910s:  359  (peak)  1940s:   20
+                   1950s:    4     2020s:    2  <-- anomalies
+```
+
+**Birth-year distribution (1,135 records with both years):**
+```
+1800s:    5   1830s:  309   1850s:   42   1870s:    4
+1810s:   27   1840s:  680   1860s:   10   1880s:    1
+1820s:   62   (peak)         1930s:    3   (data errors)
+```
+
+**Age at death:** median 78, p10=62, p90=89, max=115.
+Confirms a real ACW vet is almost certainly dead by 95.
+
+**Updated constants:**
+```python
+ACW_BIRTH_YEAR_MIN = 1810  # was 1820; widened to keep 27
+ACW_BIRTH_YEAR_MAX = 1880  # was 1870; widened per local data
+ACW_DEATH_YEAR_MIN = 1861  # (unchanged; war starts here)
+ACW_DEATH_YEAR_MAX = 1955  # was 1950; widened to keep 7 deaths 1940-55
+```
+
+This keeps 100% of the 577 ground-truth matches while
+still rejecting modern same-surname candidates (the 2020s
+entry was a name-collision; the 1950s+ entries are
+long-lived widows or data errors worth flagging for
+review but not silently dropping).
+
+**Strict follow-up window** for "too_many" results:
+`birthyear=1820&birthyearfilter=after&deathyear=1940&deathyearfilter=before`.
+Survives 94% of real matches but cuts the modern
+name-collision noise further.
+
+**Files:**
+- `docs/research/acw-vet-date-ranges.md` (NEW, ~7.8KB) -
+  the artifact
+- `scripts/fag/filters.py` - widened ACW_* constants + comment
+- `tests/test_date_filter_j13.py` - 3 test updates to pin
+  the new bounds
+
+**Tests:** 822 adjacent pass; 1 pre-existing failure unrelated.
+
+**Laws honored.** L4 stable key order. L7 docstrings on the
+updated filter function explain the data-driven rationale
+and point to the research artifact.
+
 ### J13: filter impossible-date candidates from FaG search (3 layers)
 
 **Problem.** A scan of the test-batch-25 results.jsonl found

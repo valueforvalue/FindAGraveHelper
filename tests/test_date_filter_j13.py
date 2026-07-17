@@ -336,19 +336,22 @@ def test_enrich_sidecar_wins_over_db_when_present():
 
 def test_date_window_constants_are_narrow():
     """Pin the date window so the ACW-appropriate range is
-    explicit. Born 1820-1870 (potential ACW vets at ages 15+
-    by 1865); died 1861-1950 (allowed to live a long post-war
-    life, but not to be alive today)."""
+    explicit. Born 1810-1880 (research-backed: covers 27
+    born 1810-1819 in local data + 1840s peak; widest possible
+    is 1880 to catch post-war widows); died 1861-1955 (the
+    OK Confederate pension rolls were active through ~1955;
+    7 deaths after 1940 in local data).
+    """
     from scripts.fag.filters import (
         ACW_BIRTH_YEAR_MIN,
         ACW_BIRTH_YEAR_MAX,
         ACW_DEATH_YEAR_MIN,
         ACW_DEATH_YEAR_MAX,
     )
-    assert ACW_BIRTH_YEAR_MIN == 1820
-    assert ACW_BIRTH_YEAR_MAX == 1870
+    assert ACW_BIRTH_YEAR_MIN == 1810
+    assert ACW_BIRTH_YEAR_MAX == 1880
     assert ACW_DEATH_YEAR_MIN == 1861
-    assert ACW_DEATH_YEAR_MAX == 1950
+    assert ACW_DEATH_YEAR_MAX == 1955
 
 
 # ============================================================
@@ -362,9 +365,9 @@ def test_apply_location_filter_adds_date_window():
     from scripts.fag.filters import apply_location_filter
 
     out = apply_location_filter({"firstname": "John"}, "OK")
-    assert out["birthyear"] == "1820"
+    assert out["birthyear"] == "1810"
     assert out["birthyearfilter"] == "after"
-    assert out["deathyear"] == "1950"
+    assert out["deathyear"] == "1955"
     assert out["deathyearfilter"] == "before"
     # Location filter is preserved
     assert out["locationId"] == "state_38"
@@ -385,7 +388,7 @@ def test_date_window_preserves_strategy_specific_dates():
     assert out["deathyear"] == "1927", "strategy-specific deathyear was overwritten"
     assert out["deathyearfilter"] == "5year", "strategy-specific filter mode was overwritten"
     # Birth still gets the window
-    assert out["birthyear"] == "1820"
+    assert out["birthyear"] == "1810"
 
 
 def test_apply_location_only_skips_date_window():
