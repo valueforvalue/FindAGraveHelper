@@ -4,6 +4,59 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### es-fresh-run: 177 E-last-name pensioners, end-to-end pipeline
+
+First run with ALL features enabled (auto-relax + spouse scrape
++ top-N=3) on a fresh batch. The 177 pensioners whose last name
+starts with E (Eads ... Ezell).
+
+Headline results (1.5s throttle, 41 minutes wall clock):
+
+  - 177/177 processed, 0 errors, 66 outliers
+  - 37 BOTH MATCH (CGR corroborated)
+  - 6/177 already in dixiedata (DD match)
+  - 47/132 spouse captures (35.6% fill rate)
+    27 strong + 20 medium + 0 weak
+  - 88 auto-relax events; 28 widened to US, 16 kept OK
+  - 3 spouse matches at rank > 1 caught by top-N=3:
+      - #4257 Belli Earls (rank 2, strong)
+      - #7547 Sarah S Ellis (rank 2, strong)
+      - #8727 Margaret C. Ellis (rank 3, medium)
+
+### view.html second-pass embed: regex fix
+
+The second-pass embed check used a naive substring search
+for 'id="embedded-..."'. The source view.html has the literal
+string inside JS comments (in the docstring explaining how
+the embed works), so the check returned True even when no
+<script> tag existed. The second pass then SKIPPED embedding
+results.jsonl, dd_match.json, and spouse_match.json into the
+per-run view.html. The page loaded with zero pensioner cards.
+
+  - scripts/pipeline/run_unified.py: the second-pass embed
+    check now uses a regex that requires both the
+    <script type="application/json" id="..."> opening AND a
+    JSON `{` brace immediately after. Comments never have
+    both adjacent.
+  - tests/test_per_run_isolation.py: the byte-identical
+    comparison now strips actual embed blocks using the same
+    strict regex.
+  - tests/test_embed_detection_bug.py: 5 new regression tests
+    pinning the bug and the fix.
+
+The fix was discovered when es-fresh-run's view.html loaded
+with 0 cards instead of 177; the J9 embed had been silently
+skipped for several previous runs (it would only have been
+correct when the source happened to be an empty placeholder,
+which it never is in practice).
+
+### SPOUSE_SCRAPE_TOP_N env var
+
+scripts/pipeline/run_unified.py now reads SPOUSE_SCRAPE_TOP_N
+(default 1) to pass through to the spouse scrape subprocess.
+This lets the runner pick top-N for the gold-badge matching
+without code changes. Used as 3 in es-fresh-run.
+
 ### Enhancement #14: top-N>1 in scripts/cgr/spouse_compare.py
 
 When the top-1 FaG candidate is a same-name modern person

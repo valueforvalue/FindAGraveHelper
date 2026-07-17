@@ -124,6 +124,10 @@ def test_view_html_copy_byte_identical(tmp_path):
     # comparison. The second-pass embed (J14 second-pass, J15-S2)
     # may replace these with script blocks; with no DD / spouse
     # sidecars present, the second pass drops them entirely.
+    # Also strip any actual <script type="application/json"
+    # id="embedded-..."> blocks added by the second-pass embed
+    # (the source template never has those blocks).
+    import re
     for placeholder in (
         "<!--EMBEDDED_RESULTS_JSONL-->",
         "<!--EMBEDDED_DD_MATCH_JSON-->",
@@ -131,6 +135,20 @@ def test_view_html_copy_byte_identical(tmp_path):
     ):
         src_text = src_text.replace(placeholder, "")
         dst_text = dst_text.replace(placeholder, "")
+    # Strip any actual embed blocks (added by the second-pass
+    # when results.jsonl exists at end-of-run). The src view.html
+    # has the literal <script type="application/json" id="...">
+    # inside a JS comment for documentation; we don't want to
+    # confuse the regex with that. Require a `{` opening brace
+    # immediately after the script tag — only real embed blocks
+    # have that pattern.
+    for embed_id in ("embedded-results-jsonl", "embedded-dd-match",
+                     "embedded-spouse-match"):
+        pat = re.compile(
+            r'<script\s+type="application/json"\s+id="' + embed_id
+            + r'"[^>]*>\s*\{[\s\S]*?</script>\n?',
+        )
+        dst_text = pat.sub("", dst_text)
     src_text_stripped = src_text
     dst_text_stripped = dst_text
     assert src_text_stripped == dst_text_stripped, (

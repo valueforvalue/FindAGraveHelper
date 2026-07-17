@@ -796,7 +796,7 @@ def run_batch(
         log.warning("DD match skipped: %s", e)
 
     # J15-S2: post-pipeline spouse scrape (opt-in via FAG_SCRAPE_SPOUSE=1).
-    # Walks the just-written results.jsonl, fetches the top-1 candidate's
+    # Walks the just-written results.jsonl, fetches the top-N candidate's
     # memorial page, parses Family Members > Spouse, compares with the
     # pensioner's known spouse, writes spouse_match per record. Read-only
     # on FaG + the existing results file.
@@ -812,14 +812,24 @@ def run_batch(
             sp_sidecar = out_dir / "spouse_match.json"
             # Use the same Python interpreter that's running us.
             py = sys.executable
+            # top_n is configurable via env var SPOUSE_SCRAPE_TOP_N
+            # (default 1; set to 3 for rank-2/3 widening per issue #14).
+            top_n_str = os.environ.get("SPOUSE_SCRAPE_TOP_N", "1").strip()
+            try:
+                top_n = int(top_n_str)
+            except ValueError:
+                top_n = 1
+            if top_n < 1:
+                top_n = 1
             cmd = [
                 py, "-m", "scripts.cgr.spouse_compare",
                 "--results", str(state_path),
                 "--sidecar-out", str(sp_sidecar),
-                "--top-n", "1",
+                "--top-n", str(top_n),
                 "--throttle", str(config.throttle_seconds),
             ]
-            log.info("Spouse scrape: launching subprocess %s", " ".join(cmd))
+            log.info("Spouse scrape: launching subprocess (top_n=%d) %s",
+                     top_n, " ".join(cmd))
             rc = subprocess.call(cmd)
             log.info("Spouse scrape subprocess exit code: %s", rc)
             if sp_sidecar.exists():
@@ -884,7 +894,35 @@ def run_batch(
             # replaces the placeholder with either a real script
             # block, or an empty string when results.jsonl didn't
             # exist yet). Detect "embedded-results-jsonl" id.
-            if state_path.exists() and 'id="embedded-results-jsonl"' not in text:
+            # NOTE: the source template has the literal string
+            # 'id="embedded-results-jsonl"' inside JS comments,
+            # which would make a naive substring check return True
+            # even when no <script> tag exists. Use a regex that
+            # matches an actual <script ...> tag.
+            import re
+            # The source template has the literal string
+            # 'id="embedded-..."' inside HTML AND JS comments
+            # (in the docstring at lines ~316 and ~1524). A naive
+            # substring check would return True even when no
+            # <script> tag exists. Require BOTH a `<script
+            # type="application/json"` start tag AND an actual
+            # JSON opening brace `{` immediately after. Real embed
+            # blocks look like:
+            #   <script type="application/json" id="...">{ ... }
+            # Comments never have both adjacent.
+            results_embedded_re = re.compile(
+                r'<script\s+type="application/json"\s+id="embedded-results-jsonl"'
+                r'>\s*\{',
+            )
+            dd_embedded_re = re.compile(
+                r'<script\s+type="application/json"\s+id="embedded-dd-match"'
+                r'>\s*\{',
+            )
+            spouse_embedded_re = re.compile(
+                r'<script\s+type="application/json"\s+id="embedded-spouse-match"'
+                r'>\s*\{',
+            )
+            if state_path.exists() and not results_embedded_re.search(text):
                 # Insert the script block right where the J9
                 # placeholder used to be (preserve any preceding
                 # comments). Just append at the end of <head>.
@@ -901,11 +939,26 @@ def run_batch(
                 else:
                     text += block
                 mutated = True
-            if dd_sidecar_path.exists() and 'id="embedded-dd-match"' not in text:
+            if dd_sidecar_path.exists() and not dd_embedded_re.search(text):
                 embedded = dd_sidecar_path.read_text(encoding="utf-8")
                 safe = embedded.replace("</script>", "<\\/script>")
                 block = (
                     f'<script type="application/json" id="embedded-dd-match">\n'
+                    f'{safe}\n'
+                    f'</script>\n'
+                )
+                if "</head>" in text:
+                    text = text.replace("</head>", block + "</head>")
+                else:
+                    text += block
+                mutated = True
+            # J15-S2: spouse_match sidecar embed
+            sp_sidecar_path = out_dir / "spouse_match.json"
+            if sp_sidecar_path.exists() and not spouse_embedded_re.search(text):
+                embedded = sp_sidecar_path.read_text(encoding="utf-8")
+                safe = embedded.replace("</script>", "<\\/script>")
+                block = (
+                    f'<script type="application/json" id="embedded-spouse-match">\n'
                     f'{safe}\n'
                     f'</script>\n'
                 )
