@@ -87,6 +87,11 @@ class UnifiedRunnerConfig:
     # Behavioral
     write_outliers_separately: bool = True
     write_heartbeat_every: int = 50  # every N pensioners
+    # Issue #21: auto-checkpoint every N records (0 to disable).
+    # When > 0, run_batch writes a state.jsonl checkpoint snapshot
+    # at this cadence. Combined with --rollback-to, this bounds
+    # the worst-case data loss window to ~N records.
+    checkpoint_every: int = 0
     # Pensioncard pages sidecar (J6). Built by
     # scripts/ingest/fetch_pensioncard_pages.py. Maps
     # pensioner_id (str) -> [page_id, ...] (the IIIF image IDs for
@@ -703,6 +708,17 @@ def run_batch(
             )
             last_heartbeat = now
 
+        # Issue #21: auto-checkpoint every config.checkpoint_every
+        # records. Cheap (single file copy), enables --rollback-to.
+        if config.checkpoint_every and (i + 1) % config.checkpoint_every == 0:
+            try:
+                from scripts.pipeline.checkpoint import write_checkpoint_snapshot
+                snap = write_checkpoint_snapshot(state_path)
+                log.debug("Auto-checkpoint at record %d: %s", i + 1, snap.name)
+            except Exception as ckpt_err:
+                # Don't fail the run on a checkpoint error
+                log.warning("Auto-checkpoint failed: %s", ckpt_err)
+
     result.finished_at = time.time()
     log.info(
         "Batch complete: %d/%d processed, %d outliers, %d errors, "
@@ -1106,6 +1122,42 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "(currently 'OK'). Override here to "
                              "broaden (e.g. '' for global) or scope to "
                              "another state.")
+    # Issue #21: reversibility flags
+    parser.add_argument("--dry-run", action="store_true",
+                        help="Exercise the non-FaG pipeline (matching, "
+                             "scoring, CGR) against an existing "
+                             "state.jsonl and emit a JSONL diff showing "
+                             "which records would change. NEVER makes a "
+                             "FaG network request. Writes "
+                             "<out>/dry_run_diff.jsonl.")
+    parser.add_argument("--state-replay", type=Path, default=None,
+                        help="Read OLD state.jsonl from this path, "
+                             "apply the non-FaG pipeline, write NEW "
+                             "state.jsonl in --out. Useful for A/B "
+                             "testing strategy changes against "
+                             "historical state without re-running FaG.")
+    parser.add_argument("--rollback-to", type=str, default=None,
+                        help="Restore state.jsonl from a named "
+                             "checkpoint snapshot. Use 'latest' for "
+                             "the most recent. Auto-checkpoints are "
+                             "written every --checkpoint-every records "
+                             "(default 1000).")
+    parser.add_argument("--checkpoint-every", type=int, default=1000,
+                        help="Write a state.jsonl checkpoint snapshot "
+                             "every N records (default 1000). "
+                             "Snapshots enable --rollback-to.")
+    parser.add_argument("--checkpoint-label", type=str, default=None,
+                        help="Optional label for the next manual "
+                             "checkpoint snapshot written via "
+                             "--write-checkpoint.")
+    parser.add_argument("--write-checkpoint", action="store_true",
+                        help="Write a checkpoint snapshot of the "
+                             "current state.jsonl and exit (no "
+                             "pipeline run). Use --checkpoint-label "
+                             "to name it.")
+    parser.add_argument("--list-checkpoints", action="store_true",
+                        help="List all checkpoint snapshots for the "
+                             "current run and exit.")
     args = parser.parse_args(argv)
 
     # ============================================================
@@ -1182,6 +1234,44 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         print("error: --out is required (or pass --config)", file=sys.stderr)
         return 1
 
+    # Issue #21: early-exit commands. Handle their own I/O and
+    # skip the entire pipeline setup. Each returns 0 on success.
+    if args.list_checkpoints:
+        from scripts.pipeline.checkpoint import list_checkpoints
+        state_path = Path(args.out) / "results.jsonl"
+        snaps = list_checkpoints(state_path)
+        if not snaps:
+            print(f"No checkpoints found for {state_path}")
+            return 0
+        print(f"Checkpoints for {state_path}:")
+        for s in snaps:
+            print(f"  {s.name}")
+        return 0
+
+    if args.write_checkpoint:
+        from scripts.pipeline.checkpoint import write_checkpoint_snapshot
+        state_path = Path(args.out) / "results.jsonl"
+        if not state_path.exists():
+            print(f"error: state file not found: {state_path}", file=sys.stderr)
+            return 1
+        snap = write_checkpoint_snapshot(state_path, label=args.checkpoint_label)
+        print(f"Checkpoint written: {snap}")
+        return 0
+
+    if args.rollback_to:
+        from scripts.pipeline.checkpoint import rollback_to_checkpoint
+        state_path = Path(args.out) / "results.jsonl"
+        if not state_path.exists():
+            print(f"error: state file not found: {state_path}", file=sys.stderr)
+            return 1
+        try:
+            rollback_to_checkpoint(state_path, label=args.rollback_to)
+            print(f"Rolled back {state_path} to checkpoint {args.rollback_to!r}")
+            return 0
+        except FileNotFoundError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+
     # Setup logger
     out_dir = Path(args.out)
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -1234,7 +1324,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
 
     # Build FaG search function (or None)
     fag_search_fn = None
-    if not args.no_fag:
+    if not args.no_fag and not args.dry_run:
         # Inline-import to avoid loading Playwright when not needed
         from scripts.fag.fag_browser import make_fag_search_fn
         log.info("Initializing Playwright (visible browser, takes ~10s)...")
@@ -1264,6 +1354,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         limit=args.limit,
         fag_search_fn=fag_search_fn,
         write_heartbeat_every=args.heartbeat_every,
+        checkpoint_every=args.checkpoint_every,
         # J5-S2: per-run Results filename + view.html source.
         # Default results.jsonl; CLI/config can override.
         results_filename=getattr(args, "results_filename", "results.jsonl"),
@@ -1273,6 +1364,24 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
     )
+
+    # Issue #21: --state-replay. Read OLD state, apply non-FaG
+    # pipeline, write NEW state to out_dir/results.jsonl. Exits
+    # before the normal pipeline starts.
+    if args.state_replay:
+        from scripts.pipeline.state_replay import replay_state
+        new_state_path = out_dir / "results.jsonl"
+        log.info(
+            "state-replay: %s -> %s (threshold=%.2f)",
+            args.state_replay, new_state_path, args.low_score_threshold,
+        )
+        n = replay_state(
+            old_state_path=args.state_replay,
+            new_state_path=new_state_path,
+            low_score_threshold=args.low_score_threshold,
+        )
+        log.info("Replayed %d records", n)
+        return 0
 
     try:
         result = run_batch(
@@ -1284,6 +1393,38 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             config_path_for_resume=args.config,
         )
         log.info("Run finished: %s", json.dumps(result.to_dict(), indent=2))
+
+        # Issue #21: --dry-run emits a JSONL diff after the pipeline
+        # runs. The diff compares the just-written state.jsonl against
+        # either an explicit baseline (results.jsonl.before, copied
+        # manually before the run) or a fresh empty baseline (every
+        # record is 'new' = changed).
+        if args.dry_run:
+            from scripts.pipeline.dry_run import (
+                predict_outcome_from_state,
+                write_dry_run_diff,
+            )
+            from scripts.state.repository import JsonlStateRepository
+            predictions = [
+                predict_outcome_from_state(r, args.low_score_threshold)
+                for r in JsonlStateRepository(out_dir / "results.jsonl").iter_all()
+            ]
+            baseline = out_dir / "results.jsonl.before"
+            if not baseline.exists():
+                # Synthesize an empty baseline so every record counts
+                # as 'new'. write_dry_run_diff handles missing files.
+                baseline = out_dir / "results.jsonl.before.missing"
+            diff_path = out_dir / "dry_run_diff.jsonl"
+            n_changed = write_dry_run_diff(
+                out_path=diff_path,
+                current_state_path=baseline,
+                predictions=predictions,
+            )
+            log.info(
+                "dry-run: %d/%d records would change (diff: %s)",
+                n_changed, len(predictions), diff_path,
+            )
+
         return 0
     except KeyboardInterrupt:
         log.warning("Interrupted by user. State has been flushed.")
