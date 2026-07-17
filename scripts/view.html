@@ -294,7 +294,11 @@
      type="application/json"> block containing the matching
      results.jsonl. The page reads from it first; falls back
      to fetch() of sibling results.jsonl (works under http://,
-     not file://). -->
+     not file://).
+     The placeholder is also a stable marker: copy_view_html_if_missing
+     strips it after the first embed pass so the second-pass
+     detection (which checks for the <script id="embedded-results-jsonl">
+     element) can still tell if a NEW embed is needed. -->
 <!--EMBEDDED_RESULTS_JSONL-->
 
 <!-- J14: placeholder. Replaced at copy time with a <script

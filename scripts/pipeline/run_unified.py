@@ -797,10 +797,39 @@ def run_batch(
         # first copy would have left the placeholder empty). The
         # easy heuristic: look for the embedded-dd-match id in the
         # current view.html; if not present, do a sidecar embed pass.
+        # Also, embed results.jsonl on the second pass when the
+        # first copy happened before results.jsonl existed (the
+        # placeholder was already replaced with empty content, so
+        # we instead inject the script block directly at the
+        # placeholder location).
         view_path = out_dir / "view.html"
-        if view_path.exists() and dd_sidecar_path.exists():
+        if view_path.exists():
             text = view_path.read_text(encoding="utf-8")
-            if 'id="embedded-dd-match"' not in text and EMBEDDED_DD_MATCH_PLACEHOLDER in text:
+            mutated = False
+            # J9: results.jsonl may not have been embedded if the
+            # first copy happened too early. Check for the actual
+            # <script> tag, not the placeholder (the first copy
+            # replaces the placeholder with either a real script
+            # block, or an empty string when results.jsonl didn't
+            # exist yet). Detect "embedded-results-jsonl" id.
+            if state_path.exists() and 'id="embedded-results-jsonl"' not in text:
+                # Insert the script block right where the J9
+                # placeholder used to be (preserve any preceding
+                # comments). Just append at the end of <head>.
+                embedded = state_path.read_text(encoding="utf-8")
+                safe = embedded.replace("</script>", "<\\/script>")
+                block = (
+                    f'<script type="application/json" id="embedded-results-jsonl">\n'
+                    f'{safe}\n'
+                    f'</script>\n'
+                )
+                # Insert before </head>
+                if "</head>" in text:
+                    text = text.replace("</head>", block + "</head>")
+                else:
+                    text += block
+                mutated = True
+            if dd_sidecar_path.exists() and 'id="embedded-dd-match"' not in text:
                 embedded = dd_sidecar_path.read_text(encoding="utf-8")
                 safe = embedded.replace("</script>", "<\\/script>")
                 block = (
@@ -808,9 +837,14 @@ def run_batch(
                     f'{safe}\n'
                     f'</script>\n'
                 )
-                text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, block)
+                if "</head>" in text:
+                    text = text.replace("</head>", block + "</head>")
+                else:
+                    text += block
+                mutated = True
+            if mutated:
                 view_path.write_text(text, encoding="utf-8")
-                log.info("Embedded dd_match sidecar in view.html (second pass)")
+                log.info("Embedded missing sidecars in view.html (second pass)")
     except Exception as e:
         log.warning("Second-pass view.html embed failed: %s", e)
 
