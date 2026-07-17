@@ -94,12 +94,15 @@ def test_is_unified_still_true_for_unified_record():
 # Round-trip: write + read
 # ============================================================
 def test_roundtrip_preserves_both_links(tmp_path):
-    """Write unified record to state.jsonl, read back, both links survive."""
-    from scripts.run_unified import write_unified_line
+    """Write unified record to state.jsonl, read back, both links survive.
+
+    Issue #22: write_unified_line adapter removed; use Repository.
+    """
+    from scripts.state.repository import JsonlStateRepository
 
     state_path = tmp_path / "state.jsonl"
     rec = _make_unified_record()
-    write_unified_line(state_path, rec)
+    JsonlStateRepository(state_path).append(rec)
 
     lines = state_path.read_text(encoding="utf-8").strip().split("\n")
     assert len(lines) == 1

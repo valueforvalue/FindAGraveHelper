@@ -17,10 +17,10 @@ from scripts.run_unified import (
     heartbeat_logger,
     write_outliers_line,
     load_existing_ids,
-    write_unified_line,
     UnifiedRunnerConfig,
     run_one_pensioner_cgr_only,
 )
+from scripts.state.repository import JsonlStateRepository
 
 
 # ============================================================
@@ -93,11 +93,13 @@ def test_load_existing_ids_returns_set():
 # ============================================================
 # write_unified_line + write_outliers_line
 # ============================================================
-def test_write_unified_line_appends(tmp_path):
-    """Each call appends one line and flushes."""
+def test_state_repo_append_persists_records(tmp_path):
+    """Issue #22: write_unified_line adapter removed; tests use the
+    Repository directly. Each call appends one line and flushes+fsyncs (L3)."""
     state_path = tmp_path / "state.jsonl"
-    write_unified_line(state_path, {"pensioner_id": 1})
-    write_unified_line(state_path, {"pensioner_id": 2})
+    repo = JsonlStateRepository(state_path)
+    repo.append({"pensioner_id": 1})
+    repo.append({"pensioner_id": 2})
     lines = state_path.read_text(encoding="utf-8").strip().split("\n")
     assert len(lines) == 2
     assert json.loads(lines[0])["pensioner_id"] == 1

@@ -25,6 +25,78 @@ from typing import Callable, Iterable, Iterator, Protocol
 from scripts.state.state_check import StateCheckResult, check_state_file
 
 
+class InMemoryStateRepository:
+    """In-memory StateRepository for tests + dry-run.
+
+    Same Protocol surface as JsonlStateRepository but no disk I/O.
+    Use in tests where you want to assert on what was appended
+    without touching the filesystem, or in `--dry-run` mode where
+    the operator wants a diff without writing a file.
+
+    Note: `check()` returns a StateCheckResult built from the in-memory
+    records. For tests that want to exercise the JSONL path, use
+    JsonlStateRepository with `tmp_path`.
+    """
+
+    def __init__(self, initial: Iterable[dict] | None = None):
+        self._records: list[dict] = list(initial) if initial else []
+
+    @property
+    def records(self) -> list[dict]:
+        """Read-only view of all records (for assertions)."""
+        return list(self._records)
+
+    def append(self, record: dict) -> None:
+        self._records.append(dict(record))
+
+    def iter_all(self) -> Iterator[dict]:
+        return iter(self._records)
+
+    def get(self, pensioner_id: int) -> dict | None:
+        for rec in self._records:
+            if rec.get("pensioner_id") == pensioner_id:
+                return rec
+        return None
+
+    def update(
+        self,
+        pensioner_id: int,
+        mutate: Callable[[dict], dict],
+    ) -> bool:
+        for i, rec in enumerate(self._records):
+            if rec.get("pensioner_id") == pensioner_id:
+                self._records[i] = mutate(dict(rec))
+                return True
+        return False
+
+    def replace_all(
+        self,
+        records: Iterable[dict],
+        *,
+        atomic: bool = True,
+    ) -> None:
+        # atomic is a no-op for in-memory; documented for Protocol
+        # compatibility with JsonlStateRepository.
+        del atomic  # unused
+        self._records = [dict(r) for r in records]
+
+    def check(self, expected_ids: set[int]) -> StateCheckResult:
+        """Build a StateCheckResult from in-memory records."""
+        result = StateCheckResult()
+        result.total_records = len(self._records)
+        seen: dict[int, int] = {}
+        for rec in self._records:
+            pid = rec.get("pensioner_id")
+            if pid is None:
+                continue
+            if pid in seen:
+                result.duplicate_ids.add(pid)
+            seen[pid] = seen.get(pid, 0) + 1
+            result.pensioner_ids_present.add(pid)
+        result.missing_ids = expected_ids - result.pensioner_ids_present
+        return result
+
+
 class StateRepository(Protocol):
     """The boundary between business logic and the state.jsonl wire format.
 

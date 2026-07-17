@@ -4,6 +4,32 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Iteration on issue #22: rip out adapter wrappers + add InMemoryStateRepository
+
+Follow-up to the StateRepository work. Three changes:
+
+- **REMOVED** `write_state_line` (scripts/pipeline/core.py): no
+  production callers; was a back-compat shim.
+- **REMOVED** `write_unified_line` (scripts/pipeline/run_unified.py):
+  callers now use the Repository directly. Updated 4 sites:
+  `run_batch` (loop body + error path), 2 tests, and the
+  `scripts/__init__.py` public facade.
+- **NEW** `InMemoryStateRepository`: same Protocol surface as
+  `JsonlStateRepository` but no disk I/O. Useful for tests that
+  don't need to touch the filesystem. 8 new tests.
+
+The iteration closes the orthogonality loop — business logic
+no longer has any path to write state.jsonl without going
+through the Repository.
+
+Verification:
+
+- `pytest tests/`: **937 passed**, 1 deselected, 2 pre-existing
+  failures unrelated (view.html anchor + skipped-badge markup).
+- `python scripts/run_unified.py --help`: exits 0.
+- All 7 references to the removed `write_state_line` /
+  `write_unified_line` are now in comments / docstrings only.
+
 ### Refactor: introduce StateRepository to abstract state.jsonl (orthogonality)
 
 Closed issue #22. Per pragmatic-programmer §2 Orthogonality: business
