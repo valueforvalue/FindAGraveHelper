@@ -4,6 +4,26 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Full pension-card ingest: 7,558/7,558 records cached
+
+The full pension-card IIIF page-id ingest completed
+2026-07-17 ~00:28 UTC. All 7,558 pensioners with a
+pensioncard_id are now in the cache at
+`docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json`.
+
+  - Single-page: 5,542 records (use pcid as page id)
+  - Compound (2+ pages): 2,016 records (use pageptr ids)
+  - Failures: 0
+  - Wall time: ~38 min (split across two ~20-min runs)
+  - API endpoint: https://digitalprairie.ok.gov/digital/api/singleitem/collection/pensioncard/id/{pcid}
+  - IIIF URL pattern: https://digitalprairie.ok.gov/iiif/2/pensioncard:{page_id}/full/300,/0/default.jpg
+
+A future pipeline run on any batch will now correctly populate
+`pensioncard_pages` per record, and the view.html will render
+the IIIF thumbnails inline. Verified end-to-end on the
+es-fresh-run batch (174/174 records, 40 <img> tags rendered
+across 25 visible cards).
+
 ### view.html corruption: root cause identified
 
 es-fresh-run's view.html was rendering a 434,442px-tall
