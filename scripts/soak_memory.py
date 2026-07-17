@@ -29,7 +29,7 @@ if str(_SCRIPTS_DIR) not in sys.path:
 
 from playwright.sync_api import sync_playwright
 
-from scripts.rss_watchdog import _get_rss_bytes
+from scripts.fag.rss_watchdog import _get_rss_bytes
 
 
 def rss_mb() -> float:

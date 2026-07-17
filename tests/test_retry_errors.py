@@ -22,7 +22,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.retry_errors import (
+from scripts.pipeline.retry_errors import (
     collect_error_pensioner_ids,
     retry_error_pensioners,
     RetryResult,

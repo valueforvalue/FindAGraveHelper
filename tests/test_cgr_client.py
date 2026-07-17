@@ -16,7 +16,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_client import CGRClient
+from scripts.cgr.cgr_client import CGRClient
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
@@ -120,7 +120,7 @@ def test_client_throttles_between_requests():
     """When throttle_seconds > 0, the client sleeps between requests."""
     fixture = FIXTURE_DIR / "results_william_looney.html"
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("scripts.cgr_client.time.sleep") as mock_sleep:
+         patch("scripts.cgr.cgr_client.time.sleep") as mock_sleep:
         mock_urlopen.return_value = _html_response(fixture)
         client = CGRClient(throttle_seconds=2.0)
         # First request: no throttle (warmup)
@@ -139,7 +139,7 @@ def test_client_does_not_throttle_when_zero():
     """When throttle_seconds=0, the client never sleeps."""
     fixture = FIXTURE_DIR / "results_william_looney.html"
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("scripts.cgr_client.time.sleep") as mock_sleep:
+         patch("scripts.cgr.cgr_client.time.sleep") as mock_sleep:
         mock_urlopen.return_value = _html_response(fixture)
         client = CGRClient(throttle_seconds=0)
         for _ in range(5):

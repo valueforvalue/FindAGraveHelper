@@ -23,6 +23,14 @@ scripts.checkpoint` was found, only a runtime suspicion of calls from
 
 54 matches across 4 files.
 
+> **Note (2026-07-17):** `scripts/checkpoint.py` was a back-compat
+> shim for `scripts.fag.search` consumption; the canonical home
+> is `scripts.pipeline.checkpoint` (post-T021 subpackage split).
+> The shim was deleted as part of issue #19. The bare import
+> pattern noted below (`from checkpoint import …`) was fixed
+> by `scripts/search_fag.py` using the canonical
+> `from scripts.pipeline.checkpoint import` path.
+
 ## Verdict
 
 **Live, not dead.** All four exported symbols are called by
@@ -39,7 +47,7 @@ This bare import (no `scripts.` prefix) relies on `sys.path` having
 (`run_unified.py`, `leftover_investigation.py`, etc.) add `scripts/` to
 the path. It's fragile — the audit's static parser couldn't see it as
 a `scripts.checkpoint` edge. **T017 (split search_fag.py) should fix
-this to `from scripts.checkpoint import …`.**
+this to `from scripts.pipeline.checkpoint import …`.**
 
 ## Side effect on T020
 

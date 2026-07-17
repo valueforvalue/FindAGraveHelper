@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_cemeteries import parse_cemeteries_html
+from scripts.cgr.cgr_cemeteries import parse_cemeteries_html
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"

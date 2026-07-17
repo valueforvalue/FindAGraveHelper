@@ -20,7 +20,7 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Optional
 
-from scripts.outlier_classifier import (
+from scripts.matching.outlier_classifier import (
     OutlierConfig,
     classify_record,
     is_outlier,

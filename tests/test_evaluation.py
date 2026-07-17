@@ -22,7 +22,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.evaluation import (
+from scripts.matching.evaluation import (
     ConfusionMatrix,
     compute_confusion_matrix,
     precision,
@@ -249,7 +249,7 @@ def test_best_threshold_explores_range():
 
 def test_best_threshold_with_named_result():
     """The result has threshold, precision, recall, f1 fields."""
-    from scripts.evaluation import ThresholdResult
+    from scripts.matching.evaluation import ThresholdResult
     result = best_threshold([(True, 0.9), (False, 0.1)])
     assert isinstance(result, ThresholdResult)
     assert hasattr(result, "threshold")

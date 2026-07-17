@@ -31,7 +31,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.nickname_match import (
+from scripts.matching.nickname_match import (
     KNOWN_NICKNAMES,
     reverse_nickname,
     nickname_candidates,

@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_cem import parse_cgr_cem
+from scripts.cgr.cgr_cem import parse_cgr_cem
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"

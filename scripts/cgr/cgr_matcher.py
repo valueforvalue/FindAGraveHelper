@@ -126,7 +126,7 @@ def _combined_name_score(a: str, b: str) -> float:
     (e.g. rapidfuzz or jellyfish not installed).
     """
     try:
-        from scripts.phonetic_match import combined_name_score
+        from scripts.matching.phonetic_match import combined_name_score
         return combined_name_score(a, b)
     except ImportError:
         # Fallback: Soundex-only scoring

@@ -89,7 +89,7 @@ def test_cli_config_loads_and_runs(tmp_path, monkeypatch):
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     # Run with --config and --no-fag (no Playwright)
-    with patch("scripts.fag_browser.make_fag_search_fn") as mfsf:
+    with patch("scripts.fag.fag_browser.make_fag_search_fn") as mfsf:
         rc = cli_main(["--config", str(cfg_path), "--no-fag"])
     assert rc == 0
     # Results file should exist under output/beta/

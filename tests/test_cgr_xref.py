@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_xref import xref_one_pensioner, XrefConfig
+from scripts.cgr.cgr_xref import xref_one_pensioner, XrefConfig
 
 
 def _mock_cgr_client():

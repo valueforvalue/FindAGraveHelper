@@ -17,7 +17,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_vet import parse_cgr_vet
+from scripts.cgr.cgr_vet import parse_cgr_vet
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"

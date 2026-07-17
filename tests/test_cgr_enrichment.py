@@ -14,7 +14,7 @@ from unittest.mock import patch, MagicMock
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_enrich import (
+from scripts.cgr.cgr_enrich import (
     expand_to_per_vet,
     build_enriched_record,
     parse_already_fetched,

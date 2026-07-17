@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.spouse_extract import extract_spouse, extract_children
+from scripts.cgr.spouse_extract import extract_spouse, extract_children
 
 
 # ============================================================

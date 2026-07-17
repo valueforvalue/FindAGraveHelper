@@ -23,7 +23,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.dd_marker import (
+from scripts.pipeline.dd_marker import (
     load_dd_index,
     DdIndex,
     mark_record,

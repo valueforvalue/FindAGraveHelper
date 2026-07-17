@@ -18,7 +18,7 @@ from unittest.mock import MagicMock
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_ok_scraper import (
+from scripts.cgr.cgr_ok_scraper import (
     scrape_ok_cemeteries,
     ScrapingConfig,
 )

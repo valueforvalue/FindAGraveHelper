@@ -107,7 +107,7 @@ MEASUREMENT_PENSIONERS = [_p(i) for i in range(10)]
 
 @pytest.fixture(scope="module")
 def fag_search_fn():
-    from scripts.fag_browser import make_fag_search_fn
+    from scripts.fag.fag_browser import make_fag_search_fn
     # Use small reset_browser_every for tests so the periodic reset
     # path is exercised — but the test is mostly about per-call growth.
     fn = make_fag_search_fn(throttle=0.2, reset_browser_every=4)

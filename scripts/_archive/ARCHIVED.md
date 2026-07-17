@@ -22,6 +22,12 @@ and `scripts/spouse_cross_ref.py`) are NOT orphans:
   as a parameter (line 228). When T005 / the BOTH MATCH work is
   re-opened, this is the seed.
 
+  **Update (2026-07-17, issue #19):** The flat `scripts/cgr_fag_link.py`
+  was a back-compat shim that re-exported from `scripts.cgr.cgr_fag_link`
+  (canonical). The shim was deleted; the prototype lives at
+  `scripts/cgr/cgr_fag_link.py`. Same pattern applied to 43 other
+  shims (full list in CHANGELOG `[Unreleased]` entry).
+
 ## When to actually move a module here
 
 - The module has zero production imports in scripts/

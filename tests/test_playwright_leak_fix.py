@@ -16,7 +16,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class TestLeakFixModule:
     def test_apply_is_idempotent(self):
-        from scripts.playwright_leak_fix import apply_playwright_leak_fix
+        from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix
         # First call: True (applied)
         first = apply_playwright_leak_fix()
         # Second call: False (already applied)
@@ -29,7 +29,7 @@ class TestLeakFixModule:
         a stack trace. We check the source string for the offender
         patterns that the original Playwright code uses.
         """
-        from scripts.playwright_leak_fix import apply_playwright_leak_fix
+        from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix
         apply_playwright_leak_fix()
         # `SyncBase._sync` is bound to the closure produced by the
         # patch module. `inspect.getsource` follows the original
@@ -59,7 +59,7 @@ class TestLeakFixModule:
         """As a small drift-protection test: if a future refactor
         accidentally re-adds a stack-capture, this test catches it.
         """
-        from scripts.playwright_leak_fix import apply_playwright_leak_fix
+        from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix
         apply_playwright_leak_fix()
         import inspect
         from playwright._impl._sync_base import SyncBase

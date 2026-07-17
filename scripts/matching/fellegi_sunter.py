@@ -36,7 +36,7 @@ from typing import Optional
 
 import pandas as pd
 
-from scripts.phonetic_match import (
+from scripts.matching.phonetic_match import (
     jaro_winkler_similarity,
     metaphone_match,
     nysiis_match,
