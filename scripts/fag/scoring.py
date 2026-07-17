@@ -8,7 +8,15 @@ Public surface:
   - tag_candidates_with_found_by(candidates) -> None (in-place)
 """
 import re
-from scripts.fag.filters import parse_slug, normalise, soundex
+from scripts.fag.filters import (
+    parse_slug,
+    normalise,
+    soundex,
+    ACW_BIRTH_YEAR_MIN,
+    ACW_BIRTH_YEAR_MAX,
+    ACW_DEATH_YEAR_MIN,
+    ACW_DEATH_YEAR_MAX,
+)
 
 
 def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
@@ -98,6 +106,26 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     death_score = 0.0
     local_dy = str(local.get("_death_year", "")).strip()
     cand_dy = candidate.get("details", {}).get("death_year", "")
+    cand_by = candidate.get("details", {}).get("birth_year", "")
+
+    # J13: impossible-date gate.
+    # A candidate whose dates are outside the ACW window (born after
+    # 1870 or died after 1950) is overwhelmingly a same-surname modern
+    # person. Score ZERO regardless of name/veteran signals — even
+    # with a perfect name match, a person who died in 2020 cannot be
+    # an ACW Confederate pensioner. Without this gate, the test
+    # batch saw 71% of candidates scoring 0.3-0.5 against pensioners
+    # with no local dates to anchor the death-year component.
+    from scripts.fag.filters import _in_acw_window, _parse_int
+    cand_by_i = _parse_int(cand_by)
+    cand_dy_i = _parse_int(cand_dy)
+    if not _in_acw_window(cand_by_i, cand_dy_i):
+        return 0.0, {
+            "last": 0.0, "first": 0.0, "middle": 0.0,
+            "ok_burial": 0.0, "state": 0.0,
+            "veteran": 0.0, "death": 0.0,
+            "_impossible_date": 1.0,  # sentinel: the score gate fired
+        }
     if local_dy and cand_dy:
         try:
             d_local = int(local_dy)

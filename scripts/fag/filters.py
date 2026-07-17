@@ -45,8 +45,28 @@ def apply_location_filter(params: dict, state_abbr: str = "") -> dict:
     so when state_abbr is supplied it overrides the country filter. Country is
     implicit (state_38 is Oklahoma, United States of America per FaG's hierarchy).
 
+    By default, ALSO injects the ACW-appropriate date window
+    (`birthyear=1820&birthyearfilter=after&deathyear=1950&deathyearfilter=before`)
+    so modern same-surname candidates never come back at all. Pass
+    `include_date_window=False` to skip the date injection (rare; tests
+    that exercise specific date scopes).
+
     Returns a NEW dict; does not mutate the caller's dict.
     """
+    return _apply_filters(dict(params), state_abbr, include_date_window=True)
+
+
+def apply_location_only(params: dict, state_abbr: str = "") -> dict:
+    """Location filter only, no date window. Use for tests or for
+    strategies that bring their own date scope.
+    """
+    return _apply_filters(dict(params), state_abbr, include_date_window=False)
+
+
+def _apply_filters(
+    params: dict, state_abbr: str, include_date_window: bool
+) -> dict:
+    """Internal: shared location + (optional) date injection."""
     p = dict(params)
     if state_abbr:
         state_id = FAG_STATE_IDS.get(state_abbr.upper())
@@ -56,10 +76,129 @@ def apply_location_filter(params: dict, state_abbr: str = "") -> dict:
             p.update(FAG_COUNTRY_FILTER_US)
     else:
         p.update(FAG_COUNTRY_FILTER_US)
+    if include_date_window:
+        _inject_acw_date_window(p)
     return p
 
-# Status values
-S_AUTO_ACCEPT = "auto_accept"
+
+def _inject_acw_date_window(params: dict) -> None:
+    """Inject the project-wide ACW date window into FaG URL params.
+
+    ACW era Confederate vets: born after 1820 (at least 15 yrs old
+    by 1865), died before 1950 (long-lived widows could outlive
+    their husbands by decades). Modern same-surname candidates
+    are filtered out at the source — no need to spend Cloudflare
+    budget fetching them, no need to score-zero them downstream.
+
+    Args:
+        params: dict of URL params (mutated in place). Keys
+            `birthyear`, `birthyearfilter`, `deathyear`,
+            `deathyearfilter` are set ONLY if not already set,
+            so a strategy that wants a tighter window (e.g.
+            F2-regiment-bio specifies death_year=1927±5) is
+            preserved.
+    """
+    if "birthyear" not in params:
+        params["birthyear"] = str(ACW_BIRTH_YEAR_MIN)
+        params["birthyearfilter"] = "after"
+    if "deathyear" not in params:
+        params["deathyear"] = str(ACW_DEATH_YEAR_MAX)
+        params["deathyearfilter"] = "before"
+
+# ============================================================
+# ACW-vet date window (J13)
+# ============================================================
+# An American Civil War Confederate pensioner would have been
+# born 1820-1870 (i.e. at least 15 years old by 1865; oldest vets
+# were in their 60s/70s). They would have died 1861-1950 (the
+# conflict started in 1861; the OK Confederate pension rolls
+# were last issued in the 1950s for long-lived veterans' widows).
+#
+# Any FaG candidate outside this window is almost certainly a
+# same-surname name-collision (modern relative, pre-war ancestor,
+# or unrelated person) — NOT the pensioner.
+#
+# These constants are the SINGLE SOURCE OF TRUTH for the
+# project-wide date filter. Used by:
+#   - apply_date_filter (filters.py)
+#   - score_candidate (scoring.py) — when local dates are absent,
+#     a candidate with death_year outside this window scores 0.
+ACW_BIRTH_YEAR_MIN = 1820
+ACW_BIRTH_YEAR_MAX = 1870
+ACW_DEATH_YEAR_MIN = 1861
+ACW_DEATH_YEAR_MAX = 1950
+
+
+def _parse_int(s: object) -> int | None:
+    """Parse a year/int from a string, int, or None. Returns
+    None if not parseable."""
+    if s is None:
+        return None
+    if isinstance(s, int):
+        return s
+    s = str(s).strip()
+    if not s:
+        return None
+    # Take the first 4-digit run only ("01/22/1835" -> 1835)
+    m = re.search(r"(\d{4})", s)
+    if m:
+        return int(m.group(1))
+    try:
+        return int(s)
+    except ValueError:
+        return None
+
+
+def _in_acw_window(birth_year: int | None, death_year: int | None) -> bool:
+    """Returns True if the given dates are compatible with an
+    ACW-era veteran OR if BOTH are missing (we don't know
+    enough to reject).
+
+    Conservative: if only ONE date is available, use it. If
+    BOTH are available, use both (intersection).
+    """
+    if birth_year is None and death_year is None:
+        return True  # no data, can't reject
+    # If we have a birth_year, it must be in [1820, 1870]
+    if birth_year is not None:
+        if not (ACW_BIRTH_YEAR_MIN <= birth_year <= ACW_BIRTH_YEAR_MAX):
+            return False
+    # If we have a death_year, it must be in [1861, 1950]
+    if death_year is not None:
+        if not (ACW_DEATH_YEAR_MIN <= death_year <= ACW_DEATH_YEAR_MAX):
+            return False
+    return True
+
+
+def apply_date_filter(candidates: list, hard: bool = True) -> list:
+    """Drop candidates whose dates are incompatible with the ACW vet window.
+
+    ACW window: birth 1820-1870; death 1861-1950. A candidate
+    outside this window is overwhelmingly likely a same-surname
+    name-collision (modern relative, pre-war ancestor, etc.) and
+    wastes the reviewer's time.
+
+    Args:
+        candidates: list of dicts with .details.birth_year /
+            .details.death_year populated by parse_results_page.
+        hard: when True (default), drops out-of-window candidates.
+            When False, returns the input list unchanged (kept
+            for debug / dry-run use).
+
+    Returns:
+        Filtered list (candidates with in-window dates only;
+        candidates without dates are KEPT — conservative).
+    """
+    if not hard:
+        return list(candidates)
+    out = []
+    for c in candidates:
+        det = c.get("details", {}) if isinstance(c, dict) else {}
+        by = _parse_int(det.get("birth_year"))
+        dy = _parse_int(det.get("death_year"))
+        if _in_acw_window(by, dy):
+            out.append(c)
+    return out
 S_AMBIGUOUS = "ambiguous"          # 2-10 candidates, none high-confidence
 S_TOO_MANY = "too_many"            # >10 results even with narrowing
 S_NO_RESULTS = "no_results"        # all strategies returned 0

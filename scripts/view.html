@@ -55,6 +55,13 @@
   .pensioner h2 .id { color: #888; font-weight: normal; font-size: 12px; }
   .meta { color: #666; font-size: 12px; margin-bottom: 12px; }
   .meta span { margin-right: 12px; }
+  /* J13: 'missing' badge for pensioners with no birth/death year.
+     The reviewer should treat these specially: the FaG match
+     set is not date-anchored, so ambiguous results are more
+     likely. After running scripts/enrich/dixiedata_dates.py,
+     this disappears for matched pensioners. */
+  .meta .life-dates.missing { color: #999; font-style: italic; }
+  .meta .life-dates.missing em { font-style: italic; color: #999; }
   /* J12: source-card / application buttons in the meta row
      look like the anchor links they replaced. */
   .meta button[data-action="view-source"] {
@@ -940,6 +947,7 @@ function renderPensioner(p) {
             <div class="meta">
                 ${p.regiment ? `<span><strong>Regiment:</strong> ${escapeHtml(p.regiment)}</span>` : ''}
                 ${p.company ? `<span><strong>Co:</strong> ${escapeHtml(p.company)}</span>` : ''}
+                ${(p.pensioner_birth_year || p.pensioner_death_year) ? `<span class="life-dates"><strong>Dates:</strong> ${p.pensioner_birth_year || '?'}–${p.pensioner_death_year || '?'}</span>` : '<span class="life-dates missing" title="No birth/death year in the source data. Run scripts/enrich/dixiedata_dates.py to add from your dixiedata DB."><strong>Dates:</strong> <em>unknown (ACW window: b.1820-1870, d.1861-1950)</em></span>'}
                 ${bestC ? `<span><strong>Top match:</strong> ${escapeHtml(bestC.slug)} @ ${(bestScore*100).toFixed(0)}%</span>` : ''}
                 ${p.pensioncard_backlink ? `<button data-action="view-source" data-pid="${pid}" data-url="${escapeHtml(fixDigitalPrairieUrl(p.pensioncard_backlink))}" title="Fetch + display the digitalprairie pension card JSON">source card</button>` : ''}
                 ${p.backlink ? `<button data-action="view-source" data-pid="${pid}" data-url="${escapeHtml(fixDigitalPrairieUrl(p.backlink))}" title="Fetch + display the digitalprairie pension application JSON">application</button>` : ''}

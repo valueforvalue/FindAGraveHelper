@@ -4,6 +4,108 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J13: filter impossible-date candidates from FaG search (3 layers)
+
+**Problem.** A scan of the test-batch-25 results.jsonl found
+that **300 of 420 FaG candidates (71%) had death years
+incompatible with an American Civil War Confederate
+pensioner** (e.g. `Ralph Michael Adair 1949–2020`,
+`Harold Don Akers 1920–1977`). These are modern
+same-surname name-collisions, not the pensioner. They
+inflate the candidate set the reviewer must triage, and
+bias scoring toward noise.
+
+**Root cause.** Three layers stacked:
+
+1. **Source data has no dates.** `ok_pensioners.json` has
+   0/7,709 records with `birth_year` or `death_year`
+   populated. The DC pension roll metadata has only
+   `coverage: "1910s-1950s"` (record date range), not
+   the veteran's life dates.
+
+2. **Score zero is gated on local date.**
+   `scripts/fag/scoring.py:88-101` reads the
+   death-year component as `if local_dy and cand_dy`.
+   When `local_dy` is empty (all our pensioners), the
+   death-year component is 0, making a 1920s death and
+   a 2020s death indistinguishable.
+
+3. **No URL-level date filter.** `apply_location_filter`
+   scoped to OK but did NOT pass through to FaG a
+   `birthyear=1820&birthyearfilter=after&deathyear=1950&deathyearfilter=before`
+   URL filter. So 99%+ of candidates from a global
+   search are modern by construction.
+
+**Fix (5 layers, defense in depth).**
+
+- **Layer 0 (data enrichment).** New
+  `scripts/enrich/dixiedata_dates.py`. Joins the user's
+  `C:/development/dixiedata/dixiedata-backup-*.ddbak`
+  SQLite (with 662 ACW vets) against `ok_pensioners.json`
+  on `(last_name, first_initial)`. Adds `birth_year` +
+  `death_year` where the join succeeds. **636/7,709
+  pensioners (8%) now have authoritative ACW-era dates**.
+  Includes guards against dixiedata's known data-quality
+  issues (e.g. one row has by=1933, dy=1926 - rejected).
+  Output: `docs/research/digitalprairie/ok_pensioners.with_dates.json`
+  + a count report at `docs/research/dixiedata/enrich_report.json`.
+
+- **Layer 1 (URL filter).**
+  `scripts/fag/filters.py:apply_location_filter` now
+  ALSO injects the ACW date window by default
+  (`birthyear=1820&birthyearfilter=after&deathyear=1950&deathyearfilter=before`).
+  Verified working: `John Smith OK` returns 1,087
+  candidates unfiltered; with the ACW window, 373
+  candidates. `apply_location_only()` escape hatch for
+  tests / strategies that bring their own scope.
+
+- **Layer 2 (defensive score zero).**
+  `scripts/fag/scoring.py:score_candidate` now returns
+  `0.0` for any candidate with `birth_year` outside
+  [1820, 1870] OR `death_year` outside [1861, 1950],
+  regardless of local date. Defense in depth against
+  anything that slips through the URL filter.
+
+- **Layer 3 (parse-time drop).** New
+  `scripts/fag/filters.py:apply_date_filter(candidates)`
+  drops out-of-window candidates at the parse step.
+  Conservative: candidates with no dates are KEPT.
+
+- **Layer 4 (reviewer UI).** view.html meta row now
+  shows the pensioner's `Dates: b.YYYY–d.YYYY` when
+  available, or a greyed "Dates: unknown (ACW window:
+  b.1820-1870, d.1861-1950)" badge otherwise. Reviewer
+  immediately sees which pensioners are date-anchored
+  vs date-blind.
+
+**Single source of truth.** ACW window constants
+(`ACW_BIRTH_YEAR_MIN = 1820`, etc.) live in
+`scripts/fag/filters.py` and are exported; both
+scoring and date-filter read from there.
+
+**Files:**
+- `scripts/fag/filters.py` — `apply_location_filter`,
+  new `apply_location_only`, new `apply_date_filter`,
+  new `_parse_int`, new `_in_acw_window` private helpers,
+  new ACW_* constants
+- `scripts/fag/scoring.py` — early-return 0.0 for
+  out-of-window candidates
+- `scripts/enrich/dixiedata_dates.py` (NEW, ~10KB) —
+  join script with CLI, batch-mode, doc-qualified
+- `scripts/view.html` — meta-row dates + missing-badge CSS
+- `tests/test_date_filter_j13.py` (NEW, ~9KB, 19 tests)
+
+**Tests:** 19 new pass; 800+ adjacent pass; 1
+pre-existing failure unrelated.
+
+**Laws honored.**
+- L4 stable key order: only added fields, none reordered.
+- L7 docstrings: every new public function has a L7-spec
+  docstring with Args, Returns, and a "when to use this"
+  paragraph.
+- L3 flush-per-pensioner: enrichment is a separate
+  one-shot step, not a per-pensioner hot path.
+
 ### J12: replace "source card" / "application" anchor links with JSON-modal buttons
 
 User feedback: the per-pensioner "source card" and
