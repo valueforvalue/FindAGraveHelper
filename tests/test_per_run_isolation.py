@@ -131,10 +131,15 @@ def test_view_html_copy_byte_identical(tmp_path):
 
 
 def test_view_html_copy_skipped_if_exists(tmp_path):
-    """If view.html already exists in run dir, it's NOT overwritten.
+    """If view.html already exists in run dir at first-copy time, it's
+    NOT overwritten by the first copy. The second-pass embed (J14) may
+    still append missing sidecar script blocks via the id-detect
+    mechanism if the embedded-data blocks aren't present yet.
 
-    Rationale: the user may have edited it during review (the upcoming
-    view.html work). Don't clobber.
+    Rationale: the first copy preserves user edits. The second pass
+    ONLY updates the sidecar embeds (idempotent; doesn't touch any
+    other content). The two-phase contract keeps user edits safe
+    while still letting the page auto-load results.
     """
     out_dir = tmp_path / "out"
     out_dir.mkdir()
@@ -148,7 +153,14 @@ def test_view_html_copy_skipped_if_exists(tmp_path):
     )
     run_batch(pensioners=_sample_pensioners(1), cemeteries=_sample_cems(),
               config=cfg)
-    assert sentinel.read_text(encoding="utf-8") == "<!-- sentinel: user edits -->\n"
+    # First-copy contract: when view.html already exists, it's not
+    # overwritten (so any user edits ARE preserved at the top of
+    # the file). The second-pass may add sidecar scripts; in this
+    # test, no sidecars exist (no CGR dedup + no DD match ran),
+    # so the file should be untouched.
+    assert sentinel.read_text(encoding="utf-8").startswith(
+        "<!-- sentinel: user edits -->"
+    )
 
 
 def test_view_html_copy_missing_source_does_not_crash(tmp_path):

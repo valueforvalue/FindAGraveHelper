@@ -33,40 +33,121 @@ FAG_STATE_IDS = {
 }
 
 
-def apply_location_filter(params: dict, state_abbr: str = "") -> dict:
-    """Inject FaG country (and optionally state) filter into a strategy's URL params.
+def apply_location_filter(
+    params: dict,
+    state_abbr: str = "",
+    *,
+    spouse_first: str = "",
+    spouse_last: str = "",
+    spouse_middle: str = "",
+) -> dict:
+    """Inject FaG country (and optionally state + spouse + ACW date
+    window) into a strategy's URL params.
 
-    Restricts results to the United States via locationId=country_4. When
-    `state_abbr` is a known US state, narrows further with locationId=state_<id>
-    (e.g. locationId=state_38 for Oklahoma). State filter cuts results 60x vs
-    country alone for common names — recommended when regiment state is known.
-
-    Note: only ONE locationId value can be passed at a time (last write wins),
-    so when state_abbr is supplied it overrides the country filter. Country is
-    implicit (state_38 is Oklahoma, United States of America per FaG's hierarchy).
-
-    By default, ALSO injects the ACW-appropriate date window
-    (`birthyear=1820&birthyearfilter=after&deathyear=1950&deathyearfilter=before`)
-    so modern same-surname candidates never come back at all. Pass
-    `include_date_window=False` to skip the date injection (rare; tests
-    that exercise specific date scopes).
+    Args:
+        params: per-strategy URL params (returned unchanged when no
+            filters apply).
+        state_abbr: two-letter US state abbr. When supplied,
+            narrows to locationId=state_<id>. Only one locationId
+            value can be passed (last write wins), so state
+            overrides country.
+        spouse_first, spouse_last, spouse_middle (J15): when
+            BOTH spouse_first and spouse_last are non-empty, an
+            FaG `linkedToName` filter is added. linkedToName is
+            FaG's spouse/parent/child/sibling-name filter
+            (verified 2026-07 from data/probe/search_page_advanced.html).
+            When either is empty, no linkedToName is set (a
+            half-name would over-filter to zero results).
 
     Returns a NEW dict; does not mutate the caller's dict.
     """
-    return _apply_filters(dict(params), state_abbr, include_date_window=True)
+    return _apply_filters(
+        dict(params), state_abbr,
+        include_date_window=True,
+        spouse_first=spouse_first,
+        spouse_last=spouse_last,
+        spouse_middle=spouse_middle,
+    )
 
 
-def apply_location_only(params: dict, state_abbr: str = "") -> dict:
+def apply_location_only(
+    params: dict,
+    state_abbr: str = "",
+    *,
+    spouse_first: str = "",
+    spouse_last: str = "",
+    spouse_middle: str = "",
+) -> dict:
     """Location filter only, no date window. Use for tests or for
     strategies that bring their own date scope.
     """
-    return _apply_filters(dict(params), state_abbr, include_date_window=False)
+    return _apply_filters(
+        dict(params), state_abbr,
+        include_date_window=False,
+        spouse_first=spouse_first,
+        spouse_last=spouse_last,
+        spouse_middle=spouse_middle,
+    )
+
+
+def apply_spouse_filter(
+    params: dict,
+    *,
+    spouse_first: str = "",
+    spouse_last: str = "",
+    spouse_middle: str = "",
+) -> dict:
+    """Inject FaG's `linkedToName` URL filter from the pensioner's
+    spouse name.
+
+    FaG's search supports filtering by spouse/parent/child/sibling
+    name via the `linkedToName` URL parameter (verified 2026-07
+    from data/probe/search_page_advanced.html). When the search
+    is scoped by a real family name, every returned candidate
+    has already been linked to that person in someone's tree -
+    a strong signal the candidate's family is right.
+
+    Args:
+        params: dict of URL params (returned unchanged when no
+            spouse data).
+        spouse_first: pensioner's known spouse first name (or
+            partial; FaG does partial-match). Empty -> skip.
+        spouse_last: pensioner's known spouse last name. Empty
+            -> skip (a half-name over-filters).
+
+    Returns:
+        NEW dict with `linkedToName` added when both fields are
+        present. NEVER mutates input.
+
+    Note: doesn't add linkedToName when a caller has already set
+    it (preserves any future strategy that wants to override).
+    """
+    first = (spouse_first or "").strip()
+    last = (spouse_last or "").strip()
+    middle = (spouse_middle or "").strip()
+    if not first or not last:
+        return dict(params)
+    parts = [p for p in (first, middle, last) if p]
+    name = " ".join(parts).strip()
+    # Collapse internal whitespace runs.
+    name = " ".join(name.split())
+    p = dict(params)
+    if "linkedToName" not in p:
+        p["linkedToName"] = name
+    return p
 
 
 def _apply_filters(
-    params: dict, state_abbr: str, include_date_window: bool
+    params: dict,
+    state_abbr: str,
+    include_date_window: bool,
+    spouse_first: str = "",
+    spouse_last: str = "",
+    spouse_middle: str = "",
 ) -> dict:
-    """Internal: shared location + (optional) date injection."""
+    """Internal: shared location + (optional) date + (optional)
+    spouse injection.
+    """
     p = dict(params)
     if state_abbr:
         state_id = FAG_STATE_IDS.get(state_abbr.upper())
@@ -78,7 +159,15 @@ def _apply_filters(
         p.update(FAG_COUNTRY_FILTER_US)
     if include_date_window:
         _inject_acw_date_window(p)
-    return p
+    # J15: thread spouse through last so it can override only what
+    # wasn't explicit. pass the input p (not the original) so the
+    # search strategy's own URL params are the starting point.
+    return apply_spouse_filter(
+        p,
+        spouse_first=spouse_first,
+        spouse_last=spouse_last,
+        spouse_middle=spouse_middle,
+    )
 
 
 def _inject_acw_date_window(params: dict) -> None:

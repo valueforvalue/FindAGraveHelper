@@ -4,6 +4,61 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-16
 
+### J15-S1: spouse name URL-param pre-filter (ok_pensioners -> FaG search)
+
+ok_pensioners.json has spouse data on ~49% of pensioners
+(3,497 of 7,709 with both first + last). We can use this
+to PRE-FILTER FaG candidates via the `linkedToName` URL
+parameter (FaG's spouse/parent/child/sibling-name filter,
+verified 2026-07 from data/probe/search_page_advanced.html).
+
+A candidate that comes back with linkedToName=Spouse is a
+stronger match than one that doesn't - someone has already
+linked the candidate's family tree to that name.
+
+Live verification (Sarah Adams, OK, spouse Garnett Adams):
+  - WITHOUT linkedToName: hundreds of candidates
+  - WITH linkedToName=Garnett+Adams: 1 match
+    (Sarah Elizabeth Gaines Adams 1853-1927, memorial 83891522;
+    her son "Frank Garnett Adams" confirms the family link)
+
+Implementation:
+
+  - scripts/fag/filters.py: new `apply_spouse_filter(params,
+    *, spouse_first=, spouse_last=, spouse_middle=)` returns a
+    NEW dict with `linkedToName` set when both first+last
+    are non-empty. Doesn't overwrite caller-set value.
+    Whitespace-normalized (handles ' Garnett   Adams ').
+  - apply_location_filter / apply_location_only now accept
+    the same kwargs and forward to apply_spouse_filter.
+  - scripts/fag/search.py: search_one_pensioner reads
+    `pensioner.get('spouse_first_name')`,
+    `pensioner.get('spouse_middle_name')`,
+    `pensioner.get('spouse_last_name')` and threads them into
+    apply_location_filter (per-strategy, after the strategy
+    builds its URL params).
+
+Tests: 10 new pass; 844 adjacent pass; 1 unrelated pre-existing
+failure (test_per_run_isolation.py::test_view_html_copy_skipped_if_exists
+asserts the old 'no second pass' contract; updated to match
+the new 'second pass may append sidecars but never overwrites
+user content' contract from J14).
+
+Next slices (planned):
+  - S2: scrape top-1 candidate memorial page for Family
+    Members > Spouse; compare with ok_pensioners spouse;
+    agree = strong piece of evidence.
+  - S3: post-pipeline comparison + scoring boost + view.html
+    badge/filter.
+
+Laws honored:
+  L4 stable key order: linkedToName added at end of params
+    dict (insertion order semantics; doesn't disturb existing
+    keys).
+  L7 docstrings: apply_spouse_filter has an L7-spec docstring
+    explaining the param, the partial-match behavior, and
+    when it skips.
+
 ### J14: replace auto-enrichment with post-pipeline DD comparison
 
 The user uses a parallel SQLite research DB (`dixiedata.db` or its

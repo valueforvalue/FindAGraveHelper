@@ -298,10 +298,20 @@ def search_one_pensioner(page: Page, pensioner: dict,
             params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
         if params is None:
             continue
-        # Restrict FaG to US (and US state if known) — see FAG_COUNTRY_FILTER_US.
-        # Without this, ~95% of results for common names are foreign and
-        # pollute the candidate set.
-        params = apply_location_filter(params, state_abbr)
+        # Restrict FaG to US (and US state if known) + ACW date window +
+        # spouse name (if known from ok_pensioners.json) — J15:
+        # linkedToName pre-filters candidates to those linked to the
+        # pensioner's known spouse in someone's family tree. A
+        # candidate that comes back with linkedToName=Spouse is a
+        # much stronger match than one that doesn't (post-pipeline
+        # comparison in scripts/cgr/dixiedata_compare.py will score
+        # this as a high-quality piece of evidence).
+        params = apply_location_filter(
+            params, state_abbr,
+            spouse_first=pensioner.get("spouse_first_name", "") or "",
+            spouse_last=pensioner.get("spouse_last_name", "") or "",
+            spouse_middle=pensioner.get("spouse_middle_name", "") or "",
+        )
         url = BASE_URL + "?" + urlencode(params)
         record["strategies_run"].append(name)
 
