@@ -1160,6 +1160,60 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "current run and exit.")
     args = parser.parse_args(argv)
 
+    # Issue #21: early-exit commands. These skip ALL validation and
+    # setup; each handles its own I/O and exits 0 on success.
+    # Placed BEFORE the cgr/input/out validation because they don't
+    # require any of those (issue #21 iteration 2 smoke test).
+
+    if args.list_checkpoints:
+        from scripts.pipeline.checkpoint import list_checkpoints
+        state_path = Path(args.out) / "results.jsonl"
+        snaps = list_checkpoints(state_path)
+        if not snaps:
+            print(f"No checkpoints found for {state_path}")
+            return 0
+        print(f"Checkpoints for {state_path}:")
+        for s in snaps:
+            print(f"  {s.name}")
+        return 0
+
+    if args.write_checkpoint:
+        from scripts.pipeline.checkpoint import write_checkpoint_snapshot
+        state_path = Path(args.out) / "results.jsonl"
+        if not state_path.exists():
+            print(f"error: state file not found: {state_path}", file=sys.stderr)
+            return 1
+        snap = write_checkpoint_snapshot(state_path, label=args.checkpoint_label)
+        print(f"Checkpoint written: {snap}")
+        return 0
+
+    if args.rollback_to:
+        from scripts.pipeline.checkpoint import rollback_to_checkpoint
+        state_path = Path(args.out) / "results.jsonl"
+        if not state_path.exists():
+            print(f"error: state file not found: {state_path}", file=sys.stderr)
+            return 1
+        try:
+            rollback_to_checkpoint(state_path, label=args.rollback_to)
+            print(f"Rolled back {state_path} to checkpoint {args.rollback_to!r}")
+            return 0
+        except FileNotFoundError as e:
+            print(f"error: {e}", file=sys.stderr)
+            return 1
+
+    if args.state_replay:
+        from scripts.pipeline.state_replay import replay_state
+        out_dir = Path(args.out)
+        out_dir.mkdir(parents=True, exist_ok=True)
+        new_state_path = out_dir / "results.jsonl"
+        n = replay_state(
+            old_state_path=args.state_replay,
+            new_state_path=new_state_path,
+            low_score_threshold=args.low_score_threshold,
+        )
+        print(f"state-replay: {n} records replayed -> {new_state_path}")
+        return 0
+
     # ============================================================
     # Subcommand dispatch: init-batch
     # ============================================================
@@ -1233,44 +1287,6 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     if args.config is None and args.out is None:
         print("error: --out is required (or pass --config)", file=sys.stderr)
         return 1
-
-    # Issue #21: early-exit commands. Handle their own I/O and
-    # skip the entire pipeline setup. Each returns 0 on success.
-    if args.list_checkpoints:
-        from scripts.pipeline.checkpoint import list_checkpoints
-        state_path = Path(args.out) / "results.jsonl"
-        snaps = list_checkpoints(state_path)
-        if not snaps:
-            print(f"No checkpoints found for {state_path}")
-            return 0
-        print(f"Checkpoints for {state_path}:")
-        for s in snaps:
-            print(f"  {s.name}")
-        return 0
-
-    if args.write_checkpoint:
-        from scripts.pipeline.checkpoint import write_checkpoint_snapshot
-        state_path = Path(args.out) / "results.jsonl"
-        if not state_path.exists():
-            print(f"error: state file not found: {state_path}", file=sys.stderr)
-            return 1
-        snap = write_checkpoint_snapshot(state_path, label=args.checkpoint_label)
-        print(f"Checkpoint written: {snap}")
-        return 0
-
-    if args.rollback_to:
-        from scripts.pipeline.checkpoint import rollback_to_checkpoint
-        state_path = Path(args.out) / "results.jsonl"
-        if not state_path.exists():
-            print(f"error: state file not found: {state_path}", file=sys.stderr)
-            return 1
-        try:
-            rollback_to_checkpoint(state_path, label=args.rollback_to)
-            print(f"Rolled back {state_path} to checkpoint {args.rollback_to!r}")
-            return 0
-        except FileNotFoundError as e:
-            print(f"error: {e}", file=sys.stderr)
-            return 1
 
     # Setup logger
     out_dir = Path(args.out)
@@ -1368,21 +1384,6 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     # Issue #21: --state-replay. Read OLD state, apply non-FaG
     # pipeline, write NEW state to out_dir/results.jsonl. Exits
     # before the normal pipeline starts.
-    if args.state_replay:
-        from scripts.pipeline.state_replay import replay_state
-        new_state_path = out_dir / "results.jsonl"
-        log.info(
-            "state-replay: %s -> %s (threshold=%.2f)",
-            args.state_replay, new_state_path, args.low_score_threshold,
-        )
-        n = replay_state(
-            old_state_path=args.state_replay,
-            new_state_path=new_state_path,
-            low_score_threshold=args.low_score_threshold,
-        )
-        log.info("Replayed %d records", n)
-        return 0
-
     try:
         result = run_batch(
             pensioners=pensioners,
