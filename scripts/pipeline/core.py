@@ -321,9 +321,12 @@ def run_pipeline_for_pensioner(
 # State writers
 # ============================================================
 def write_state_line(state_path: Path, result: UnifiedRunResult) -> None:
-    """Append a unified result to the JSONL state file."""
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    line = json.dumps(result.to_dict(), ensure_ascii=False)
-    with state_path.open("a", encoding="utf-8") as f:
-        f.write(line + "\n")
-        f.flush()
+    """Append a unified result to the JSONL state file.
+
+    Issue #22: routed through JsonlStateRepository. The Repository owns
+    the wire format, the L3 flush+fsync discipline, and the L5
+    newline-delimited format. This wrapper stays so existing callers
+    don't have to change — new code should call the Repository directly.
+    """
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(state_path).append(result.to_dict())

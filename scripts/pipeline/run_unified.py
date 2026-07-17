@@ -274,11 +274,14 @@ def load_existing_ids(state_path: Path) -> set[int]:
 # Line writers
 # ============================================================
 def write_unified_line(state_path: Path, record: dict) -> None:
-    """Append one record to the unified state file."""
-    state_path.parent.mkdir(parents=True, exist_ok=True)
-    with state_path.open("a", encoding="utf-8") as f:
-        f.write(json.dumps(record, ensure_ascii=False) + "\n")
-        f.flush()
+    """Append one record to the unified state file.
+
+    Issue #22: routed through JsonlStateRepository. As a bonus, this
+    now honours L3 (flush + fsync) — the previous implementation only
+    flushed, never fsync'd. New code should call the Repository directly.
+    """
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(state_path).append(record)
 
 
 def write_outliers_line(outliers_path: Path, record: dict) -> None:

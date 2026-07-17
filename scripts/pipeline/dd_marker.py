@@ -141,21 +141,21 @@ def mark_state_file(
     """Mark every record in state_path using DD CSV.
 
     Returns (n_marked, n_in_dd).
+
+    Issue #22: routed through JsonlStateRepository. As a bonus the
+    write is now atomic (was: streaming write, partial-file risk on crash).
     """
+    from scripts.state.repository import JsonlStateRepository
+
     dd_index = load_dd_index(dd_csv_path)
     n_marked = 0
     n_in_dd = 0
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    with state_path.open(encoding="utf-8") as fin, \
-         out_path.open("w", encoding="utf-8") as fout:
-        for line in fin:
-            line = line.strip()
-            if not line:
-                continue
-            rec = json.loads(line)
-            mark_record(rec, dd_index)
-            if rec.get("dd_in_local"):
-                n_in_dd += 1
-            fout.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            n_marked += 1
+    new_records = []
+    for rec in JsonlStateRepository(state_path).iter_all():
+        mark_record(rec, dd_index)
+        if rec.get("dd_in_local"):
+            n_in_dd += 1
+        new_records.append(rec)
+        n_marked += 1
+    JsonlStateRepository(out_path).replace_all(new_records)
     return n_marked, n_in_dd

@@ -247,17 +247,9 @@ def run_investigation(
       In-place updates to state.jsonl (append ``leftover_pass``
       field per row).
     """
-    # Load state
-    records = []
-    with state_path.open(encoding="utf-8") as f:
-        for line in f:
-            line = line.strip()
-            if not line:
-                continue
-            try:
-                records.append(json.loads(line))
-            except json.JSONDecodeError:
-                continue
+    # Load state. Issue #22: routed through JsonlStateRepository.
+    from scripts.state.repository import JsonlStateRepository
+    records = list(JsonlStateRepository(state_path).iter_all())
 
     # Load pensioners
     with pensioners_path.open(encoding="utf-8") as f:
@@ -489,18 +481,16 @@ def run_investigation(
     # Write output
     out_path = state_path.parent / "leftover_investigation.jsonl"
     summary_path = state_path.parent / "leftover_investigation_summary.json"
-    with out_path.open("w", encoding="utf-8") as f:
-        for o in out_records:
-            f.write(json.dumps(o, ensure_ascii=False) + "\n")
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(out_path).replace_all(out_records)
     with summary_path.open("w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
 
-    # Rewrite state.jsonl with the in-place updates
-    state_tmp = state_path.with_suffix(".jsonl.tmp")
-    with state_tmp.open("w", encoding="utf-8") as f:
-        for r in records:
-            f.write(json.dumps(r, ensure_ascii=False) + "\n")
-    state_tmp.replace(state_path)
+    # Rewrite state.jsonl with the in-place updates.
+    # Issue #22: routed through JsonlStateRepository. The Repository
+    # owns the .tmp + os.replace atomic-write discipline.
+    from scripts.state.repository import JsonlStateRepository
+    JsonlStateRepository(state_path).replace_all(records)
 
     return summary
 
