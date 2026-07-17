@@ -15,11 +15,11 @@ sys.path.insert(0, str(ROOT))
 from scripts.run_unified import (
     UnifiedRunnerConfig,
     ResumeTracker,
-    write_unified_line,
     write_outliers_line,
     run_batch,
     BatchResult,
 )
+from scripts.state.repository import JsonlStateRepository
 
 
 def _sample_pensioners(n=5):
@@ -86,7 +86,7 @@ def test_run_batch_skips_completed(tmp_path):
     out_dir.mkdir()
     state = out_dir / "results.jsonl"
     # Pre-populate with pensioner 1
-    write_unified_line(state, {"pensioner_id": 1, "fag_status": "no_results"})
+    JsonlStateRepository(state).append({"pensioner_id": 1, "fag_status": "no_results"})
 
     fag_called = []
     def fake_fag(p, c):

@@ -18,6 +18,7 @@ import pytest
 
 from scripts.state.repository import (
     JsonlStateRepository,
+    InMemoryStateRepository,
     StateCheckResult,
 )
 
@@ -230,3 +231,80 @@ def test_append_persists_immediately(repo, state_path):
         content = f.read()
     rec = json.loads(content.strip())
     assert rec["pensioner_id"] == 42
+
+
+# ============================================================
+# InMemoryStateRepository — same surface, no disk I/O
+# ============================================================
+
+@pytest.fixture
+def mem_repo() -> InMemoryStateRepository:
+    return InMemoryStateRepository()
+
+
+def test_memory_append_stores_records(mem_repo):
+    mem_repo.append(_record(1))
+    mem_repo.append(_record(2))
+    assert mem_repo.records == [
+        {"pensioner_id": 1, "_init": False, **r} for r in []  # placeholder, replaced below
+    ] or len(mem_repo.records) == 2
+    # simpler assertion:
+    assert [r["pensioner_id"] for r in mem_repo.records] == [1, 2]
+
+
+def test_memory_iter_all_yields_in_order(mem_repo):
+    for i in range(3):
+        mem_repo.append(_record(i))
+    assert [r["pensioner_id"] for r in mem_repo.iter_all()] == [0, 1, 2]
+
+
+def test_memory_get_returns_first_match(mem_repo):
+    mem_repo.append(_record(1))
+    mem_repo.append(_record(2))
+    assert mem_repo.get(2)["pensioner_id"] == 2
+    assert mem_repo.get(999) is None
+
+
+def test_memory_update_mutates_in_place(mem_repo):
+    mem_repo.append(_record(1))
+    mem_repo.append(_record(2))
+    found = mem_repo.update(1, lambda r: {**r, "leftover_pass": True})
+    assert found is True
+    assert mem_repo.records[0]["leftover_pass"] is True
+    assert "leftover_pass" not in mem_repo.records[1]
+
+
+def test_memory_replace_all_overwrites(mem_repo):
+    mem_repo.append(_record(1))
+    mem_repo.replace_all([_record(10), _record(20)])
+    assert [r["pensioner_id"] for r in mem_repo.records] == [10, 20]
+
+
+def test_memory_check_detects_missing(mem_repo):
+    mem_repo.append(_record(1))
+    result = mem_repo.check(expected_ids={1, 2, 3})
+    assert not result.is_clean()
+    assert result.missing_ids == {2, 3}
+
+
+def test_memory_check_detects_duplicates(mem_repo):
+    mem_repo.append(_record(1))
+    mem_repo.append(_record(1))
+    result = mem_repo.check(expected_ids={1})
+    assert not result.is_clean()
+    assert 1 in result.duplicate_ids
+
+
+def test_memory_roundtrip_preserves_dict_independence(mem_repo):
+    """append() takes a copy of the input dict.
+
+    Tests that mutate the original dict after append don't corrupt
+    the stored record. (Note: get() and iter_all() return live refs,
+    matching JsonlStateRepository's behavior; tests that mutate
+    returned values should call dict() first.)
+    """
+    original = _record(1, "Smith, John")
+    mem_repo.append(original)
+    original["pensioner_name"] = "Mutated"
+    # The stored record should still be the original
+    assert mem_repo.get(1)["pensioner_name"] == "Smith, John"

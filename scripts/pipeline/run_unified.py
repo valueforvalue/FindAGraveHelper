@@ -273,15 +273,8 @@ def load_existing_ids(state_path: Path) -> set[int]:
 # ============================================================
 # Line writers
 # ============================================================
-def write_unified_line(state_path: Path, record: dict) -> None:
-    """Append one record to the unified state file.
-
-    Issue #22: routed through JsonlStateRepository. As a bonus, this
-    now honours L3 (flush + fsync) — the previous implementation only
-    flushed, never fsync'd. New code should call the Repository directly.
-    """
-    from scripts.state.repository import JsonlStateRepository
-    JsonlStateRepository(state_path).append(record)
+# Issue #22: write_unified_line adapter removed. Callers use
+# JsonlStateRepository directly (see run_batch below).
 
 
 def write_outliers_line(outliers_path: Path, record: dict) -> None:
@@ -555,6 +548,10 @@ def run_batch(
     # state.jsonl supported by passing it explicitly.
     state_path = out_dir / config.results_filename
     outliers_path = out_dir / "outliers.jsonl"
+    # Issue #22: state.jsonl writes go through the Repository. Built
+    # once per run; reused for every record (L3 flush+fsync on each append).
+    from scripts.state.repository import JsonlStateRepository
+    state_repo = JsonlStateRepository(state_path)
 
     # view.html copy (J5-S2 + J9 embed). No-op if source missing or
     # dest exists. When embedding, also pass the just-opened state_path
@@ -658,7 +655,7 @@ def run_batch(
             if record.get("fag_status") == "auto_accept":
                 result.auto_accepts += 1
             # Write unified line
-            write_unified_line(state_path, record)
+            state_repo.append(record)
             # Write outlier line if applicable
             if is_outlier(record, outlier_cfg):
                 write_outliers_line(outliers_path, record)
@@ -692,7 +689,7 @@ def run_batch(
                     "status": "error",
                     "timestamp": now_iso(),
                 }
-                write_unified_line(state_path, err_record)
+                state_repo.append(err_record)
             except Exception:
                 pass
 
