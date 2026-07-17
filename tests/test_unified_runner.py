@@ -17,7 +17,7 @@ from unittest.mock import patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.unified_runner import (
+from scripts.pipeline.core import (
     build_cgr_blocking_index,
     lookup_cgr_for_pensioner,
     UnifiedRunResult,
@@ -203,7 +203,7 @@ class TestAlwaysRunFaGPolicy:
         contain any `should_skip_fag` call that returns early.
         """
         import inspect
-        from scripts.unified_pipeline import run_pipeline_for_pensioner
+        from scripts.pipeline.core import run_pipeline_for_pensioner
         src = inspect.getsource(run_pipeline_for_pensioner)
         assert "should_skip_fag" not in src, (
             "POLICY VIOLATION: run_pipeline_for_pensioner() must never "
@@ -236,7 +236,7 @@ class TestAlwaysRunFaGPolicy:
         never honored); carrying it forward risks a future
         change silently wiring it back in.
         """
-        from scripts.unified_runner import UnifiedConfig
+        from scripts.pipeline.core import UnifiedConfig
         import dataclasses
         for f in dataclasses.fields(UnifiedConfig):
             assert f.name != "skip_fag_on_strong_cgr", (

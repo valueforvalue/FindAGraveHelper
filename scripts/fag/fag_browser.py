@@ -152,7 +152,7 @@ def make_fag_search_fn(
     #   debugging hints, not load-bearing). We monkey-patch the relevant
     #   method on SyncBase before sync_playwright() is constructed.
     try:
-        from scripts.playwright_leak_fix import apply_playwright_leak_fix
+        from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix
         applied = apply_playwright_leak_fix()
         if applied:
             log.info("Applied Playwright Python memory-leak fix "

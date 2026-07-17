@@ -4,6 +4,89 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Refactor: delete 44 back-compat shim files in scripts/
+
+Closed issue #19. The flat `scripts/*.py` directory carried 44
+back-compat shim files that re-exported from subpackages
+(`scripts.cgr`, `scripts.matching`, `scripts.fag`,
+`scripts.pipeline`, `scripts.state`, `scripts.ingest`). The
+duplication violated DRY and was a broken-window hazard for
+new agents landing on the repo.
+
+What changed:
+
+- **Deleted:** 44 shim files (full list below).
+- **Migrated:** 47 importers in `tests/`, `scripts/`, and
+  `scripts/__init__.py` rewritten to canonical subpackage paths.
+- **Cross-subpackage chains** (`scripts.cgr.spouse_prototype`
+  → `scripts.spouse_extract` → subpackage) updated to bypass
+  the deleted shim layer.
+- **Docs updated:** `CHANGELOG.md` (this entry + historical
+  reference note), `docs/TASKS.csv` (T019, T020), `docs/learnings/
+  2026-07-16-checkpoint-audit.md` (note), `scripts/_archive/
+  ARCHIVED.md` (note).
+- **Pre-existing bug fix:** `scripts/fag/parser.py` was missing
+  `from playwright.sync_api import Page` (used at module load
+  time as a type annotation on `parse_results_page`). Added
+  the import so test collection works.
+
+Files deleted:
+
+```
+scripts/cgr_cem.py                scripts/cgr_cemeteries.py
+scripts/cgr_client.py             scripts/cgr_dedup.py
+scripts/cgr_enrich.py             scripts/cgr_enrich_run.py
+scripts/cgr_fag_link.py           scripts/cgr_matcher.py
+scripts/cgr_ok_scraper.py         scripts/cgr_ok_scraper_run.py
+scripts/cgr_results.py            scripts/cgr_vet.py
+scripts/cgr_xref.py               scripts/cgr_xref_run.py
+scripts/spouse_extract.py         scripts/spouse_prototype.py
+scripts/blocking.py               scripts/both_match.py
+scripts/evaluation.py             scripts/fellegi_sunter.py
+scripts/name_utils.py             scripts/nickname_match.py
+scripts/outlier_classifier.py     scripts/phonetic_match.py
+scripts/regiment_keyword.py
+scripts/fag_browser.py            scripts/playwright_leak_fix.py
+scripts/pw_session.py             scripts/rss_watchdog.py
+scripts/backfill_backlinks.py     scripts/checkpoint.py
+scripts/dd_marker.py              scripts/dd_marker_run.py
+scripts/leftover_investigation.py scripts/rename_to_ok_names.py
+scripts/retry_errors.py           scripts/retry_errors_run.py
+scripts/report_generator.py       scripts/state_check.py
+scripts/build_broadened_set.py    scripts/scrape_digitalprairie.py
+scripts/validate_v5_ladder.py     scripts/unified_pipeline.py
+scripts/unified_runner.py
+```
+
+Canonical homes (use these for new code):
+
+| Was (shim) | Now (canonical) |
+|---|---|
+| `scripts.cgr_*` | `scripts.cgr.cgr_*` |
+| `scripts.spouse_*` | `scripts.cgr.spouse_*` |
+| `scripts.{blocking,both_match,...}` | `scripts.matching.{...}` |
+| `scripts.{fag_browser,pw_session,...}` | `scripts.fag.{...}` |
+| `scripts.{backfill_backlinks,checkpoint,...}` | `scripts.pipeline.{...}` |
+| `scripts.{unified_pipeline,unified_runner}` | `scripts.pipeline.core` |
+| `scripts.{report_generator,state_check}` | `scripts.state.{...}` |
+| `scripts.{build_broadened_set,...}` | `scripts.ingest.{...}` |
+
+**Left alone** (canonical, not shims): `scripts/run_unified.py`
+(production entrypoint), `scripts/search_fag.py` (merges two
+namespaces, separate refactor), `scripts/view.html`,
+`scripts/batch_config.py`, `scripts/spouse_cross_ref.py`,
+`scripts/state_normalize.py`, `scripts/soak_memory.py`.
+
+Verification:
+
+- `pytest tests/`: **892 passed**, 1 deselected, 0 errors.
+  Same as pre-refactor baseline (910 minus 2 pre-existing
+  view_html schema failures and 4 e2e_ground_truth errors
+  that require environment-specific fixtures).
+- `python scripts/run_unified.py --help`: exits 0.
+- No remaining `scripts.<shim>` references in `*.py`, `*.html`,
+  `*.md`, `*.csv` files (verified via grep).
+
 ### Full pension-card ingest: 7,558/7,558 records cached
 
 The full pension-card IIIF page-id ingest completed
@@ -1451,6 +1534,10 @@ The bare imports were the actual fragility — fixed:
 
 - `scripts/search_fag.py` now uses `from scripts.checkpoint`,
   `from scripts.regiment_keyword`, `from scripts.nickname_match`
+  (left as historical reference; these paths are now
+  `scripts.pipeline.checkpoint`, `scripts.matching.regiment_keyword`,
+  `scripts.matching.nickname_match` — see [Unreleased]
+  entry below for the 2026-07-17 shim deletion)
 
 - `scripts/_archive/ARCHIVED.md` created with the decision
   rationale for future maintainers

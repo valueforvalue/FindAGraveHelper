@@ -36,28 +36,28 @@ class TestNormalization:
 
 class TestJaroWinkler:
     def test_identical_strings_score_1(self):
-        from scripts.cgr_dedup import jaro_winkler
+        from scripts.cgr.cgr_dedup import jaro_winkler
         assert jaro_winkler("hugh", "hugh") == 1.0
 
     def test_partial_match(self):
-        from scripts.cgr_dedup import jaro_winkler
+        from scripts.cgr.cgr_dedup import jaro_winkler
         s = jaro_winkler("hugh", "hue")
         # JW with prefix bonus; both share 'hu' as prefix.
         assert 0.7 < s < 0.85
 
     def test_completely_different(self):
-        from scripts.cgr_dedup import jaro_winkler
+        from scripts.cgr.cgr_dedup import jaro_winkler
         assert jaro_winkler("aaa", "zzz") == 0.0
 
     def test_threshold_pass(self):
         """JW("willis","william") >= 0.90 (per smoke check)."""
-        from scripts.cgr_dedup import jaro_winkler
+        from scripts.cgr.cgr_dedup import jaro_winkler
         assert jaro_winkler("willis", "william") >= 0.90
 
 
 class TestSamePersonPredicate:
     def test_identical_records_merge(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "died": "1920",
              "cemetery_id": 1, "unit": "CSA"}
@@ -67,7 +67,7 @@ class TestSamePersonPredicate:
         assert same_person(a, b) is True
 
     def test_different_last_name_no_merge(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"}
         b = {"first_name": "Hugh", "last_name": "Williams",
@@ -75,7 +75,7 @@ class TestSamePersonPredicate:
         assert same_person(a, b) is False
 
     def test_last_name_match_but_first_name_below_threshold_no_merge(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"}
         b = {"first_name": "Jane", "last_name": "Akers",
@@ -85,7 +85,7 @@ class TestSamePersonPredicate:
 
     def test_no_first_name_does_not_merge(self):
         """Refuse to merge without first names — too noisy."""
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "", "last_name": "Akers",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"}
         b = {"first_name": "", "last_name": "Akers",
@@ -94,28 +94,28 @@ class TestSamePersonPredicate:
 
     def test_last_name_match_first_name_pass_but_no_tiebreaker_no_merge(self):
         """Strict: tiebreaker is required."""
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers"}
         b = {"first_name": "Hugh", "last_name": "Akers"}
         # No tiebreaker at all -> False even though names match.
         assert same_person(a, b) is False
 
     def test_year_close_match_counts_as_tiebreaker(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers", "born": "1840"}
         b = {"first_name": "Hugh", "last_name": "Akers", "born": "1843"}
         # 3-year birth-year delta is within the year_delta=5 window.
         assert same_person(a, b) is True
 
     def test_year_far_apart_no_tiebreaker(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers", "born": "1840"}
         b = {"first_name": "Hugh", "last_name": "Akers", "born": "1850"}
         # 10-year delta is outside the year_delta=5 window.
         assert same_person(a, b) is False
 
     def test_cem_id_match_counts_as_tiebreaker(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers",
              "cemetery_id": 42}
         b = {"first_name": "Hugh", "last_name": "Akers",
@@ -123,7 +123,7 @@ class TestSamePersonPredicate:
         assert same_person(a, b) is True
 
     def test_unit_match_counts_as_tiebreaker(self):
-        from scripts.cgr_dedup import same_person
+        from scripts.cgr.cgr_dedup import same_person
         a = {"first_name": "Hugh", "last_name": "Akers", "unit": "1 TX"}
         b = {"first_name": "Hugh", "last_name": "Akers", "unit": "1 TX"}
         assert same_person(a, b) is True
@@ -131,7 +131,7 @@ class TestSamePersonPredicate:
 
 class TestUnionFind:
     def test_basic_union_find(self):
-        from scripts.cgr_dedup import UnionFind
+        from scripts.cgr.cgr_dedup import UnionFind
         uf = UnionFind()
         for x in range(5):
             uf.add(x)
@@ -143,7 +143,7 @@ class TestUnionFind:
         assert uf.find(3) != uf.find(4)
 
     def test_transitive_merge(self):
-        from scripts.cgr_dedup import UnionFind
+        from scripts.cgr.cgr_dedup import UnionFind
         uf = UnionFind()
         for x in range(4):
             uf.add(x)
@@ -160,7 +160,7 @@ class TestBuildDedup:
         return [{**r, "id": i} for i, r in enumerate(recs)]
 
     def test_two_clear_matches_merge_into_one_person(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = self._fixture_cgr(
             {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "died": "1920", "cemetery_id": 1,
@@ -187,7 +187,7 @@ class TestBuildDedup:
         assert "1920" in big["merged_metadata"]["death_year"]
 
     def test_pensioner_link_via_cgr(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = self._fixture_cgr(
             {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "died": "1920", "cemetery_id": 1,
@@ -208,7 +208,7 @@ class TestBuildDedup:
         assert hit["member_cgr_ids"] == [cgr[0]["id"]]
 
     def test_pensioner_only_singleton(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = self._fixture_cgr(
             {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"},
@@ -228,7 +228,7 @@ class TestBuildDedup:
         assert singleton["merged_metadata"] == {}
 
     def test_provenance_in_reverse_index(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = self._fixture_cgr(
             {"first_name": "Hugh", "last_name": "Akers",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"},
@@ -245,7 +245,7 @@ class TestBuildDedup:
         assert "42" in out["pensioner_id_to_person_id"]
 
     def test_transitive_merge_three_cgr_records(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = self._fixture_cgr(
             # A—B same person (year tiebreaker)
             {"first_name": "Hugh", "last_name": "Akers",
@@ -271,7 +271,7 @@ class TestBuildDedup:
         assert len(cgr_persons[0]["member_cgr_ids"]) == 3
 
     def test_merged_metadata_takes_first_non_empty(self):
-        from scripts.cgr_dedup import merged_metadata_for
+        from scripts.cgr.cgr_dedup import merged_metadata_for
         members = [
             {"first_name": "", "last_name": "", "born": "",
              "spouse": "", "unit": "", "rank": ""},
@@ -291,7 +291,7 @@ class TestBuildDedup:
 
 class TestOutputSchema:
     def test_output_has_required_top_level_keys(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = []
         out = build_dedup(cgr_records=cgr, pensioner_to_cgr_links={},
                           pensioners_by_id=None)
@@ -301,7 +301,7 @@ class TestOutputSchema:
             assert key in out, f"missing top-level key: {key}"
 
     def test_stats_count_records(self):
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         cgr = [
             {"id": 1, "first_name": "A", "last_name": "Smith",
              "born": "1840", "cemetery_id": 1, "unit": "CSA"},
@@ -330,7 +330,7 @@ class TestCLIOutputFormat:
                         pensioner_to_cgr_links):
         # Bypass subprocess by calling build_dedup directly on the
         # same data the CLI would read.
-        from scripts.cgr_dedup import build_dedup
+        from scripts.cgr.cgr_dedup import build_dedup
         return build_dedup(
             cgr_records=cgr_records,
             pensioner_to_cgr_links=pensioner_to_cgr_links,

@@ -18,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.phonetic_match import (
+from scripts.matching.phonetic_match import (
     jaro_winkler_similarity,
     metaphone_match,
     nysiis_match,
@@ -212,7 +212,7 @@ def test_signals_used_for_blocking():
 # ============================================================
 def test_name_match_strength_uses_phonetic_for_looney_loney():
     """The integrated matcher should rate Looney/Loney as 'strong'."""
-    from scripts.cgr_matcher import name_match_strength
+    from scripts.cgr.cgr_matcher import name_match_strength
     # Looney / Loney — same last name, same first (Looney)
     result = name_match_strength("John", "Looney", "John", "Loney")
     assert result in ("strong", "medium")
@@ -222,7 +222,7 @@ def test_name_match_strength_uses_phonetic_for_william_williams():
     """William (first) and Williams (last) shouldn't be 'strong'
     because the LAST names differ. But the algorithm should
     still detect they're close."""
-    from scripts.cgr_matcher import name_match_strength
+    from scripts.cgr.cgr_matcher import name_match_strength
     result = name_match_strength("John", "William", "John", "Williams")
     # Different last names -> none (regardless of phonetic)
     assert result in ("none", "weak")  # depends on weight tuning

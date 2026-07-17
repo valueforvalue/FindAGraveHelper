@@ -19,7 +19,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_client import CGRClient
+from scripts.cgr.cgr_client import CGRClient
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
@@ -61,7 +61,7 @@ def _make_response(html_bytes):
 
 def test_cgr_results_exposes_total_count():
     """parse_cgr_results can extract the total count from the page."""
-    from scripts.cgr_results import extract_record_count
+    from scripts.cgr.cgr_results import extract_record_count
     html = """
     <html><body>
     <td class=errortext>38 records returned</td>
@@ -73,7 +73,7 @@ def test_cgr_results_exposes_total_count():
 
 def test_cgr_results_exposes_total_count_for_small_results():
     """extract_record_count also works for small results."""
-    from scripts.cgr_results import extract_record_count
+    from scripts.cgr.cgr_results import extract_record_count
     html = """
     <td class=errortext>3 records returned</td>
     <tr><th>(1-3 of 3 Records)</th></tr>
@@ -83,7 +83,7 @@ def test_cgr_results_exposes_total_count_for_small_results():
 
 def test_cgr_results_exposes_total_count_from_of_n_pattern():
     """The 'of N Records' pattern is parsed as fallback."""
-    from scripts.cgr_results import extract_record_count
+    from scripts.cgr.cgr_results import extract_record_count
     html = """
     <tr><th>(1-30 of 47 Records)</th></tr>
     """
@@ -174,7 +174,7 @@ def test_list_all_veterans_throttles_between_pages():
     responses = [_make_response(page1), _make_response(page2)]
 
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("scripts.cgr_client.time.sleep") as mock_sleep:
+         patch("scripts.cgr.cgr_client.time.sleep") as mock_sleep:
         mock_urlopen.side_effect = responses
         client = CGRClient(throttle_seconds=2.0)
         client.list_all_veterans_in_cemetery(12736)

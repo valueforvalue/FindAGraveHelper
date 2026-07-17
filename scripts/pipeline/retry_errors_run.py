@@ -74,7 +74,7 @@ def main() -> int:
     # Optional RSS watchdog (same defaults as the main runner)
     watchdog = None
     if not args.no_rss_watchdog:
-        from scripts.rss_watchdog import RSSWatchdog
+        from scripts.fag.rss_watchdog import RSSWatchdog
         watchdog = RSSWatchdog(
             poll_seconds=30.0,
             warn_mb=args.rss_warn_mb,

@@ -46,12 +46,12 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Callable, Optional
 
-from scripts.blocking import (
+from scripts.matching.blocking import (
     build_blocking_index,
     lookup_block,
 )
-from scripts.cgr_matcher import match_pensioner_to_cgr
-from scripts.both_match import detect_both_match
+from scripts.cgr.cgr_matcher import match_pensioner_to_cgr
+from scripts.matching.both_match import detect_both_match
 
 
 # ============================================================

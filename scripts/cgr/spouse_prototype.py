@@ -31,7 +31,7 @@ from pathlib import Path
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
 
-from scripts.spouse_extract import extract_spouse, extract_children
+from scripts.cgr.spouse_extract import extract_spouse, extract_children
 
 LOCAL_CSV = "C:/Development/FindAGraveHelper/docs/research/local-data/local_soldiers_with_fag.csv"
 UNIFIED_JSON = "C:/tmp/ok_pensioners.json"

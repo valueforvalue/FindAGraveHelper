@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.unified_pipeline import (
+from scripts.pipeline.core import (
     run_pipeline_for_pensioner,
     PipelineConfig,
     PipelineResult,

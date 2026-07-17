@@ -19,7 +19,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_fag_link import (
+from scripts.cgr.cgr_fag_link import (
     find_fag_url,
     extract_fag_memorial_id,
     extract_fag_source_fields,

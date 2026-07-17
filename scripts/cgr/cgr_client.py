@@ -64,7 +64,7 @@ class CGRClient:
         if no matches.
         """
         # Import here to avoid circular dependency at module load.
-        from scripts.cgr_results import parse_cgr_results
+        from scripts.cgr.cgr_results import parse_cgr_results
         params = {
             "fname": fname,
             "lname": lname,
@@ -84,7 +84,7 @@ class CGRClient:
 
     def get_vet_details(self, vet_id: int) -> dict:
         """Fetch and parse a vet details page. Returns a dict (possibly empty)."""
-        from scripts.cgr_vet import parse_cgr_vet
+        from scripts.cgr.cgr_vet import parse_cgr_vet
         url = f"{_BASE_URL}/vetDetails.php?id={vet_id}"
         html = self._get(url)
         return parse_cgr_vet(html)
@@ -97,7 +97,7 @@ class CGRClient:
         cemDetails.php?id=X expects the vet id, not a separate
         cemetery id.
         """
-        from scripts.cgr_cem import parse_cgr_cem
+        from scripts.cgr.cgr_cem import parse_cgr_cem
         url = f"{_BASE_URL}/cemDetails.php?id={vet_id}"
         html = self._get(url)
         return parse_cgr_cem(html)
@@ -109,7 +109,7 @@ class CGRClient:
         list of {id, name, county, raw_label} dicts (parsed by
         parse_cemeteries_html).
         """
-        from scripts.cgr_cemeteries import parse_cemeteries_html
+        from scripts.cgr.cgr_cemeteries import parse_cemeteries_html
         url = f"{_BASE_URL}/ajax_cemeteryDrop.php"
         # Throttle applies to all requests except the first
         if self._request_count > 0 and self.throttle_seconds > 0:
@@ -137,7 +137,7 @@ class CGRClient:
         GETs results.php?cemetery_id=X. Returns list of
         {id, name, unit, born} dicts (parsed by parse_cgr_results).
         """
-        from scripts.cgr_results import parse_cgr_results
+        from scripts.cgr.cgr_results import parse_cgr_results
         url = f"{_BASE_URL}/results.php?cemetery_id={cemetery_id}"
         html = self._get(url)
         return parse_cgr_results(html)
@@ -156,7 +156,7 @@ class CGRClient:
         the site reports an absurd total. At 30 records/page,
         max_pages=200 covers up to 6000 vets per cemetery.
         """
-        from scripts.cgr_results import parse_cgr_results, extract_record_count
+        from scripts.cgr.cgr_results import parse_cgr_results, extract_record_count
         all_vets: list[dict] = []
         offset = 0
         page_size = 30

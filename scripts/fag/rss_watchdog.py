@@ -27,7 +27,7 @@ It exposes:
 
 Usage:
 
-  from scripts.rss_watchdog import RSSWatchdog
+  from scripts.fag.rss_watchdog import RSSWatchdog
   wd = RSSWatchdog(poll_seconds=30, warn_mb=2048,
                    force_reset_mb=4096, exit_mb=6144)
   wd.start()

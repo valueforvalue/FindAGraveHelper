@@ -53,14 +53,14 @@ def fake_rss_env(monkeypatch):
 
 
 def test_rss_watchdog_default_state():
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     wd = RSSWatchdog()
     assert wd.current_rss_mb() == 0
     assert wd.should_force_reset() is False
 
 
 def test_rss_force_reset_roundtrip():
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     wd = RSSWatchdog()
     # Simulate the runner calling this from outside.
     wd._force_reset_event.set()
@@ -71,7 +71,7 @@ def test_rss_force_reset_roundtrip():
 
 def test_rss_watchdog_force_reset_at_threshold(fake_rss_env):
     """At 4096+ MB the watchdog sets the force_reset_event."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     fake_rss_env([5000 * 1024 * 1024])  # 5000 MB next reading
     wd = RSSWatchdog(poll_seconds=0.05, warn_mb=2048,
                      force_reset_mb=4096, exit_mb=0)
@@ -90,7 +90,7 @@ def test_rss_watchdog_force_reset_at_threshold(fake_rss_env):
 
 def test_rss_watchdog_no_force_reset_when_below(fake_rss_env):
     """At low RSS the watchdog never triggers."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     fake_rss_env([100 * 1024 * 1024])  # 100 MB
     wd = RSSWatchdog(poll_seconds=0.05, warn_mb=2048,
                      force_reset_mb=4096, exit_mb=0)
@@ -105,7 +105,7 @@ def test_rss_watchdog_no_force_reset_when_below(fake_rss_env):
 
 def test_rss_watchdog_disabled_thresholds(fake_rss_env):
     """passing 0 for any threshold disables that action."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     fake_rss_env([10 * 1024 * 1024 * 1024])  # 10 GB — would blow everything
     wd = RSSWatchdog(poll_seconds=0.05, warn_mb=0,
                      force_reset_mb=0, exit_mb=0)
@@ -120,9 +120,9 @@ def test_rss_watchdog_disabled_thresholds(fake_rss_env):
 
 def test_rss_watchdog_exit_calls_osexit(fake_rss_env):
     """At exit_mb the watchdog calls os._exit(1)."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     fake_rss_env([7 * 1024 * 1024 * 1024])  # 7 GB
-    with mock.patch("scripts.rss_watchdog.os._exit") as osexit:
+    with mock.patch("scripts.fag.rss_watchdog.os._exit") as osexit:
         wd = RSSWatchdog(poll_seconds=0.05, warn_mb=0,
                          force_reset_mb=0, exit_mb=6144)
         wd.start()
@@ -138,7 +138,7 @@ def test_rss_watchdog_exit_calls_osexit(fake_rss_env):
 
 def test_rss_watchdog_start_idempotent():
     """Calling start() twice does not spawn a second thread."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     wd = RSSWatchdog(poll_seconds=10.0)
     wd.start()
     t1 = wd._thread
@@ -149,7 +149,7 @@ def test_rss_watchdog_start_idempotent():
 
 def test_rss_watchdog_stop_event():
     """stop() sets the stop event so the loop exits."""
-    from scripts.rss_watchdog import RSSWatchdog
+    from scripts.fag.rss_watchdog import RSSWatchdog
     wd = RSSWatchdog(poll_seconds=0.05)
     wd.start()
     wd.stop()

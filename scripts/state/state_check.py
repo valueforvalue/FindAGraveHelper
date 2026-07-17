@@ -10,7 +10,7 @@ This is the foundation of "bulletproof" — we detect data loss,
 corruption, or schema drift before it bites us.
 
 Usage:
-  from scripts.state_check import check_state_file
+  from scripts.state.state_check import check_state_file
   result = check_state_file(state_path, expected_ids)
   if not result.is_clean():
       print(result.summary())

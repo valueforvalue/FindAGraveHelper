@@ -8,6 +8,8 @@ Public surface:
 """
 import re
 
+from playwright.sync_api import Page
+
 from scripts.fag.filters import _STATE_NAMES_LOWER  # state name -> abbr lookup
 
 # Cap on the number of result pages we parse. FaG soft-caps at 200

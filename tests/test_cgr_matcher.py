@@ -34,7 +34,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_matcher import (
+from scripts.cgr.cgr_matcher import (
     match_pensioner_to_cgr,
     MatchStrength,
     name_match_strength,

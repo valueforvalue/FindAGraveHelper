@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 
-from scripts.cgr_matcher import match_pensioner_to_cgr
+from scripts.cgr.cgr_matcher import match_pensioner_to_cgr
 
 
 @dataclass

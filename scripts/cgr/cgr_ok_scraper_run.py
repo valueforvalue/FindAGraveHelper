@@ -31,8 +31,8 @@ ROOT = Path(__file__).parent
 PARENT = ROOT.parent
 sys.path.insert(0, str(PARENT))
 
-from scripts.cgr_client import CGRClient
-from scripts.cgr_ok_scraper import scrape_ok_cemeteries, ScrapingConfig
+from scripts.cgr.cgr_client import CGRClient
+from scripts.cgr.cgr_ok_scraper import scrape_ok_cemeteries, ScrapingConfig
 
 
 logging.basicConfig(

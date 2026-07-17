@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.state_check import (
+from scripts.state.state_check import (
     check_state_file,
     StateCheckResult,
     expected_pensioner_ids,

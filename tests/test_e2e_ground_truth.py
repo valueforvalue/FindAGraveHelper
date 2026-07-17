@@ -21,7 +21,7 @@ import pytest
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.evaluation import (
+from scripts.matching.evaluation import (
     ConfusionMatrix,
     compute_confusion_matrix,
     best_threshold,

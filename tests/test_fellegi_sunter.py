@@ -25,7 +25,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.fellegi_sunter import (
+from scripts.matching.fellegi_sunter import (
     FellegiSunterMatcher,
     ComparisonFeatures,
     extract_features,

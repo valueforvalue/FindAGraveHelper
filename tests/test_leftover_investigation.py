@@ -18,40 +18,40 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 class TestTriggerLogic:
     def test_should_investigate_low_score_no_results(self):
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "no_results", "best_score": 0.0}
         assert should_investigate(r) is True
 
     def test_should_investigate_low_score_ambiguous(self):
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "ambiguous", "best_score": 0.6}
         assert should_investigate(r) is True
 
     def test_should_investigate_low_confidence_auto_accept(self):
         """Even auto_accepts with low scores get investigated."""
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "auto_accept", "best_score": 0.7}
         assert should_investigate(r) is True
 
     def test_should_not_investigate_high_score_auto_accept(self):
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "auto_accept", "best_score": 0.95}
         assert should_investigate(r) is False
 
     def test_should_not_investigate_error_status(self):
         """Errors are out of scope for Phase 3; retry_errors
         is the right tool for those."""
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "error", "best_score": 0.0}
         assert should_investigate(r) is False
 
     def test_should_not_investigate_skip_status(self):
-        from scripts.leftover_investigation import should_investigate
+        from scripts.pipeline.leftover_investigation import should_investigate
         r = {"fag_status": "skip", "best_score": 0.0}
         assert should_investigate(r) is False
 
     def test_score_threshold_matches_documented_value(self):
-        from scripts.leftover_investigation import INVESTIGATE_BELOW_SCORE
+        from scripts.pipeline.leftover_investigation import INVESTIGATE_BELOW_SCORE
         # Documentation anchor: the threshold must match what's in
         # the design doc.
         assert INVESTIGATE_BELOW_SCORE == 0.85
@@ -156,7 +156,7 @@ class TestRunInvestigationNoFaG:
 
     def test_investigation_runs_in_no_fag_mode(self, tmp_path):
         sp, pp, cp = self._fixtures(tmp_path)
-        from scripts.leftover_investigation import run_investigation
+        from scripts.pipeline.leftover_investigation import run_investigation
         summary = run_investigation(
             state_path=sp,
             pensioners_path=pp,
@@ -188,7 +188,7 @@ class TestRunInvestigationNoFaG:
 
     def test_state_jsonl_round_trip_after_investigation(self, tmp_path):
         sp, pp, cp = self._fixtures(tmp_path)
-        from scripts.leftover_investigation import run_investigation
+        from scripts.pipeline.leftover_investigation import run_investigation
         run_investigation(
             state_path=sp, pensioners_path=pp, cgr_dedup_path=cp,
             no_fag=True,
@@ -210,7 +210,7 @@ class TestRunInvestigationNoFaG:
 
     def test_summary_file_written(self, tmp_path):
         sp, pp, cp = self._fixtures(tmp_path)
-        from scripts.leftover_investigation import run_investigation
+        from scripts.pipeline.leftover_investigation import run_investigation
         run_investigation(
             state_path=sp, pensioners_path=pp, cgr_dedup_path=cp,
             no_fag=True,

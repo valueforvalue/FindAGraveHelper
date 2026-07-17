@@ -53,21 +53,19 @@ _ROOT = Path(__file__).parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-from scripts.unified_pipeline import (
+from scripts.pipeline.core import (
     run_pipeline_for_pensioner,
     PipelineConfig,
     PipelineResult,
-)
-from scripts.unified_runner import (
     build_cgr_blocking_index,
     lookup_cgr_for_pensioner,
     annotate_cgr_matches,
 )
-from scripts.outlier_classifier import (
+from scripts.matching.outlier_classifier import (
     OutlierConfig,
     is_outlier,
 )
-from scripts.report_generator import (
+from scripts.state.report_generator import (
     build_report,
     write_report,
 )
@@ -1225,7 +1223,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     # Optional RSS watchdog (independent of Playwright; safe to skip)
     watchdog = None
     if not args.no_rss_watchdog:
-        from scripts.rss_watchdog import RSSWatchdog
+        from scripts.fag.rss_watchdog import RSSWatchdog
         watchdog = RSSWatchdog(
             poll_seconds=30.0,
             warn_mb=args.rss_warn_mb,
@@ -1238,7 +1236,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     fag_search_fn = None
     if not args.no_fag:
         # Inline-import to avoid loading Playwright when not needed
-        from scripts.fag_browser import make_fag_search_fn
+        from scripts.fag.fag_browser import make_fag_search_fn
         log.info("Initializing Playwright (visible browser, takes ~10s)...")
         # FaG locationId scope: from --fag-state-filter CLI flag,
         # or from batch_cfg.fag_state_filter if a config was loaded.

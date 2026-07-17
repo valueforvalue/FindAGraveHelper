@@ -337,14 +337,14 @@ from scripts.search.strategies import (  # noqa: F401
 # ============================================================
 
 def normalise(s: str) -> str:
-    """Back-compat shim. Canonical implementation: scripts.name_utils.normalise."""
-    from scripts.name_utils import normalise as _impl
+    """Back-compat shim. Canonical implementation: scripts.matching.name_utils.normalise."""
+    from scripts.matching.name_utils import normalise as _impl
     return _impl(s)
 
 
 def soundex(name: str) -> str:
-    """Back-compat shim. Canonical implementation: scripts.name_utils.soundex."""
-    from scripts.name_utils import soundex as _impl
+    """Back-compat shim. Canonical implementation: scripts.matching.name_utils.soundex."""
+    from scripts.matching.name_utils import soundex as _impl
     return _impl(name)
 
 

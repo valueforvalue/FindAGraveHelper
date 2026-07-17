@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, patch
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_client import CGRClient
+from scripts.cgr.cgr_client import CGRClient
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
@@ -98,7 +98,7 @@ def test_bulk_methods_throttle():
     """Bulk methods also throttle between requests."""
     fixture = FIXTURE_DIR / "cemeteries_ok.html"
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("scripts.cgr_client.time.sleep") as mock_sleep:
+         patch("scripts.cgr.cgr_client.time.sleep") as mock_sleep:
         mock_urlopen.return_value = _bytes_response(fixture)
         client = CGRClient(throttle_seconds=2.0)
         # First request: no throttle
@@ -115,7 +115,7 @@ def test_bulk_method_does_not_throttle_when_zero():
     """No throttling when set to zero."""
     fixture = FIXTURE_DIR / "cemeteries_ok.html"
     with patch("urllib.request.urlopen") as mock_urlopen, \
-         patch("scripts.cgr_client.time.sleep") as mock_sleep:
+         patch("scripts.cgr.cgr_client.time.sleep") as mock_sleep:
         mock_urlopen.return_value = _bytes_response(fixture)
         client = CGRClient(throttle_seconds=0)
         for _ in range(3):

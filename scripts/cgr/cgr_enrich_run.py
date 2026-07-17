@@ -28,7 +28,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_enrich import (
+from scripts.cgr.cgr_enrich import (
     EnrichmentStats,
     build_enriched_record,
     expand_to_per_vet,
@@ -36,7 +36,7 @@ from scripts.cgr_enrich import (
     parse_already_fetched,
     write_enriched_vet,
 )
-from scripts.cgr_client import CGRClient
+from scripts.cgr.cgr_client import CGRClient
 
 
 INPUT = ROOT / "docs" / "research" / "cgr" / "ok_cemeteries.jsonl"

@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.backfill_backlinks import load_unified_index, backfill
+from scripts.pipeline.backfill_backlinks import load_unified_index, backfill
 
 
 def _write_unified(path: Path, records: list[dict]) -> None:

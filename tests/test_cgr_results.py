@@ -15,7 +15,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.cgr_results import parse_cgr_results
+from scripts.cgr.cgr_results import parse_cgr_results
 
 
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
@@ -127,13 +127,13 @@ def test_parse_handles_unicode_in_names():
 
 def test_extract_record_count_william_looney():
     """The record count line is extractable for pagination diagnostics."""
-    from scripts.cgr_results import extract_record_count
+    from scripts.cgr.cgr_results import extract_record_count
     html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
     assert extract_record_count(html) == 1
 
 
 def test_extract_record_count_returns_none_for_empty():
     """No count line = None (not crash)."""
-    from scripts.cgr_results import extract_record_count
+    from scripts.cgr.cgr_results import extract_record_count
     assert extract_record_count("") is None
     assert extract_record_count("no matches here") is None

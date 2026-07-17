@@ -287,7 +287,7 @@ def run_investigation(
     # Initialize FaG search function (or skip if --no-fag)
     if fag_search_fn is None and not no_fag:
         try:
-            from scripts.fag_browser import make_fag_search_fn
+            from scripts.fag.fag_browser import make_fag_search_fn
         except ImportError:
             fag_search_fn = None
         if fag_search_fn is None and not no_fag:

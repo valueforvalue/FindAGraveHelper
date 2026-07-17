@@ -95,10 +95,9 @@ def test_cgr_index_reuse_does_not_grow_rss():
     remain within a few MB of the baseline.
     """
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from scripts.unified_pipeline import (
-        run_pipeline_for_pensioner, PipelineConfig,
+    from scripts.pipeline.core import (
+        run_pipeline_for_pensioner, PipelineConfig, build_cgr_blocking_index,
     )
-    from scripts.unified_runner import build_cgr_blocking_index
 
     cemeteries = _dummy_cemeteries(2593)
     prebuilt = build_cgr_blocking_index(cemeteries)
@@ -145,7 +144,7 @@ def test_cgr_index_per_call_does_not_break_anything():
     loop isn't representative of the production load pattern.
     """
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    from scripts.unified_pipeline import (
+    from scripts.pipeline.core import (
         run_pipeline_for_pensioner, PipelineConfig,
     )
 
