@@ -45,7 +45,7 @@ The review layer is a single static HTML file at
   `<a download>`
 - Has no build step (vanilla JS, no transpile)
 
-The CLI is `scripts/dd_marker_run.py` for the write-back
+The CLI is `scripts/pipeline/dd_marker_run.py` for the write-back
 step. CLI-driven pick is out of scope (scripting the
 decisions is a separate concern).
 

@@ -7,13 +7,13 @@ project for the first time, read this first.
 
 | Goal | Command |
 |---|---|
-| Re-pull the 7,558 OK pensioner list | `python scripts/scrape_digitalprairie.py ...` |
+| Re-pull the 7,558 OK pensioner list | `python scripts/ingest/scrape_digitalprairie.py ...` |
 | Run the batch FaG search on all 7,558 | `python scripts/search_fag.py --input-url ...` |
 | Run the batch on a small slice for testing | add `--limit 50` |
 | Run on local dixiedata records (with ground-truth) | use `--input-csv` and `--ground-truth-csv` |
 | Review the results in browser | open `scripts/view.html`, load the JSONL state file |
 | Export human decisions | click "Export decisions" in view.html |
-| Re-scrape a different set of CW rosters | `python scripts/build_broadened_set.py` |
+| Re-scrape a different set of CW rosters | `python scripts/ingest/build_broadened_set.py` |
 
 ## The full pipeline
 
@@ -214,7 +214,7 @@ The `ok_pensioners.json` in the repo is already current. To re-pull
 (faster than downloading the 30MB from GitHub):
 
 ```bash
-python scripts/scrape_digitalprairie.py \
+python scripts/ingest/scrape_digitalprairie.py \
   --out-dir docs/research/digitalprairie \
   --min-id 1 --max-id 13000 --no-probe \
   --concurrency 15 --save-every 500

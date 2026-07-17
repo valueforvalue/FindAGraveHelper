@@ -257,20 +257,20 @@ All 4 algorithm improvements were implemented and tested:
 - **31 tests, all passing**
 
 ### Slice A2: Phonetic blocking (priority 2)
-- `scripts/blocking.py` builds a multi-key index from a vet list
+- `scripts/matching/blocking.py` builds a multi-key index from a vet list
 - For 2,593 OK CGR vets: 2,998 blocks in 0.01s
 - Lookup time: 0.0001s per query (vs ~1.5s per search_by_name call)
 - 7,758 pensioner lookups = ~0.8s vs ~3.2 hours of network calls
 - **27 tests, all passing**
 
 ### Slice A3: Confusion matrix evaluation (priority 4)
-- `scripts/evaluation.py` provides `ConfusionMatrix`,
+- `scripts/matching/evaluation.py` provides `ConfusionMatrix`,
   `precision`, `recall`, `f1_score`, `best_threshold`
 - Lets us pick thresholds scientifically instead of guessing
 - **26 tests, all passing**
 
 ### Slice A4: Fellegi-Sunter probabilistic matcher (priority 3)
-- `scripts/fellegi_sunter.py` wraps `python-recordlinkage`'s
+- `scripts/matching/fellegi_sunter.py` wraps `python-recordlinkage`'s
   classifier with a friendlier interface
 - Features: JW first/last, metaphone, NYSIIS, unit state match
 - Logistic regression on the features (small training sets

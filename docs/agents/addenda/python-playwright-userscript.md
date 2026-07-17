@@ -62,7 +62,7 @@ check is on every PR.
 Every per-pensioner record flushes to `state.jsonl` BEFORE
 the next pensioner starts. A crash mid-run leaves the file
 re-loadable by re-running with the same `--state` path. See
-[`scripts/checkpoint.py`](../../scripts/checkpoint.py) for
+[`scripts/pipeline/checkpoint.py`](../../scripts/pipeline/checkpoint.py) for
 the canonical flush pattern.
 
 ### Throttle is the rate limit (Playwright)
@@ -121,7 +121,7 @@ userscript + simulates the pipeline).
   outcome (`BOTH_MATCH`, `auto_accept`, `no_results`,
   `error`).
 
-### Playwright (scripts/fag_browser.py)
+### Playwright (scripts/fag/fag_browser.py)
 
 - **Stealth + warmup**: launch with
   `playwright-stealth`, then visit
@@ -159,7 +159,7 @@ userscript + simulates the pipeline).
   want a different shape, transform in Python and write a
   new `state.jsonl`.
 - **Decisions export is the output contract** — the CSV
-  schema is consumed by `scripts/dd_marker_run.py` to mark
+  schema is consumed by `scripts/pipeline/dd_marker_run.py` to mark
   records in the user's local dixiedata DB. Changes to the
   schema break the round-trip; treat as breaking.
 

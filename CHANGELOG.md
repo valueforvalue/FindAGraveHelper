@@ -4,6 +4,47 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Chore: refresh doc references after shim deletion (issue #19 + #22)
+
+Following the code-side migration to canonical subpackage paths,
+docs that referenced the deleted shims needed updating too. This
+is a documentation-only commit.
+
+What changed (8 files rewritten):
+
+- `docs/agents/bug-catalog.md` — 5 `grep` commands pointed at
+  deleted files (would fail for an operator following them).
+- `docs/agents/pipeline-architecture.md` — diagram node label.
+- `docs/agents/cross-layer-contract.md` — module reference.
+- `docs/agents/addenda/python-playwright-userscript.md` —
+  section header module name.
+- `docs/agents/adr/0001-playwright-stealth-over-requests.md` —
+  module name.
+- `docs/agents/adr/0002-state-jsonl-format.md` — module reference.
+- `docs/agents/adr/0004-view-html-as-review-layer.md` —
+  module reference.
+- `docs/learnings/how-to-use.md` — operator-runnable commands.
+- `docs/learnings/algorithms-research.md` — module references.
+
+What was left alone (intentional):
+
+- `AGENTS.md`, `CONTEXT.md`, `INDEX.md`, `feature-protocol.md`,
+  `tdd.md` — already use canonical paths or no module references.
+- `CHANGELOG.md` — the `[Unreleased]` block intentionally lists
+  the deleted shim paths as the audit trail of what was removed.
+- `docs/learnings/2026-07-16-checkpoint-audit.md` — historical
+  audit; the old paths describe the state at audit time.
+- `scripts/_archive/ARCHIVED.md` — historical archive rationale.
+- `docs/learnings/run-*-learnings.md` — historical run forensics;
+  the code paths cited were correct AT THE TIME of the run.
+
+Verification:
+
+- `grep` for any remaining `scripts/<shim>.py` references in
+  non-CHANGELOG .md files: **0 matches**.
+- `pytest tests/`: **966 passed** (unchanged — doc-only commit).
+- `python scripts/run_unified.py --help`: exits 0.
+
 ### Feat: reversibility flags — --dry-run, --state-replay, --rollback-to
 
 Closed issue #21. Per pragmatic-programmer §6 Reversibility: a wedged

@@ -45,10 +45,10 @@ flowchart TB
     subgraph PIPE[PER-PENSIONER PIPELINE - scripts/pipeline/]
         BATCH["run_batch()<br/>+ ResumeTracker<br/>(skip already-done ids)"]
         CORE["run_pipeline_for_pensioner()<br/>in core.py"]
-        BLOCK["CGR blocking lookup<br/>phonetic index over 2,593 vets<br/>scripts/blocking.py"]
-        ANNOT["annotate_cgr_matches<br/>scripts/cgr_matcher.py"]
+        BLOCK["CGR blocking lookup<br/>phonetic index over 2,593 vets<br/>scripts/matching/blocking.py"]
+        ANNOT["annotate_cgr_matches<br/>scripts/cgr/cgr_matcher.py"]
         FAG["search_one_pensioner()<br/>scripts/fag/search.py<br/>~10 strategies in ladder"]
-        BOTH["detect_both_match<br/>scripts/both_match.py"]
+        BOTH["detect_both_match<br/>scripts/matching/both_match.py"]
     end
 
     %% ============ FaG STRATEGY LADDER ============
@@ -81,7 +81,7 @@ flowchart TB
     OUT[("output/test-batch-25/<br/>outliers.jsonl<br/>(low-score -> follow-up)")]
     VIEW["scripts/view.html<br/>copied to output/<runname>/view.html<br/>+ embedded results.jsonl"]
     DEDUP["scripts/cgr/cgr_fag_dedup.py<br/>post-run: cross-checks CGR<br/>against final FaG picks"]
-    REPORT["scripts/report_generator.py<br/>report_*.md + report_*.json"]
+    REPORT["scripts/state/report_generator.py<br/>report_*.md + report_*.json"]
     RESUME["resume.sh<br/>(J5-S3) re-invokes with --config"]
 
     %% ============ HUMAN ============

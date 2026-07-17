@@ -109,7 +109,7 @@ If the schema changes, **update both ends in one commit**
 
 ## The review-UI output: `decisions.csv`
 
-`scripts/dd_marker_run.py` reads this CSV and writes back to
+`scripts/pipeline/dd_marker_run.py` reads this CSV and writes back to
 the user's local dixiedata DB (`record_type`, `app_id`,
 `details`). The CSV schema is consumed verbatim — adding or
 renaming columns requires a coordinated change in
