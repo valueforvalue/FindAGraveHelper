@@ -8,9 +8,10 @@ records would change if the pipeline ran for real.
 
 This module owns:
   - The diff schema (one record per pensioner with would_change flag)
-  - The atomic-write discipline for the diff file
   - The "what counts as a change" rule (excludes runtime fields
     like timestamp that always differ between runs)
+  - Atomic-write discipline is delegated to JsonlStateRepository
+    (issue #28).
 
 Public API:
   - diff_record(current, predicted) -> dict
@@ -19,8 +20,6 @@ Public API:
 """
 from __future__ import annotations
 
-import json
-import os
 from pathlib import Path
 from typing import Iterable
 
@@ -159,13 +158,9 @@ def write_dry_run_diff(
         if diff["would_change"]:
             n_changed += 1
 
-    # Atomic write
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = out_path.with_suffix(out_path.suffix + ".tmp")
-    with tmp_path.open("w", encoding="utf-8") as f:
-        for diff in diffs:
-            f.write(json.dumps(diff, ensure_ascii=False) + "\n")
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp_path, out_path)
+    # Issue #28: route JSONL write through JsonlStateRepository.
+    # The Repository owns: json.dumps key order, L3 (flush + fsync),
+    # L5 (newline-delimited), and the .tmp + os.replace atomic-write
+    # discipline. Previously duplicated here.
+    JsonlStateRepository(out_path).replace_all(diffs)
     return n_changed

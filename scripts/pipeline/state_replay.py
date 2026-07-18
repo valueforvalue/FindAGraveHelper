@@ -11,8 +11,6 @@ Public API:
 """
 from __future__ import annotations
 
-import json
-import os
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Iterable
@@ -31,7 +29,7 @@ def replay_state(
     Returns the number of records replayed. Returns 0 if old_state
     doesn't exist (nothing to replay).
 
-    Atomic via .tmp + os.replace on the new_state_path.
+    Atomic via JsonlStateRepository.replace_all (issue #28).
     """
     old_state_path = Path(old_state_path)
     new_state_path = Path(new_state_path)
@@ -50,15 +48,10 @@ def replay_state(
         # artifact being carried forward.
         new_records.append(predicted)
 
-    # Atomic write
-    new_state_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = new_state_path.with_suffix(new_state_path.suffix + ".tmp")
-    with tmp_path.open("w", encoding="utf-8") as f:
-        for rec in new_records:
-            f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp_path, new_state_path)
+    # Issue #28: route JSONL write through JsonlStateRepository.
+    # The Repository owns the atomic-write discipline + L5
+    # newline-delimited format. Previously duplicated here.
+    JsonlStateRepository(new_state_path).replace_all(new_records)
     return len(new_records)
 
 
