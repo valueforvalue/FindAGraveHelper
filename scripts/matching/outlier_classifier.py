@@ -29,8 +29,18 @@ class Classification(Enum):
 
 @dataclass
 class OutlierConfig:
-    """Tunable thresholds for outlier classification."""
-    low_score_threshold: float = 0.40
+    """Tunable thresholds for outlier classification.
+
+    Issue #28 follow-up: the default `low_score_threshold` is
+    imported from scoring_constants so this config, the CLI
+    default, and the dry-run path all agree. The dataclass
+    default uses `field(default_factory=...)` because module-level
+    constants can't be used directly as `default=` values when
+    they could be mutated.
+    """
+    low_score_threshold: float = field(
+        default_factory=lambda: _low_score_threshold_default()
+    )
     # Statuses that are outliers regardless of score
     outlier_statuses: tuple[str, ...] = (
         "no_results",
@@ -38,6 +48,18 @@ class OutlierConfig:
         "captcha",
         "not_run",
     )
+
+
+def _low_score_threshold_default() -> float:
+    """Lazy import to avoid a circular import at module load.
+
+    scripts.pipeline.scoring_constants is a small leaf module
+    with no dependencies on scripts.matching.*, so the import
+    direction is safe — but evaluating it at field-construction
+    time is the cleanest way to share the constant.
+    """
+    from scripts.pipeline.scoring_constants import LOW_SCORE_THRESHOLD
+    return LOW_SCORE_THRESHOLD
 
 
 def _top_score(rec: dict) -> float:
