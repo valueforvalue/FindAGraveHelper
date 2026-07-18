@@ -200,6 +200,31 @@ def test_write_dry_run_diff_handles_missing_current_state(tmp_path):
     assert diff["current_outcome"] is None
 
 
+<<<<<<< HEAD
+=======
+def test_write_dry_run_diff_atomic_via_tmp_rename(tmp_path):
+    """If write fails midway, no partial file is left at out_path."""
+    current_path = tmp_path / "state.jsonl"
+    current_path.write_text(json.dumps(_state_record(1)) + "\n", encoding="utf-8")
+    out_path = tmp_path / "dry_run_diff.jsonl"
+
+    # pre-create a stale file at out_path to verify it gets replaced
+    out_path.write_text("STALE", encoding="utf-8")
+
+    write_dry_run_diff(
+        out_path=out_path,
+        current_state_path=current_path,
+        predictions=[_state_record(1)],
+    )
+    # Final file is valid JSONL, not the stale STALE marker
+    content = out_path.read_text(encoding="utf-8")
+    assert not content.startswith("STALE")
+    # No .tmp leftover
+    tmp_files = list(tmp_path.glob("*.tmp"))
+    assert tmp_files == []
+
+
+>>>>>>> origin/feat/reversibility-flags
 def test_write_dry_run_diff_skips_pensioners_without_predictions(tmp_path):
     """If current state has 3 records but predictions has only 2,
     the missing one is reported as 'no prediction available'."""
