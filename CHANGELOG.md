@@ -4,6 +4,52 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Smoke test + bug fix for issue #21 reversibility flags
+
+Live smoke test against `data/results/run_50_test_smoke/state.jsonl`
+(50 records) + `ok_pensioners_sample_50.json` (50 pensioners) +
+`ok_cemeteries.jsonl`. Three tests, all in `output/smoke-test/`,
+all passed.
+
+What was tested:
+
+- **Test 1 — `--state-replay`**: replayed 50 records from
+  `data/results/run_50_test_smoke/state.jsonl` into
+  `output/smoke-test/test1-replay/results.jsonl`. Verified
+  `replayed_at` + `replayed_from` markers present. File produced
+  at 1.6MB with full record structure preserved.
+- **Test 2 — `--write-checkpoint` + `--list-checkpoints`
+  + `--rollback-to latest`**: wrote `results.checkpoint-baseline.jsonl`,
+  listed it, mutated `results.jsonl` to set every status='mutated',
+  rolled back, verified `status='needs_review'` restored.
+- **Test 3 — `--dry-run`** (combined with `--no-fag`): ran
+  pipeline on 5 pensioners, verified NO FaG request issued,
+  `dry_run_diff.jsonl` produced with 5/5 records flagged as
+  'changed' (synthetic baseline = no current state).
+
+Bug found + fixed during smoke:
+
+- The 4 early-exit commands (--list-checkpoints, --write-checkpoint,
+  --rollback-to, --state-replay) were positioned AFTER the cgr/
+  input/out validation block. Validation fired first, so
+  --state-replay and --rollback-to failed with "error: --cgr is
+  required" even though they don't need --cgr.
+- **Fix:** moved all 4 early-exits to BEFORE the validation block.
+  Now they exit cleanly without requiring --cgr or --input.
+
+Honest caveat (documented for users):
+
+- `--rollback-to LABEL` consumes the snapshot file via `os.replace`.
+  A single snapshot can only be used for ONE rollback. If you
+  need to rollback to the same point twice (e.g. A/B test), you
+  must `--write-checkpoint` again first.
+
+Verification:
+
+- `pytest tests/`: **966 passed** (unchanged).
+- `python scripts/run_unified.py --help`: exits 0, shows all flags.
+- Live smoke (above): 3/3 PASS, no FaG requests issued.
+
 ### Chore: refresh doc references after shim deletion (issue #19 + #22)
 
 Following the code-side migration to canonical subpackage paths,
