@@ -8,16 +8,10 @@ records would change if the pipeline ran for real.
 
 This module owns:
   - The diff schema (one record per pensioner with would_change flag)
-<<<<<<< HEAD
   - The "what counts as a change" rule (excludes runtime fields
     like timestamp that always differ between runs)
   - Atomic-write discipline is delegated to JsonlStateRepository
     (issue #28).
-=======
-  - The atomic-write discipline for the diff file
-  - The "what counts as a change" rule (excludes runtime fields
-    like timestamp that always differ between runs)
->>>>>>> origin/feat/reversibility-flags
 
 Public API:
   - diff_record(current, predicted) -> dict
@@ -26,11 +20,6 @@ Public API:
 """
 from __future__ import annotations
 
-<<<<<<< HEAD
-=======
-import json
-import os
->>>>>>> origin/feat/reversibility-flags
 from pathlib import Path
 from typing import Iterable
 
@@ -90,7 +79,6 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     status + best_score recomputed from fag_records. If fag_status
     is 'no_results' or fag_records is empty, the prediction carries
     that through unchanged.
-<<<<<<< HEAD
 
     Issue #28 follow-up: the threshold values + status strings
     are imported from scoring_constants so dry-run cannot drift
@@ -101,9 +89,6 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
         STATUS_NO_RESULTS,
         derive_status_from_score_only,
     )
-=======
-    """
->>>>>>> origin/feat/reversibility-flags
     predicted = dict(record)  # shallow copy
     fag_records = record.get("fag_records", []) or []
     best_score = 0.0
@@ -116,7 +101,6 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     predicted["best_score"] = best_score
     predicted["best_candidate"] = best_candidate
 
-<<<<<<< HEAD
     # No fag_records -> no FaG was run; force 'no_results'.
     # Otherwise: re-derive the status from best_score alone, so
     # the dry-run + state-replay paths classify records as if
@@ -131,19 +115,6 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
             low_score_threshold=low_score_threshold,
             auto_accept_threshold=AUTO_ACCEPT_THRESHOLD,
         )
-=======
-    # Outcome derivation mirrors run_unified's getStatus() logic,
-    # simplified for the dry-run path.
-    fag_status = record.get("fag_status", "")
-    if fag_status == "no_results" or not fag_records:
-        predicted["status"] = "no_results"
-    elif best_score >= 0.85:
-        predicted["status"] = "auto_accept"
-    elif best_score >= low_score_threshold:
-        predicted["status"] = "needs_review"
-    else:
-        predicted["status"] = "low_score"
->>>>>>> origin/feat/reversibility-flags
     return predicted
 
 
@@ -199,21 +170,9 @@ def write_dry_run_diff(
         if diff["would_change"]:
             n_changed += 1
 
-<<<<<<< HEAD
     # Issue #28: route JSONL write through JsonlStateRepository.
     # The Repository owns: json.dumps key order, L3 (flush + fsync),
     # L5 (newline-delimited), and the .tmp + os.replace atomic-write
     # discipline. Previously duplicated here.
     JsonlStateRepository(out_path).replace_all(diffs)
-=======
-    # Atomic write
-    out_path.parent.mkdir(parents=True, exist_ok=True)
-    tmp_path = out_path.with_suffix(out_path.suffix + ".tmp")
-    with tmp_path.open("w", encoding="utf-8") as f:
-        for diff in diffs:
-            f.write(json.dumps(diff, ensure_ascii=False) + "\n")
-        f.flush()
-        os.fsync(f.fileno())
-    os.replace(tmp_path, out_path)
->>>>>>> origin/feat/reversibility-flags
     return n_changed
