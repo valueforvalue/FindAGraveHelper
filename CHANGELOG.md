@@ -4,6 +4,65 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Refactor: extract scoring + status constants (issue #28 follow-up)
+
+The #28 PR body flagged a deferred smell: `predict_outcome_from_state`
+in `dry_run.py` re-implemented the production scoring/status
+logic with its own magic numbers (0.85, 0.40) and status strings.
+Risk: production code evolves, dry-run silently drifts.
+
+This commit closes that smell by extracting the constants into
+one module.
+
+What changed:
+
+- **NEW** `scripts/pipeline/scoring_constants.py`: the single
+  source of truth for `AUTO_ACCEPT_THRESHOLD = 0.85`,
+  `LOW_SCORE_THRESHOLD = 0.40`, all 8 status string constants
+  (`STATUS_AUTO_ACCEPT`, `STATUS_AMBIGUOUS`, etc.), the
+  `INVESTIGATE_FAG_STATUSES` set, and two helpers:
+  - `derive_status(score, fag_status, ...)`: trust fag_status
+    when present; fall back to score when missing. Production use.
+  - `derive_status_from_score_only(score, ...)`: always
+    re-derive from score, ignoring fag_status. Dry-run +
+    state-replay use, so operators can A/B test new thresholds
+    against historical state.
+- **MODIFIED** `scripts/pipeline/dry_run.py::predict_outcome_from_state`:
+  imports the constants + uses `derive_status_from_score_only`.
+  Same behavior, single source of truth.
+- **MODIFIED** `scripts/pipeline/run_unified.py`: removed the
+  `default=0.40` literal from `--low-score-threshold`. Default
+  is now read from `LOW_SCORE_THRESHOLD` at parse time. The
+  config-loader sentinel check (uses `batch_cfg.low_score_threshold`
+  when one is provided) is preserved.
+- **MODIFIED** `scripts/matching/outlier_classifier.py::OutlierConfig`:
+  the `low_score_threshold` dataclass field now defaults to
+  `LOW_SCORE_THRESHOLD` via `field(default_factory=...)`. CLI
+  default + outlier default + dry-run default are now
+  impossible to disagree.
+
+What was NOT changed:
+
+- `scripts/pipeline/core.py` mentions `0.85` only in a docstring
+  (no logic), so no change.
+- `scripts/view.html` has a JS `getStatus` function that does a
+  passthrough on `rec.fag_status`. It's already a leaf — no
+  cross-language constant sharing is possible without a build
+  step (out of scope).
+
+Verification:
+
+- `pytest tests/`: **980 passed** (was 965; +15 new tests for
+  the constants module: 5 threshold tests, 3 status-string
+  tests, 5 derive_status tests, 4 derive_status_from_score_only
+  tests, 1 agreement test).
+- `grep '0\.85\|0\.40' scripts/pipeline/dry_run.py scripts/pipeline/run_unified.py scripts/matching/outlier_classifier.py`:
+  only the canonical constant references remain (0 matches for
+  magic numbers in the logic; only the import + assignment in
+  `scoring_constants.py`).
+- Same 2 pre-existing test failures (view.html markup tests,
+  unrelated to this work).
+
 ### Chore: refresh doc references after shim deletion (issue #19 + #22)
 
 Following the code-side migration to canonical subpackage paths,

@@ -1086,8 +1086,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "raised from 1.5 after live monitoring showed "
                              "Cloudflare 1015 rate-limit hits at the "
                              "stricter cadence)")
-    parser.add_argument("--low-score-threshold", type=float, default=0.40,
-                        help="Outlier threshold (top score below = outlier)")
+    parser.add_argument(
+        "--low-score-threshold", type=float,
+        # Default lives in scoring_constants.LOW_SCORE_THRESHOLD so
+        # dry-run + outlier_classifier + this CLI all agree.
+        # Issue #28 follow-up: one source of truth.
+        help="Outlier threshold (top score below = outlier). "
+             "Default: scripts.pipeline.scoring_constants.LOW_SCORE_THRESHOLD",
+    )
     parser.add_argument("--shuffle", action="store_true",
                         help="Process pensioners in random order")
     parser.add_argument("--start-from", type=int, default=0,
@@ -1160,6 +1166,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "current run and exit.")
     args = parser.parse_args(argv)
 
+    # Issue #28 follow-up: if the user didn't pass
+    # --low-score-threshold, default to the canonical constant.
+    # argparse default=0.40 was a literal; we now read it from
+    # scoring_constants to keep CLI in sync with dry-run.
+    from scripts.pipeline.scoring_constants import LOW_SCORE_THRESHOLD
+    if args.low_score_threshold is None:
+        args.low_score_threshold = LOW_SCORE_THRESHOLD
+
     # ============================================================
     # Subcommand dispatch: init-batch
     # ============================================================
@@ -1203,7 +1217,9 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             args.cgr = batch_cfg.cgr_path
         if args.throttle == 2.5:  # default sentinel
             args.throttle = batch_cfg.throttle
-        if args.low_score_threshold == 0.40:  # default sentinel
+        if args.low_score_threshold is None:  # user didn't pass --low-score-threshold
+            # default lives in scoring_constants; defer to batch_cfg
+            # when one is loaded.
             args.low_score_threshold = batch_cfg.low_score_threshold
         if args.fag_state_filter is None:
             args.fag_state_filter = batch_cfg.fag_state_filter

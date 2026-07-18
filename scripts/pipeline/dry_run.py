@@ -80,7 +80,16 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     status + best_score recomputed from fag_records. If fag_status
     is 'no_results' or fag_records is empty, the prediction carries
     that through unchanged.
+
+    Issue #28 follow-up: the threshold values + status strings
+    are imported from scoring_constants so dry-run cannot drift
+    from production.
     """
+    from scripts.pipeline.scoring_constants import (
+        AUTO_ACCEPT_THRESHOLD,
+        STATUS_NO_RESULTS,
+        derive_status_from_score_only,
+    )
     predicted = dict(record)  # shallow copy
     fag_records = record.get("fag_records", []) or []
     best_score = 0.0
@@ -93,17 +102,20 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     predicted["best_score"] = best_score
     predicted["best_candidate"] = best_candidate
 
-    # Outcome derivation mirrors run_unified's getStatus() logic,
-    # simplified for the dry-run path.
-    fag_status = record.get("fag_status", "")
-    if fag_status == "no_results" or not fag_records:
-        predicted["status"] = "no_results"
-    elif best_score >= 0.85:
-        predicted["status"] = "auto_accept"
-    elif best_score >= low_score_threshold:
-        predicted["status"] = "needs_review"
+    # No fag_records -> no FaG was run; force 'no_results'.
+    # Otherwise: re-derive the status from best_score alone, so
+    # the dry-run + state-replay paths classify records as if
+    # the current threshold were applied fresh (ignoring whatever
+    # fag_status was previously set). This is the A/B-test
+    # behavior operators want.
+    if not fag_records:
+        predicted["status"] = STATUS_NO_RESULTS
     else:
-        predicted["status"] = "low_score"
+        predicted["status"] = derive_status_from_score_only(
+            best_score=best_score,
+            low_score_threshold=low_score_threshold,
+            auto_accept_threshold=AUTO_ACCEPT_THRESHOLD,
+        )
     return predicted
 
 
