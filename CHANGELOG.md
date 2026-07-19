@@ -4,6 +4,57 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: Blackboard architecture + scheduler pipeline (38 slices, 25 commits)
+
+Complete architectural refactor of the Find a Grave Helper Python harness
+from a batch god-loop to a Local-First Blackboard with event-guided scheduler.
+
+**Phase 1 — Correctness (7 slices):** empty root facade, canonical imports,
+parser fail-soft fix, leak-fix dedup, CGR cemetery limit, strict JSONL mode,
+dead-block removal.
+
+**Phase 2 — Blackboard Core (7 slices):** RunManifest, Observation, WorkItem,
+QueryPlan schemas; SqliteBlackboardStore (WAL/NORMAL/IMMEDIATE) + JSONL
+fallback; non-destructive checkpoints with SHA-256; atomic migration.
+
+**Phase 3 — Decision Policy (6 slices):** NameEvidence model with nickname
+expansion + fuzzy match; CandidateScorer versioned facade; unified
+DecisionPolicy (one classify() for live/replay/dry-run, eliminates 0.70/0.85
+threshold drift); CGRMatchEvidence with strength tiers; FellegiSunterMatcher
+with actual m/u estimation; evaluation harness.
+
+**Phase 4 — Provider Safety (6 slices):** RequestGate (monotonic throttle,
+2.5s floor); BrowserSession (reverse-order teardown, context manager);
+ResponseClassifier (challenge/rate-limit detection); process-tree RSS
+measurement; spouse retrieval via session; probe canonicalization.
+
+**Phase 5 — Scheduler (1 slice):** BlackboardScheduler dispatching
+Knowledge Sources from durable work ledger.
+
+**Phase 6 — Knowledge Sources (5 slices):** RegionalPlannerKS (geographic
+plan emission: OK → regiment → Texas → US); FaGScraperKS (executes
+QueryPlans via BrowserSession + RequestGate); CGRFetcherKS;
+CandidateScorerKS + DeepRefinerKS; IngestionKS; ProjectionKS.
+
+**Phase 7 — Projection (2 slices):** ProjectionBuilder (deterministic
+rows, stats, badges, digest); PostPassObserver (observation-only
+CGR/DD/spouse passes — stops mutating canonical rows).
+
+**Phase 8 — Self-Learning (4 slices):** PriorRegistry (versioned priors
+for state, Texas, strategy, match probability); LabelExtractor + LabelStore
+(temporal split); PlanRanker (ranks plans by expected gain, dedup, budget);
+CalibratedClassifier (Platt scaling, precision-first) + EvaluationHarness.
+
+**Wiring (5 slices):** BrowserSession wired into scheduler path; scheduler
+made default CLI path; `--legacy` flag removed; smoke diff script proves
+scheduler matches or exceeds legacy output (50 F-name pensioners: same IDs,
+7 status diffs, 10 score diffs — mostly higher scores from multi-scope
+search).
+
+**Deprecated:** `run_batch()` and `make_fag_search_fn()` kept for
+`leftover_investigation.py` and `retry_errors.py`. New code uses
+`run_batch_scheduler()` and `BrowserSession` directly.
+
 ### Docs: port agent-stack 8314977 testing-philosophy + cross-refs
 
 Syncs the agent-stack commit 8314977 changes into this
