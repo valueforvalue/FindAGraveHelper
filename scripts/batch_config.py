@@ -254,4 +254,41 @@ __all__ = [
     "init_batch",
     "load_config",
     "validate_config_against_dir",
+    "build_manifest",
 ]
+
+
+# ============================================================
+# RunManifest bridge (Phase 2 Slice 2.1)
+# ============================================================
+
+
+def build_manifest(
+    config: BatchConfig,
+    policy_version: str = "1",
+    knowledge_source_versions: dict[str, str] | None = None,
+) -> "RunManifest":
+    """Construct a RunManifest from a BatchConfig + policy context.
+
+    The manifest records the run's configuration lineage so that
+    replay, evaluation, and projection can attribute decisions to
+    a specific policy version + KS version set.
+    """
+    import time
+    from scripts.blackboard.schema import RunManifest, ManifestBudget
+
+    return RunManifest(
+        manifest_id=f"manifest-{config.runname}",
+        run_id=config.runname,
+        parent_manifest_id=None,
+        policy_version=policy_version,
+        knowledge_source_versions=knowledge_source_versions or {},
+        scheduler_budget=ManifestBudget(),
+        bot_budget=ManifestBudget(max_requests=config.end_row),
+        source_fingerprints={
+            "input_path": str(config.input_path),
+            "cgr_path": str(config.cgr_path),
+            "fag_state_filter": config.fag_state_filter,
+        },
+        created_at=time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+    )

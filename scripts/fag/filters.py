@@ -17,19 +17,19 @@ import re
 # in OK CW pensioner data.
 FAG_COUNTRY_FILTER_US = {"locationId": "country_4"}
 FAG_STATE_IDS = {
-    "AL": "state_1", "AK": "state_2", "AZ": "state_3", "AR": "state_4",
-    "CA": "state_5", "CO": "state_6", "CT": "state_7", "DE": "state_8",
-    "FL": "state_9", "GA": "state_10", "HI": "state_11", "ID": "state_12",
-    "IL": "state_13", "IN": "state_14", "IA": "state_15", "KS": "state_16",
-    "KY": "state_17", "LA": "state_18", "ME": "state_19", "MD": "state_20",
-    "MA": "state_21", "MI": "state_22", "MN": "state_23", "MS": "state_24",
-    "MO": "state_25", "MT": "state_26", "NE": "state_27", "NV": "state_28",
-    "NH": "state_29", "NJ": "state_30", "NM": "state_31", "NY": "state_32",
-    "NC": "state_33", "ND": "state_34", "OH": "state_35", "OK": "state_38",
-    "OR": "state_39", "PA": "state_40", "RI": "state_41", "SC": "state_42",
-    "SD": "state_43", "TN": "state_44", "TX": "state_45", "UT": "state_46",
-    "VT": "state_47", "VA": "state_48", "WA": "state_49", "WV": "state_50",
-    "WI": "state_51", "WY": "state_52",
+    "AL": "state_3", "AK": "state_2", "AZ": "state_5", "AR": "state_4",
+    "CA": "state_6", "CO": "state_7", "CT": "state_8", "DE": "state_9",
+    "DC": "state_10", "FL": "state_11", "GA": "state_12", "HI": "state_13",
+    "ID": "state_14", "IL": "state_15", "IN": "state_16", "IA": "state_17",
+    "KS": "state_18", "KY": "state_19", "LA": "state_20", "ME": "state_21",
+    "MD": "state_22", "MA": "state_23", "MI": "state_24", "MN": "state_25",
+    "MS": "state_26", "MO": "state_27", "MT": "state_28", "NE": "state_29",
+    "NV": "state_30", "NH": "state_31", "NJ": "state_32", "NM": "state_33",
+    "NY": "state_34", "NC": "state_35", "ND": "state_36", "OH": "state_37",
+    "OK": "state_38", "OR": "state_39", "PA": "state_40", "RI": "state_41",
+    "SC": "state_42", "SD": "state_43", "TN": "state_44", "TX": "state_45",
+    "UT": "state_46", "VT": "state_47", "VA": "state_48", "WA": "state_49",
+    "WV": "state_50", "WI": "state_51", "WY": "state_52",
 }
 
 

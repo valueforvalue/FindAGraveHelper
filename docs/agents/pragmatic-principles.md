@@ -556,6 +556,12 @@ budget breaks.
   `docs/agents/manual-audit-playbook.md`).
 - (7) Test-the-tests: mutation testing is an open gap (see
   `scripts/check-mutations.sh` template).
+- Test-quality bar: [`testing-philosophy.md`](testing-philosophy.md)
+  — the saboteur test (Tip #64) and the "which tests earn
+  their place" checklist (state coverage not line coverage, no
+  stdlib re-testing, no compile-time checks masquerading as
+  runtime tests). Pairs with [`tdd.md`](tdd.md): TDD is the
+  *process*, testing philosophy is the *quality bar*.
 
 **When you might violate:**
 - **Pure UI code** — usability testing is the only aspect that
@@ -825,7 +831,7 @@ principle.
 | Program Deliberately | [`rpci.md`](rpci.md) — RPCI flow; [`laws.md`](laws.md) — universal laws |
 | Algorithm Speed | [`tdd.md`](tdd.md) — per-iter footprint doc-comment pattern |
 | Refactoring | [`feature-protocol.md`](feature-protocol.md) — Tier 2 / Tier 3 commit rule |
-| Code That's Easy to Test | [`tdd.md`](tdd.md) — RED/GREEN/REFACTOR |
+| Code That's Easy to Test | [`tdd.md`](tdd.md) — RED/GREEN/REFACTOR; [`testing-philosophy.md`](testing-philosophy.md) — quality bar (which tests earn their place, the saboteur test, find-bugs-once) |
 | Ubiquitous Automation | Per-repo CI + `scripts/` |
 | It's All Writing | [`laws.md`](laws.md) — doc-comment floor; [`docs-index-scheme.md`](docs-index-scheme.md) (tier table) |
 | Pragmatic Projects | `scripts/init.sh` (starter kit); [`feature-protocol.md`](feature-protocol.md) §Apply sites (delight users) |
@@ -877,6 +883,7 @@ a new section is one PR.
   - [`rpci.md`](rpci.md) — RPCI flow
   - [`complexity.md`](complexity.md) — deep-module discipline
   - [`tdd.md`](tdd.md) — RED/GREEN/REFACTOR
+  - [`testing-philosophy.md`](testing-philosophy.md) — test-quality bar (which tests earn their place)
   - [`code-changes.md`](code-changes.md) — cross-layer working contract
   - [`glossary-discipline.md`](glossary-discipline.md) — vocabulary DRY
   - [`bug-patterns.md`](bug-patterns.md) — per-layer bug catalog

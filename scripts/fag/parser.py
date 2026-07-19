@@ -6,11 +6,14 @@ Public surface:
   - parse_results_page(page) -> (total_count, candidates_list)
   - merge_candidates(strategy_runs) -> merged_candidates
 """
+import logging
 import re
 
-from playwright.sync_api import Page
+from playwright.sync_api import Page, TimeoutError as PWTimeout
 
 from scripts.fag.filters import _STATE_NAMES_LOWER  # state name -> abbr lookup
+
+log = logging.getLogger("fag.parser")
 
 # Cap on the number of result pages we parse. FaG soft-caps at 200
 # results per page; this constant is the per-strategy total.

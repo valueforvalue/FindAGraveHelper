@@ -30,8 +30,3 @@ that re-export from the new subpackages. They will be removed
 after one release cycle.
 """
 
-# Top-level public facade re-exports (T021 acceptance).
-from scripts.pipeline.run_unified import run_batch
-from scripts.search_fag import search_one_pensioner  # back-compat shim -> scripts.fag.search_fag
-from scripts.state_normalize import normalize_state_record  # back-compat shim -> scripts.state.normalize
-from scripts.state.report_generator import build_report  # back-compat shim -> scripts.state.report_generator

@@ -65,6 +65,9 @@ this file stays short; for full guidance follow the links below.
   [`docs/agents/feature-protocol.md`](docs/agents/feature-protocol.md)
 - TDD + contract anchor:
   [`docs/agents/tdd.md`](docs/agents/tdd.md)
+- Test-quality bar (which tests earn their place, saboteur
+  test, find-bugs-once):
+  [`docs/agents/testing-philosophy.md`](docs/agents/testing-philosophy.md)
 - RPCI flow (Research, Plan, Critique, Implement):
   [`docs/agents/rpci.md`](docs/agents/rpci.md)
 - Complexity management (YAGNI vs broad-but-shallow):

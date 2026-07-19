@@ -229,3 +229,44 @@ def test_runname_is_slug_property():
         low_score_threshold=0.40,
     )
     assert invalid.runname_is_slug() is False
+
+
+# ============================================================
+# RunManifest bridge tests (Phase 2 Slice 2.1)
+# ============================================================
+
+
+def test_build_manifest_includes_policy_version():
+    """build_manifest records the supplied policy version."""
+    from scripts.batch_config import build_manifest, BatchConfig
+    from pathlib import Path
+
+    cfg = BatchConfig(
+        runname="test-build-manifest",
+        input_path=Path("input.jsonl"),
+        cgr_path=Path("cgr.jsonl"),
+    )
+    m = build_manifest(cfg, policy_version="2")
+    assert m.policy_version == "2"
+    assert m.run_id == "test-build-manifest"
+
+
+def test_manifest_roundtrip():
+    """RunManifest survives to_dict() → from_dict() round-trip."""
+    from scripts.batch_config import build_manifest, BatchConfig
+    from scripts.blackboard.schema import RunManifest
+    from pathlib import Path
+
+    cfg = BatchConfig(
+        runname="test-roundtrip",
+        input_path=Path("input.jsonl"),
+        cgr_path=Path("cgr.jsonl"),
+    )
+    original = build_manifest(cfg, policy_version="3",
+                              knowledge_source_versions={"FaGScraper": "1.0"})
+    d = original.to_dict()
+    restored = RunManifest.from_dict(d)
+    assert restored.manifest_id == original.manifest_id
+    assert restored.run_id == original.run_id
+    assert restored.policy_version == original.policy_version
+    assert restored.knowledge_source_versions == original.knowledge_source_versions

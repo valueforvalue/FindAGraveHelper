@@ -16,7 +16,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.search_fag import (
+from scripts.search.strategies import (
     strategy_b1_exact,
     strategy_b3_first_initial_fuzzy,
     strategy_b4_fuzzy_last,

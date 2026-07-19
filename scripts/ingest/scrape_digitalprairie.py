@@ -455,6 +455,10 @@ def main() -> int:
                    help="Which collection(s) to scrape (default: both)")
     p.add_argument("--no-merge", action="store_true",
                    help="Skip the pensions + pensioncard merge step")
+    p.add_argument("--blackboard", action="store_true",
+                   help="Also write observations to a Blackboard SQLite store")
+    p.add_argument("--blackboard-db", type=Path, default=None,
+                   help="Path to Blackboard SQLite database (default: <out-dir>/blackboard.db)")
     args = p.parse_args()
 
     collections = ["pensions", "pensioncard"] if args.collection == "both" else [args.collection]
@@ -471,6 +475,23 @@ def main() -> int:
 
     if not args.no_merge and len(collections) == 2:
         merge_collections(args.out_dir)
+
+    # Blackboard integration (Phase 6.4)
+    if args.blackboard:
+        from scripts.ingest.blackboard_ingest import ingest_to_blackboard
+        from scripts.blackboard.store import SqliteBlackboardStore
+
+        db_path = args.blackboard_db or (args.out_dir / "blackboard.db")
+        store = SqliteBlackboardStore(db_path)
+        store.open()
+        try:
+            unified = args.out_dir / "unified.json"
+            if unified.exists():
+                n = ingest_to_blackboard(store, unified, run_id="ingest")
+                log.info("Blackboard: %d records written to %s", n, db_path)
+        finally:
+            store.close()
+
     return 0
 
 

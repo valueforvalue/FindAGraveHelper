@@ -17,6 +17,7 @@ from pathlib import Path
 import pytest
 
 from scripts.state.repository import (
+    CorruptStateError,
     JsonlStateRepository,
     InMemoryStateRepository,
     StateCheckResult,
@@ -308,3 +309,39 @@ def test_memory_roundtrip_preserves_dict_independence(mem_repo):
     original["pensioner_name"] = "Mutated"
     # The stored record should still be the original
     assert mem_repo.get(1)["pensioner_name"] == "Smith, John"
+
+
+# ============================================================
+# Strict mode tests (L5-04)
+# ============================================================
+
+
+def test_strict_iter_all_raises_on_corrupt_line(tmp_path):
+    """iter_all(strict=True) raises CorruptStateError on bad JSON."""
+    state_path = tmp_path / "state.jsonl"
+    state_path.write_text('{"a":1}\nnot json\n', encoding="utf-8")
+    repo = JsonlStateRepository(state_path)
+    with pytest.raises(CorruptStateError) as exc:
+        list(repo.iter_all(strict=True))
+    assert "not json" in str(exc.value)
+    assert exc.value.lineno == 2
+
+
+def test_strict_iter_all_default_tolerates_corrupt(tmp_path):
+    """iter_all() default (strict=False) swallows corrupt lines."""
+    state_path = tmp_path / "state.jsonl"
+    state_path.write_text('{"a":1}\nnot json\n{"b":2}\n', encoding="utf-8")
+    repo = JsonlStateRepository(state_path)
+    records = list(repo.iter_all())
+    assert len(records) == 2
+    assert records[0] == {"a": 1}
+    assert records[1] == {"b": 2}
+
+
+def test_strict_update_raises_on_corrupt_line(tmp_path):
+    """update(strict=True) raises CorruptStateError on bad JSON."""
+    state_path = tmp_path / "state.jsonl"
+    state_path.write_text('{"pensioner_id":1,"a":1}\nnot json\n', encoding="utf-8")
+    repo = JsonlStateRepository(state_path)
+    with pytest.raises(CorruptStateError):
+        repo.update(1, lambda r: {**r, "x": True}, strict=True)

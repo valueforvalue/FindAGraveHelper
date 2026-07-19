@@ -84,11 +84,12 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     are imported from scoring_constants so dry-run cannot drift
     from production.
     """
-    from scripts.pipeline.scoring_constants import (
-        AUTO_ACCEPT_THRESHOLD,
-        STATUS_NO_RESULTS,
-        derive_status_from_score_only,
+    from scripts.blackboard.decision_policy import (
+        DecisionContext,
+        classify,
+        STATUS_NO_CANDIDATES,
     )
+
     predicted = dict(record)  # shallow copy
     fag_records = record.get("fag_records", []) or []
     best_score = 0.0
@@ -101,20 +102,17 @@ def predict_outcome_from_state(record: dict, low_score_threshold: float) -> dict
     predicted["best_score"] = best_score
     predicted["best_candidate"] = best_candidate
 
-    # No fag_records -> no FaG was run; force 'no_results'.
-    # Otherwise: re-derive the status from best_score alone, so
-    # the dry-run + state-replay paths classify records as if
-    # the current threshold were applied fresh (ignoring whatever
-    # fag_status was previously set). This is the A/B-test
-    # behavior operators want.
     if not fag_records:
-        predicted["status"] = STATUS_NO_RESULTS
+        predicted["status"] = STATUS_NO_CANDIDATES
     else:
-        predicted["status"] = derive_status_from_score_only(
-            best_score=best_score,
-            low_score_threshold=low_score_threshold,
-            auto_accept_threshold=AUTO_ACCEPT_THRESHOLD,
+        local_dy = str(record.get("death_year") or "").strip()
+        ctx = DecisionContext(
+            candidates=fag_records,
+            local_death_year=local_dy if local_dy else None,
         )
+        decision = classify(ctx, low_score_threshold=low_score_threshold)
+        predicted["status"] = decision.status
+        predicted["_decision"] = decision.to_dict()
     return predicted
 
 

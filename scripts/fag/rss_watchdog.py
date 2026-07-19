@@ -1,5 +1,10 @@
 """RSS watchdog for long-running Playwright + Chromium jobs.
 
+Measures Python process RSS PLUS all child process RSS (Chromium,
+pwsh, etc.) using Win32 Toolhelp32 on Windows or /proc on Linux.
+Reports the aggregate tree RSS so thresholds reflect the total
+OS-visible working set, not just the Python process alone.
+
 The original 7,758-record FaG run hit pwsh.exe at ~7 GB after a few
 hours. Chromium RSS climbs per navigation as the JS heap and DOM
 references accumulate; pwsh stays attached to the spawned Chromium
@@ -10,9 +15,8 @@ eventually dies — at which point Playwright surfaces
 subsequent call (cascading 100% errors in state.jsonl).
 
 This module provides a small background thread that polls the
-process RSS via the Win32 `GetProcessMemoryInfo` API (so we don't
-depend on psutil, which may not be installed in minimal envs).
-It exposes:
+process-tree RSS via the Win32 API (so we don't depend on psutil,
+which may not be installed in minimal envs). It exposes:
 
   - `RSSWatchdog(poll_seconds, warn_mb, force_reset_mb, exit_mb)`:
     background thread.
@@ -23,7 +27,8 @@ It exposes:
       * exit_mb: hard-exit the process (os._exit) so we don't
         write junk records after a wedged pwsh.
   - `should_force_reset()`: polled by the runner each record.
-  - `current_rss_mb()`: snapshot (also logged at each tick).
+  - `current_rss_mb()`: snapshot of total tree RSS (also logged at
+    each tick).
 
 Usage:
 
@@ -109,6 +114,132 @@ def _get_rss_bytes() -> Optional[int]:
     return int(counters.WorkingSetSize)
 
 
+def _get_process_rss(process_handle: int) -> int:
+    """Return RSS (WorkingSetSize) for a given process handle, or 0."""
+    if not _ensure_binding():
+        return 0
+    counters = _PROCESS_MEMORY_COUNTERS()
+    counters.cb = ctypes.sizeof(counters)
+    ok = _psapi.GetProcessMemoryInfo(
+        process_handle, ctypes.byref(counters), ctypes.sizeof(counters)
+    )
+    if not ok:
+        return 0
+    return int(counters.WorkingSetSize)
+
+
+def _get_tree_rss_bytes() -> tuple[int, int]:
+    """Return (python_rss, total_tree_rss) in bytes.
+
+    Python RSS + sum of all child process RSS. On Windows, enumerates
+    child PIDs via Toolhelp32 snapshot. On Linux, reads /proc/<pid>/statm.
+    """
+    python_rss = _get_rss_bytes() or 0
+
+    if os.name == "nt":
+        child_rss = _get_child_rss_windows()
+    else:
+        child_rss = _get_child_rss_linux()
+
+    return python_rss, python_rss + child_rss
+
+
+def _get_child_rss_windows() -> int:
+    """Sum RSS of all child processes on Windows."""
+    import ctypes.wintypes
+
+    TH32CS_SNAPPROCESS = 0x00000002
+    INVALID_HANDLE_VALUE = ctypes.c_void_p(-1).value
+    current_pid = os.getpid()
+
+    class PROCESSENTRY32(ctypes.Structure):
+        _fields_ = [
+            ("dwSize", ctypes.c_ulong),
+            ("cntUsage", ctypes.c_ulong),
+            ("th32ProcessID", ctypes.c_ulong),
+            ("th32DefaultHeapID", ctypes.POINTER(ctypes.c_ulong)),
+            ("th32ModuleID", ctypes.c_ulong),
+            ("cntThreads", ctypes.c_ulong),
+            ("th32ParentProcessID", ctypes.c_ulong),
+            ("pcPriClassBase", ctypes.c_long),
+            ("dwFlags", ctypes.c_ulong),
+            ("szExeFile", ctypes.c_char * 260),
+        ]
+
+    try:
+        snapshot = ctypes.windll.kernel32.CreateToolhelp32Snapshot(
+            TH32CS_SNAPPROCESS, 0
+        )
+        if snapshot == INVALID_HANDLE_VALUE:
+            return 0
+
+        entry = PROCESSENTRY32()
+        entry.dwSize = ctypes.sizeof(PROCESSENTRY32)
+
+        child_rss = 0
+        if ctypes.windll.kernel32.Process32First(snapshot, ctypes.byref(entry)):
+            while True:
+                if entry.th32ParentProcessID == current_pid:
+                    try:
+                        h = ctypes.windll.kernel32.OpenProcess(
+                            0x0400 | 0x0010,  # PROCESS_QUERY_INFORMATION | PROCESS_VM_READ
+                            False,
+                            entry.th32ProcessID,
+                        )
+                        if h:
+                            child_rss += _get_process_rss(h)
+                            ctypes.windll.kernel32.CloseHandle(h)
+                    except Exception:
+                        pass
+                if not ctypes.windll.kernel32.Process32Next(
+                    snapshot, ctypes.byref(entry)
+                ):
+                    break
+
+        ctypes.windll.kernel32.CloseHandle(snapshot)
+        return child_rss
+    except Exception:
+        return 0
+
+
+def _get_child_rss_linux() -> int:
+    """Sum RSS of all child processes on Linux via /proc."""
+    import glob
+
+    current_pid = os.getpid()
+    child_rss = 0
+
+    try:
+        for stat_path in glob.glob(f"/proc/[0-9]*/stat"):
+            try:
+                pid_dir = stat_path.rsplit("/", 1)[0]
+                pid = int(pid_dir.split("/")[-1])
+            except (ValueError, IndexError):
+                continue
+
+            # Check parent PID from /proc/<pid>/stat
+            try:
+                with open(stat_path) as f:
+                    stat = f.read().split()
+                    ppid = int(stat[3]) if len(stat) > 3 else 0
+            except Exception:
+                continue
+
+            if ppid == current_pid:
+                # Read RSS from /proc/<pid>/statm (field 1 = resident pages)
+                statm_path = f"/proc/{pid}/statm"
+                try:
+                    with open(statm_path) as f:
+                        pages = int(f.read().split()[1])
+                        child_rss += pages * 4096  # page size
+                except Exception:
+                    pass
+    except Exception:
+        pass
+
+    return child_rss
+
+
 # ============================================================
 # Watchdog
 # ============================================================
@@ -173,17 +304,19 @@ class RSSWatchdog:
     # ---- internals ----
     def _run(self) -> None:
         while not self._stop_event.wait(self.poll_seconds):
-            rss = _get_rss_bytes()
-            if rss is None:
+            python_rss, total_rss = _get_tree_rss_bytes()
+            if python_rss == 0 and total_rss == 0:
                 continue
-            self._last_rss_mb = rss // (1024 * 1024)
+            self._last_rss_mb = total_rss // (1024 * 1024)
 
             if self.force_reset_mb and self._last_rss_mb >= self.force_reset_mb:
                 if not self.should_force_reset():
                     log.warning(
-                        "RSS %d MB >= force_reset threshold (%d MB). "
-                        "Signaling runner to reopen browser.",
-                        self._last_rss_mb, self.force_reset_mb,
+                        "RSS %d MB (python=%d MB) >= force_reset threshold "
+                        "(%d MB). Signaling runner to reopen browser.",
+                        self._last_rss_mb,
+                        python_rss // (1024 * 1024),
+                        self.force_reset_mb,
                     )
                 self._force_reset_event.set()
             if (

@@ -84,10 +84,6 @@ def backfill(
     JsonlStateRepository(output_path).replace_all(new_records)
     return filled, skipped, missing
 
-    # Atomic replace
-    tmp_path.replace(output_path)
-    return filled, skipped, missing
-
 
 def main() -> int:
     p = argparse.ArgumentParser(description=__doc__)

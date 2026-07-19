@@ -2,19 +2,15 @@
 
 User-supplied working URL:
   ?firstname=s&...&location=Oklahoma%2C+United+States+of+America&locationId=state_38&...
+
+Uses BrowserSession for canonical lifecycle management (Phase 4.6).
 """
 import json
 import re
-import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import playwright_leak_fix  # noqa: F401
-playwright_leak_fix.apply_playwright_leak_fix()
-
-from playwright.sync_api import sync_playwright
-from playwright_stealth import Stealth
+from scripts.fag.browser_session import BrowserSession
 
 OUT = Path("data/probe/filter_v8.json")
 BASE = "https://www.findagrave.com/memorial/search?firstname=John&lastname=Smith"
@@ -34,17 +30,16 @@ def extract_total(text):
 
 def main():
     results = []
-    with sync_playwright() as p:
-        b = p.chromium.launch(headless=False,
-            args=['--disable-blink-features=AutomationControlled', '--no-sandbox'])
-        ctx = b.new_context(
-            user_agent='Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 '
-                       '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-            viewport={'width': 1280, 'height': 720}, locale='en-US',
-            timezone_id='America/Chicago')
-        try: Stealth().apply_stealth_sync(ctx)
-        except Exception: pass
-        page = ctx.new_page()
+    session = BrowserSession(
+        throttle=0.0,  # no throttle needed for probe
+        reset_every=9999,
+        headless=False,
+        state_filter="",
+    )
+    session.start()
+    try:
+        page = session.page
+
         print("[warmup]")
         page.goto("https://www.findagrave.com/", wait_until="domcontentloaded", timeout=30000)
         time.sleep(3)
@@ -57,7 +52,6 @@ def main():
                 title = page.title()
                 body = page.evaluate("() => document.body.innerText.slice(0, 8000)")
                 total = extract_total(body)
-                # Detect foreign entries
                 foreign_keywords = ['England', 'Canada', 'Australia', 'Scotland',
                                     'Wales', 'Ireland', 'New Zealand', 'Mexico']
                 foreign_count = sum(body.count(k) for k in foreign_keywords)
@@ -67,7 +61,8 @@ def main():
             except Exception as e:
                 results.append({"label": label, "url": url, "error": str(e)})
                 print(f"  ERR: {e}", flush=True)
-        b.close()
+    finally:
+        session.close()
 
     OUT.write_text(json.dumps(results, indent=2), encoding="utf-8")
     print("\n=== summary ===")

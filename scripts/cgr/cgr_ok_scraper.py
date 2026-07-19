@@ -56,6 +56,7 @@ class ScrapingConfig:
     state: str = "OK"
     include_vet_details: bool = True
     throttle_seconds: float = 1.0
+    max_cemeteries: Optional[int] = None
 
 
 def scrape_ok_cemeteries(
@@ -155,6 +156,10 @@ def scrape_ok_cemeteries(
 
         records.append(record)
         _append(output_path, record)
+
+        if config.max_cemeteries is not None and len(records) >= config.max_cemeteries:
+            log.info("Reached max_cemeteries=%d; stopping.", config.max_cemeteries)
+            break
 
     log.info("Done. %d cemetery records.", len(records))
     return records

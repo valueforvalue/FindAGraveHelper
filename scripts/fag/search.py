@@ -332,30 +332,22 @@ def search_one_pensioner(page: Page, pensioner: dict,
             continue
 
         title = page.title()
-        # Detect Cloudflare blocks. The title patterns include:
-        #   "Just a moment..." (Turnstile challenge page)
-        #   "Attention Required! | Cloudflare" (Turnstile blocked)
-        #   "Error 1015 (Rate Limited) - www.findagrave.com"
-        # All three mean we should not parse results from this page.
-        # The rate-limit (1015) response has a longer backoff because
-        # repeated violations extend the ban window.
-        if ("Just a moment" in title
-            or "Attention Required" in title
-            or "Rate Limited" in title
-            or "Error 1015" in title
-        ):
-            if "Rate Limited" in title or "Error 1015" in title:
+        from scripts.fag.response_classifier import (
+            Classification,
+            ResponseClassifier,
+        )
+
+        page_class = ResponseClassifier.classify(title=title)
+        if ResponseClassifier.is_blocking(page_class):
+            cooldown = ResponseClassifier.cooldown_seconds(page_class)
+            if page_class == Classification.RateLimit1015:
                 log.warning(
                     "CLOUDFLARE 1015 RATE LIMIT: %s %s [%s]. Backing off "
-                    "120s + resetting session cookies.",
-                    first, last, name,
+                    "%ds + resetting session cookies.",
+                    first, last, name, cooldown,
                 )
                 captcha_seen = True
-                # Heavy backoff for rate-limit. The ban window is
-                # typically 1-15 min; we back off 2 min and rely
-                # on the periodic browser reset (every 250 records)
-                # to clear cookies.
-                time.sleep(120.0)
+                time.sleep(cooldown)
                 continue
             log.warning("CAPTCHA: %s %s [%s]. Waiting up to 30s for it to resolve.",
                         first, last, name)
@@ -364,12 +356,12 @@ def search_one_pensioner(page: Page, pensioner: dict,
             resolved = False
             for wait_s in (5, 10, 15):
                 time.sleep(5)
-                if "Just a moment" not in page.title():
+                if ResponseClassifier.classify(title=page.title()) == Classification.NormalPage:
                     log.info("  challenge resolved after %ds", wait_s + 5)
                     resolved = True
                     break
             if not resolved:
-                log.warning("  challenge did not resolve. Backing off 30s.")
+                log.warning("  challenge did not resolve. Backing off %ds.", cooldown)
                 time.sleep(CAPTCHA_BACKOFF_SECONDS)
             continue
 
@@ -465,43 +457,20 @@ def search_one_pensioner(page: Page, pensioner: dict,
         else:
             record["status"] = S_NO_RESULTS
     else:
-        # We have at least one result. Decide:
-        # - top score >= AUTO_ACCEPT_THRESHOLD and only one candidate -> auto_accept
-        # - top score >= AUTO_ACCEPT_THRESHOLD and multiple candidates -> still
-        #   "auto_accept but other matches exist" — keep as ambiguous for
-        #   human review (the user can verify)
-        # - top score below threshold -> ambiguous/too_many
-        # Pick the threshold based on whether we have a death year locally.
+        from scripts.blackboard.decision_policy import (
+            DecisionContext,
+            classify,
+        )
+
         local_dy = str(pensioner.get("death_year") or "").strip()
-        threshold = AUTO_ACCEPT_THRESHOLD if local_dy and local_dy != "0" else AUTO_ACCEPT_THRESHOLD_NO_DEATH
-        if len(merged) == 1 and record["best_score"] >= threshold:
-            record["status"] = S_AUTO_ACCEPT
-        elif record["best_score"] >= threshold and 2 <= len(merged) <= 10:
-            # Check if top is a clear winner (gap over #2)
-            if len(merged) >= 2:
-                second_score = merged[1]["score"]
-                gap = record["best_score"] - second_score
-                if gap >= AUTO_ACCEPT_GAP:
-                    record["status"] = S_AUTO_ACCEPT
-                else:
-                    record["status"] = S_AMBIGUOUS
-            else:
-                record["status"] = S_AUTO_ACCEPT
-        elif len(merged) == 1:
-            record["status"] = S_AMBIGUOUS  # 1 candidate, score below auto-accept
-        elif 2 <= len(merged) <= 10:
-            record["status"] = S_AMBIGUOUS
-        else:
-            # >10 candidates. Check if top is dominant — if so, auto_accept.
-            if len(merged) >= 2 and record["best_score"] >= threshold:
-                second_score = merged[1]["score"]
-                gap = record["best_score"] - second_score
-                if gap >= AUTO_ACCEPT_GAP:
-                    record["status"] = S_AUTO_ACCEPT
-                else:
-                    record["status"] = S_TOO_MANY
-            else:
-                record["status"] = S_TOO_MANY
+        ctx = DecisionContext(
+            candidates=merged,
+            local_death_year=local_dy if local_dy else None,
+        )
+        decision = classify(ctx)
+        record["best_score"] = decision.top_score
+        record["status"] = decision.status
+        record["_decision"] = decision.to_dict()
 
     return record
 

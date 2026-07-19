@@ -279,6 +279,10 @@ the boundary, not the service.
 
 ## References
 
+- [`testing-philosophy.md`](testing-philosophy.md) — the
+  quality bar for the RED test (which tests earn their place,
+  which to cut). TDD is the *process*; testing philosophy is
+  the *quality bar*.
 - [`feature-protocol.md`](feature-protocol.md) — slice
   discipline this protocol sits inside
 - [`rpci.md`](rpci.md) §I — Implement phase wiring

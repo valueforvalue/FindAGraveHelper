@@ -2,7 +2,116 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-17
+## [Unreleased] — 2026-07-19
+
+### Refactor: Blackboard architecture + scheduler pipeline (38 slices, 25 commits)
+
+Complete architectural refactor of the Find a Grave Helper Python harness
+from a batch god-loop to a Local-First Blackboard with event-guided scheduler.
+
+**Phase 1 — Correctness (7 slices):** empty root facade, canonical imports,
+parser fail-soft fix, leak-fix dedup, CGR cemetery limit, strict JSONL mode,
+dead-block removal.
+
+**Phase 2 — Blackboard Core (7 slices):** RunManifest, Observation, WorkItem,
+QueryPlan schemas; SqliteBlackboardStore (WAL/NORMAL/IMMEDIATE) + JSONL
+fallback; non-destructive checkpoints with SHA-256; atomic migration.
+
+**Phase 3 — Decision Policy (6 slices):** NameEvidence model with nickname
+expansion + fuzzy match; CandidateScorer versioned facade; unified
+DecisionPolicy (one classify() for live/replay/dry-run, eliminates 0.70/0.85
+threshold drift); CGRMatchEvidence with strength tiers; FellegiSunterMatcher
+with actual m/u estimation; evaluation harness.
+
+**Phase 4 — Provider Safety (6 slices):** RequestGate (monotonic throttle,
+2.5s floor); BrowserSession (reverse-order teardown, context manager);
+ResponseClassifier (challenge/rate-limit detection); process-tree RSS
+measurement; spouse retrieval via session; probe canonicalization.
+
+**Phase 5 — Scheduler (1 slice):** BlackboardScheduler dispatching
+Knowledge Sources from durable work ledger.
+
+**Phase 6 — Knowledge Sources (5 slices):** RegionalPlannerKS (geographic
+plan emission: OK → regiment → Texas → US); FaGScraperKS (executes
+QueryPlans via BrowserSession + RequestGate); CGRFetcherKS;
+CandidateScorerKS + DeepRefinerKS; IngestionKS; ProjectionKS.
+
+**Phase 7 — Projection (2 slices):** ProjectionBuilder (deterministic
+rows, stats, badges, digest); PostPassObserver (observation-only
+CGR/DD/spouse passes — stops mutating canonical rows).
+
+**Phase 8 — Self-Learning (4 slices):** PriorRegistry (versioned priors
+for state, Texas, strategy, match probability); LabelExtractor + LabelStore
+(temporal split); PlanRanker (ranks plans by expected gain, dedup, budget);
+CalibratedClassifier (Platt scaling, precision-first) + EvaluationHarness.
+
+**Wiring (5 slices):** BrowserSession wired into scheduler path; scheduler
+made default CLI path; `--legacy` flag removed; smoke diff script proves
+scheduler matches or exceeds legacy output (50 F-name pensioners: same IDs,
+7 status diffs, 10 score diffs — mostly higher scores from multi-scope
+search).
+
+**Deprecated:** `run_batch()` and `make_fag_search_fn()` kept for
+`leftover_investigation.py` and `retry_errors.py`. New code uses
+`run_batch_scheduler()` and `BrowserSession` directly.
+
+### Docs: port agent-stack 8314977 testing-philosophy + cross-refs
+
+Syncs the agent-stack commit 8314977 changes into this
+repo's docs. The agent-stack core doc
+`core/testing-philosophy.md` (port of DixieData commit
+8a0d3f1, issue #626) ships as `docs/agents/testing-philosophy.md`.
+The doc defines the test-quality bar (which tests earn
+their place): state coverage not line coverage (Tip #65),
+saboteur test (Tip #64), find bugs once (Tip #66), test
+your software (Tip #49), plus the language carve-out
+(compiler/lint/stdlib already handle many guarantees in
+statically-typed stacks).
+
+Cross-references added:
+
+- `docs/agents/tdd.md` — References section (TDD is
+  process, testing philosophy is quality bar)
+- `docs/agents/INDEX.md` — tier-1 rows for Python harness
+  + Playwright roles; tier-1 budgets bumped accordingly
+  (Python: 5.5K → 7K, Playwright: 4.5K → 6K)
+- `docs/agents/pragmatic-principles.md` — §1.14 Code
+  That's Easy to Test operational form, §3 cross-ref
+  table, §5 References
+- `AGENTS.md` — Agent conventions list gains the
+  testing-philosophy row
+
+Python testing recipes added to
+`docs/agents/addenda/python-playwright-userscript.md`:
+
+1. `@pytest.mark.parametrize` consolidation (Python
+   equivalent of Go's table-driven tests)
+2. `@pytest.mark.diag` convention for diagnostic probes
+   (Python equivalent of Go's `//go:build diag` build tag)
+3. `mutmut` / `cosmic-ray` for mutation testing (Tip #64
+   operational form)
+4. Stdlib re-test anti-pattern (Python-specific examples:
+   `list(iter(...))`, `dict.update`, `re.match`)
+5. Brittle-test mitigation (substring over exact-match,
+   parsed JSON fields over full-text equality, Playwright
+   state assertions over content snapshots)
+6. `hypothesis` property-based tests (Tip #71 operational
+   form; pattern established in
+   `tests/test_fellegi_sunter_real.py`)
+
+`pytest.ini` updated to register the `diag` marker so the
+new convention is enforced (pytest refuses undefined
+markers by default). Default `addopts` filter unchanged;
+diag probes still run with `pytest -m diag` intentionally.
+
+### Docs: amend Blackboard refactor plan with Phase 8 — self-learning
+
+Added Phase 8 (Self-Learning and Adaptive Plan Ranking) to the
+7-phase Blackboard refactor plan, sourced from the modular adaptive
+search research artifact's Self-Learning Boundary and Phase 5.
+Four slices: versioned priors engine, training label extraction,
+plan ranker, calibrated classifier with held-out evaluation.
+Phase count: 7 → 8.
 
 ### Docs: add alternative modular adaptive search architecture
 

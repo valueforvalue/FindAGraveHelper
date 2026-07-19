@@ -7,8 +7,10 @@ branch: master
 repository: FindAGraveHelper
 topic: Local-First Blackboard refactor of Find a Grave Helper Python harness
 parent: .rpiv/artifacts/architecture-reviews/2026-07-18_23-33-38_python-local-first-blackboard.md
-phase_count: 7
+phase_count: 8
 unresolved_phase_count: 0
+phases_amended:
+  - { n: 8, title: "Self-learning and adaptive plan ranking", source: ".rpiv/artifacts/research/2026-07-19_modular-adaptive-search-architecture.md §Self-Learning Boundary + Phase 5" }
 phases:
   - { n: 1, title: "Correctness and dependency hygiene", depends_on: [], blast_radius: public-API, effort: M }
   - { n: 2, title: "Blackboard contracts and durable local store", depends_on: [1], blast_radius: on-disk, effort: L }
@@ -17,23 +19,24 @@ phases:
   - { n: 5, title: "Event-guided scheduler skeleton", depends_on: [2], blast_radius: cross-module, effort: M }
   - { n: 6, title: "Typed Knowledge Sources and multi-pass refinement", depends_on: [3, 4, 5], blast_radius: cross-module, effort: L }
   - { n: 7, title: "Projection and review migration", depends_on: [6], blast_radius: cross-module, effort: L }
+  - { n: 8, title: "Self-learning and adaptive plan ranking", depends_on: [7], blast_radius: cross-module, effort: L }
 status: ready
 tags: [plan, python, blackboard, persistence, playwright, cgr, multi-phase]
-last_updated: 2026-07-19T00:46:56-0500
+last_updated: 2026-07-19T02:15:00-0500
 last_updated_by: Jeremy Morris
-last_updated_note: "Step 9 triage complete: 17 reviewer findings (5 blockers, 8 concerns, 4 suggestions) — all 17 applied to plan; L7 AST check, schema smoke, view.html grep, SQLite pinning, teardown test, file count fix, import paths pinned, scope corrected."
+last_updated_note: "Phase 8 added — self-learning and adaptive plan ranking from modular-adaptive-search research artifact. Phase count 7→8. 4 slices: priors, label extraction, plan ranker, calibrated classifier."
 ---
 
 # Local-First Blackboard Refactor — Multi-Phase Plan
 
-Implementation plan for the 7-phase refactor documented in the parent
+Implementation plan for the 8-phase refactor documented in the parent
 architecture review. Every phase ships as one or more vertical slices.
 Each slice is copy-pasteable code; tests live alongside their slice.
 
 ## Overview
 
 Refactor `FindAGraveHelper` (82 Python files, ~16,632 LOC) from rigid
-batch control into Local-First Blackboard architecture. The 7 phases are
+batch control into Local-First Blackboard architecture. The 8 phases are
 fixed by the parent review; this plan defines slices within each phase,
 file maps, success criteria, and test updates. The Plan History tracks
 per-phase approval as implement executes.
@@ -41,8 +44,11 @@ per-phase approval as implement executes.
 Approach: phases 1–4 are foundation (correctness, contracts, evidence,
 safety). Phases 5–7 introduce the scheduler, migrate existing engines to
 typed Knowledge Sources, and switch the review/projection layer to a
-disposable projector. Code is source of truth; tests are evolved with
-the architecture and may be retired or rewritten as new contracts land.
+disposable projector. Phase 8 adds self-learning: versioned priors,
+label extraction from historical decisions, plan ranking, and a calibrated
+classifier with held-out evaluation. Code is source of truth; tests are
+evolved with the architecture and may be retired or rewritten as new
+contracts land.
 
 ## Requirements
 
@@ -2294,6 +2300,293 @@ mutates input state.
 
 - Phase 7: Projection and review migration — pending
 
+## Phase 8: Self-Learning and Adaptive Plan Ranking
+
+**Goal:** rank eligible plans and scopes from versioned priors trained on
+historical human decisions, ground-truth outcomes, and CGR corroboration;
+calibrate acceptance thresholds from held-out evaluation without bypassing
+hard constraints, throttle, or terminal safety states.
+
+**Depends on:** Phase 7.
+**Effort:** L. **Blast radius:** cross-module.
+**Source:** `.rpiv/artifacts/research/2026-07-19_modular-adaptive-search-architecture.md`
+§Self-Learning Boundary + Phase 5 (Replay and Learning).
+
+### Phase 8: Overview
+
+Phase 7 delivers deterministic projection from durable observations, so every
+historical decision, candidate score, and human review verdict is queryable.
+Phase 8 adds a self-learning layer that ranks future plans without replacing
+the planner. The learner is advisory: it scores plan eligibility, never
+overrides hard constraints.
+
+Three staged deliveries:
+
+1. **Priors and label collection** (Slices 8.1–8.2): deterministic versioned
+   priors for state likelihood, Texas migration, strategy usefulness, and match
+   probability. Training labels extracted from human review decisions,
+   ground-truth CSV, CGR corroboration, and confirmed spouse links.
+2. **Plan ranker** (Slice 8.3): consumes priors + labels to rank eligible
+   `QueryPlan`s before the planner dispatches them. Never skips the request
+gate, never downgrades a terminal safety stop.
+3. **Calibrated classifier** (Slice 8.4): scorer that consumes policy version,
+   held-out evaluation splits, precision-first acceptance criteria, and leakage
+   controls. Historical labels must not train and evaluate the same decision
+   boundary without temporal or record-level separation.
+
+### Phase 8: Slice 8.1 — Versioned priors engine
+
+**Goal:** ship deterministic, versioned priors for four dimensions with
+provenance tracking; no autonomous mutation.
+
+#### Phase 8: Slice 8.1: Changes Required:
+
+##### 1. scripts/learning/__init__.py (NEW)
+
+**File**: scripts/learning/__init__.py
+**Changes**: NEW — package init.
+
+##### 2. scripts/learning/priors.py (NEW)
+
+**File**: scripts/learning/priors.py
+**Changes**: NEW — `PriorRegistry` dataclass holding four prior tables:
+- `state_likelihood(regiment_unit: str) -> list[tuple[str, float]]` —
+  ordered state probabilities conditioned on regiment/unit text
+- `texas_likelihood(pensioner_evidence: dict) -> float` — probability
+  conditioned on migration evidence (reconstruction-era move, border-state
+  origin, Texas burial spouse)
+- `strategy_usefulness(pensioner_data_shape: str, target_evidence: str) -> float` —
+  expected information gain per strategy category
+- `match_probability(scored_features: dict) -> float` — calibrated
+  probability a candidate is correct given scored evidence
+
+Each prior table carries `policy_version: str`, `trained_at: str`
+(ISO timestamp), `training_label_count: int`, and `source_labels: list[str]`
+(human_review | ground_truth_csv | cgr_corroboration | spouse_link).
+
+Default priors are deterministic lookup tables shipped as Python literals
+(no model file dependency). Version bump triggers on any prior change.
+
+##### 3. tests/test_priors.py (NEW)
+
+**File**: tests/test_priors.py
+**Changes**: NEW — 5 tests covering:
+- state_likelihood returns OK first for known OK regiments
+- texas_likelihood returns 0.0 for no migration evidence
+- strategy_usefulness returns higher values for targeted evidence gaps
+- match_probability returns 1.0 for perfect-score feature dict
+- version bump detected when prior values change
+
+#### Phase 8: Slice 8.1: Success Criteria:
+
+##### Automated Verification:
+- [ ] `pytest tests/test_priors.py -q` passes
+- [ ] `python -c "from scripts.learning.priors import PriorRegistry; p = PriorRegistry.default(); assert p.policy_version == '1'; print('ok')"` succeeds
+- [ ] `python -c "from scripts.learning.priors import PriorRegistry; p = PriorRegistry.default(); assert len(p.state_likelihood('2nd Cherokee Regiment')) > 0"` succeeds
+
+##### Manual Verification:
+- [ ] Default priors load for all four dimensions without network or file I/O
+
+### Phase 8: Slice 8.2 — Training label extraction
+
+**Goal:** extract training labels from projection-store + ground-truth CSV +
+CGR corroboration observations; produce versioned label snapshots for the
+prior trainer and classifier.
+
+#### Phase 8: Slice 8.2: Changes Required:
+
+##### 1. scripts/learning/label_extractor.py (NEW)
+
+**File**: scripts/learning/label_extractor.py
+**Changes**: NEW — `LabelExtractor` reads Blackboard projection +
+`ground_truth.csv` + `CGRCorroborationObserved` + `SpouseMatchObserved`
+and emits `LabelSnapshot` per pensioner:
+- `pensioner_id`
+- `ground_truth_memorial_id` (from CSV, nullable)
+- `human_review_decision` (accepted | rejected | ambiguous | unreviewed)
+- `cgr_corroborated` (bool)
+- `spouse_confirmed` (bool)
+- `extracted_at` (ISO timestamp)
+- `source_policy_version` (the scorer/decision version active when label
+  was created)
+
+Filter rule: labels created under `policy_version` N must not train a
+classifier evaluated against policy N without temporal split.
+
+##### 2. scripts/learning/label_store.py (NEW)
+
+**File**: scripts/learning/label_store.py
+**Changes**: NEW — `LabelStore(sqlite_path)` with `insert_snapshot()`,
+`training_split(before: str) -> list[LabelSnapshot]`,
+`evaluation_split(after: str) -> list[LabelSnapshot]`. Temporal split
+is the default; record-level K-fold available as `k_fold_splits(k=5)`.
+
+##### 3. tests/test_label_extraction.py (NEW)
+
+**File**: tests/test_label_extraction.py
+**Changes**: NEW — 6 tests covering:
+- label extraction from ground-truth CSV
+- label extraction from human review decisions
+- CGR corroboration flag propagation
+- spouse confirmation flag propagation
+- temporal split produces disjoint sets
+- policy-version guard rejects same-version train/eval overlap
+
+#### Phase 8: Slice 8.2: Success Criteria:
+
+##### Automated Verification:
+- [ ] `pytest tests/test_label_extraction.py -q` passes
+- [ ] `python -c "from scripts.learning.label_extractor import LabelExtractor; from scripts.learning.label_store import LabelStore; print('ok')"` succeeds
+- [ ] `python -c "from scripts.learning.label_store import LabelStore; import tempfile, pathlib; p = pathlib.Path(tempfile.mktemp()); s = LabelStore(p); s.insert_snapshot({'pensioner_id': 1, 'ground_truth_memorial_id': '123', 'human_review_decision': 'accepted'}); assert len(s.training_split(before='2099-01-01')) == 1; print('ok')"` succeeds
+
+##### Manual Verification:
+- [ ] Label extraction on a completed 50-pensioner run produces ≥ 40 labels with at least one source each
+
+### Phase 8: Slice 8.3 — Plan ranker
+
+**Goal:** rank eligible `QueryPlan`s using versioned priors + historical
+plan outcomes; planner dispatches highest-ranked eligible plan first.
+Ranker is advisory — it never overrides `RequestGate` safety, terminal
+stop conditions, or per-pensioner budgets.
+
+#### Phase 8: Slice 8.3: Changes Required:
+
+##### 1. scripts/learning/plan_ranker.py (NEW)
+
+**File**: scripts/learning/plan_ranker.py
+**Changes**: NEW — `PlanRanker(priors: PriorRegistry, label_store: LabelStore)`
+with `rank(plans: list[QueryPlan], pensioner_context: PensionerContext) ->
+list[QueryPlan]`. Ranking dimensions:
+- prior strategy usefulness for this pensioner data shape × target evidence
+- historical success rate of this plan category for similar pensioners
+  (same regiment state, same data completeness)
+- cost (estimated request count); lower cost breaks ties
+- diversity bonus for plans targeting evidence not yet observed
+
+Hard constraints (never violated):
+- plans beyond per-pensioner request budget are dropped, not demoted
+- plans requiring a provider in cooldown are dropped
+- plans equivalent to an already-executed plan are dropped (dedup)
+
+##### 2. scripts/blackboard/scheduler.py
+
+**File**: scripts/blackboard/scheduler.py
+**Changes**: MODIFY — `BlackboardScheduler` accepts optional `PlanRanker`;
+when present, eligible plans pass through `rank()` before dispatch.
+
+##### 3. scripts/knowledge/regional_planner.py
+
+**File**: scripts/knowledge/regional_planner.py
+**Changes**: MODIFY — `RegionalPlannerKS` emits unordered eligible plans;
+ranking is the scheduler's responsibility.
+
+##### 4. tests/test_plan_ranker.py (NEW)
+
+**File**: tests/test_plan_ranker.py
+**Changes**: NEW — 6 tests covering:
+- OK-first pensioner gets OK plan ranked above US plan
+- Texas migration evidence promotes TX scope
+- previously successful strategy ranked above untried
+- budget-exhausted plans dropped
+- cooldown-blocked plans dropped
+- equivalent-plan dedup
+
+#### Phase 8: Slice 8.3: Success Criteria:
+
+##### Automated Verification:
+- [ ] `pytest tests/test_plan_ranker.py -q` passes
+- [ ] `python -c "from scripts.learning.plan_ranker import PlanRanker; from scripts.learning.priors import PriorRegistry; pr = PlanRanker(PriorRegistry.default(), None); print('ok')"` succeeds
+- [ ] `pytest tests/test_regional_planner.py -q` passes (planner still emits plans; ranker just sorts them)
+
+##### Manual Verification:
+- [ ] On 50 pensioners with a warm label store, ranked plan order differs from fixed ladder order for ≥ 10 pensioners
+- [ ] No pensioner exceeds its request budget after ranking
+
+### Phase 8: Slice 8.4 — Calibrated classifier with held-out evaluation
+
+**Goal:** replace hardcoded acceptance thresholds with calibrated
+classifier trained on historical labels; precision-first acceptance;
+held-out evaluation prevents leakage; classifier version is recorded
+in every decision.
+
+#### Phase 8: Slice 8.4: Changes Required:
+
+##### 1. scripts/learning/calibrated_classifier.py (NEW)
+
+**File**: scripts/learning/calibrated_classifier.py
+**Changes**: NEW — `CalibratedClassifier` with:
+- `train(labels: list[LabelSnapshot], features: list[dict]) -> None` —
+  fits probability calibration on training split
+- `predict_proba(features: dict) -> float` — calibrated probability
+- `accept(probability: float, min_precision: float = 0.95) -> bool` —
+  only accepts when probability exceeds threshold calibrated for
+  target precision
+- `classifier_version: str` — embedded in every `Decision`
+
+Default implementation uses Platt scaling (logistic calibration) over
+the existing feature vector from `scripts/fag/scoring.py`. The raw score
+becomes one feature among others (top-two gap, candidate count, truncation
+flag, parser warnings, evidence completeness).
+
+##### 2. scripts/learning/evaluator.py (NEW)
+
+**File**: scripts/learning/evaluator.py
+**Changes**: NEW — `EvaluationHarness` with:
+- `evaluate(classifier, eval_split: list[LabelSnapshot]) -> EvalReport` —
+  computes precision, recall, F1 at current threshold
+- `calibrate_threshold(classifier, eval_split, target_precision=0.95) -> float` —
+  binary search for threshold achieving target precision
+- `compare_versions(version_a, version_b, eval_split) -> ComparisonReport` —
+  side-by-side metric comparison
+- `EvalReport` and `ComparisonReport` are persisted as Blackboard
+  observations (`EvaluationRunObserved`)
+
+##### 3. scripts/blackboard/decision_policy.py
+
+**File**: scripts/blackboard/decision_policy.py
+**Changes**: MODIFY — `DecisionPolicy` accepts optional `CalibratedClassifier`;
+when present, `classify(candidates, context)` routes through classifier
+instead of hardcoded thresholds. Classifier version recorded in
+`Decision.policy_version`. Falls back to hardcoded thresholds when no
+classifier is configured.
+
+##### 4. tests/test_calibrated_classifier.py (NEW)
+
+**File**: tests/test_calibrated_classifier.py
+**Changes**: NEW — 6 tests covering:
+- perfect labels → probability > 0.95
+- all-negative labels → probability < 0.05
+- precision-first threshold calibration hits target
+- version embedded in decision output
+- fallback to hardcoded thresholds when no classifier
+- temporal split prevents train/eval leakage
+
+##### 5. tests/test_evaluation_harness.py (NEW)
+
+**File**: tests/test_evaluation_harness.py
+**Changes**: NEW — 4 tests covering:
+- evaluation report metrics correct on known split
+- threshold calibration binary search converges
+- version comparison emits both metric sets
+- empty eval split returns safe defaults
+
+#### Phase 8: Slice 8.4: Success Criteria:
+
+##### Automated Verification:
+- [ ] `pytest tests/test_calibrated_classifier.py tests/test_evaluation_harness.py -q` passes
+- [ ] `python -c "from scripts.learning.calibrated_classifier import CalibratedClassifier; cc = CalibratedClassifier(); assert cc.classifier_version is not None; print('ok')"` succeeds
+- [ ] `python -c "from scripts.learning.evaluator import EvaluationHarness; print('ok')"` succeeds
+- [ ] `pytest tests/test_decision_policy.py -q` passes (backward compat: hardcoded thresholds still work)
+
+##### Manual Verification:
+- [ ] Train classifier on first 200 reviewed pensioners; evaluate on next 50; precision ≥ 0.90 at calibrated threshold
+- [ ] `Decision.policy_version` differs between hardcoded-threshold run and classifier run
+- [ ] A pensioner with truncated harvest + high raw score is NOT auto-accepted by the classifier
+
+### Phase 8: Plan History
+
+- Phase 8: Self-learning and adaptive plan ranking — pending
+
 ## Ordering Constraints
 
 - Phase 1 has no dependencies.
@@ -2306,6 +2599,9 @@ mutates input state.
   safety, scheduler all required for Knowledge Sources).
 - Phase 7 depends on Phase 6 (Knowledge Sources must emit
   observations for the projector to consume).
+- Phase 8 depends on Phase 7 (projection must be queryable before
+  labels can be extracted; decision policy must exist before
+  classifier can replace thresholds).
 
 Slices within a phase are sequential; slices across phases are
 blocked by the phase-level dependency.
@@ -2380,6 +2676,20 @@ blocked by the phase-level dependency.
   deterministic.
 - `view.html` reads projection only; no business logic.
 - `grep -n "JsonlStateRepository.*replace_all\|state_repo\.append" scripts/cgr/cgr_fag_dedup.py scripts/cgr/dixiedata_match.py scripts/cgr/spouse_compare.py` returns 0 matches.
+
+### Phase 8 checks
+
+- Default priors load without network or file I/O.
+- Label extraction on 50-pensioner completed run produces ≥ 40 labels.
+- Plan ranker changes plan order for ≥ 20% of pensioners when label
+  store is warm (50+ reviewed).
+- Calibrated classifier precision ≥ 0.90 on held-out evaluation split
+  of ≥ 50 labels.
+- Temporal split: labels created under `policy_version='N'` never
+  appear in both training and evaluation for classifier `N`.
+- Fallback: removing the classifier config restores hardcoded
+  threshold behavior.
+- `Decision.policy_version` reflects classifier version when active.
 
 ## Performance Considerations
 
