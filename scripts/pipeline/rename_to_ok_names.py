@@ -22,7 +22,9 @@ can verify; --dry-run stops before any rename.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -111,20 +113,52 @@ def main() -> int:
         return 0
 
     # Execute
+    manifest_events = []
     for item, meta in plan:
-        # Write meta first (provenance survives even if rename fails)
-        item["meta_dst"].write_text(
-            json.dumps(meta, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-        # Rename data (only if destination differs)
+        src_data = item["data_src"].read_bytes()
+        src_hash = hashlib.sha256(src_data).hexdigest()
+
+        meta_json = json.dumps(meta, indent=2, ensure_ascii=False) + "\n"
+        meta_hash = hashlib.sha256(meta_json.encode()).hexdigest()
+
+        # Write meta to .tmp, fsync, atomic replace
+        meta_tmp = item["meta_dst"].with_suffix(item["meta_dst"].suffix + ".tmp")
+        meta_tmp.write_text(meta_json, encoding="utf-8")
+        _fsync_path(meta_tmp)
+        os.replace(meta_tmp, item["meta_dst"])
+
+        # Write data to .tmp, fsync, atomic replace
         if item["data_src"] != item["data_dst"]:
-            item["data_dst"].write_bytes(item["data_src"].read_bytes())
+            data_tmp = item["data_dst"].with_suffix(item["data_dst"].suffix + ".tmp")
+            data_tmp.write_bytes(src_data)
+            _fsync_path(data_tmp)
+            os.replace(data_tmp, item["data_dst"])
             item["data_src"].unlink()
             print(f"  renamed: {item['data_src'].name} -> {item['data_dst'].name}")
         else:
             print(f"  kept:    {item['data_src'].name} (already named ok_*)")
         print(f"  wrote:   {item['meta_dst'].name}")
+
+        manifest_events.append({
+            "source": str(item["data_src"].name if item["data_src"] != item["data_dst"]
+                          else item["data_dst"].name),
+            "destination": str(item["data_dst"].name),
+            "source_sha256": src_hash,
+            "meta_sha256": meta_hash,
+            "record_count": meta["_meta"]["record_count"],
+            "migrated_at": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        })
+
+    # Write migration manifest
+    manifest_path = ROOT / "output" / "migration_manifest.json"
+    manifest_path.parent.mkdir(parents=True, exist_ok=True)
+    manifest_tmp = manifest_path.with_suffix(manifest_path.suffix + ".tmp")
+    manifest_tmp.write_text(
+        json.dumps({"events": manifest_events}, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    _fsync_path(manifest_tmp)
+    os.replace(manifest_tmp, manifest_path)
 
     print(f"\nDone. {len(plan)} file(s) renamed + {len(plan)} meta file(s) written.")
     return 0
@@ -132,3 +166,12 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+
+
+def _fsync_path(path: Path) -> None:
+    """fsync a file for durability. Skips directory fsync on Windows."""
+    fd = os.open(str(path), os.O_RDWR)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
