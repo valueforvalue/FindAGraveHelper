@@ -2,7 +2,16 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-17
+## [Unreleased] — 2026-07-19
+
+### Docs: amend Blackboard refactor plan with Phase 8 — self-learning
+
+Added Phase 8 (Self-Learning and Adaptive Plan Ranking) to the
+7-phase Blackboard refactor plan, sourced from the modular adaptive
+search research artifact's Self-Learning Boundary and Phase 5.
+Four slices: versioned priors engine, training label extraction,
+plan ranker, calibrated classifier with held-out evaluation.
+Phase count: 7 → 8.
 
 ### Docs: add alternative modular adaptive search architecture
 

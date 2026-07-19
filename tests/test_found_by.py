@@ -20,7 +20,7 @@ from pathlib import Path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.search_fag import tag_candidates_with_found_by
+from scripts.fag.scoring import tag_candidates_with_found_by
 
 
 def test_tag_candidates_with_found_by_adds_field():

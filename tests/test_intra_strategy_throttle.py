@@ -25,7 +25,7 @@ class TestIntraStrategyThrottleWiring:
     def test_throttle_param_accepted(self):
         """search_one_pensioner now accepts throttle_seconds."""
         import inspect
-        from scripts.search_fag import search_one_pensioner
+        from scripts.fag.search import search_one_pensioner
         sig = inspect.signature(search_one_pensioner)
         assert "throttle_seconds" in sig.parameters, (
             "search_one_pensioner must accept a throttle_seconds "

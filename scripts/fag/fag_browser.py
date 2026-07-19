@@ -30,11 +30,8 @@ import time
 from typing import Callable, Optional
 
 
-from scripts.search_fag import (
-    search_one_pensioner,
-    setup_browser,
-    warmup_session,
-)
+from scripts.fag.search import search_one_pensioner
+from scripts.fag.search import setup_browser, warmup_session
 
 
 log = logging.getLogger("fag_browser")

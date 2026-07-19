@@ -10,16 +10,18 @@ empirically:
 
 Cuts ~35% of results for common names to US-only; ~99% when state is known.
 """
-from scripts.search_fag import (
+from scripts.fag.filters import (
     apply_location_filter,
+    FAG_COUNTRY_FILTER_US,
+    FAG_STATE_IDS,
+)
+from scripts.search.strategies import (
     strategy_b1_exact,
     strategy_b3_first_initial_fuzzy,
     strategy_b4_fuzzy_last,
     strategy_c1_cw_context,
     strategy_with_birth_year,
     strategy_year_sniper,
-    FAG_COUNTRY_FILTER_US,
-    FAG_STATE_IDS,
 )
 
 
