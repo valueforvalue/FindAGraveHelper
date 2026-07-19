@@ -25,6 +25,19 @@ from typing import Callable, Iterable, Iterator, Protocol
 from scripts.state.state_check import StateCheckResult, check_state_file
 
 
+class CorruptStateError(ValueError):
+    """Raised when strict-mode JSONL reader encounters a corrupt line."""
+
+    def __init__(self, path: Path, lineno: int, offset: int, raw: str) -> None:
+        self.path = path
+        self.lineno = lineno
+        self.offset = offset
+        self.raw = raw
+        super().__init__(
+            f"Corrupt JSON at {path}:{lineno} (offset {offset}): {raw!r}"
+        )
+
+
 class InMemoryStateRepository:
     """In-memory StateRepository for tests + dry-run.
 
@@ -49,7 +62,8 @@ class InMemoryStateRepository:
     def append(self, record: dict) -> None:
         self._records.append(dict(record))
 
-    def iter_all(self) -> Iterator[dict]:
+    def iter_all(self, *, strict: bool = False) -> Iterator[dict]:
+        del strict  # ignored; no JSON lines to decode
         return iter(self._records)
 
     def get(self, pensioner_id: int) -> dict | None:
@@ -62,6 +76,8 @@ class InMemoryStateRepository:
         self,
         pensioner_id: int,
         mutate: Callable[[dict], dict],
+        *,
+        strict: bool = False,
     ) -> bool:
         for i, rec in enumerate(self._records):
             if rec.get("pensioner_id") == pensioner_id:
@@ -114,8 +130,12 @@ class StateRepository(Protocol):
         """Append one record. L3: flush + fsync before return."""
         ...
 
-    def iter_all(self) -> Iterator[dict]:
-        """Yield every record, in file order. Skip blank lines."""
+    def iter_all(self, *, strict: bool = False) -> Iterator[dict]:
+        """Yield every record, in file order. Skip blank lines.
+
+        When strict=True, raises CorruptStateError on JSONDecodeError
+        instead of silently swallowing corrupt lines.
+        """
         ...
 
     def get(self, pensioner_id: int) -> dict | None:
@@ -126,10 +146,14 @@ class StateRepository(Protocol):
         self,
         pensioner_id: int,
         mutate: Callable[[dict], dict],
+        *,
+        strict: bool = False,
     ) -> bool:
         """In-place mutation of the matching record.
 
         Atomic via .tmp + rename. Returns True if found, False otherwise.
+        When strict=True, raises CorruptStateError on corrupt lines during
+        the read phase.
         """
         ...
 
@@ -178,21 +202,31 @@ class JsonlStateRepository:
     # iter_all
     # ============================================================
 
-    def iter_all(self) -> Iterator[dict]:
-        """Yield every record, in file order. Skip blank lines."""
+    def iter_all(self, *, strict: bool = False) -> Iterator[dict]:
+        """Yield every record, in file order. Skip blank lines.
+
+        When strict=True, raises CorruptStateError on JSONDecodeError
+        instead of silently swallowing corrupt lines.
+        """
         if not self._path.exists():
             return
         with self._path.open(encoding="utf-8") as f:
-            for line in f:
+            for lineno, line in enumerate(f, 1):
                 line = line.strip()
                 if not line:
                     continue
                 try:
                     yield json.loads(line)
                 except json.JSONDecodeError:
-                    # Mirror the behaviour of scripts.state.state_check:
-                    # tolerate corrupt lines so one bad row doesn't
-                    # brick the whole reader.
+                    if strict:
+                        raise CorruptStateError(
+                            path=self._path,
+                            lineno=lineno,
+                            offset=-1,  # not available during generator iteration
+                            raw=line,
+                        ) from None
+                    # Default: tolerate corrupt lines so one bad row
+                    # doesn't brick the whole reader.
                     continue
 
     # ============================================================
@@ -214,13 +248,15 @@ class JsonlStateRepository:
         self,
         pensioner_id: int,
         mutate: Callable[[dict], dict],
+        *,
+        strict: bool = False,
     ) -> bool:
         """In-place mutation of the matching record.
 
         Reads all, mutates the first match, rewrites the whole file
         atomically via .tmp + rename. Returns True if found.
         """
-        records = list(self.iter_all())
+        records = list(self.iter_all(strict=strict))
         found = False
         for i, rec in enumerate(records):
             if rec.get("pensioner_id") == pensioner_id:
