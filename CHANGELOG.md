@@ -4,6 +4,55 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Docs: port agent-stack 8314977 testing-philosophy + cross-refs
+
+Syncs the agent-stack commit 8314977 changes into this
+repo's docs. The agent-stack core doc
+`core/testing-philosophy.md` (port of DixieData commit
+8a0d3f1, issue #626) ships as `docs/agents/testing-philosophy.md`.
+The doc defines the test-quality bar (which tests earn
+their place): state coverage not line coverage (Tip #65),
+saboteur test (Tip #64), find bugs once (Tip #66), test
+your software (Tip #49), plus the language carve-out
+(compiler/lint/stdlib already handle many guarantees in
+statically-typed stacks).
+
+Cross-references added:
+
+- `docs/agents/tdd.md` — References section (TDD is
+  process, testing philosophy is quality bar)
+- `docs/agents/INDEX.md` — tier-1 rows for Python harness
+  + Playwright roles; tier-1 budgets bumped accordingly
+  (Python: 5.5K → 7K, Playwright: 4.5K → 6K)
+- `docs/agents/pragmatic-principles.md` — §1.14 Code
+  That's Easy to Test operational form, §3 cross-ref
+  table, §5 References
+- `AGENTS.md` — Agent conventions list gains the
+  testing-philosophy row
+
+Python testing recipes added to
+`docs/agents/addenda/python-playwright-userscript.md`:
+
+1. `@pytest.mark.parametrize` consolidation (Python
+   equivalent of Go's table-driven tests)
+2. `@pytest.mark.diag` convention for diagnostic probes
+   (Python equivalent of Go's `//go:build diag` build tag)
+3. `mutmut` / `cosmic-ray` for mutation testing (Tip #64
+   operational form)
+4. Stdlib re-test anti-pattern (Python-specific examples:
+   `list(iter(...))`, `dict.update`, `re.match`)
+5. Brittle-test mitigation (substring over exact-match,
+   parsed JSON fields over full-text equality, Playwright
+   state assertions over content snapshots)
+6. `hypothesis` property-based tests (Tip #71 operational
+   form; pattern established in
+   `tests/test_fellegi_sunter_real.py`)
+
+`pytest.ini` updated to register the `diag` marker so the
+new convention is enforced (pytest refuses undefined
+markers by default). Default `addopts` filter unchanged;
+diag probes still run with `pytest -m diag` intentionally.
+
 ### Docs: amend Blackboard refactor plan with Phase 8 — self-learning
 
 Added Phase 8 (Self-Learning and Adaptive Plan Ranking) to the

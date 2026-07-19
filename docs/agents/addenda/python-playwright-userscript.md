@@ -163,6 +163,153 @@ userscript + simulates the pipeline).
   records in the user's local dixiedata DB. Changes to the
   schema break the round-trip; treat as breaking.
 
+## Python testing recipes
+
+> Sibling of [`../testing-philosophy.md`](../testing-philosophy.md).
+> The core doc gives the *bar* (which tests earn their place);
+> this section gives the *Python/pytest recipes* that meet it.
+
+### 1. `@pytest.mark.parametrize` over N near-duplicate tests
+
+Per core §"Consolidation": N tests that exercise the same
+function with different inputs collapse into one
+parametrized test. The parametrize table IS the coverage
+map.
+
+```python
+import pytest
+
+@pytest.mark.parametrize("input,expected", [
+    ("", "default"),
+    ("abc", "abc"),
+    ("  ", "default"),
+])
+def test_normalize(input, expected):
+    assert normalize(input) == expected
+```
+
+Add a row per new edge case; do not write a new test
+function. If you need a brand-new test function, you're
+testing a different code path — that's the
+"when NOT to consolidate" carve-out (core §"Consolidation").
+
+### 2. `@pytest.mark.diag` for diagnostic probes
+
+Per core §"Diagnostic tests that always skip":
+file-existence / binary-built / env-var-gated tests live
+under `@pytest.mark.diag` and are filtered out of the
+default run.
+
+```python
+# In pytest.ini, add to markers:
+#   markers =
+#     integration: tests that need a real browser
+#     diag: tests that probe manual-only fixtures
+
+# In tests/test_leak_fix_real.py:
+import pytest
+
+@pytest.mark.diag
+def test_live_browser_smoke():
+    if not os.path.exists("scripts/soak_memory.py"):
+        pytest.skip("soak harness not built")
+    # ...
+```
+
+Run diagnostics intentionally:
+
+```bash
+pytest -m diag ./tests/                  # diag-only
+pytest -m "diag or integration" ./tests/  # both gated suites
+```
+
+The default run (`pytest tests/`) skips them via the
+existing `addopts = -m "not integration"` convention. Add
+`not diag` if the default should also skip diag probes.
+
+### 3. Mutation testing with `mutmut` or `cosmic-ray`
+
+Per core §"Test-the-tests" (Tip #64): Python mutation
+testing is the operational form of "is your test actually
+catching the bugs it claims to catch?"
+
+```bash
+pip install mutmut
+mutmut run --paths-to-mutate=scripts/
+mutmut results
+```
+
+The mutation score is the complement to line coverage: a
+test file at 100% line coverage with a 20% mutation score
+is testing coverage inflation, not state coverage. See
+`../testing-philosophy.md` §"Test state coverage, not
+code coverage."
+
+### 4. Stdlib re-test anti-pattern
+
+Per core §"Tests of stdlib primitives → cut": cut any
+test whose core assertion is "the stdlib function works
+as documented." Examples specific to this repo's pytest
+idioms:
+
+- `assert len(list(iter([1,2,3]))) == 3` — testing
+  `list()` and `iter()`, not your code.
+- `assert dict.update({"a":1}, {"b":2}) == {"a":1,"b":2}`
+  — testing dict's documented behavior.
+- `assert re.match(r"\d+", "123") is not None` — testing
+  `re`, not your extractor.
+
+**Decision rule:** if you can replace the stdlib call in
+the test with the literal expected value and the test
+still passes, the test is testing the stdlib, not your
+code. Cut it.
+
+### 5. Brittle-test mitigation in Python
+
+Per core §"Brittle tests": assert on structural
+properties, not exact strings. In Python this usually
+means:
+
+- `assert "data-theme=high-contrast" in html` (substring)
+  not `assert html == "<html lang=en ...">` (exact match).
+- For JSON / state.jsonl assertions, parse and compare
+  fields (`assert record["status"] == "ok"`), not full-
+  text equality.
+- For Playwright assertions, prefer
+  `expect(page.locator(...)).to_be_visible()` (state) over
+  `assert page.content() == "..."` (snapshot).
+
+### 6. Property-based tests with `hypothesis`
+
+Per core §"Find bugs once" (Tip #66) + the agent-stack
+spine row for Tip #71 (Property-Based Tests): when a
+function's doc-comment claims "handles edge cases X, Y,
+Z," back the claim with a `hypothesis` property test
+that enumerates the input space.
+
+```python
+from hypothesis import given, strategies as st
+
+@given(st.text(min_size=0, max_size=1000))
+def test_normalize_never_crashes(s):
+    # The doc-comment claim: "normalize handles any string
+    # input without raising."
+    normalize(s)  # must not raise
+```
+
+The harness already has property-test infrastructure in
+`tests/test_fellegi_sunter_real.py` (uses `hypothesis`).
+Follow that pattern when adding property tests for new
+matchers / scorers.
+
+### References
+
+- [`../testing-philosophy.md`](../testing-philosophy.md) —
+  the bar this section implements
+- §"Per-layer recipes" above — Python / Playwright /
+  userscript / view.html test-floor recipes
+- `pytest.ini` — marker registration + default filter
+
 ## Cross-references
 
 - [`../feature-protocol.md`](../feature-protocol.md) — slice

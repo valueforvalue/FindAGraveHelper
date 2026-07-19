@@ -55,11 +55,12 @@ in that role. Don't load the whole table.
 |---|---|---|
 | [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline, vertical vs horizontal |
 | [`tdd.md`](tdd.md) | ~1.5K | Red-green-refactor + contract anchor |
+| [`testing-philosophy.md`](testing-philosophy.md) | ~1.5K | Test-quality bar (which tests earn their place, the saboteur test, find-bugs-once) |
 | [`cross-layer-contract.md`](cross-layer-contract.md) | ~1.5K | state.jsonl wire format + view.html round-trip |
 | [`bug-catalog.md` §"Python layer"](bug-catalog.md#python-layer-scriptspy-except-fag_browserpy) | ~700 | Python-specific bug patterns |
 | [`addenda/python-playwright-userscript.md` §"Python"](addenda/python-playwright-userscript.md#python-scriptspy) | ~400 | Per-layer recipes |
 
-**Tier-1 budget (Python harness role):** ~5.5K tokens.
+**Tier-1 budget (Python harness role):** ~7K tokens.
 
 ### Role: "Implementing a Playwright browser slice"
 
@@ -67,10 +68,11 @@ in that role. Don't load the whole table.
 |---|---|---|
 | [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline |
 | [`tdd.md`](tdd.md) | ~1.5K | Red-green-refactor + smoke harness pattern |
+| [`testing-philosophy.md`](testing-philosophy.md) | ~1.5K | Test-quality bar (saboteur test, state-not-line coverage) |
 | [`bug-catalog.md` §"Playwright layer"](bug-catalog.md#playwright-layer-scriptsfag_browserpy-scriptssearch_fagpy) | ~1K | Locator leaks, closed-target, Cloudflare 1015 |
 | [`addenda/python-playwright-userscript.md` §"Playwright"](addenda/python-playwright-userscript.md#playwright-scriptsfag_browserpy) | ~500 | Stealth + warmup + locator hygiene |
 
-**Tier-1 budget (Playwright role):** ~4.5K tokens.
+**Tier-1 budget (Playwright role):** ~6K tokens.
 
 ### Role: "Implementing a userscript slice"
 
