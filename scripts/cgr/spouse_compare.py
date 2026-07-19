@@ -281,3 +281,100 @@ def cli_main(argv: list[str] | None = None) -> int:
 
 if __name__ == "__main__":
     raise SystemExit(cli_main())
+
+
+# ============================================================
+# BrowserSession + RequestGate integration (Phase 4 Slice 4.5)
+# ============================================================
+
+
+def annotate_records_via_session(
+    results_path: Path,
+    session: Any = None,  # BrowserSession
+    top_n: int = 1,
+) -> dict:
+    """Annotate records using BrowserSession + ResponseClassifier.
+
+    Same logic as annotate_records() but routes navigation through
+    the BrowserSession (with its embedded stealth, warmup, and
+    RequestGate) and uses ResponseClassifier before reading HTML.
+
+    Returns stats dict.
+    """
+    from scripts.fag.response_classifier import (
+        Classification,
+        ResponseClassifier,
+    )
+    from scripts.pipeline.post_pass_observer import PostPassObserver
+
+    results_path = Path(results_path)
+    if not results_path.exists():
+        return {"matched": 0, "total": 0, "error": "results.jsonl missing"}
+
+    if session is None:
+        return {"matched": 0, "total": 0, "error": "no BrowserSession provided"}
+
+    page = session.page
+    observer = PostPassObserver(run_id="spouse")
+
+    records = []
+    for line in results_path.read_text(encoding="utf-8").strip().split("\n"):
+        if line.strip():
+            records.append(json.loads(line))
+
+    stats = {"matched": 0, "total_with_spouse": 0, "total_attempted": 0, "errors": 0}
+
+    for rec in records:
+        spouse_first = str(rec.get("pensioner_spouse_first", "")).strip()
+        spouse_last = str(rec.get("pensioner_spouse_last", "")).strip()
+        if not spouse_first or not spouse_last:
+            continue
+
+        stats["total_with_spouse"] += 1
+        fag_records = rec.get("fag_records", []) or rec.get("ranked_candidates", []) or []
+        if not fag_records:
+            continue
+
+        top = fag_records[0]
+        memorial_id = top.get("memorial_id", "")
+        if not memorial_id:
+            continue
+
+        stats["total_attempted"] += 1
+        url = f"https://www.findagrave.com/memorial/{memorial_id}"
+
+        try:
+            page.goto(url, wait_until="domcontentloaded", timeout=30000)
+            title = page.title()
+            classification = ResponseClassifier.classify(title=title)
+
+            if ResponseClassifier.is_blocking(classification):
+                log.warning("Spouse: blocked on memorial %s (%s)", memorial_id, classification.value)
+                stats["errors"] += 1
+                continue
+
+            # Extract spouse section
+            body = page.evaluate("() => document.body.innerText")
+            match_found = (
+                spouse_last.lower() in body.lower()
+                and spouse_first.lower() in body.lower()
+            )
+
+            observer.observe_spouse_match(
+                pensioner_id=rec.get("pensioner_id", 0),
+                spouse_match={
+                    "spouse_first": spouse_first,
+                    "spouse_last": spouse_last,
+                    "memorial_id": memorial_id,
+                    "match_found": match_found,
+                },
+                match_confirmed=match_found,
+            )
+            if match_found:
+                stats["matched"] += 1
+
+        except Exception as e:
+            log.warning("Spouse scrape failed for memorial %s: %s", memorial_id, e)
+            stats["errors"] += 1
+
+    return stats
