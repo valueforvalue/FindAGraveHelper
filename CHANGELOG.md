@@ -4,6 +4,10 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-17
 
+### Docs: add alternative modular adaptive search architecture
+
+Added `.rpiv/artifacts/research/2026-07-19_modular-adaptive-search-architecture.md` as an alternative design direction for the Find a Grave search tool. It documents a lightweight Blackboard for adaptive planning, SQLite WAL as the operational store, JSONL as a compatibility projection, a single-owner Playwright provider, bounded execution slices, typed strategy plans, durable observations, geography-aware refinement, and shared live/replay decision policy. It intentionally omits site-policy discussion.
+
 ### Chore: refresh doc references after shim deletion (issue #19 + #22)
 
 Following the code-side migration to canonical subpackage paths,
