@@ -209,3 +209,34 @@ def test_scrape_handles_vet_details_error_gracefully():
     assert len(records[0]["veterans"]) == 2
     assert records[0]["veterans"][0].get("vet_error") is not None
     assert records[0]["veterans"][1].get("vet_details", {}).get("died_state") == "OK"
+
+
+def test_max_cemeteries_limit_enforced():
+    """max_cemeteries stops scrape after N cemeteries processed."""
+    client = MagicMock()
+    client.list_cemeteries_in_state.return_value = [
+        {"id": 1, "name": "Cem A", "county": "Adair", "raw_label": "Adair Co.: Cem A"},
+        {"id": 2, "name": "Cem B", "county": "Alfalfa", "raw_label": "Alfalfa Co.: Cem B"},
+        {"id": 3, "name": "Cem C", "county": "Atoka", "raw_label": "Atoka Co.: Cem C"},
+    ]
+    client.list_all_veterans_in_cemetery.return_value = [
+        {"id": 1, "name": "Vet", "unit": "1 AL"},
+    ]
+    config = ScrapingConfig(state="OK", max_cemeteries=2)
+    records = scrape_ok_cemeteries(client, config, output_path=None)
+    assert len(records) == 2
+    assert records[0]["cemetery_id"] == 1
+    assert records[1]["cemetery_id"] == 2
+
+
+def test_max_cemeteries_none_means_no_limit():
+    """max_cemeteries=None processes all cemeteries."""
+    client = MagicMock()
+    client.list_cemeteries_in_state.return_value = [
+        {"id": 1, "name": "Cem A", "county": "Adair", "raw_label": "Adair Co.: Cem A"},
+        {"id": 2, "name": "Cem B", "county": "Alfalfa", "raw_label": "Alfalfa Co.: Cem B"},
+    ]
+    client.list_all_veterans_in_cemetery.return_value = []
+    config = ScrapingConfig(state="OK", max_cemeteries=None)
+    records = scrape_ok_cemeteries(client, config, output_path=None)
+    assert len(records) == 2

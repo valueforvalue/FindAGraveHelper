@@ -54,7 +54,7 @@ def main() -> int:
                         help="Seconds between CGR requests (be polite)")
     parser.add_argument("--no-vet-details", action="store_true",
                         help="Skip vet detail fetches (faster, less data)")
-    parser.add_argument("--limit-cemeteries", type=int, default=0,
+    parser.add_argument("--limit-cemeteries", type=int, default=None,
                         help="Process at most N cemeteries (default: all)")
     args = parser.parse_args()
 
@@ -63,6 +63,7 @@ def main() -> int:
         state=args.state,
         include_vet_details=not args.no_vet_details,
         throttle_seconds=args.throttle,
+        max_cemeteries=args.limit_cemeteries,
     )
 
     log.info("Output: %s", args.out)
