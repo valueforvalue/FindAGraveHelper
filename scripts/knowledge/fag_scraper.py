@@ -12,6 +12,7 @@ component must go through this KS (no direct page.goto()).
 """
 from __future__ import annotations
 
+import json
 import logging
 import uuid
 from typing import Any
@@ -91,11 +92,36 @@ class FaGScraperKS:
     def _load_plan(
         self, item: WorkItem, store: BlackboardStore
     ) -> QueryPlan | None:
-        """Load the QueryPlan referenced by the work item's plan_id."""
+        """Load the QueryPlan referenced by the work item's plan_id.
+
+        Reads from the query_plans SQLite table (where enqueue_plan writes)
+        and falls back to scanning observation payloads.
+        """
         if not item.plan_id:
             return None
-        # Plans are stored in the Blackboard; read them via observation
-        # payload that was persisted when the planner emitted them.
+
+        # Primary path: read from query_plans table
+        if hasattr(store, "con"):
+            try:
+                row = store.con.execute(
+                    "SELECT * FROM query_plans WHERE plan_id = ?",
+                    (item.plan_id,),
+                ).fetchone()
+                if row is not None:
+                    return QueryPlan(
+                        plan_id=row[0],
+                        pensioner_id=row[1],
+                        strategy=row[2],
+                        params=json.loads(row[3]) if row[3] else {},
+                        scope=row[4],
+                        reason=row[5],
+                        estimated_requests=row[6],
+                        policy_version=row[7],
+                    )
+            except Exception:
+                pass
+
+        # Fallback: scan observation payloads
         observations = store.read_observations_since(None)
         for obs in observations:
             payload = obs.payload
@@ -108,21 +134,12 @@ class FaGScraperKS:
     ) -> list[dict[str, Any]]:
         """Run the actual FaG search for one QueryPlan.
 
-        In the full implementation, this delegates to the existing
-        search_one_pensioner or uses BrowserSession.search().
-        For now, this is a seam that the existing search code
-        plugs into.
+        Builds a full pensioner dict from plan params (which now
+        carry all pensioner fields from RegionalPlannerKS).
         """
-        # Build a pensioner dict from the plan params
-        pensioner: dict[str, Any] = {
-            "first_name": plan.params.get("firstname", ""),
-            "last_name": plan.params.get("lastname", ""),
-            "id": plan.pensioner_id,
-            "birth_year": plan.params.get("birth_year", ""),
-            "death_year": plan.params.get("death_year", ""),
-        }
+        pensioner: dict[str, Any] = dict(plan.params)
+        pensioner["id"] = plan.pensioner_id
 
-        # Use the existing search function via the browser session
         if self._session is not None:
             candidates, _status = self._session.search(pensioner)
             return [
@@ -137,7 +154,6 @@ class FaGScraperKS:
                 for c in candidates
             ]
 
-        # Fallback: return empty (tests without browser)
         return []
 
 

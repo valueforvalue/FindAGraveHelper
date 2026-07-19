@@ -1147,7 +1147,7 @@ def run_batch_scheduler(
             state_filter="OK",
         )
         browser_session.start()
-        scraper = FaGScraperKS(session=browser_session)
+        scraper = FaGScraperKS(browser_session=browser_session)
         scheduler.register(scraper)
 
     scheduler.register(CandidateScorerKS())

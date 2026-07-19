@@ -132,6 +132,14 @@ class RegionalPlannerKS:
         birth_year = str(pensioner.get("birth_year") or "")
 
         base_params: dict[str, Any] = {}
+        # Pass through all pensioner fields so FaGScraperKS has full context
+        for key in ("first_name", "last_name", "middle_name", "birth_year",
+                     "death_year", "regiment", "company", "burial_state",
+                     "pensioner_spouse_first", "pensioner_spouse_last",
+                     "_state_abbr"):
+            if pensioner.get(key):
+                base_params[key] = pensioner[key]
+        # Also set firstname/lastname for URL params
         if first:
             base_params["firstname"] = first
         if last:
