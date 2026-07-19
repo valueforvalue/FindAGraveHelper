@@ -1,87 +1,42 @@
 """Smoke test: run scheduler and legacy paths against same input, diff outputs.
 
-Usage:
-    python scripts/smoke_diff.py --input ok_pensioners.json --cgr ok_vets_enriched.jsonl --limit 50
+Usage (no FaG — fast sanity check):
+    python scripts/smoke_diff.py --input ok_pensioners.json --cgr ok_vets_enriched.jsonl --limit 10
+
+Usage (real FaG — takes hours, opens visible browser):
+    python scripts/smoke_diff.py --input ok_pensioners.json --cgr ok_vets_enriched.jsonl \\
+        --limit 50 --real-fag --filter-last-name F
 """
 from __future__ import annotations
 
 import argparse
 import json
+import shutil
 import sys
 from pathlib import Path
 
-# Ensure scripts/ is on the path
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
 
-def _run_scheduler(
-    input_path: Path, cgr_path: Path, out_dir: Path, limit: int
-) -> list[dict]:
-    """Run scheduler path and return sorted output rows."""
-    from scripts.pipeline.run_unified import run_batch_scheduler, UnifiedRunnerConfig, BatchResult
-    from scripts.blackboard.store import SqliteBlackboardStore
-    from scripts.blackboard.schema import RunManifest
-
-    pensioners = _load_input(input_path, limit)
-    cems = _load_cgr(cgr_path)
-
-    db_path = out_dir / "blackboard.db"
-    store = SqliteBlackboardStore(db_path)
-    store.open()
-
-    cfg = UnifiedRunnerConfig(
-        out_dir=out_dir,
-        results_filename="results.jsonl",
-        use_scheduler=True,
-        blackboard_db_path=db_path,
-        run_manifest=RunManifest(
-            manifest_id="smoke-scheduler",
-            run_id="smoke-scheduler",
-        ),
-        throttle_seconds=0.0,
-        fag_search_fn=None,  # no browser for smoke
-    )
-    cfg._blackboard_store = store  # type: ignore[attr-defined]
-
-    try:
-        run_batch_scheduler(pensioners, cems, cfg)
-    finally:
-        store.close()
-
-    return _read_results(out_dir / "results.jsonl")
-
-
-def _run_legacy(
-    input_path: Path, cgr_path: Path, out_dir: Path, limit: int
-) -> list[dict]:
-    """Run legacy god-loop path and return sorted output rows."""
-    from scripts.pipeline.run_unified import run_batch, UnifiedRunnerConfig
-
-    pensioners = _load_input(input_path, limit)
-    cems = _load_cgr(cgr_path)
-
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    # No real browser for smoke — compare non-FaG pipeline outputs
-    cfg = UnifiedRunnerConfig(
-        out_dir=out_dir,
-        results_filename="results.jsonl",
-        throttle_seconds=0.0,
-        fag_search_fn=None,  # no browser
-        use_scheduler=False,
-    )
-
-    run_batch(pensioners, cems, cfg)
-    return _read_results(out_dir / "results.jsonl")
-
-
-def _load_input(path: Path, limit: int) -> list[dict]:
-    """Load pensioner data."""
+def _load_input(path: Path, limit: int | None, last_name_prefix: str | None = None) -> list[dict]:
+    """Load pensioner data, optionally filtering by last name prefix."""
     data = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(data, list):
-        return data[:limit] if limit else data
-    return [data]
+        result = data
+    else:
+        result = [data]
+
+    if last_name_prefix:
+        prefix = last_name_prefix.lower()
+        result = [
+            p for p in result
+            if str(p.get("last_name", "")).lower().startswith(prefix)
+        ]
+
+    if limit:
+        result = result[:limit]
+    return result
 
 
 def _load_cgr(path: Path) -> list[dict]:
@@ -109,6 +64,109 @@ def _read_results(path: Path) -> list[dict]:
     return rows
 
 
+# ============================================================
+# Scheduler path
+# ============================================================
+
+
+def _run_scheduler(
+    input_path: Path, cgr_path: Path, out_dir: Path,
+    limit: int | None, last_name_prefix: str | None,
+    real_fag: bool,
+) -> list[dict]:
+    """Run scheduler path and return sorted output rows."""
+    from scripts.pipeline.run_unified import run_batch_scheduler, UnifiedRunnerConfig
+    from scripts.blackboard.store import SqliteBlackboardStore
+    from scripts.blackboard.schema import RunManifest
+
+    pensioners = _load_input(input_path, limit, last_name_prefix)
+    cems = _load_cgr(cgr_path)
+
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    db_path = out_dir / "blackboard.db"
+    store = SqliteBlackboardStore(db_path)
+    store.open()
+
+    throttle = 2.5 if real_fag else 0.0
+
+    cfg = UnifiedRunnerConfig(
+        out_dir=out_dir,
+        results_filename="results.jsonl",
+        use_scheduler=True,
+        blackboard_db_path=db_path,
+        run_manifest=RunManifest(
+            manifest_id="smoke-scheduler",
+            run_id="smoke-scheduler",
+        ),
+        throttle_seconds=throttle,
+        fag_search_fn=None,  # scheduler uses BrowserSession, not fag_search_fn
+    )
+    # Need fag_search_fn truthy to trigger BrowserSession creation in run_batch_scheduler
+    if real_fag:
+        cfg.fag_search_fn = True  # type: ignore[assignment] — signal to create BrowserSession
+
+    cfg._blackboard_store = store  # type: ignore[attr-defined]
+
+    try:
+        run_batch_scheduler(pensioners, cems, cfg)
+    finally:
+        store.close()
+
+    return _read_results(out_dir / "results.jsonl")
+
+
+# ============================================================
+# Legacy path
+# ============================================================
+
+
+def _run_legacy(
+    input_path: Path, cgr_path: Path, out_dir: Path,
+    limit: int | None, last_name_prefix: str | None,
+    real_fag: bool,
+) -> list[dict]:
+    """Run legacy god-loop path and return sorted output rows."""
+    from scripts.pipeline.run_unified import run_batch, UnifiedRunnerConfig
+    from scripts.fag.fag_browser import make_fag_search_fn
+
+    pensioners = _load_input(input_path, limit, last_name_prefix)
+    cems = _load_cgr(cgr_path)
+
+    if out_dir.exists():
+        shutil.rmtree(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    throttle = 2.5 if real_fag else 0.0
+
+    if real_fag:
+        fag_fn = make_fag_search_fn(
+            throttle=throttle,
+            reset_browser_every=250,
+            state_filter="OK",
+        )
+    else:
+        fag_fn = None
+
+    cfg = UnifiedRunnerConfig(
+        out_dir=out_dir,
+        results_filename="results.jsonl",
+        throttle_seconds=throttle,
+        fag_search_fn=fag_fn,
+        use_scheduler=False,
+    )
+
+    run_batch(pensioners, cems, cfg)
+    return _read_results(out_dir / "results.jsonl")
+
+
+# ============================================================
+# Diff
+# ============================================================
+
+
 def diff_outputs(
     scheduler_rows: list[dict], legacy_rows: list[dict]
 ) -> dict:
@@ -126,7 +184,6 @@ def diff_outputs(
         "missing_from_legacy": sorted(s_ids - l_ids),
     }
 
-    # Per-pensioner comparison
     l_by_id = {r["pensioner_id"]: r for r in legacy_rows}
     for sr in scheduler_rows:
         pid = sr["pensioner_id"]
@@ -139,6 +196,7 @@ def diff_outputs(
         if s_status != l_status:
             summary["status_diffs"].append({
                 "pensioner_id": pid,
+                "pensioner_name": sr.get("pensioner_name", ""),
                 "scheduler_status": s_status,
                 "legacy_status": l_status,
             })
@@ -148,8 +206,9 @@ def diff_outputs(
         if abs(s_score - l_score) > 0.01:
             summary["score_diffs"].append({
                 "pensioner_id": pid,
-                "scheduler_score": s_score,
-                "legacy_score": l_score,
+                "pensioner_name": sr.get("pensioner_name", ""),
+                "scheduler_score": round(s_score, 4),
+                "legacy_score": round(l_score, 4),
             })
 
     summary["status_diff_count"] = len(summary["status_diffs"])
@@ -157,71 +216,106 @@ def diff_outputs(
     return summary
 
 
+# ============================================================
+# Main
+# ============================================================
+
+
 def main() -> int:
-    p = argparse.ArgumentParser(description=__doc__)
-    p.add_argument("--input", type=Path, required=True,
-                   help="Path to ok_pensioners.json")
-    p.add_argument("--cgr", type=Path, required=True,
-                   help="Path to ok_vets_enriched.jsonl")
-    p.add_argument("--limit", type=int, default=50,
-                   help="Number of pensioners to test (default: 50)")
-    p.add_argument("--out", type=Path, default=Path("output/smoke_diff"),
-                   help="Output directory (default: output/smoke_diff)")
+    p = argparse.ArgumentParser(description=__doc__,
+                                formatter_class=argparse.RawDescriptionHelpFormatter)
+    p.add_argument("--input", type=Path, required=True)
+    p.add_argument("--cgr", type=Path, required=True)
+    p.add_argument("--limit", type=int, default=10)
+    p.add_argument("--filter-last-name", type=str, default=None,
+                   help="Only pensioners whose last name starts with this letter")
+    p.add_argument("--real-fag", action="store_true",
+                   help="Run real FaG searches (opens browser, takes hours)")
+    p.add_argument("--out", type=Path, default=Path("output/smoke_diff"))
     args = p.parse_args()
 
-    print(f"=== Smoke diff: {args.limit} pensioners ===")
-    print(f"Input:  {args.input}")
-    print(f"CGR:    {args.cgr}")
+    limit = args.limit if args.limit else None
+
+    print(f"=== Smoke diff ===")
+    print(f"Input:      {args.input}")
+    print(f"CGR:        {args.cgr}")
+    print(f"Limit:      {args.limit}")
+    print(f"Last name:  {args.filter_last_name or 'all'}")
+    print(f"Real FaG:   {args.real_fag}")
+    if args.real_fag:
+        print("WARNING: Real FaG mode opens a visible browser. 2.5s throttle.")
+        print("         This will take ~2 min/pensioner (50 = ~100 min).")
+
+    # Count matching pensioners
+    pensioners = _load_input(args.input, limit, args.filter_last_name)
+    print(f"Matching:   {len(pensioners)} pensioners")
 
     # Run scheduler path
     sched_out = args.out / "scheduler"
-    if sched_out.exists():
-        import shutil
-        shutil.rmtree(sched_out)
-    sched_out.mkdir(parents=True, exist_ok=True)
     print("\n[1/2] Running scheduler path...")
     try:
-        scheduler_rows = _run_scheduler(args.input, args.cgr, sched_out, args.limit)
-        print(f"      {len(scheduler_rows)} rows written to {sched_out / 'results.jsonl'}")
+        scheduler_rows = _run_scheduler(
+            args.input, args.cgr, sched_out, limit, args.filter_last_name, args.real_fag
+        )
+        print(f"      {len(scheduler_rows)} rows -> {sched_out / 'results.jsonl'}")
     except Exception as e:
         print(f"      FAILED: {e}")
+        import traceback
+        traceback.print_exc()
         return 1
 
     # Run legacy path
     legacy_out = args.out / "legacy"
-    legacy_out.mkdir(parents=True, exist_ok=True)
     print("[2/2] Running legacy path...")
     try:
-        legacy_rows = _run_legacy(args.input, args.cgr, legacy_out, args.limit)
-        print(f"      {len(legacy_rows)} rows written to {legacy_out / 'results.jsonl'}")
+        legacy_rows = _run_legacy(
+            args.input, args.cgr, legacy_out, limit, args.filter_last_name, args.real_fag
+        )
+        print(f"      {len(legacy_rows)} rows -> {legacy_out / 'results.jsonl'}")
     except Exception as e:
         print(f"      FAILED: {e}")
+        import traceback
+        traceback.print_exc()
         return 1
 
     # Diff
     print("\n=== Diff ===")
     summary = diff_outputs(scheduler_rows, legacy_rows)
-    print(json.dumps(summary, indent=2))
+    print(json.dumps(summary, indent=2, default=str))
 
-    # Write summary
     (args.out / "diff_summary.json").write_text(
-        json.dumps(summary, indent=2), encoding="utf-8"
+        json.dumps(summary, indent=2, default=str), encoding="utf-8"
     )
 
-    # Pass if IDs match and status diffs are within tolerance
     if not summary["ids_match"]:
         print("\nFAIL: ID sets differ between paths.")
+        if summary["missing_from_scheduler"]:
+            print(f"  Missing from scheduler: {summary['missing_from_scheduler'][:5]}")
+        if summary["missing_from_legacy"]:
+            print(f"  Missing from legacy: {summary['missing_from_legacy'][:5]}")
         return 1
 
     if summary["status_diff_count"] > 0:
-        print(f"\nNOTE: {summary['status_diff_count']} status differences "
-              f"(expected -- scoring policy differs between paths).")
-        for d in summary["status_diffs"][:5]:
-            print(f"  pensioner {d['pensioner_id']}: "
+        print(f"\nStatus diffs: {summary['status_diff_count']}")
+        for d in summary["status_diffs"][:10]:
+            print(f"  #{d['pensioner_id']} {d['pensioner_name']}: "
                   f"{d['legacy_status']} -> {d['scheduler_status']}")
 
-    print("\nPASS: Both paths produced the same pensioner IDs.")
-    return 0
+    if summary["score_diff_count"] > 0:
+        print(f"\nScore diffs: {summary['score_diff_count']}")
+        for d in summary["score_diffs"][:10]:
+            print(f"  #{d['pensioner_id']} {d['pensioner_name']}: "
+                  f"{d['legacy_score']} -> {d['scheduler_score']}")
+
+    if summary["score_diff_count"] == 0 and summary["ids_match"]:
+        print("\nPASS: Both paths produced identical results.")
+        return 0
+    elif summary["ids_match"]:
+        print(f"\nPASS: Same IDs. {summary['status_diff_count']} status diffs, "
+              f"{summary['score_diff_count']} score diffs.")
+        return 0
+    else:
+        return 1
 
 
 if __name__ == "__main__":
