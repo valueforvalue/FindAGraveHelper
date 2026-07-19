@@ -186,11 +186,14 @@ Tests that import the shim (`tests/test_country_filter.py:13`,
 `test_found_by.py:23`, `test_year_filter_strategy.py:19`,
 `test_intra_strategy_throttle.py:28`, `test_search_fag_memory.py:28`)
 get rewritten in Phase 1; they continue to pass.
-**Apply to (keep):** `scripts/search_fag.py` shim file (retained
-during transition; not removed in Phase 1).
+**Apply to (keep):** canonical imports only — `scripts.fag.search`,
+`scripts.fag.filters`, `scripts.search.strategies`,
+`scripts.pipeline.run_unified`, `scripts.fag.parser`.
 **Apply to (drop / change):** `from scripts.search_fag import …` and
 `from scripts.run_unified import …` in production modules; the same
-imports in tests that have canonical equivalents.
+imports in tests that have canonical equivalents; the
+`scripts/search_fag.py` shim file itself (removed in Slice 1.1 per
+UD1).
 
 #### D3. Strict-mode toggle on `iter_all` and `update` (L5-04)
 **Origin:** L5-04. No existing strict-mode toggle exists
@@ -259,6 +262,126 @@ return short-circuits before.)
 **Apply to (keep):** the working `backfill()` body and its callers.
 **Apply to (drop / change):** the stale `tmp_path.replace` second path.
 
+## User decisions for Phase 1
+
+Captured from kickoff interview before implementation. Each
+amends a `## Decisions` block above; resolution notes show how
+each was applied.
+
+### UD1. Delete `scripts/search_fag.py` shim now (amends D2)
+The shim is removed in Slice 1.1 alongside the root facade
+emptying. After Slice 1.1 lands, `python scripts/search_fag.py
+--help` returns `ModuleNotFoundError` until users switch to
+canonical CLI. No transition period. Manual criterion in
+Slice 1.1 simplifies to the `sys.modules` smoke (the shim is
+gone; the `--help` exit-0 check is no longer applicable).
+
+### UD2. Direct delete root `playwright_leak_fix.py` (amends D5)
+Plan default holds. No `scripts/_archive/` move. Slice 1.4
+git operation: `git rm playwright_leak_fix.py`. Three-file
+blast radius (root delete + 2 import rewrites).
+
+### UD3. Per-slice CHANGELOG bullet (amends commit policy)
+Each of the 7 slices produces one commit; each commit updates
+`CHANGELOG.md [Unreleased]` with a single bullet describing
+the slice's fix. Format:
+
+```
+- L0-01: empty `scripts/__init__.py` facade (no eager
+  re-exports).
+```
+
+Bullet text = finding ID + one-line description. Section
+header under `[Unreleased]` matches the existing convention
+(Markdown `### Fixed` / `### Changed` / `### Removed` /
+`### Added` / `### Maintenance`).
+
+### UD4. TDD + RPCI gates per slice (amends workflow)
+Phase 1 was written without consulting `docs/agents/tdd.md`
+or `docs/agents/rpci.md`. Each Phase 1 slice is now rewritten
+to obey the gates codified in `## Phase 1 Process Gates`
+below. The 10-step implement sequence (RED → GREEN → adjacent
+sweep → targeted+package suite → adjacent smoke → CHANGELOG →
+critique sub-step → commit → push → watch CI) applies to
+each slice without exception.
+
+## Phase 1 Process Gates
+
+Codified from `docs/agents/tdd.md`, `docs/agents/rpci.md`,
+and `docs/agents/feature-protocol.md`. Every Phase 1 slice
+passes through these gates in order before its commit lands.
+
+### G1. RED — failing test first
+- **Pinned acceptance criterion.** Slice's "Goal" line, made
+  testable. No slice ships without one.
+- **Failing test written and committed** (or staged in the
+  same RED → GREEN cycle per TDD rule). Test name listed
+  inline in the slice's `### Changes Required`.
+- **Right-reason failure.** Confirm the test fails because
+  the behavior under test is missing, NOT because the test
+  is misconfigured. If the test is wrong, fix the test, not
+  the code.
+
+### G2. GREEN — smallest diff
+- **Minimum change** satisfying RED. No drive-by cleanup.
+- **Adjacent behavior preserved.** Run the seam's sibling
+  tests. If they turn red, stop — the slice has crossed
+  a boundary it shouldn't have.
+
+### G3. REFACTOR — only after green
+- **Two-adapter check.** If a new public method appears,
+  confirm at least two callers (or one caller and one test)
+  exist. Otherwise the abstraction is premature.
+- **L7 docstring convention.** Any new or modified
+  non-private top-level function gets a docstring whose
+  first line begins with the function name (verified by the
+  cross-phase integrity AST check).
+
+### G4. Adjacent sweep
+- Run the seam's sibling test file(s) listed in the slice's
+  `### Success Criteria` (e.g. for Slice 1.4 leak-fix dedup,
+  run `tests/test_leak_fix_real.py` + `tests/test_search_fag_memory.py`).
+- Architecture greps (forbidden-import greps, `__pw_stack_trace__`
+  presence, `max_cemeteries` line count, etc.) return as
+  expected.
+
+### G5. Scope test
+- Confirm the slice touched the file count budget listed
+  in `### Files touched (~18)` for the phase, scaled per
+  slice. Drive-by refactors of unrelated modules are
+  blockers.
+- `git diff --stat` matches the slice's declared blast
+  radius.
+
+### G6. Deletion / characterization test
+- **Deletions:** prove the removed artifact is gone
+  (e.g. `[ ! -f playwright_leak_fix.py ]`; inspect
+  signature contains no `tmp_path`).
+- **Characterization tests:** for behavior changes, pin the
+  current/fixed contract with a test that fails on the OLD
+  code (e.g. `test_parser_module_defines_logger` fails today
+  with `NameError`).
+
+### G7. Doc / commit gate
+- **CHANGELOG `[Unreleased]`** updated with the slice's
+  bullet (UD3). Same commit as the fix.
+- **L7 docstring** added/refreshed on any new or modified
+  public function.
+- **Conventional Commits** prefix in the commit message
+  (`fix:` for L3-06/L3-08/L4-06/L5-04, `chore:` for
+  L0-01/L0-02, `refactor:` for L5-06).
+- **Critique sub-step** for any slice touching >1 file:
+  deletion test, noise test, scope test run before commit.
+
+### G8. Cross-slice gates
+- **AST parse** of all touched modules succeeds.
+- **Schema smoke** unaffected by Phase 1 (Phase 2 introduces
+  the schema; Phase 1's schema smoke is `python -c "import
+  scripts.fag.parser; import scripts.state.repository; import
+  scripts.cgr.cgr_ok_scraper"`).
+- **L7 docstring AST check** runs at the end of each slice
+  (not just at phase end).
+
 ### Slice shape
 
 #### D8. One slice per finding; deps respected
@@ -316,107 +439,183 @@ build on Phase 1's canonical surface.
 ### Phase 1: Slice 1.1 — Empty root facade (L0-01)
 
 **Goal:** `scripts/__init__.py` is docstring only; no eager
-re-exports.
+re-exports. The CLI shim `scripts/search_fag.py` is removed in
+this same slice per UD1.
 
-#### Phase 1: Slice 1.1: Changes Required:
+**Acceptance criterion (testable):** after `import scripts`,
+`len(sys.modules)` contains zero entries from
+`scripts.pipeline.*`, `scripts.fag.search`, `scripts.search_fag`;
+`scripts/__init__.py` has no `from … import …` statement.
 
-##### 1. scripts/__init__.py
+#### Phase 1: Slice 1.1: Changes Required (TDD-anchored):
 
-**File**: scripts/__init__.py
-**Changes**: MODIFY — delete the four `from … import …` lines at `:34-37`;
-leave docstring + comments only.
+##### RED — failing test (G1)
+- **New test file:** `tests/test_scripts_facade.py`.
+- **Test 1:** `test_scripts_facade_inert_after_import` —
+  run `len(sys.modules)` before and after `import scripts`;
+  assert no keys match `^scripts\.pipeline\.` or
+  `^scripts\.search_fag$`. **Currently fails** because
+  `scripts/__init__.py:34-37` eagerly imports four names from
+  `scripts.pipeline.run_unified` which transitively pulls
+  `scripts.search_fag`.
+- **Test 2:** `test_scripts_init_has_no_import_statements` —
+  read `scripts/__init__.py` as source; assert `re.findall(r'^\s*from\s+\S+\s+import\b', src)` returns `[]`.
+  **Currently fails.**
+- **Test 3:** `test_scripts_search_fag_shim_gone` —
+  assert `not (REPO_ROOT / "scripts" / "search_fag.py").exists()`.
+  **Currently fails** (shim exists today).
 
-**File**: tests/test_scripts_facade.py (NEW)
-**Changes**: NEW — assert `scripts.__init__.__all__` does not exist
-(no `__all__`); assert module has only the docstring and no eager
-imports of pipeline/search/state symbols at module-load time
-(measure `len(sys.modules)` before/after import of `scripts`).
+##### GREEN — minimal diff (G2)
+- **File `scripts/__init__.py`:** delete the four `from … import …`
+  lines at `:34-37`. Leave docstring + the existing `__doc__`
+  re-export comment.
+- **File `scripts/search_fag.py`:** `git rm` per UD1. The shim
+  no longer exists; downstream callers use canonical
+  `scripts.fag.search` and `scripts.pipeline.run_unified`.
+- **No other file changes** in this slice.
+
+##### REFACTOR — two-adapter check (G3)
+- Confirm no caller imports via `from scripts import
+  search_one_pensioner` or similar. Run `git grep -n
+  'from scripts import'`; if any matches exist, they must
+  be updated as part of Slice 1.1 (or moved to a later slice
+  with explicit reason).
+- If `scripts/__init__.py` still imports any submodule
+  beyond the docstring, the slice is incomplete.
+
+##### Scope test (G5)
+- `git diff --stat` must show ≤3 file changes:
+  `scripts/__init__.py` MODIFY, `scripts/search_fag.py` DELETE,
+  `tests/test_scripts_facade.py` NEW. No drive-by cleanup.
+
+##### Deletion test (G6)
+- `[ ! -f scripts/search_fag.py ] && echo gone` succeeds.
+- The new test `test_scripts_search_fag_shim_gone` passes.
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`**: add under `### Maintenance`:
+  ```
+  - L0-01: empty `scripts/__init__.py` facade; remove
+    `scripts/search_fag.py` compatibility shim.
+  ```
+- **L7 docstring** — `scripts/__init__.py` docstring already
+  first-line begins with module name. Confirmed; no change.
+- **Commit prefix:** `chore: empty root facade (L0-01)`.
+- **Critique sub-step:** run `git diff --stat`; confirm ≤3
+  files; `pytest tests/ -m "not integration" -q` green.
 
 #### Phase 1: Slice 1.1: Success Criteria:
 
 ##### Automated Verification:
-- [ ] `python -c "import scripts; import sys; assert 'scripts.pipeline.run_unified' not in sys.modules, 'scripts.search_fag' not in sys.modules"` succeeds
-- [ ] `pytest tests/test_scripts_facade.py -q` passes
-- [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite)
+- [ ] `python -c "import scripts; import sys; assert not any(k.startswith('scripts.pipeline.') for k in sys.modules), not any(k == 'scripts.search_fag' for k in sys.modules)"` succeeds
+- [ ] `pytest tests/test_scripts_facade.py -q` passes (3 new tests)
+- [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite, 1002 baseline)
+- [ ] `[ ! -f scripts/search_fag.py ] && echo gone` reports `gone`
+- [ ] `git diff --stat` shows ≤3 file changes (init MODIFY, search_fag DELETE, test NEW)
 
 ##### Manual Verification:
-- [ ] `python scripts/run_unified.py --help` exits 0
-- [ ] `python scripts/search_fag.py --help` exits 0 (note: if Slice 1.1 ships before this manual check, the shim is gone and `python scripts/search_fag.py` fails with `ModuleNotFoundError`; if shim remains, `scripts/__init__.py:35` still eagerly imports `scripts.search_fag.search_one_pensioner` which pulls `scripts.pipeline.run_unified` — replace this check with a `python -c "import scripts; import sys; assert 'scripts.pipeline.run_unified' not in sys.modules"` smoke to assert the facade is inert regardless of shim order)
+- [ ] `python scripts/run_unified.py --help` exits 0 (canonical CLI unaffected)
+- [ ] `python -c "import ast; src=open('scripts/__init__.py').read(); assert not [l for l in src.splitlines() if l.strip().startswith('from ') and 'import' in l]"` succeeds (no `from … import …` statements remain)
+- [ ] TDD-traceability: all 3 RED tests (G1) existed and failed before GREEN diff landed
 
 ### Phase 1: Slice 1.2 — Canonical imports in production (L0-02)
 
 **Goal:** internal production modules import canonical subpackage
 paths only; never the compatibility shims.
 
-#### Phase 1: Slice 1.2: Changes Required:
+**Acceptance criterion (testable):** every `from … import …`
+line in `scripts/fag/*.py`, `scripts/pipeline/*.py`, and
+`scripts/analysis/*.py` resolves to a canonical subpackage path
+(`scripts.fag.search`, `scripts.fag.filters`,
+`scripts.search.strategies`, `scripts.pipeline.run_unified`,
+`scripts.fag.parser`); forbidden-import grep returns zero matches.
 
-##### 1. scripts/fag/fag_browser.py
+#### Phase 1: Slice 1.2: Changes Required (TDD-anchored):
 
-**File**: scripts/fag/fag_browser.py
-**Changes**: MODIFY `:33-37` — replace
-`from scripts.search_fag import (search_one_pensioner, setup_browser, warmup_session)`
-with two import lines (canonical `scripts.fag.search` module):
-`from scripts.fag.search import search_one_pensioner` and
-`from scripts.fag.search import setup_browser, warmup_session`.
-Verify at HEAD that `scripts/fag/search.py` exports all three
-names (no `__all__` filtering blocks them); if any is missing,
-add an explicit re-export in `scripts/fag/search.py` so the
-import works without the shim.
+##### RED — failing test (G1)
+- **New test file:** `tests/test_no_shim_imports_in_production.py`.
+- **Test 1:** `test_no_shim_imports_under_fag_pipeline_analysis` —
+  pattern-grep `scripts/fag/`, `scripts/pipeline/`,
+  `scripts/analysis/` for `from scripts\.search_fag import`
+  and `from scripts\.run_unified import`; assert each match
+  list is empty. **Currently fails** (multiple matches).
+- Test is a pinned contract; no production test is renamed
+  in this slice. Each modified test file receives its test
+  in the GREEN step when its import line moves.
 
-##### 2. scripts/pipeline/retry_errors.py
+##### GREEN — minimal diff (G2)
+- **File `scripts/fag/fag_browser.py` (lines 33-37):**
+  replace `from scripts.search_fag import (search_one_pensioner,
+  setup_browser, warmup_session)` with two import lines:
+  `from scripts.fag.search import search_one_pensioner`
+  and `from scripts.fag.search import setup_browser,
+  warmup_session`. If any name is missing from the canonical
+  module, add an explicit re-export.
+- **File `scripts/pipeline/retry_errors.py` (lines 31, 176):**
+  replace `from scripts.run_unified import …` with
+  `from scripts.pipeline.run_unified import …`.
+- **Test files (5):** rewrite the imports per the originals to
+  canonical paths:
+  - `tests/test_country_filter.py:13`
+    → `from scripts.fag.filters import …` + `from scripts.search.strategies import …`.
+  - `tests/test_found_by.py:23`
+    → `from scripts.fag.search import tag_candidates_with_found_by`.
+  - `tests/test_year_filter_strategy.py:19`
+    → `from scripts.search.strategies import (strategy_b1_exact, strategy_b3_first_initial_fuzzy, …)`.
+  - `tests/test_intra_strategy_throttle.py:28`
+    → `from scripts.fag.search import search_one_pensioner`.
+  - `tests/test_search_fag_memory.py:28,111`
+    → `import scripts.fag.search as sf` (two locations).
 
-**File**: scripts/pipeline/retry_errors.py
-**Changes**: MODIFY `:31` and `:176` — replace `from scripts.run_unified import …`
-with `from scripts.pipeline.run_unified import …`.
+##### REFACTOR — two-adapter check (G3)
+- `scripts.search.strategies` already lives at `scripts/search/strategies.py`
+  and is re-exported by `scripts/fag/filters.py:320`. Two adapters exist;
+  refactor opportunity is to drop the re-export in a later slice. Not in scope here.
+- No new public methods added in this slice. L7 docstring convention not affected.
 
-##### 3. tests/test_country_filter.py
+##### Adjacent sweep (G4)
+- Each modified test file's targeted suite passes (5 + 1 memory test = 6)
+  before the canonical-path grep returns empty.
 
-**File**: tests/test_country_filter.py
-**Changes**: MODIFY `:13` — replace
-`from scripts.search_fag import (apply_location_filter, strategy_b1_exact, …)`
-with `from scripts.fag.filters import (apply_location_filter, …)`
-and `from scripts.search.strategies import (strategy_b1_exact, …)`
-(`apply_location_filter` lives in `scripts/fag/filters.py`, not
-`scripts.fag.search`; the strategy functions live in
-`scripts/search/strategies.py`).
+##### Scope test (G5)
+- `git diff --stat` must show exactly 7 file changes (2 production
+  + 5 test files). No drive-by cleanup of unrelated code.
 
-##### 4. tests/test_found_by.py
+##### Deletion test (G6)
+- Forbidden-import grep returns empty (this IS the deletion test).
+- Architecture grep: `git grep -n 'from scripts.search_fag'` in
+  `scripts/{fag,pipeline,analysis}/` returns zero matches.
 
-**File**: tests/test_found_by.py
-**Changes**: MODIFY `:23` — `from scripts.search_fag import tag_candidates_with_found_by`
-becomes `from scripts.fag.search import tag_candidates_with_found_by`.
-
-##### 5. tests/test_year_filter_strategy.py
-
-**File**: tests/test_year_filter_strategy.py
-**Changes**: MODIFY `:19` — `from scripts.search_fag import (strategy_b1_exact, …)`
-becomes `from scripts.search.strategies import (strategy_b1_exact, strategy_b3_first_initial_fuzzy, …)`
-(no ambiguity; the strategy functions live in
-`scripts/search/strategies.py` and are re-exported by
-`scripts/fag/filters.py:320` for backward compat).
-
-##### 6. tests/test_intra_strategy_throttle.py
-
-**File**: tests/test_intra_strategy_throttle.py
-**Changes**: MODIFY `:28` — `from scripts.search_fag import search_one_pensioner`
-becomes `from scripts.fag.search import search_one_pensioner`.
-
-##### 7. tests/test_search_fag_memory.py
-
-**File**: tests/test_search_fag_memory.py
-**Changes**: MODIFY `:28,111` — `import scripts.search_fag as sf` becomes
-`import scripts.fag.search as sf`; the shim path is no longer required.
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Maintenance` add:
+  ```
+  - L0-02: canonical imports only in `scripts/fag`,
+    `scripts/pipeline`, `scripts/analysis` and their tests;
+    drop all `scripts.search_fag` and `scripts.run_unified`
+    compatibility imports.
+  ```
+- **L7 docstring** — unchanged (no new public method on a touched
+  module's surface; import-line moves only).
+- **Commit prefix:** `chore: canonical imports only (L0-02)`.
+- **Critique sub-step:** scope test (5+2 = 7 files exactly);
+  forbidden-import grep.
 
 #### Phase 1: Slice 1.2: Success Criteria:
 
 ##### Automated Verification:
 - [ ] `grep -rn "from scripts\.search_fag import\|from scripts\.run_unified import" scripts/fag scripts/pipeline scripts/analysis` returns no matches
-- [ ] `pytest tests/test_country_filter.py tests/test_found_by.py tests/test_year_filter_strategy.py tests/test_intra_strategy_throttle.py -q -m "not integration"` passes
-- [ ] `pytest tests/test_search_fag_memory.py -q -m "not integration"` passes (memory test loads the new module path)
+- [ ] `pytest tests/test_no_shim_imports_in_production.py -q` passes (1 new test)
+- [ ] `pytest tests/test_country_filter.py tests/test_found_by.py tests/test_year_filter_strategy.py tests/test_intra_strategy_throttle.py -q -m "not integration"` passes (4 modified tests)
+- [ ] `pytest tests/test_search_fag_memory.py -q -m "not integration"` passes (1 modified test)
+- [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite)
+- [ ] `git diff --stat` shows exactly 7 files (2 production + 5 test)
 
 ##### Manual Verification:
 - [ ] `python -c "from scripts.fag.fag_browser import make_fag_search_fn"` succeeds
 - [ ] `python -c "from scripts.pipeline.retry_errors import RetryResult"` succeeds
+- [ ] TDD-traceability: the new test in
+  `tests/test_no_shim_imports_in_production.py` failed before
+  the import-rewrite edits landed
 
 ### Phase 1: Slice 1.3 — Parser fail-soft fix (L3-08)
 
@@ -424,75 +623,168 @@ becomes `from scripts.fag.search import search_one_pensioner`.
 undefined `PWTimeout` and `log`; module logger and timeout alias
 are defined.
 
-#### Phase 1: Slice 1.3: Changes Required:
+**Acceptance criterion (testable):** `import scripts.fag.parser`
+succeeds without raising; the module exposes `log` (logger)
+and `PWTimeout` (alias of `playwright.sync_api.TimeoutError`).
+The two `log.debug` / `log.warning` calls execute cleanly
+(no NameError).
 
-##### 1. scripts/fag/parser.py
+#### Phase 1: Slice 1.3: Changes Required (TDD-anchored):
 
-**File**: scripts/fag/parser.py
-**Changes**: MODIFY — add `import logging`; define
-`log = logging.getLogger(__name__)`; add
-`PWTimeout = TimeoutError` (alias from `playwright.sync_api`).
-Trim the two `log.debug("Too many results …")` and
-`log.warning("Locator query failed: …")` calls — they were already
-referencing an undefined `log`. Either remove the calls or
-leave them; since the logger is now defined, the calls execute
-cleanly. Keep the calls (no behavior change beyond fixing the
-`NameError`).
+##### RED — failing test (G1)
+- **Modify `tests/test_fag_parser_constants.py`:** add
+  `test_parser_module_defines_logger` asserting
+  `hasattr(fag_parser, "log") and hasattr(fag_parser, "PWTimeout")`
+  AND that `import scripts.fag.parser` does not raise
+  `NameError`.
+- **Currently fails** with `NameError: name 'log' is not defined`
+  when test imports the module and accesses `log` (the test's
+  `import scripts.fag.parser` succeeds because the offending
+  references are inside `log.debug(...)` calls, not at module
+  top-level; the test must reach the call site or pin via
+  `inspect.getsource` that `log` is referenced). Acceptance
+  is the test runs to assertion, not that it errors on import.
+- **Characterization test:** the test asserts that after
+  importing, `not hasattr(...)` is False — i.e. the symbols
+  are bound. Pre-fix state: `hasattr` returns `False`.
 
-##### 2. tests/test_fag_parser_constants.py
+##### GREEN — minimal diff (G2)
+- **File `scripts/fag/parser.py`:**
+  - Add `import logging`.
+  - Add `log = logging.getLogger(__name__)`.
+  - Add `from playwright.sync_api import TimeoutError as PWTimeout`
+    (alias, no subclass drift).
+- Keep the two existing `log.debug` / `log.warning` calls;
+  they execute cleanly now. No behavior change beyond
+  fixing the `NameError`.
 
-**File**: tests/test_fag_parser_constants.py
-**Changes**: MODIFY — add one new test
-`test_parser_module_defines_logger` asserting `hasattr(fag_parser, "log")`
-and `hasattr(fag_parser, "PWTimeout")`. Existing regex tests remain.
+##### REFACTOR — two-adapter check (G3)
+- `PWTimeout` is aliased, not subclassed. Two callers in
+  this module already use it via `except PWTimeout:`; alias
+  satisfies both without forcing a shared base class.
+- `log = logging.getLogger(__name__)` follows stdlib
+  convention; no need for a custom logger adapter.
+- L7 docstring: `parse_results_page` signature unchanged;
+  no docstring touch required.
+
+##### Adjacent sweep (G4)
+- `pytest tests/test_fag_parser_constants.py tests/test_fag_search_imports.py tests/test_search_fag_memory.py -q` green (no cascade).
+
+##### Scope test (G5)
+- `git diff --stat` shows exactly 2 files: `scripts/fag/parser.py` MODIFY,
+  `tests/test_fag_parser_constants.py` MODIFY.
+
+##### Deletion / characterization test (G6)
+- The new test pins the fixed module structure: `hasattr`
+  checks for both `log` and `PWTimeout`.
+- Negative-control: temporarily unbind `log` and confirm
+  the test fails again (rollback rehearsal, do not commit).
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Fixed`:
+  ```
+  - L3-08: define `log` logger and `PWTimeout` alias in
+    `scripts/fag/parser.py`; resolve `NameError` on
+    `log.debug/warning` call sites.
+  ```
+- **Commit prefix:** `fix: parser logger and timeout alias (L3-08)`.
+- **Critique sub-step:** scope test; confirm the existing
+  `log.debug/warning` calls were not deleted (keep-call
+  decision is part of the slice contract).
 
 #### Phase 1: Slice 1.3: Success Criteria:
 
 ##### Automated Verification:
 - [ ] `python -c "from scripts.fag.parser import log, PWTimeout; assert log is not None; assert PWTimeout is not None"` succeeds
-- [ ] `pytest tests/test_fag_parser_constants.py -q` passes
+- [ ] `pytest tests/test_fag_parser_constants.py -q` passes (existing tests + 1 new)
 - [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite, no parser regressions)
+- [ ] `git diff --stat` shows exactly 2 files (parser.py MODIFY + test MODIFY)
 
 ##### Manual Verification:
 - [ ] `python -c "from scripts.fag.parser import parse_results_page"` succeeds (no `NameError` on module load)
+- [ ] TDD-traceability: `test_parser_module_defines_logger` existed and was failing against pre-fix `scripts/fag/parser.py` before the GREEN diff landed
 
 ### Phase 1: Slice 1.4 — Leak-fix dedup (L3-06)
 
-**Goal:** root `playwright_leak_fix.py` is deleted; canonical
-`scripts/fag/playwright_leak_fix.py` is the only implementation.
+**Goal:** root `playwright_leak_fix.py` is deleted (UD2, direct delete);
+canonical `scripts/fag/playwright_leak_fix.py` is the only
+implementation. Two import lines rewritten; one test import
+rewritten.
 
-#### Phase 1: Slice 1.4: Changes Required:
+**Acceptance criterion (testable):** `(REPO_ROOT / 'playwright_leak_fix.py').exists()` is `False`;
+`scripts.fag.playwright_leak_fix.apply_playwright_leak_fix` is
+the sole importable implementation; no production code in
+`scripts/{fag,pipeline,analysis,cgr,state,blackboard}` imports
+the bare module name.
 
-##### 1. playwright_leak_fix.py (root)
+#### Phase 1: Slice 1.4: Changes Required (TDD-anchored):
 
-**File**: playwright_leak_fix.py
-**Changes**: DELETE (root-level shim; canonical lives in `scripts/fag/playwright_leak_fix.py`).
+##### RED — failing test (G1)
+- **New test file:** `tests/test_leak_fix_canonical_only.py`.
+- **Test 1:** `test_root_leak_fix_gone` — assert
+  `not (REPO_ROOT / 'playwright_leak_fix.py').exists()`.
+  **Currently fails.**
+- **Test 2:** `test_canonical_leak_fix_importable` — assert
+  `from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix`
+  succeeds and `from playwright_leak_fix import apply_playwright_leak_fix`
+  raises `ModuleNotFoundError`. The second branch is what
+  the bare-import test currently allows but must break.
 
-##### 2. scripts/analysis/_probe_fag_filter.py
+##### GREEN — minimal diff (G2)
+- **File `playwright_leak_fix.py` (root):** `git rm` per UD2.
+- **File `scripts/analysis/_probe_fag_filter.py` (lines 13-14):**
+  rewrite `import playwright_leak_fix` →
+  `from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix`;
+  rewrite `playwright_leak_fix.apply_playwright_leak_fix()` →
+  `apply_playwright_leak_fix()`.
+- **File `tests/test_leak_fix_real.py` (line 109):**
+  `from playwright_leak_fix import apply_playwright_leak_fix`
+  → `from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix`.
 
-**File**: scripts/analysis/_probe_fag_filter.py
-**Changes**: MODIFY `:13-14` — replace
-`import playwright_leak_fix / playwright_leak_fix.apply_playwright_leak_fix()`
-with
-`from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix / apply_playwright_leak_fix()`.
+##### REFACTOR — two-adapter check (G3)
+- Canonical `_DummyTrace` semantics retained. No public
+  signature change. L7 docstring unchanged.
+- The canonical `scripts/fag/playwright_leak_fix.py` exposes
+  `apply_playwright_leak_fix` plus `_DummyTrace`. Both are
+  already in use; two-adapter check satisfied.
 
-##### 3. tests/test_leak_fix_real.py
+##### Adjacent sweep (G4)
+- `pytest tests/test_leak_fix_real.py tests/test_leak_fix_canonical_only.py -q` green.
+- `python scripts/analysis/_probe_fag_filter.py` importable.
 
-**File**: tests/test_leak_fix_real.py
-**Changes**: MODIFY `:109` — `from playwright_leak_fix import apply_playwright_leak_fix`
-becomes `from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix`.
+##### Scope test (G5)
+- `git diff --stat` shows exactly 3 files: 1 DELETE + 2 MODIFY.
+  No drive-by edits to canonical `scripts/fag/playwright_leak_fix.py`.
+
+##### Deletion test (G6)
+- `[ ! -f playwright_leak_fix.py ] && echo gone`.
+- Forbidden-import grep: `git grep -n 'from playwright_leak_fix\|import playwright_leak_fix' scripts/` returns empty.
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Removed`:
+  ```
+  - L3-06: delete root `playwright_leak_fix.py` shim;
+    `scripts/fag/playwright_leak_fix.py` is the single
+    implementation. Rewire two imports.
+  ```
+- **Commit prefix:** `fix: dedup playwright leak fix (L3-06)`.
+- **Critique sub-step:** scope = 3 files only; canonical
+  implementation unchanged.
 
 #### Phase 1: Slice 1.4: Success Criteria:
 
 ##### Automated Verification:
-- [ ] `[ ! -f playwright_leak_fix.py ] && echo gone` reports `gone` at repo root
+- [ ] `[ ! -f playwright_leak_fix.py ] && echo gone` reports `gone`
 - [ ] `python -c "from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix"` succeeds
-- [ ] `grep -rn "from playwright_leak_fix\|import playwright_leak_fix" .` returns no production matches (only docs/comments if any)
-- [ ] `pytest tests/ -m "not integration" -q` passes (all existing tests still load with canonical module)
+- [ ] `git grep -n 'from playwright_leak_fix\|import playwright_leak_fix' scripts/` returns empty
+- [ ] `pytest tests/test_leak_fix_real.py tests/test_leak_fix_canonical_only.py -q` passes
+- [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite)
+- [ ] `git diff --stat` shows exactly 3 files (1 DELETE + 2 MODIFY)
 
 ##### Manual Verification:
 - [ ] `python scripts/analysis/_probe_fag_filter.py --help` does not error on import
-- [ ] When the fix is applied, `__pw_stack_trace__` is `_DummyTrace` (matches canonical contract)
+- [ ] After fix application, `__pw_stack_trace__` is `_DummyTrace` (matches canonical contract)
+- [ ] TDD-traceability: `test_root_leak_fix_gone` and `test_canonical_leak_fix_importable` both failed before the GREEN deletion landed
 
 ### Phase 1: Slice 1.5 — CGR cemetery limit (L4-06)
 
@@ -500,40 +792,81 @@ becomes `from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix`.
 work units; `ScrapingConfig.max_cemeteries` carries the value
 through `scrape_ok_cemeteries`.
 
-#### Phase 1: Slice 1.5: Changes Required:
+**Acceptance criterion (testable):** with 5 mock cemeteries in
+the input set, `scrape_ok_cemeteries(..., max_cemeteries=2)`
+returns exactly 2 records; `max_cemeteries=None` returns all 5;
+the post-loop `pass` in `cgr_ok_scraper_run.py` is replaced by
+a comment.
 
-##### 1. scripts/cgr/cgr_ok_scraper.py
+#### Phase 1: Slice 1.5: Changes Required (TDD-anchored):
 
-**File**: scripts/cgr/cgr_ok_scraper.py
-**Changes**: MODIFY — add `max_cemeteries: Optional[int] = None` to
-`ScrapingConfig`; in the per-cemetery loop, stop early and
-log when `max_cemeteries is not None and len(records) >= max_cemeteries`.
+##### RED — failing test (G1)
+- **Modify `tests/test_cgr_ok_scraper.py`:** add 2 tests.
+  - **Test 1:** `test_scrape_max_cemeteries_caps_results` —
+    mock input of 5 cemeteries; pass `max_cemeteries=2`;
+    assert the returned records list has `len == 2`.
+    **Currently fails** because `ScrapingConfig` rejects
+    unknown field (or silently ignores it) and the limit
+    is never applied.
+  - **Test 2:** `test_scrape_max_cemeteries_none_means_all` —
+    same input; `max_cemeteries=None`; assert all 5 processed.
+    Characterization test pinning default behavior; passes
+    both before and after fix.
 
-##### 2. scripts/cgr/cgr_ok_scraper_run.py
+##### GREEN — minimal diff (G2)
+- **File `scripts/cgr/cgr_ok_scraper.py`:**
+  - Add `max_cemeteries: Optional[int] = None` field to
+    `ScrapingConfig` (follows the
+    `BatchConfig/UnifiedRunnerConfig` precedent at
+    `batch_config.py:50-68`).
+  - In the per-cemetery loop, add early-stop:
+    `if config.max_cemeteries is not None and len(records) >= config.max_cemeteries: log.info("cemetery cap reached"); break`.
+- **File `scripts/cgr/cgr_ok_scraper_run.py`:**
+  - Pass `max_cemeteries=args.limit_cemeteries or None`.
+  - Replace post-loop `pass` (lines 73-78 range) with a
+    one-line comment explaining the cap is now enforced
+    inside the scrape loop.
 
-**File**: scripts/cgr/cgr_ok_scraper_run.py
-**Changes**: MODIFY — pass `max_cemeteries=args.limit_cemeteries or None`
-to `ScrapingConfig`; replace the post-loop `pass` with documentation
-comment explaining the limit is now enforced inside the scrape loop.
+##### REFACTOR — two-adapter check (G3)
+- `ScrapingConfig.max_cemeteries` is read by both
+  `scrape_ok_cemeteries` and `cgr_ok_scraper_run.py`
+  (CLI threading). Two-adapter check satisfied.
+- L7 docstring refreshed on `ScrapingConfig` and
+  `scrape_ok_cemeteries` (precondition: `max_cemeteries is None or >= 0`).
 
-##### 3. tests/test_cgr_ok_scraper.py
+##### Adjacent sweep (G4)
+- `pytest tests/test_cgr_ok_scraper.py tests/test_cgr_results.py -q` green (15 existing + 2 new = 17).
 
-**File**: tests/test_cgr_ok_scraper.py
-**Changes**: MODIFY — add 2 new tests:
-- `test_scrape_max_cemeteries_caps_results` — build 5 cemeteries
-  in mock, pass `max_cemeteries=2`, assert 2 records returned.
-- `test_scrape_max_cemeteries_none_means_all` — pass
-  `max_cemeteries=None`, assert all 5 processed.
+##### Scope test (G5)
+- `git diff --stat` shows exactly 3 files (2 production +
+  1 test MODIFY). No changes to `cgr_matcher.py` or
+  unrelated scrapers.
+
+##### Deletion / characterization test (G6)
+- `git grep -n 'pass\s*$\|max_cemeteries' scripts/cgr/cgr_ok_scraper_run.py` shows the `pass` line is gone and `max_cemeteries` wiring is present.
+- Manual smoke: `python scripts/cgr/cgr_ok_scraper_run.py --state OK --limit-cemeteries 5 --out C:/tmp/smoke.jsonl` returns ≤ 5.
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Changed`:
+  ```
+  - L4-06: wire `--limit-cemeteries` through
+    `ScrapingConfig.max_cemeteries`; the per-cemetery
+    loop now caps at the configured limit.
+  ```
+- **Commit prefix:** `fix: cgr limit-cemeteries wiring (L4-06)`.
+- **Critique sub-step:** scope = 3 files; existing 15 tests untouched.
 
 #### Phase 1: Slice 1.5: Success Criteria:
 
 ##### Automated Verification:
-- [ ] `pytest tests/test_cgr_ok_scraper.py -q` passes (existing 15 test functions + 2 new = 17)
+- [ ] `pytest tests/test_cgr_ok_scraper.py -q` passes (15 existing + 2 new = 17)
 - [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite)
-- [ ] `grep -n "max_cemeteries" scripts/cgr/cgr_ok_scraper.py` returns ≥ 3 lines (ScrapingConfig field + use sites)
+- [ ] `grep -n "max_cemeteries" scripts/cgr/cgr_ok_scraper.py` returns ≥ 3 lines
+- [ ] `git diff --stat` shows exactly 3 files (2 production MODIFY + 1 test MODIFY)
 
 ##### Manual Verification:
 - [ ] `python scripts/cgr/cgr_ok_scraper_run.py --state OK --limit-cemeteries 5 --out C:/tmp/smoke.jsonl` returns after ≤ 5 cemeteries; log shows the cap
+- [ ] TDD-traceability: `test_scrape_max_cemeteries_caps_results` failed against pre-fix `scrape_ok_cemeteries` before the GREEN config addition landed; `test_scrape_max_cemeteries_none_means_all` confirms default unchanged
 
 ### Phase 1: Slice 1.6 — Strict mode for state I/O (L5-04)
 
@@ -543,40 +876,101 @@ raises `CorruptStateError` with line context instead of being
 silently swallowed. `check_state_then_read()` helper runs `check()`
 first and raises on `is_clean() == False`.
 
-#### Phase 1: Slice 1.6: Changes Required:
+**Acceptance criterion (testable):** with default `strict=False`,
+behavior is unchanged (27 existing tests still pass); with
+`strict=True`, raising on a corrupt line raises
+`CorruptStateError` carrying `(path, lineno, offset, raw_line)`;
+`check_state_then_read` raises on corrupted state.
 
-##### 1. scripts/state/repository.py
+#### Phase 1: Slice 1.6: Changes Required (TDD-anchored):
 
-**File**: scripts/state/repository.py
-**Changes**: MODIFY — add `CorruptStateError` exception class;
-add `strict: bool = False` keyword to `JsonlStateRepository.iter_all`
-and `.update`; when `strict=True`, raise `CorruptStateError(path,
-lineno, offset, raw_line)`; add `JsonlStateRepository.check_state_then_read`
-classmethod. Keep default `strict=False` so existing callers are
-unaffected.
+##### RED — failing test (G1)
+- **Modify `tests/test_state_repository.py`:** add 3 tests.
+  - **Test 1:** `test_iter_all_strict_raises_on_corrupt_line` —
+    `NamedTemporaryFile(suffix='.jsonl')` writes 3 lines
+    (1, 2, 3 are valid; line 2 is `not json`);
+    `repo.iter_all(strict=True)` raises `CorruptStateError`
+    matching `path`, `lineno == 2`, `offset` is an int,
+    `raw_line == 'not json'`.
+    **Currently fails** with `TypeError: iter_all() got an
+    unexpected keyword argument 'strict'`.
+  - **Test 2:** `test_iter_all_lenient_default_unchanged` —
+    same input, default `strict=False`; assert it yields 2
+    dicts (`{"a":1}` and `{"a":3}`), skipping the corrupt line.
+    **Currently passes** (regression-net pin; ensures we
+    don't accidentally flip the default).
+  - **Test 3:** `test_check_state_then_read_raises_on_corruption` —
+    write 3 lines (one corrupt); call
+    `JsonlStateRepository.check_state_then_read(path,
+    expected_ids=set())`; assert it raises `CorruptStateError`.
+    **Currently fails** with `AttributeError`.
 
-##### 2. tests/test_state_repository.py
+##### GREEN — minimal diff (G2)
+- **File `scripts/state/repository.py`:**
+  - Add `class CorruptStateError(Exception):` with `__init__(self, path, lineno, offset, raw_line)` storing all four.
+  - Add `strict: bool = False` kwarg to
+    `JsonlStateRepository.iter_all` and `.update`. When
+    `strict=True`, wrap the `json.loads` call in try/except,
+    re-raise as `CorruptStateError(...)` instead of
+    `continue`.
+  - Add `@classmethod check_state_then_read(cls, path,
+    expected_ids)` that calls `cls(path).check(expected_ids)`
+    and raises `CorruptStateError` on `not is_clean()`.
+  - **Default behavior preserved:** existing 27 callers
+    unaffected by default `strict=False`.
 
-**File**: tests/test_state_repository.py
-**Changes**: MODIFY — add 3 new tests:
-- `test_iter_all_strict_raises_on_corrupt_line` — write 3 lines
-  (one corrupt) to state file; `repo.iter_all(strict=True)` raises
-  `CorruptStateError` with line context.
-- `test_iter_all_lenient_default_unchanged` — same input, default
-  `strict=False` skips corrupt line and yields the rest.
-- `test_check_state_then_read_raises_on_corruption` —
-  `JsonlStateRepository.check_state_then_read(path, expected_ids)`
-  raises when `check()` returns `not is_clean()`.
+##### REFACTOR — two-adapter check (G3)
+- `CorruptStateError` referenced by both `iter_all(strict=True)`
+  AND `.update(strict=True)` (two callers) — two-adapter
+  check satisfied.
+- `check_state_then_read` consumed by Phase 2's projection
+  rebuild path; for Phase 1 it ships as an unused but tested
+  public method (Phase 2 will exercise it).
+- L7 docstrings refreshed on `iter_all`, `update`,
+  `check_state_then_read`, `CorruptStateError` (L7 first-line
+  convention verified by cross-phase AST check).
+
+##### Adjacent sweep (G4)
+- `pytest tests/test_state_repository.py tests/test_checkpoint.py tests/test_checkpoint_rollback.py -q` green (27 existing + 3 new = 30, plus adjacent suites unaffected).
+
+##### Scope test (G5)
+- `git diff --stat` shows exactly 2 files (1 production +
+  1 test). No changes to other repository callers
+  (`InMemoryStateRepository`, `state_check` module).
+
+##### Deletion / characterization test (G6)
+- Smoke repro: `NamedTemporaryFile` with 3 lines (1 corrupt)
+  + `list(JsonlStateRepository(path).iter_all(strict=True))`
+  raises `CorruptStateError` with line context.
+- Default-behavior test (`strict=False`) confirms 2 records
+  yielded.
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Added`:
+  ```
+  - L5-04: `JsonlStateRepository.iter_all` and `.update`
+    accept `strict: bool = False`; `strict=True` raises
+    `CorruptStateError` with `(path, lineno, offset,
+    raw_line)`. New `check_state_then_read()` helper.
+  ```
+- **Commit prefix:** `feat: state I/O strict-mode toggle (L5-04)`
+  (or `fix:` per project convention; the existing fix-style
+  `fix:` may apply since L5-04 is correcting
+  failure-visibility rather than adding net-new feature).
+- **Critique sub-step:** regression-net pin via Test 2;
+  default behavior unchanged.
 
 #### Phase 1: Slice 1.6: Success Criteria:
 
 ##### Automated Verification:
-- [ ] `pytest tests/test_state_repository.py -q` passes (existing 27 test functions + 3 new = 30)
+- [ ] `pytest tests/test_state_repository.py -q` passes (27 existing + 3 new = 30)
 - [ ] `pytest tests/ -m "not integration" -q` passes (full existing suite; default `strict=False` keeps all callers fail-soft)
 - [ ] `python -c "from scripts.state.repository import CorruptStateError, JsonlStateRepository; assert JsonlStateRepository.iter_all.__doc__ is not None"` succeeds
+- [ ] `git diff --stat` shows exactly 2 files (1 production + 1 test)
 
 ##### Manual Verification:
-- [ ] `python -c "from scripts.state.repository import JsonlStateRepository, CorruptStateError; import tempfile, pathlib; f=tempfile.NamedTemporaryFile(delete=False, suffix='.jsonl'); f.write(b'{\"a\":1}\nnot json\n{\"a\":3}\n'); f.close(); list(JsonlStateRepository(pathlib.Path(f.name)).iter_all(strict=True))"` raises `CorruptStateError` (use `NamedTemporaryFile` to avoid `tempfile.mktemp()` deprecation noise)
+- [ ] `python -c "from scripts.state.repository import JsonlStateRepository, CorruptStateError; import tempfile, pathlib; f=tempfile.NamedTemporaryFile(delete=False, suffix='.jsonl'); f.write(b'{\"a\":1}\nnot json\n{\"a\":3}\n'); f.close(); list(JsonlStateRepository(pathlib.Path(f.name)).iter_all(strict=True))"` raises `CorruptStateError`
+- [ ] TDD-traceability: `test_iter_all_strict_raises_on_corrupt_line` and `test_check_state_then_read_raises_on_corruption` both failed before the GREEN module additions landed; `test_iter_all_lenient_default_unchanged` passes both before and after (regression-net pin)
 
 ### Phase 1: Slice 1.7 — Dead-block removal (L5-06)
 
@@ -584,28 +978,81 @@ unaffected.
 working `backfill()` path; the unreachable 4-line dead block is
 gone.
 
-#### Phase 1: Slice 1.7: Changes Required:
+**Acceptance criterion (testable):** `inspect.getsource(backfill)`
+contains no reference to `tmp_path`; `backfill(...)` continues
+to return `(filled, skipped, missing)` and, given the manual
+verification repro, returns `filled == 1` for the 1-record
+input.
 
-##### 1. scripts/pipeline/backfill_backlinks.py
+#### Phase 1: Slice 1.7: Changes Required (TDD-anchored):
 
-**File**: scripts/pipeline/backfill_backlinks.py
-**Changes**: MODIFY — delete lines 84-89 (the duplicate
-`tmp_path.replace` and second `return` after the working
-`return filled, skipped, missing`).
+##### RED — characterization test (G1)
+- **New test file:** `tests/test_backfill_dead_block.py`.
+- **Test 1:** `test_backfill_returns_single_filled_tuple` —
+  builds a `JsonlStateRepository` with 1 pensioner record
+  and a unified index with 1 row; calls `backfill(state,
+  load_unified_index(unified))`; asserts the return is a
+  3-tuple `(filled, skipped, missing)` with `filled == 1`.
+  **Currently passes** — characterization test for the
+  WORKING path. Pin the contract before deleting the dead
+  block so a regression is visible if the working path
+  breaks during the GREEN edit.
+- **Test 2:** `test_backfill_source_has_no_tmp_path` —
+  uses `inspect.getsource(backfill)`; asserts `'tmp_path'
+  not in src`. **Currently fails** (dead block contains
+  `tmp_path` reference).
+
+##### GREEN — minimal diff (G2)
+- **File `scripts/pipeline/backfill_backlinks.py`:**
+  delete lines 84-89 (the duplicate `tmp_path.replace` and
+  second `return` after the working
+  `return filled, skipped, missing`).
+
+##### REFACTOR — two-adapter check (G3)
+- No public method added; `backfill()` signature unchanged.
+  L7 docstring refresh recommended (post-condition now
+  tightened since the unreachable branch no longer masks
+  return-shape ambiguity). Refresh: confirm `backfill`
+  docstring first line begins with `backfill(` (L7
+  convention).
+
+##### Adjacent sweep (G4)
+- `pytest tests/test_backfill_backlinks.py tests/test_backlink_pipeline.py tests/test_backfill_dead_block.py -q` green.
+
+##### Scope test (G5)
+- `git diff --stat` shows exactly 2 files (1 production +
+  1 test). No changes to `scripts/pipeline/__init__.py`
+  or other pipeline modules.
+
+##### Deletion test (G6)
+- `inspect.getsource(backfill)` contains no `tmp_path`.
+- `python -c "import ast; ast.parse(open('scripts/pipeline/backfill_backlinks.py').read())"` succeeds (AST clean).
+
+##### Doc / commit gate (G7)
+- **CHANGELOG `[Unreleased]`:** under `### Removed`:
+  ```
+  - L5-06: remove unreachable 4-line dead block in
+    `scripts/pipeline/backfill_backlinks.backfill()`.
+  ```
+- **Commit prefix:** `refactor: drop dead block in backfill (L5-06)`.
+- **Critique sub-step:** scope = 2 files; characterization
+  test pinned.
 
 #### Phase 1: Slice 1.7: Success Criteria:
 
 ##### Automated Verification:
-- [ ] `pytest tests/ -m "not integration" -q` passes (no test touched)
+- [ ] `pytest tests/ -m "not integration" -q` passes (no test touched; +2 new tests green)
 - [ ] `python -c "from scripts.pipeline.backfill_backlinks import backfill, load_unified_index"` succeeds
 - [ ] `python -c "from scripts.pipeline.backfill_backlinks import backfill; import inspect; src=inspect.getsource(backfill); assert 'tmp_path' not in src"` confirms dead block is gone
+- [ ] `git diff --stat` shows exactly 2 files (1 production MODIFY + 1 test NEW)
 
 ##### Manual Verification:
-- [ ] `python -c "from scripts.pipeline.backfill_backlinks import backfill, load_unified_index; import tempfile, json, pathlib; from scripts.state.repository import JsonlStateRepository; unified=pathlib.Path(tempfile.mkdtemp())/'ok.json'; unified.write_text(json.dumps([{'id':1,'backlink':'https://x'}])); state=pathlib.Path(tempfile.mkdtemp())/'state.jsonl'; JsonlStateRepository(state).append({'pensioner_id':1, 'pensioner_first':'A','pensioner_last':'B','fag_records':[],'cgr_records':[],'backlink':''}); filled, skipped, missing = backfill(state, load_unified_index(unified)); assert filled == 1"` succeeds
+- [ ] `python -c "from scripts.pipeline.backfill_backlinks import backfill, load_unified_index; import tempfile, json, pathlib; from scripts.state.repository import JsonlStateRepository; unified=pathlib.Path(tempfile.mkdtemp())/'ok.json'; unified.write_text(json.dumps([{'id':1,'backlink':'https://x'}])); state=pathlib.Path(tempfile.mkdtemp())/'state.jsonl'; JsonlStateRepository(state).append({'pensioner_id':1, 'pensioner_first':'A','pensioner_last':'B','fag_records':[],'cgr_records':[],'backlink':''}); filled, skipped, missing = backfill(state, load_unified_index(unified)); assert filled == 1"` succeeds (returns `filled == 1`)
+- [ ] TDD-traceability: `test_backfill_returns_single_filled_tuple` passes both before and after the GREEN edit (characterization); `test_backfill_source_has_no_tmp_path` fails before and passes after
 
 ### Phase 1: Plan History
 
-- Phase 1: Correctness and dependency hygiene — pending
+- Phase 1: Correctness and dependency hygiene — pending implementation (UD1-UD4 baked in; TDD+RPCI gates from `docs/agents/tdd.md` + `docs/agents/rpci.md` per UD4)
 
 ## Phase 2: Blackboard Contracts and Durable Local Store
 
