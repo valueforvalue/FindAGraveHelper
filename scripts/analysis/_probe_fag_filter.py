@@ -9,9 +9,8 @@ import sys
 import time
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).parent.parent))
-import playwright_leak_fix  # noqa: F401
-playwright_leak_fix.apply_playwright_leak_fix()
+from scripts.fag.playwright_leak_fix import apply_playwright_leak_fix
+apply_playwright_leak_fix()
 
 from playwright.sync_api import sync_playwright
 from playwright_stealth import Stealth
