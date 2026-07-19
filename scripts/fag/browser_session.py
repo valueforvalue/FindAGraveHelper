@@ -141,13 +141,19 @@ class BrowserSession:
     # ----------------------------------------------------------
 
     def search(
-        self, pensioner: dict[str, Any]
+        self, pensioner: dict[str, Any], *, state_filter: str | None = None
     ) -> tuple[list[dict[str, Any]], str]:
         """Run FaG search for one pensioner. Thread-safe.
+
+        Args:
+            pensioner: pensioner dict with first_name, last_name, etc.
+            state_filter: override session state_filter (None = use session default).
 
         Returns (candidates_list, status_str).
         """
         from scripts.fag.search import search_one_pensioner
+
+        sf = state_filter if state_filter is not None else self.state_filter
 
         with self._lock:
             self._maybe_periodic_reset()
@@ -159,7 +165,7 @@ class BrowserSession:
                 record = search_one_pensioner(
                     self._page, pensioner,
                     throttle_seconds=self.throttle,
-                    state_filter=self.state_filter,
+                    state_filter=sf,
                 )
             except Exception as e:
                 self._consecutive_errors += 1

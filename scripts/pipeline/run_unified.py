@@ -1141,7 +1141,7 @@ def run_batch_scheduler(
 
         log.info("Starting BrowserSession for scheduler path...")
         browser_session = BrowserSession(
-            throttle=config.throttle_seconds,
+            throttle=0.0,  # RequestGate + search_one_pensioner handle throttling
             reset_every=250,
             headless=False,
             state_filter="OK",

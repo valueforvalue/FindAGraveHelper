@@ -147,8 +147,20 @@ class FaGScraperKS:
         pensioner: dict[str, Any] = dict(plan.params)
         pensioner["id"] = plan.pensioner_id
 
+        # Map PlanScope to state_filter value
+        scope_to_filter: dict[str, str | None] = {
+            "OK": "OK",
+            "US": "US",
+            "Global": "",  # empty = no filter = global
+            "RegimentOrigin": None,  # let search_one_pensioner infer from regiment
+            "Texas": "TX",
+            "MemorialDetail": None,
+            "Inferred": None,
+        }
+        sf = scope_to_filter.get(plan.scope.value if hasattr(plan.scope, 'value') else str(plan.scope))
+
         if self._session is not None:
-            candidates, _status = self._session.search(pensioner)
+            candidates, _status = self._session.search(pensioner, state_filter=sf)
             return [
                 {
                     "memorial_id": c.get("memorial_id", ""),
