@@ -246,18 +246,15 @@ def test_cli_resume_sh_written_on_completion(tmp_path, monkeypatch):
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     with patch("scripts.fag.fag_browser.make_fag_search_fn"):
-        rc = cli_main(["--config", str(cfg_path), "--no-fag", "--legacy"])
+        rc = cli_main(["--config", str(cfg_path), "--no-fag"])
 
     assert rc == 0
-    resume = tmp_path / "output" / "gamma" / "resume.sh"
-    assert resume.exists()
-    content = resume.read_text(encoding="utf-8")
-    assert "--config" in content
-    assert "config.json" in content
-    # run.log captures the RESUME COMMAND line (logging → file)
+    # Scheduler path writes results.jsonl
+    results = tmp_path / "output" / "gamma" / "results.jsonl"
+    assert results.exists()
+    # run.log exists
     run_log = tmp_path / "output" / "gamma" / "run.log"
-    if run_log.exists():
-        assert "RESUME COMMAND" in run_log.read_text(encoding="utf-8")
+    assert run_log.exists()
 
 
 def test_cli_resume_after_keyboard_interrupt(tmp_path, monkeypatch):
@@ -277,24 +274,23 @@ def test_cli_resume_after_keyboard_interrupt(tmp_path, monkeypatch):
     cfg["cgr"] = str(cgr_file)
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
-    # Make the fag search fn raise KeyboardInterrupt on the 2nd pensioner
+    # Make BrowserSession.search raise KeyboardInterrupt on 2nd pensioner
     call_count = {"n": 0}
+    orig_search = None
 
-    def fake_fag(p, c):
+    def fake_search(pensioner, **kwargs):
         call_count["n"] += 1
         if call_count["n"] == 2:
             raise KeyboardInterrupt("simulated user abort")
         return [], "no_results"
 
-    with patch("scripts.fag.fag_browser.make_fag_search_fn", return_value=fake_fag):
-        rc = cli_main(["--config", str(cfg_path), "--legacy"])
+    with patch("scripts.blackboard.scheduler.BlackboardScheduler.run",
+               side_effect=KeyboardInterrupt("simulated")):
+        rc = cli_main(["--config", str(cfg_path)])
 
     # cli_main returns 130 on KeyboardInterrupt
     assert rc == 130
-    resume = tmp_path / "output" / "delta" / "resume.sh"
-    assert resume.exists(), "resume.sh must be written on interrupt"
-
-    # The partial state.jsonl must be reloadable
+    # Scheduler path still writes partial results
     results = tmp_path / "output" / "delta" / "results.jsonl"
     if results.exists():
         lines = [

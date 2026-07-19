@@ -117,11 +117,10 @@ def make_fag_search_fn(
     state_filter: Optional[str] = None,
     session: Any = None,  # BrowserSession (Phase W3)
 ) -> Callable:
-    """Create a fag_search_fn(pensioner, config) closure.
+    """[DEPRECATED] Create a fag_search_fn closure.
 
-    When `session` is provided (BrowserSession), the closure delegates
-    lifecycle management (page, reset, throttle) to the session.
-    Otherwise falls back to the legacy state-dict closure.
+    Kept for leftover_investigation.py and retry_errors.py.
+    New code should use BrowserSession directly.
 
     Holds a Playwright page. Every reset_browser_every pensioner
     calls, the browser context is closed and re-opened (new
@@ -131,16 +130,10 @@ def make_fag_search_fn(
     Args:
         throttle: seconds between FaG requests
         reset_browser_every: force-reset browser every N records
-        watchdog: optional RSSWatchdog instance. When its
-            force_reset_event is set, the browser is reopened at
-            the next opportunity (typically the current record).
-        max_consecutive_errors: after this many in-a-row 'error'
-            results, give up and re-raise the last exception so the
-            outer loop can stop the run rather than thrash.
-        state_filter: FaG locationId scope. A state abbr ("OK",
-            "TX"), "US" for country_4, or "" to disable. Passed
-            through to search_one_pensioner. Default None preserves
-            legacy behavior (scope = pensioner's regiment state).
+        watchdog: optional RSSWatchdog instance.
+        max_consecutive_errors: after this many in-a-row errors, abort.
+        state_filter: FaG locationId scope.
+        session: optional BrowserSession for delegate mode.
 
     Returns a closure suitable for UnifiedRunnerConfig.fag_search_fn.
     """

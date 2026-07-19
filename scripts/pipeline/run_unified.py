@@ -114,7 +114,7 @@ class UnifiedRunnerConfig:
     # (preserves user edits during review).
     view_html_source: Optional[Path] = None
     # Blackboard scheduler (Phase W1-W4)
-    use_scheduler: bool = True  # default: scheduler path; --legacy for old path
+    # Blackboard store bootstrap (always on)
     blackboard_db_path: Optional[Path] = None
     run_manifest: Any = None  # RunManifest, set at runtime
 
@@ -140,7 +140,7 @@ def copy_view_html_if_missing(
     results_path: Optional[Path] = None,
     dd_match_path: Optional[Path] = None,
 ) -> bool:
-    """Copy source → dest_dir/dest_filename iff dest doesn't exist.
+    """Copy source -> dest_dir/dest_filename iff dest doesn't exist.
 
     If `results_path` is provided AND the source view.html contains
     the EMBEDDED_DATA_PLACEHOLDER, the matching JSONL content is
@@ -524,7 +524,10 @@ def run_batch(
     log: Optional[logging.Logger] = None,
     config_path_for_resume: Optional[Path] = None,
 ) -> BatchResult:
-    """Run the unified pipeline on a batch of pensioners.
+    """[DEPRECATED] Legacy god-loop batch runner.
+
+    Kept for backward compatibility with leftover_investigation.py
+    and retry_errors.py. New code should use run_batch_scheduler().
 
     For each pensioner:
       - Skip if already in state file (resume)
@@ -1051,7 +1054,7 @@ def run_batch_scheduler(
       3. Enqueue RegionalPlannerKS work per pensioner
       4. Register all Knowledge Sources
       5. Run scheduler
-      6. Project results via ProjectionBuilder → state.jsonl + report
+      6. Project results via ProjectionBuilder -> state.jsonl + report
     """
     import time as _time
     from scripts.blackboard.scheduler import BlackboardScheduler
@@ -1341,9 +1344,6 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--list-checkpoints", action="store_true",
                         help="List all checkpoint snapshots for the "
                              "current run and exit.")
-    parser.add_argument("--legacy", action="store_true",
-                        help="Use the traditional god-loop batch runner "
-                             "instead of the Blackboard scheduler (default).")
     parser.add_argument("--blackboard-db", type=Path, default=None,
                         help="Path to Blackboard SQLite database "
                              "(default: <out_dir>/blackboard.db).")
@@ -1406,7 +1406,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             args.low_score_threshold = batch_cfg.low_score_threshold
         if args.fag_state_filter is None:
             args.fag_state_filter = batch_cfg.fag_state_filter
-        # start_row / end_row → start_from + limit
+        # start_row / end_row -> start_from + limit
         if args.start_from == 0:
             args.start_from = batch_cfg.start_row
         if args.limit is None and batch_cfg.end_row is not None:
@@ -1521,22 +1521,8 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         )
         watchdog.start()
 
-    # Build FaG search function (legacy path only; scheduler uses BrowserSession)
+    # Scheduler path uses BrowserSession; no legacy fag_search_fn needed
     fag_search_fn = None
-    if args.legacy and not args.no_fag and not args.dry_run:
-        from scripts.fag.fag_browser import make_fag_search_fn
-        log.info("Initializing Playwright for legacy path (visible browser, takes ~10s)...")
-        fag_state_filter = getattr(args, "fag_state_filter", "OK")
-        if fag_state_filter == "":
-            fag_state_filter = None
-        fag_search_fn = make_fag_search_fn(
-            throttle=args.throttle,
-            reset_browser_every=args.reset_browser_every,
-            watchdog=watchdog,
-            max_consecutive_errors=args.max_consecutive_errors,
-            state_filter=fag_state_filter,
-        )
-        log.info("Legacy Playwright ready.")
 
     # Run batch
     cfg = UnifiedRunnerConfig(
@@ -1556,36 +1542,33 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
-        use_scheduler=not args.legacy,
         blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
     )
 
-    # Blackboard bootstrap (default path; skipped with --legacy)
-    if not args.legacy:
-        from scripts.blackboard.store import SqliteBlackboardStore
-        from scripts.blackboard.schema import RunManifest
-        from scripts.batch_config import build_manifest
-        from scripts.state.repository import JsonlStateRepository
+    # Blackboard bootstrap
+    from scripts.blackboard.store import SqliteBlackboardStore
+    from scripts.blackboard.schema import RunManifest
+    from scripts.batch_config import build_manifest
 
-        bb_path = cfg.blackboard_db_path
-        log.info("Blackboard scheduler mode: store=%s", bb_path)
-        blackboard_store = SqliteBlackboardStore(bb_path)
-        blackboard_store.open()
+    bb_path = cfg.blackboard_db_path
+    log.info("Blackboard store: %s", bb_path)
+    blackboard_store = SqliteBlackboardStore(bb_path)
+    blackboard_store.open()
 
-        # Build manifest from config if available
-        if args.config:
-            from scripts.batch_config import load_config
-            batch_cfg = load_config(args.config)
-            manifest = build_manifest(batch_cfg, policy_version="1")
-        else:
-            import uuid as _uuid
-            manifest = RunManifest(
-                manifest_id=f"manifest-{_uuid.uuid4().hex[:8]}",
-                run_id=out_dir.name,
-                policy_version="1",
-            )
-        cfg.run_manifest = manifest
-        cfg._blackboard_store = blackboard_store  # type: ignore[attr-defined]
+    # Build manifest from config if available
+    if args.config:
+        from scripts.batch_config import load_config
+        batch_cfg = load_config(args.config)
+        manifest = build_manifest(batch_cfg, policy_version="1")
+    else:
+        import uuid as _uuid
+        manifest = RunManifest(
+            manifest_id=f"manifest-{_uuid.uuid4().hex[:8]}",
+            run_id=out_dir.name,
+            policy_version="1",
+        )
+    cfg.run_manifest = manifest
+    cfg._blackboard_store = blackboard_store  # type: ignore[attr-defined]
 
     # Issue #21: --state-replay. Read OLD state, apply non-FaG
     # pipeline, write NEW state to out_dir/results.jsonl. Exits
@@ -1606,22 +1589,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         return 0
 
     try:
-        if not args.legacy:
-            result = run_batch_scheduler(
-                pensioners=pensioners,
-                cemeteries=cems,
-                config=cfg,
-                log=log,
-            )
-        else:
-            result = run_batch(
-                pensioners=pensioners,
-                cemeteries=cems,
-                config=cfg,
-                log=log,
-                # J5-S3: pass config path so resume.sh gets written
-                config_path_for_resume=args.config,
-            )
+        result = run_batch_scheduler(
+            pensioners=pensioners,
+            cemeteries=cems,
+            config=cfg,
+            log=log,
+        )
         log.info("Run finished: %s", json.dumps(result.to_dict(), indent=2))
 
         # Issue #21: --dry-run emits a JSONL diff after the pipeline

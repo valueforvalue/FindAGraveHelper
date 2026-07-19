@@ -46,7 +46,6 @@ def _make_config(tmp_path, store) -> UnifiedRunnerConfig:
     cfg = UnifiedRunnerConfig(
         out_dir=tmp_path / "out",
         results_filename="results.jsonl",
-        use_scheduler=True,
         blackboard_db_path=tmp_path / "bb.db",
         run_manifest=RunManifest(
             manifest_id=f"test-{_uuid.uuid4().hex[:8]}",
