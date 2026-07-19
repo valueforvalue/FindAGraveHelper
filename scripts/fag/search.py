@@ -332,30 +332,22 @@ def search_one_pensioner(page: Page, pensioner: dict,
             continue
 
         title = page.title()
-        # Detect Cloudflare blocks. The title patterns include:
-        #   "Just a moment..." (Turnstile challenge page)
-        #   "Attention Required! | Cloudflare" (Turnstile blocked)
-        #   "Error 1015 (Rate Limited) - www.findagrave.com"
-        # All three mean we should not parse results from this page.
-        # The rate-limit (1015) response has a longer backoff because
-        # repeated violations extend the ban window.
-        if ("Just a moment" in title
-            or "Attention Required" in title
-            or "Rate Limited" in title
-            or "Error 1015" in title
-        ):
-            if "Rate Limited" in title or "Error 1015" in title:
+        from scripts.fag.response_classifier import (
+            Classification,
+            ResponseClassifier,
+        )
+
+        page_class = ResponseClassifier.classify(title=title)
+        if ResponseClassifier.is_blocking(page_class):
+            cooldown = ResponseClassifier.cooldown_seconds(page_class)
+            if page_class == Classification.RateLimit1015:
                 log.warning(
                     "CLOUDFLARE 1015 RATE LIMIT: %s %s [%s]. Backing off "
-                    "120s + resetting session cookies.",
-                    first, last, name,
+                    "%ds + resetting session cookies.",
+                    first, last, name, cooldown,
                 )
                 captcha_seen = True
-                # Heavy backoff for rate-limit. The ban window is
-                # typically 1-15 min; we back off 2 min and rely
-                # on the periodic browser reset (every 250 records)
-                # to clear cookies.
-                time.sleep(120.0)
+                time.sleep(cooldown)
                 continue
             log.warning("CAPTCHA: %s %s [%s]. Waiting up to 30s for it to resolve.",
                         first, last, name)
@@ -364,12 +356,12 @@ def search_one_pensioner(page: Page, pensioner: dict,
             resolved = False
             for wait_s in (5, 10, 15):
                 time.sleep(5)
-                if "Just a moment" not in page.title():
+                if ResponseClassifier.classify(title=page.title()) == Classification.NormalPage:
                     log.info("  challenge resolved after %ds", wait_s + 5)
                     resolved = True
                     break
             if not resolved:
-                log.warning("  challenge did not resolve. Backing off 30s.")
+                log.warning("  challenge did not resolve. Backing off %ds.", cooldown)
                 time.sleep(CAPTCHA_BACKOFF_SECONDS)
             continue
 
