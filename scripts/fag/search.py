@@ -465,43 +465,20 @@ def search_one_pensioner(page: Page, pensioner: dict,
         else:
             record["status"] = S_NO_RESULTS
     else:
-        # We have at least one result. Decide:
-        # - top score >= AUTO_ACCEPT_THRESHOLD and only one candidate -> auto_accept
-        # - top score >= AUTO_ACCEPT_THRESHOLD and multiple candidates -> still
-        #   "auto_accept but other matches exist" — keep as ambiguous for
-        #   human review (the user can verify)
-        # - top score below threshold -> ambiguous/too_many
-        # Pick the threshold based on whether we have a death year locally.
+        from scripts.blackboard.decision_policy import (
+            DecisionContext,
+            classify,
+        )
+
         local_dy = str(pensioner.get("death_year") or "").strip()
-        threshold = AUTO_ACCEPT_THRESHOLD if local_dy and local_dy != "0" else AUTO_ACCEPT_THRESHOLD_NO_DEATH
-        if len(merged) == 1 and record["best_score"] >= threshold:
-            record["status"] = S_AUTO_ACCEPT
-        elif record["best_score"] >= threshold and 2 <= len(merged) <= 10:
-            # Check if top is a clear winner (gap over #2)
-            if len(merged) >= 2:
-                second_score = merged[1]["score"]
-                gap = record["best_score"] - second_score
-                if gap >= AUTO_ACCEPT_GAP:
-                    record["status"] = S_AUTO_ACCEPT
-                else:
-                    record["status"] = S_AMBIGUOUS
-            else:
-                record["status"] = S_AUTO_ACCEPT
-        elif len(merged) == 1:
-            record["status"] = S_AMBIGUOUS  # 1 candidate, score below auto-accept
-        elif 2 <= len(merged) <= 10:
-            record["status"] = S_AMBIGUOUS
-        else:
-            # >10 candidates. Check if top is dominant — if so, auto_accept.
-            if len(merged) >= 2 and record["best_score"] >= threshold:
-                second_score = merged[1]["score"]
-                gap = record["best_score"] - second_score
-                if gap >= AUTO_ACCEPT_GAP:
-                    record["status"] = S_AUTO_ACCEPT
-                else:
-                    record["status"] = S_TOO_MANY
-            else:
-                record["status"] = S_TOO_MANY
+        ctx = DecisionContext(
+            candidates=merged,
+            local_death_year=local_dy if local_dy else None,
+        )
+        decision = classify(ctx)
+        record["best_score"] = decision.top_score
+        record["status"] = decision.status
+        record["_decision"] = decision.to_dict()
 
     return record
 
