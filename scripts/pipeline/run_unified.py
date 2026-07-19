@@ -1134,22 +1134,33 @@ def run_batch_scheduler(
     planner = RegionalPlannerKS()
     scheduler.register(planner)
 
-    # Build FaG scraper if available
+    # Build FaG scraper with real BrowserSession
+    browser_session = None
     if config.fag_search_fn is not None:
         from scripts.fag.browser_session import BrowserSession
-        # FaGScraperKS needs a BrowserSession; we don't have one yet
-        # in the scheduler path. For now, register without it —
-        # the FaGScraperKS will use its fallback (empty results).
-        scraper = FaGScraperKS()
+
+        log.info("Starting BrowserSession for scheduler path...")
+        browser_session = BrowserSession(
+            throttle=config.throttle_seconds,
+            reset_every=250,
+            headless=False,
+            state_filter="OK",
+        )
+        browser_session.start()
+        scraper = FaGScraperKS(session=browser_session)
         scheduler.register(scraper)
 
     scheduler.register(CandidateScorerKS())
 
     # 5. Run scheduler
-    log.info("Running BlackboardScheduler...")
-    processed = scheduler.run()
-    log.info("Scheduler finished: %d work items processed.", processed)
-    result.processed = processed
+    try:
+        log.info("Running BlackboardScheduler...")
+        processed = scheduler.run()
+        log.info("Scheduler finished: %d work items processed.", processed)
+        result.processed = processed
+    finally:
+        if browser_session is not None:
+            browser_session.close()
 
     # 6. Project results
     log.info("Building projection...")
@@ -1654,8 +1665,6 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         return 0
     except KeyboardInterrupt:
         log.warning("Interrupted by user. State has been flushed.")
-        # J5-S3: still write resume.sh on interrupt so the user can pick
-        # up from the same point. ResumeTracker skips already-done.
         try:
             if args.config is not None:
                 write_resume_artifact(
@@ -1667,6 +1676,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         except Exception as e:
             log.error("Resume artifact write failed after interrupt: %s", e)
         return 130
+    finally:
+        # Close Blackboard store if scheduler was used
+        bb_store = getattr(cfg, "_blackboard_store", None)
+        if bb_store is not None:
+            try:
+                bb_store.close()
+            except Exception:
+                pass
 
 
 if __name__ == "__main__":
