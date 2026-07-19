@@ -178,3 +178,47 @@ def test_rollback_to_checkpoint_label_wildcard(tmp_path):
     ]
     # Should match the 'second' checkpoint (pensioner 2)
     assert restored == [2]
+
+
+# ============================================================
+# Phase 2 Slice 2.6 tests
+# ============================================================
+
+
+def test_write_checkpoint_creates_meta_json(tmp_path):
+    """write_checkpoint_snapshot creates sibling .meta.json."""
+    state = tmp_path / "state.jsonl"
+    _write_state(state, [1, 2, 3])
+
+    snap = write_checkpoint_snapshot(state, label="meta-test")
+    meta_path = snap.with_suffix(snap.suffix + ".meta.json")
+
+    assert meta_path.exists()
+    meta = json.loads(meta_path.read_text(encoding="utf-8"))
+    assert "sha256" in meta
+    assert meta["record_count"] == 3
+    assert "created_at" in meta
+    assert meta["label"] == "meta-test"
+
+
+def test_rollback_does_not_consume_snapshot(tmp_path):
+    """After rollback, the snapshot file still exists with same content."""
+    state = tmp_path / "state.jsonl"
+    _write_state(state, [1])
+    snap = write_checkpoint_snapshot(state, label="keep-me")
+    snap_content = snap.read_bytes()
+
+    # Modify state, then rollback
+    _write_state(state, [99])
+    rollback_to_checkpoint(state, label="keep-me")
+
+    # Snapshot should still exist and be unchanged
+    assert snap.exists()
+    assert snap.read_bytes() == snap_content
+
+    # State should be restored
+    restored = [
+        json.loads(line)["pensioner_id"]
+        for line in state.read_text(encoding="utf-8").strip().split("\n")
+    ]
+    assert restored == [1]

@@ -13,9 +13,12 @@ provides two helpers:
 
 These are unit-tested in tests/test_checkpoint.py.
 """
+import hashlib
 import json
 import os
+import re as _re
 import time
+from datetime import datetime as _datetime, timezone as _timezone
 from pathlib import Path
 from typing import Optional
 
@@ -124,8 +127,31 @@ def _state_to_snapshot_path(state_path: Path, label: str) -> Path:
     return state_path.parent / name
 
 
+def _fsync_file_and_dir(file_path: Path) -> None:
+    """fsync the file and its parent directory for durability.
+
+    Uses os.open with O_RDWR for a sync-able fd. Directory fsync
+    is skipped on Windows (not supported).
+    """
+    fd = os.open(str(file_path), os.O_RDWR)
+    try:
+        os.fsync(fd)
+    finally:
+        os.close(fd)
+    if os.name != "nt":
+        dir_fd = os.open(str(file_path.parent), os.O_RDONLY)
+        try:
+            os.fsync(dir_fd)
+        finally:
+            os.close(dir_fd)
+
+
 def write_checkpoint_snapshot(state_path: Path, label: str | None = None) -> Path:
-    """Copy state.jsonl to a snapshot file. Returns the snapshot path.
+    """Copy state.jsonl to a snapshot file. Atomic + hash-verified.
+
+    Writes to .tmp, computes SHA-256, fsyncs temp + directory,
+    os.replace to final name. Creates a sibling <name>.meta.json
+    with created_at, record_count, sha256, policy_version.
 
     If label is None, an auto-label is generated from the current
     record count + ISO timestamp.
@@ -135,14 +161,39 @@ def write_checkpoint_snapshot(state_path: Path, label: str | None = None) -> Pat
         raise FileNotFoundError(f"state file does not exist: {state_path}")
 
     if label is None:
-        # Count records for auto-label
         from scripts.state.repository import JsonlStateRepository
+
         n = sum(1 for _ in JsonlStateRepository(state_path).iter_all())
         stamp = _datetime.now(_timezone.utc).strftime("%Y%m%dT%H%M%S")
         label = f"auto-{n}records-{stamp}"
 
     snap_path = _state_to_snapshot_path(state_path, label)
-    snap_path.write_bytes(state_path.read_bytes())
+    tmp_path = snap_path.with_suffix(snap_path.suffix + ".tmp")
+
+    data = state_path.read_bytes()
+
+    # Write to temp, fsync, then atomic replace
+    tmp_path.write_bytes(data)
+    _fsync_file_and_dir(tmp_path)
+
+    sha256 = hashlib.sha256(data).hexdigest()
+
+    # Write sibling meta file
+    meta_path = snap_path.with_suffix(snap_path.suffix + ".meta.json")
+    meta_tmp = meta_path.with_suffix(meta_path.suffix + ".tmp")
+    record_count = data.count(b"\n")
+    meta = {
+        "created_at": _datetime.now(_timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "record_count": record_count,
+        "sha256": sha256,
+        "policy_version": "1",
+        "label": label,
+    }
+    meta_tmp.write_text(json.dumps(meta, ensure_ascii=False), encoding="utf-8")
+    _fsync_file_and_dir(meta_tmp)
+
+    os.replace(tmp_path, snap_path)
+    os.replace(meta_tmp, meta_path)
     return snap_path
 
 
@@ -189,5 +240,9 @@ def rollback_to_checkpoint(state_path: Path, label: str) -> None:
                 f"checkpoint {label!r} not found at {snap_path}"
             )
 
-    # Atomic restore via os.replace
-    os.replace(snap_path, state_path)
+    # Atomic restore: copy snapshot data (preserves snapshot file)
+    data = snap_path.read_bytes()
+    tmp_path = state_path.with_suffix(state_path.suffix + ".tmp")
+    tmp_path.write_bytes(data)
+    _fsync_file_and_dir(tmp_path)
+    os.replace(tmp_path, state_path)
