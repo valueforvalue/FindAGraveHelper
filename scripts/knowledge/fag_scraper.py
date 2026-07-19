@@ -108,12 +108,19 @@ class FaGScraperKS:
                     (item.plan_id,),
                 ).fetchone()
                 if row is not None:
+                    from scripts.blackboard.schema import PlanScope
+
+                    scope_raw = row[4]
+                    try:
+                        scope = PlanScope(scope_raw)
+                    except ValueError:
+                        scope = PlanScope.OK
                     return QueryPlan(
                         plan_id=row[0],
                         pensioner_id=row[1],
                         strategy=row[2],
                         params=json.loads(row[3]) if row[3] else {},
-                        scope=row[4],
+                        scope=scope,
                         reason=row[5],
                         estimated_requests=row[6],
                         policy_version=row[7],
