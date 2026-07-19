@@ -246,7 +246,7 @@ def test_cli_resume_sh_written_on_completion(tmp_path, monkeypatch):
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     with patch("scripts.fag.fag_browser.make_fag_search_fn"):
-        rc = cli_main(["--config", str(cfg_path), "--no-fag"])
+        rc = cli_main(["--config", str(cfg_path), "--no-fag", "--legacy"])
 
     assert rc == 0
     resume = tmp_path / "output" / "gamma" / "resume.sh"
@@ -287,7 +287,7 @@ def test_cli_resume_after_keyboard_interrupt(tmp_path, monkeypatch):
         return [], "no_results"
 
     with patch("scripts.fag.fag_browser.make_fag_search_fn", return_value=fake_fag):
-        rc = cli_main(["--config", str(cfg_path)])
+        rc = cli_main(["--config", str(cfg_path), "--legacy"])
 
     # cli_main returns 130 on KeyboardInterrupt
     assert rc == 130

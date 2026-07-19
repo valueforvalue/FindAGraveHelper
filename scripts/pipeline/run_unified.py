@@ -114,7 +114,7 @@ class UnifiedRunnerConfig:
     # (preserves user edits during review).
     view_html_source: Optional[Path] = None
     # Blackboard scheduler (Phase W1-W4)
-    use_scheduler: bool = False
+    use_scheduler: bool = True  # default: scheduler path; --legacy for old path
     blackboard_db_path: Optional[Path] = None
     run_manifest: Any = None  # RunManifest, set at runtime
 
@@ -1341,13 +1341,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--list-checkpoints", action="store_true",
                         help="List all checkpoint snapshots for the "
                              "current run and exit.")
-    parser.add_argument("--scheduler", action="store_true",
-                        help="Use Blackboard scheduler instead of "
-                             "the traditional god-loop batch runner.")
+    parser.add_argument("--legacy", action="store_true",
+                        help="Use the traditional god-loop batch runner "
+                             "instead of the Blackboard scheduler (default).")
     parser.add_argument("--blackboard-db", type=Path, default=None,
                         help="Path to Blackboard SQLite database "
-                             "(default: <out_dir>/blackboard.db). "
-                             "Only used with --scheduler.")
+                             "(default: <out_dir>/blackboard.db).")
     args = parser.parse_args(argv)
 
     # Issue #28 follow-up: if the user didn't pass
@@ -1522,20 +1521,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         )
         watchdog.start()
 
-    # Build FaG search function (or None)
+    # Build FaG search function (legacy path only; scheduler uses BrowserSession)
     fag_search_fn = None
-    if not args.no_fag and not args.dry_run:
-        # Inline-import to avoid loading Playwright when not needed
+    if args.legacy and not args.no_fag and not args.dry_run:
         from scripts.fag.fag_browser import make_fag_search_fn
-        log.info("Initializing Playwright (visible browser, takes ~10s)...")
-        # FaG locationId scope: from --fag-state-filter CLI flag,
-        # or from batch_cfg.fag_state_filter if a config was loaded.
-        # Default "OK" scopes to Oklahoma per the project goal
-        # (AGENTS.md "find Confederate soldiers associated with
-        # Oklahoma").
+        log.info("Initializing Playwright for legacy path (visible browser, takes ~10s)...")
         fag_state_filter = getattr(args, "fag_state_filter", "OK")
         if fag_state_filter == "":
-            fag_state_filter = None  # let search_one_pensioner default
+            fag_state_filter = None
         fag_search_fn = make_fag_search_fn(
             throttle=args.throttle,
             reset_browser_every=args.reset_browser_every,
@@ -1543,7 +1536,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             max_consecutive_errors=args.max_consecutive_errors,
             state_filter=fag_state_filter,
         )
-        log.info("Playwright ready.")
+        log.info("Legacy Playwright ready.")
 
     # Run batch
     cfg = UnifiedRunnerConfig(
@@ -1563,12 +1556,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
-        use_scheduler=args.scheduler,
+        use_scheduler=not args.legacy,
         blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
     )
 
-    # Blackboard bootstrap (Phase W1)
-    if args.scheduler:
+    # Blackboard bootstrap (default path; skipped with --legacy)
+    if not args.legacy:
         from scripts.blackboard.store import SqliteBlackboardStore
         from scripts.blackboard.schema import RunManifest
         from scripts.batch_config import build_manifest
@@ -1613,7 +1606,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         return 0
 
     try:
-        if args.scheduler:
+        if not args.legacy:
             result = run_batch_scheduler(
                 pensioners=pensioners,
                 cemeteries=cems,
