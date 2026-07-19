@@ -41,7 +41,7 @@ import traceback
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, Optional
+from typing import Any, Callable, Optional
 
 # Ensure the scripts/ directory is on the path so this file can be
 # executed directly via `python scripts/run_unified.py`.
@@ -113,6 +113,10 @@ class UnifiedRunnerConfig:
     # The copy is skipped if out_dir/view.html already exists
     # (preserves user edits during review).
     view_html_source: Optional[Path] = None
+    # Blackboard scheduler (Phase W1-W4)
+    use_scheduler: bool = False
+    blackboard_db_path: Optional[Path] = None
+    run_manifest: Any = None  # RunManifest, set at runtime
 
 
 # ============================================================
@@ -1028,6 +1032,168 @@ def _load_cems(cgr_path: Path) -> list[dict]:
     return list(by_cem.values())
 
 
+# ============================================================
+# Scheduler-driven batch runner (Phase W2)
+# ============================================================
+
+
+def run_batch_scheduler(
+    pensioners: list[dict],
+    cemeteries: list[dict],
+    config: UnifiedRunnerConfig,
+    log: Optional[logging.Logger] = None,
+) -> BatchResult:
+    """Run the pipeline via BlackboardScheduler instead of god-loop.
+
+    Flow:
+      1. Ingest pensioners as PensionerImported observations
+      2. Ingest CGR vets as observations
+      3. Enqueue RegionalPlannerKS work per pensioner
+      4. Register all Knowledge Sources
+      5. Run scheduler
+      6. Project results via ProjectionBuilder → state.jsonl + report
+    """
+    import time as _time
+    from scripts.blackboard.scheduler import BlackboardScheduler
+    from scripts.blackboard.schema import (
+        Kind,
+        Observation,
+        WorkItem,
+    )
+    from scripts.blackboard.store import BlackboardStore
+    from scripts.knowledge.ingestion import IngestionKS
+    from scripts.knowledge.regional_planner import RegionalPlannerKS
+    from scripts.knowledge.fag_scraper import FaGScraperKS
+    from scripts.knowledge.candidate_scorer import CandidateScorerKS
+    from scripts.blackboard.projector import ProjectionBuilder
+
+    if log is None:
+        log = logging.getLogger("run_unified")
+
+    store: BlackboardStore = getattr(config, "_blackboard_store", None)
+    if store is None:
+        raise ValueError("Blackboard store must be opened before calling run_batch_scheduler")
+
+    out_dir = Path(config.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    state_path = out_dir / config.results_filename
+
+    result = BatchResult(
+        total=len(pensioners),
+        started_at=_time.time(),
+    )
+
+    # 1. Ingest pensioners as observations
+    log.info("Ingesting %d pensioners into Blackboard...", len(pensioners))
+    for p in pensioners:
+        pid = p.get("id") or p.get("application_number") or 0
+        obs = Observation(
+            observation_id=f"obs-ingest-{pid}",
+            pensioner_id=int(pid),
+            kind=Kind.PensionerImported,
+            source="run_unified",
+            source_version="1",
+            run_id=config.run_manifest.run_id if config.run_manifest else "run",
+            pass_id="ingest",
+            payload=dict(p),
+        )
+        store.append_observation(obs)
+
+    # 2. Ingest CGR vets
+    log.info("Ingesting CGR vet records...")
+    for cem in cemeteries:
+        for vet in cem.get("veterans", []):
+            vid = vet.get("id", 0)
+            obs = Observation(
+                observation_id=f"obs-cgr-vet-{vid}",
+                pensioner_id=0,  # CGR records are not pensioner-specific
+                kind=Kind.CGRCorroboration,
+                source="run_unified",
+                source_version="1",
+                run_id=config.run_manifest.run_id if config.run_manifest else "run",
+                pass_id="ingest",
+                payload=dict(vet),
+            )
+            store.append_observation(obs)
+
+    # 3. Enqueue planner work for each pensioner
+    log.info("Enqueuing planner work for %d pensioners...", len(pensioners))
+    for p in pensioners:
+        pid = p.get("id") or p.get("application_number") or 0
+        store.enqueue_work(
+            WorkItem(
+                work_id=f"work-plan-{pid}",
+                pensioner_id=int(pid),
+                knowledge_source="RegionalPlannerKS",
+            )
+        )
+
+    # 4. Register Knowledge Sources
+    scheduler = BlackboardScheduler(store)
+    scheduler.register(IngestionKS())
+    planner = RegionalPlannerKS()
+    scheduler.register(planner)
+
+    # Build FaG scraper if available
+    if config.fag_search_fn is not None:
+        from scripts.fag.browser_session import BrowserSession
+        # FaGScraperKS needs a BrowserSession; we don't have one yet
+        # in the scheduler path. For now, register without it —
+        # the FaGScraperKS will use its fallback (empty results).
+        scraper = FaGScraperKS()
+        scheduler.register(scraper)
+
+    scheduler.register(CandidateScorerKS())
+
+    # 5. Run scheduler
+    log.info("Running BlackboardScheduler...")
+    processed = scheduler.run()
+    log.info("Scheduler finished: %d work items processed.", processed)
+    result.processed = processed
+
+    # 6. Project results
+    log.info("Building projection...")
+    builder = ProjectionBuilder()
+    observations = store.read_observations_since(None)
+
+    # Group observations by pensioner_id
+    by_pid: dict[int, dict] = {}
+    for obs in observations:
+        pid = obs.pensioner_id
+        if pid == 0:
+            continue
+        if pid not in by_pid:
+            by_pid[pid] = {"pensioner": {}, "candidates": [], "cgr": None, "spouse": None}
+        if obs.kind == Kind.PensionerImported:
+            by_pid[pid]["pensioner"] = obs.payload
+        elif obs.kind == Kind.FaGCandidateFetch:
+            by_pid[pid]["candidates"].append(obs.payload)
+
+    rows = []
+    for pid, groups in sorted(by_pid.items()):
+        row = builder.build_state_row(
+            pensioner_id=pid,
+            pensioner_data=groups["pensioner"],
+            candidates=groups["candidates"],
+        )
+        rows.append(row)
+        if row.get("status") == "auto_accept":
+            result.auto_accepts += 1
+
+    # Write projection
+    import json
+    with state_path.open("w", encoding="utf-8") as f:
+        for row in rows:
+            f.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+    result.finished_at = _time.time()
+    log.info(
+        "Scheduler batch complete: %d rows projected to %s. Elapsed: %.1f min",
+        len(rows), state_path, result.elapsed_seconds / 60,
+    )
+    return result
+
+
 def cli_main(argv: Optional[list[str]] = None) -> int:
     """CLI entry point: parse args, init Playwright, run batch.
 
@@ -1164,6 +1330,13 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--list-checkpoints", action="store_true",
                         help="List all checkpoint snapshots for the "
                              "current run and exit.")
+    parser.add_argument("--scheduler", action="store_true",
+                        help="Use Blackboard scheduler instead of "
+                             "the traditional god-loop batch runner.")
+    parser.add_argument("--blackboard-db", type=Path, default=None,
+                        help="Path to Blackboard SQLite database "
+                             "(default: <out_dir>/blackboard.db). "
+                             "Only used with --scheduler.")
     args = parser.parse_args(argv)
 
     # Issue #28 follow-up: if the user didn't pass
@@ -1379,7 +1552,36 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
+        use_scheduler=args.scheduler,
+        blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
     )
+
+    # Blackboard bootstrap (Phase W1)
+    if args.scheduler:
+        from scripts.blackboard.store import SqliteBlackboardStore
+        from scripts.blackboard.schema import RunManifest
+        from scripts.batch_config import build_manifest
+        from scripts.state.repository import JsonlStateRepository
+
+        bb_path = cfg.blackboard_db_path
+        log.info("Blackboard scheduler mode: store=%s", bb_path)
+        blackboard_store = SqliteBlackboardStore(bb_path)
+        blackboard_store.open()
+
+        # Build manifest from config if available
+        if args.config:
+            from scripts.batch_config import load_config
+            batch_cfg = load_config(args.config)
+            manifest = build_manifest(batch_cfg, policy_version="1")
+        else:
+            import uuid as _uuid
+            manifest = RunManifest(
+                manifest_id=f"manifest-{_uuid.uuid4().hex[:8]}",
+                run_id=out_dir.name,
+                policy_version="1",
+            )
+        cfg.run_manifest = manifest
+        cfg._blackboard_store = blackboard_store  # type: ignore[attr-defined]
 
     # Issue #21: --state-replay. Read OLD state, apply non-FaG
     # pipeline, write NEW state to out_dir/results.jsonl. Exits
@@ -1400,14 +1602,22 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         return 0
 
     try:
-        result = run_batch(
-            pensioners=pensioners,
-            cemeteries=cems,
-            config=cfg,
-            log=log,
-            # J5-S3: pass config path so resume.sh gets written
-            config_path_for_resume=args.config,
-        )
+        if args.scheduler:
+            result = run_batch_scheduler(
+                pensioners=pensioners,
+                cemeteries=cems,
+                config=cfg,
+                log=log,
+            )
+        else:
+            result = run_batch(
+                pensioners=pensioners,
+                cemeteries=cems,
+                config=cfg,
+                log=log,
+                # J5-S3: pass config path so resume.sh gets written
+                config_path_for_resume=args.config,
+            )
         log.info("Run finished: %s", json.dumps(result.to_dict(), indent=2))
 
         # Issue #21: --dry-run emits a JSONL diff after the pipeline

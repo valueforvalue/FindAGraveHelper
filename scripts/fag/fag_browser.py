@@ -115,8 +115,13 @@ def make_fag_search_fn(
     watchdog: Optional["object"] = None,
     max_consecutive_errors: int = 10,
     state_filter: Optional[str] = None,
+    session: Any = None,  # BrowserSession (Phase W3)
 ) -> Callable:
     """Create a fag_search_fn(pensioner, config) closure.
+
+    When `session` is provided (BrowserSession), the closure delegates
+    lifecycle management (page, reset, throttle) to the session.
+    Otherwise falls back to the legacy state-dict closure.
 
     Holds a Playwright page. Every reset_browser_every pensioner
     calls, the browser context is closed and re-opened (new
@@ -139,6 +144,13 @@ def make_fag_search_fn(
 
     Returns a closure suitable for UnifiedRunnerConfig.fag_search_fn.
     """
+    # Fast path: delegate to BrowserSession (Phase W3)
+    if session is not None:
+        log.info("Using BrowserSession delegate (closure wraps session.search).")
+        def _session_search(pensioner: dict, config) -> tuple[list, str]:
+            return session.search(pensioner)
+        return _session_search
+
     # Apply the Playwright Python memory leak fix BEFORE any Playwright
     # import path that creates tasks. See:
     #   github.com/microsoft/playwright/issues/15400
