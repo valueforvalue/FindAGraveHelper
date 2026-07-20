@@ -4,6 +4,74 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: define SearchRecord Protocol; pensioner dict → SearchRecord (#34)
+
+The pipeline's input record is the next hard FaG-pensioner
+coupling. Today, callers pass a flat dict with `pensioner_id`,
+`pensioner_first`, `regiment`, etc. — fields a future
+"search my family tree" mode wouldn't have. Now there's a
+domain-agnostic `SearchRecord` class; the pensioner dict
+form is supported via `from_pensioner()` (dict → record)
+and `to_pensioner_dict()` (record → dict).
+
+**`SearchRecord`** (`scripts/search/record.py`)
+
+  Frozen dataclass with core fields (`id`, `primary_name`,
+  `birth_year`, `death_year`, `state`, `source`) plus
+  `attributes` (free-form extras). FaG/pensioner-specific
+  fields live in `attributes`. Derived `first` / `middle` /
+  `last` properties parse `primary_name` conservatively
+  (whitespace split, no suffix detection). `with_()` and
+  `with_attribute()` produce modified copies (frozen-ness
+  preserved). `to_context()` builds a `SearchContext` for
+  use with the engine.
+
+**Back-compat**
+
+  - `from_pensioner(pensioner_dict)` reads any of the
+    conventional dict shapes (pensioner_id / id,
+    pensioner_name / primary_name, fag_state_filter / state,
+    ...). FaG-specific extras land in `attributes`.
+  - `to_pensioner_dict(record)` produces today's wire format
+    (flat dict with both prefixed and unprefixed keys), so
+    saved `state.jsonl` files deserialize without modification.
+  - Roundtrip contract: for any dict `d`,
+    `to_pensioner_dict(from_pensioner(d))` preserves every
+    key (modulo string coercion of numeric ids).
+  - `scripts.fag.search.search_one_pensioner` is unchanged.
+
+**Integration**
+
+  - `scripts/search/record_fag_adapter.py` provides
+    `search_record_via_engine(page, pensioner, engine=...)`
+    which converts a dict to a `SearchRecord`, builds a
+    `SearchContext`, runs `default_search_one` with the
+    engine, and returns a new `SearchRecord` with the
+    result attached as `attributes["result"]`. The full
+    FaG orchestration (CAPTCHA waits, 1015 backoff, per-
+    strategy throttle) is still in `scripts/fag/search.py`;
+    this adapter uses the simple engine flow. Sufficient
+    for tests, dry-runs, and any future code that wants
+    the engine abstraction.
+
+**Tests** (`tests/test_search_record.py`)
+
+  36 new tests. Pinned:
+  - Construction (minimal, full, frozen).
+  - Name parsing (1/2/3/4+ tokens, empty, whitespace-only).
+  - Attribute access (`attr()`, `attributes`).
+  - Mutation via `with_()` and `with_attribute()`.
+  - `from_pensioner` for all conventional key spellings.
+  - `to_pensioner_dict` roundtrip preserves every key.
+  - `to_context()` for engine interop.
+  - End-to-end: `search_record_via_engine` navigates,
+    parses, scores; result is attached to the record;
+    `to_pensioner_dict` re-emits the dict shape.
+
+Tests: 1246 -> 1282 (+36 new). 0 regressions. The
+abstraction is now usable for new code; old code keeps
+working via the dict form.
+
 ### Refactor: extract SearchEngine Protocol; FaGEngine as one implementation (#33)
 
 The unified pipeline now consumes a `SearchEngine` Protocol
