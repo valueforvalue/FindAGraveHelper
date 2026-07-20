@@ -4,6 +4,73 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: pipeline orchestrator consumes SearchEngine + SearchRecord (#35)
+
+The unified pipeline now takes a `SearchRecord` and an
+engine (`SearchEngine`) instead of threading pensioner
+dicts and `fag_search_fn` callables. The FaG-specific
+behaviour stays in `FaGEngine`; the orchestrator is
+engine-agnostic.
+
+**Changes**
+
+  - `PipelineConfig` gained `engine: SearchEngine`,
+    `page`, and `fag_search_fn` (the legacy callback, kept
+    for back-compat). New code uses `engine` + `page`; old
+    code that only has `fag_search_fn` keeps working.
+  - `PipelineResult` gained `record: SearchRecord`,
+    `engine_result: dict | None`, and `status: str`. The
+    legacy `pensioner: dict`, `fag_records`, `fag_status`
+    fields stay (for wire-format back-compat).
+  - `run_one(record, cgr_index_vets, config)` is the new
+    canonical entry point. Takes a SearchRecord, an engine
+    (via config), and a page. Runs the CGR stage (opt-in),
+    then the engine, then BOTH MATCH detection.
+  - `run_pipeline_for_pensioner(pensioner, ...)` is the
+    legacy back-compat entry. Builds a SearchRecord
+    internally and calls `run_one()`. The original
+    pensioner dict is preserved on the result so the
+    wire-format conversion (`UnifiedRunResult.to_dict()`)
+    produces byte-identical output to the pre-refactor
+    pipeline (int ids stay int; no schema change).
+  - The docstring in `pipeline/core.py` no longer says
+    "FaG" or "pensioner" generically. Says "search engine"
+    and "record" instead.
+
+**Validation**
+
+  - `FakeSearchEngine` (from issue #33's tests) plugged
+    into the new `run_one()` end-to-end. The pipeline runs
+    a non-FaG engine without code changes — the abstraction
+    is real.
+  - Existing FaG `fag_search_fn` calls produce byte-
+    identical state.jsonl output (modulo timestamps). 5
+    pre-existing orchestrator tests now pass against the
+    new path; the wire-format contract is preserved.
+  - Engine errors are caught and recorded in
+    `result.error`. A buggy engine can't take down the
+    batch.
+
+**Tests** (`tests/test_pipeline_orchestrator.py`)
+
+  13 new tests. Pinned:
+  - `run_one` works with `FaGEngine` (engine path).
+  - `run_one` works with `FakeSearchEngine` (proves the
+    abstraction; non-FaG engine runs the pipeline).
+  - Engine error capture (raises → result.error set,
+    batch survives).
+  - Back-compat: `fag_search_fn` callback still works.
+  - `PipelineResult` has engine-agnostic fields
+    (`record`, `engine_result`, `status`).
+  - Wire format: legacy path produces int `pensioner_id`;
+    record path produces str `pensioner_id` (the new
+    contract for new code).
+
+Tests: 1282 -> 1295 (+13 new). 0 regressions. The
+orchestrator is now engine-agnostic; a 2nd engine can be
+plugged in via `config.engine = FutureEngine()` with no
+code changes to the runner.
+
 ### Refactor: define SearchRecord Protocol; pensioner dict → SearchRecord (#34)
 
 The pipeline's input record is the next hard FaG-pensioner
