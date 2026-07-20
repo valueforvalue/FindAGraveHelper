@@ -1849,6 +1849,25 @@ function reviewApp() {
             if (by && dy) { const b = parseInt(by, 10); const d = parseInt(dy, 10); if (!isNaN(b) && !isNaN(d)) deathAge = d - b; }
             const decision = this.decisionFor(record.id);
             const isNoMatch = decision && Object.prototype.hasOwnProperty.call(decision, 'memorial_id') && !decision.memorial_id;
+
+            // Issue #54: compute pick-vs-ranking gap and feature deltas.
+            const candidates = record.candidates || [];
+            const sorted = [...candidates].sort((a, b) => (b.score || 0) - (a.score || 0));
+            const pickRank = sorted.findIndex(c => String(c.id) === String(candidate.id)) + 1;
+            const topScore = sorted[0]?.score || 0;
+            const pickedScore = candidate.score || 0;
+            const scoreGapToTop = topScore - pickedScore;
+
+            // Feature deltas: which evidence features differ between picked and #1.
+            const pickedBd = candidate.evidence?.score_breakdown || {};
+            const topBd = (sorted[0] && sorted[0].id !== candidate.id) ? (sorted[0].evidence?.score_breakdown || {}) : {};
+            const featureDeltas = {};
+            for (const key of Object.keys(pickedBd)) {
+                if (topBd && key in topBd) {
+                    featureDeltas[key] = (pickedBd[key] || 0) - (topBd[key] || 0);
+                }
+            }
+
             return {
                 memorial_id: candidate.id || '',
                 name: candidate.title || '',
@@ -1872,6 +1891,14 @@ function reviewApp() {
                 _removed_candidates: decision?.removed_candidates || [],
                 _candidate_notes: decision?.candidate_notes || {},
                 _reviewer_decision: isNoMatch ? 'no_match' : (decision?.decision_type === 'needs_research' ? 'needs_research' : ''),
+                // Issue #54: pick-vs-ranking learning signals.
+                _picked_rank: pickRank,
+                _score_gap_to_top: Math.round(scoreGapToTop * 1000) / 1000,
+                _top_score: topScore,
+                _picked_score: pickedScore,
+                _candidate_count: candidates.length,
+                _winning_strategy: evidence._found_by?.strategy || '',
+                _feature_deltas: featureDeltas,
                 _corroboration: {
                     cgr_match_strength: (record.corroboration?.cgr?.length ? 'present' : 'none'),
                     dd_match: Boolean(record.corroboration?.dd_match),

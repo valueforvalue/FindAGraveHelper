@@ -4,6 +4,14 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-20
 
+### Feature(learning): self-learning feedback loop (#54)
+
+Enriched scraper export with pick-vs-ranking comparison data
+(_picked_rank, _score_gap_to_top, _winning_strategy, _feature_deltas).
+Added update_from_labels() + save/load to PriorRegistry. New training
+script scripts/learning/train.py reads accumulated labels, computes
+strategy success stats, updates priors and retrains classifier.
+
 ### Feature(pipeline): config-driven run composition + wire learning modules (#55)
 
 Replaced thin BatchConfig with RunRecipe — a complete run recipe that

@@ -142,3 +142,99 @@ class PriorRegistry:
                 t = (score - s0) / (s1 - s0)
                 return p0 + t * (p1 - p0)
         return points[-1][1]
+
+    # ------------------------------------------------------------------
+    # Self-learning (issue #54): update priors from reviewer decisions
+    # ------------------------------------------------------------------
+
+    def update_from_labels(
+        self,
+        labels: list[Any],  # list[LabelSnapshot]
+        label_features: list[dict[str, Any]] | None = None,
+        strategy_stats: dict[str, dict[str, int]] | None = None,
+    ) -> None:
+        """Update priors from accumulated reviewer decisions.
+
+        Args:
+            labels: list of LabelSnapshot with human_review_decision.
+            label_features: optional per-label feature dicts with
+                best_score, winning_strategy, feature_deltas, etc.
+            strategy_stats: optional per-strategy counts:
+                {strategy_name: {total: N, accepted: M, top1: K}}.
+        """
+        import time
+
+        self.trained_at = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        self.training_label_count = len(labels)
+
+        # Update match probability calibration from (score, accepted) pairs.
+        if label_features:
+            calibration: list[tuple[float, float]] = []
+            for feat in label_features:
+                score = float(feat.get("best_score", 0.0))
+                accepted = 1.0 if feat.get("accepted") else 0.0
+                calibration.append((score, accepted))
+            if calibration:
+                calibration.sort()
+                # Bin into deciles and average
+                n = len(calibration)
+                binned: list[tuple[float, float]] = []
+                for i in range(10):
+                    lo = i * n // 10
+                    hi = (i + 1) * n // 10
+                    if lo >= hi:
+                        continue
+                    chunk = calibration[lo:hi]
+                    avg_score = sum(s for s, _ in chunk) / len(chunk)
+                    avg_prob = sum(a for _, a in chunk) / len(chunk)
+                    binned.append((round(avg_score, 3), round(avg_prob, 3)))
+                if binned:
+                    self._match_calibration = binned
+
+        # Update strategy utility from per-strategy stats.
+        if strategy_stats:
+            for name, stats in strategy_stats.items():
+                total = stats.get("total", 0)
+                accepted = stats.get("accepted", 0)
+                top1 = stats.get("top1", 0)
+                if total > 0:
+                    # Weight: accepted count weighted by top1 ratio
+                    # (top1 picks are stronger evidence than rank-N picks)
+                    utility = (accepted / total) * (0.5 + 0.5 * (top1 / max(accepted, 1)))
+                    self._strategy_utility[name] = round(utility, 4)
+
+    def save(self, path: str | Path) -> None:
+        """Persist priors to a JSON file."""
+        import json
+        from pathlib import Path
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        d = {
+            "policy_version": self.policy_version,
+            "trained_at": self.trained_at,
+            "training_label_count": self.training_label_count,
+            "source_labels": self.source_labels,
+            "_state_priors": {k: list(v) for k, v in self._state_priors.items()},
+            "_texas_evidence": dict(self._texas_evidence),
+            "_strategy_utility": dict(self._strategy_utility),
+            "_match_calibration": list(self._match_calibration),
+        }
+        path.write_text(json.dumps(d, indent=2), encoding="utf-8")
+
+    @classmethod
+    def load(cls, path: str | Path) -> "PriorRegistry":
+        """Load priors from a JSON file."""
+        import json
+        from pathlib import Path
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        reg = cls(
+            policy_version=raw.get("policy_version", "1"),
+            trained_at=raw.get("trained_at", ""),
+            training_label_count=raw.get("training_label_count", 0),
+            source_labels=raw.get("source_labels", []),
+        )
+        reg._state_priors = {k: [(s, float(p)) for s, p in v] for k, v in raw.get("_state_priors", {}).items()}
+        reg._texas_evidence = {k: float(v) for k, v in raw.get("_texas_evidence", {}).items()}
+        reg._strategy_utility = {k: float(v) for k, v in raw.get("_strategy_utility", {}).items()}
+        reg._match_calibration = [(float(s), float(p)) for s, p in raw.get("_match_calibration", [])]
+        return reg
