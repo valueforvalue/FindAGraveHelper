@@ -606,6 +606,10 @@ h1 {
         <div class="header-top">
             <h1 id="runTitle">Search results review</h1>
             <div class="header-actions">
+                <button class="button primary" type="button" id="saveDecisionsBtn">Save decisions</button>
+                <button class="button" type="button" id="exportPicksBtn">Export picks (scraper shape)</button>
+                <button class="button" type="button" id="importBtn">Import decisions</button>
+                <input type="file" id="importFile" accept=".json" hidden>
                 <button class="button" type="button" id="collapseAll">Collapse all</button>
                 <button class="button" type="button" id="expandAll">Expand all</button>
                 <label class="file-picker" for="resultsFile">
@@ -726,6 +730,7 @@ let sourceLabel = 'results.jsonl';
 let recordsFingerprint = 'empty';
 let collapsedRecords = new Set();
 let showAllCandidateSections = new Set();
+let totalDecisionsFromSidecar = 0;
 
 function escapeHtml(value) {
     if (value == null) return '';
@@ -1215,6 +1220,209 @@ function populateEngineFilter() {
     }
 }
 
+function candidateToScraperRecord(candidate, record) {
+    const evidence = candidate.evidence?.raw || {};
+    const details = evidence.details || {};
+    const decision = decisionFor(record.id);
+    const birthYear = details.birth_year || '';
+    const deathYear = details.death_year || '';
+    let deathAge = null;
+    if (birthYear && deathYear) {
+        const birth = parseInt(birthYear, 10);
+        const death = parseInt(deathYear, 10);
+        if (!Number.isNaN(birth) && !Number.isNaN(death)) deathAge = death - birth;
+    }
+    const isNoMatch = decision &&
+        Object.prototype.hasOwnProperty.call(decision, 'memorial_id') &&
+        !decision.memorial_id;
+    return {
+        memorial_id: candidate.id || '',
+        name: candidate.title || '',
+        url: candidate.url || '',
+        birth_date: birthYear,
+        birth_location: '',
+        death_date: deathYear,
+        death_age: deathAge,
+        death_location: '',
+        burial_cemetery: details.cemetery || '',
+        burial_location: details.state || '',
+        biography: '',
+        family_parents: [],
+        family_spouse: '',
+        family_children: [],
+        scraped_at: decision?.at || new Date().toISOString(),
+        _source_pensioner_id: record.id,
+        _source_pensioner_name: record.title || '',
+        _source_strategy: evidence._found_by?.strategy || '',
+        _reviewer_decided_at: decision?.at || '',
+        _reviewer_notes: decision?.notes || '',
+        _removed_candidates: decision?.removed_candidates || [],
+        _candidate_notes: decision?.candidate_notes || {},
+        _reviewer_decision: isNoMatch ? 'no_match' : '',
+        _corroboration: {
+            cgr_match_strength: (record.corroboration?.cgr?.length ? 'present' : 'none'),
+            dd_match: Boolean(record.corroboration?.dd_match),
+            spouse_match: Boolean(record.corroboration?.spouse_match),
+        },
+    };
+}
+
+function pensionersToScraperExport(recordsList, decisionsMap) {
+    const savedDecisions = decisionsMap;
+    const output = [];
+    for (const record of recordsList) {
+        const decision = savedDecisions[String(record.id)] || null;
+        if (!decision) continue;
+        const isPicked = decision.memorial_id;
+        const isNoMatch = Object.prototype.hasOwnProperty.call(
+            decision, 'memorial_id'
+        ) && !decision.memorial_id;
+        if (!isPicked && !isNoMatch) continue;
+        if (isPicked) {
+            const pickedCandidate = (record.candidates || []).find(
+                c => String(c.id) === String(decision.memorial_id)
+            );
+            if (pickedCandidate) {
+                output.push(candidateToScraperRecord(pickedCandidate, record));
+            }
+        } else {
+            output.push({
+                memorial_id: '',
+                name: '',
+                url: '',
+                birth_date: '',
+                birth_location: '',
+                death_date: '',
+                death_age: null,
+                death_location: '',
+                burial_cemetery: '',
+                burial_location: '',
+                biography: '',
+                family_parents: [],
+                family_spouse: '',
+                family_children: [],
+                scraped_at: decision.at || '',
+                _source_pensioner_id: record.id,
+                _source_pensioner_name: record.title || '',
+                _source_strategy: '',
+                _reviewer_decided_at: decision.at || '',
+                _reviewer_notes: decision.notes || '',
+                _removed_candidates: decision.removed_candidates || [],
+                _candidate_notes: decision.candidate_notes || {},
+                _reviewer_decision: 'no_match',
+                _corroboration: {
+                    cgr_match_strength: 'none',
+                    dd_match: false,
+                    spouse_match: false,
+                },
+            });
+        }
+    }
+    return output;
+}
+
+function buildDecisionsPayload() {
+    const decisionsOut = {};
+    for (const [pid, d] of Object.entries(decisions)) {
+        const record = records.find(r => String(r.id) === pid);
+        if (!record) continue;
+        decisionsOut[pid] = {
+            decision: {
+                memorial_id: d.memorial_id || null,
+                slug: d.slug || null,
+                by: d.by || 'user',
+                at: d.at || new Date().toISOString(),
+                notes: d.notes || '',
+                removed_candidates: d.removed_candidates || [],
+                candidate_notes: d.candidate_notes || {},
+            },
+            pensioner: {
+                pensioner_id: record.id,
+                pensioner_name: record.title,
+            },
+            candidates: record.candidates,
+        };
+    }
+    return {
+        version: 1,
+        exported_at: new Date().toISOString(),
+        source_file: sourceLabel || 'results.jsonl',
+        stats: {
+            total_pensioners: records.length,
+            decided: Object.keys(decisions).length,
+            by_status: {},
+            by_cgr_dedup: {},
+        },
+        decisions: decisionsOut,
+    };
+}
+
+async function buildDecisionsBlob() {
+    return new Blob([JSON.stringify(buildDecisionsPayload(), null, 2)], {
+        type: 'application/json',
+    });
+}
+
+async function buildScraperExportBlob() {
+    return new Blob(
+        [JSON.stringify(pensionersToScraperExport(records, decisions), null, 2)],
+        { type: 'application/json' }
+    );
+}
+
+function downloadBlob(blob, filename) {
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+}
+
+function runnameFromLabel() {
+    const base = (sourceLabel || 'results.jsonl').replace(/\.jsonl$/, '');
+    const parts = base.split('/');
+    return parts[parts.length - 1] || base;
+}
+
+function applyDecisionsSidecar(text, filename) {
+    let payload;
+    try {
+        payload = JSON.parse(text);
+    } catch (_error) {
+        document.getElementById('loadStatus').textContent =
+            `Failed to parse decisions file: ${filename}`;
+        return 0;
+    }
+    if (!payload || !payload.decisions || typeof payload.decisions !== 'object') {
+        return 0;
+    }
+    let count = 0;
+    for (const [pid, entry] of Object.entries(payload.decisions)) {
+        const d = (entry && entry.decision) ? entry.decision : entry;
+        if (!d || typeof d !== 'object') continue;
+        decisions[pid] = {
+            ...decisions[pid],
+            memorial_id: d.memorial_id || null,
+            slug: d.slug || null,
+            by: d.by || (d.memorial_id ? 'user' : undefined),
+            at: d.at || undefined,
+            notes: d.notes || '',
+            removed_candidates: d.removed_candidates || [],
+            candidate_notes: d.candidate_notes || {},
+            decision_type: d.decision_type || undefined,
+        };
+        count += 1;
+    }
+    saveDecisions();
+    totalDecisionsFromSidecar = count;
+    const labelText = filename || 'decisions.json';
+    document.getElementById('loadStatus').textContent =
+        `Loaded ${plural(count, 'decision')} from ${labelText}.`;
+    render();
+    return count;
+}
+
 function showLoadError(error) {
     const status = document.getElementById('loadStatus');
     status.textContent = `Could not load results: ${error.message}`;
@@ -1223,6 +1431,32 @@ function showLoadError(error) {
 
 document.getElementById('engineFilter').addEventListener('change', () => render());
 document.getElementById('decisionFilter').addEventListener('change', () => render());
+
+document.getElementById('saveDecisionsBtn').addEventListener('click', async () => {
+    const blob = await buildDecisionsBlob();
+    downloadBlob(blob, `decisions_${runnameFromLabel()}.json`);
+});
+
+document.getElementById('exportPicksBtn').addEventListener('click', async () => {
+    const blob = await buildScraperExportBlob();
+    downloadBlob(blob, 'memorials_archive.json');
+});
+
+document.getElementById('importBtn').addEventListener('click', () => {
+    document.getElementById('importFile').click();
+});
+
+document.getElementById('importFile').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+        applyDecisionsSidecar(await file.text(), file.name);
+    } catch (error) {
+        showLoadError(error);
+    } finally {
+        event.target.value = '';
+    }
+});
 
 document.getElementById('collapseAll').addEventListener('click', () => {
     for (const record of records) collapsedRecords.add(String(record.id));
@@ -1259,8 +1493,28 @@ async function tryAutoLoad() {
         const response = await fetch('results.jsonl');
         if (!response.ok) return;
         loadFromText(await response.text(), 'results.jsonl');
+        await tryAutoLoadSidecar();
     } catch (_error) {
         // File picker remains available when sibling fetch is blocked.
+    }
+}
+
+async function tryAutoLoadSidecar() {
+    const runName = runnameFromLabel();
+    const candidates = [
+        `decisions_${runName}.json`,
+        'decisions.json',
+    ];
+    for (const filename of candidates) {
+        try {
+            const response = await fetch(filename);
+            if (!response.ok) continue;
+            const text = await response.text();
+            const count = applyDecisionsSidecar(text, filename);
+            if (count > 0) return;
+        } catch (_error) {
+            // Continue to next candidate.
+        }
     }
 }
 
@@ -1272,6 +1526,12 @@ window.ViewV2 = {
     loadFromText,
     renderRecord,
     populateEngineFilter,
+    candidateToScraperRecord,
+    pensionersToScraperExport,
+    buildDecisionsBlob,
+    buildScraperExportBlob,
+    applyDecisionsSidecar,
+    buildDecisionsPayload,
     getRecords: () => records,
     getDecisions: () => decisions,
     getCollapsedRecords: () => collapsedRecords,

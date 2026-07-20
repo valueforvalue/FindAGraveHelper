@@ -29,6 +29,22 @@ and picked-candidate hiding with show-all override.
 
 Tests: 6 new. Full suite: 1,356 passed, 1 deselected.
 
+### Feature(view): export buttons + sidecar persistence (#38)
+
+Added "Save decisions" and "Export picks (scraper shape)" browser
+download buttons. Sidecar auto-loads decisions_<run>.json or
+decisions.json and restores picks. Import button accepts v1 export
+shape.
+
+- Added `candidateToScraperRecord()` and `pensionersToScraperExport()`
+  helpers for FindaGraveScraper.user.js shape.
+- Added `buildDecisionsBlob()` and `buildScraperExportBlob()` for
+  download buttons.
+- Added `applyDecisionsSidecar()` for auto-load and import.
+- Added Playwright export shape and sidecar persistence tests.
+
+Tests: 8 new. Full suite: 1,364 passed, 1 deselected.
+
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
 
 The SearchEngine Protocol abstraction (#33) + the

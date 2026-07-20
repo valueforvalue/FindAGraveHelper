@@ -259,7 +259,7 @@ def test_same_filename_runs_do_not_share_browser_decisions(layout_page):
     layout_page.evaluate(
         "records => window.ViewV2.loadRecords(records, 'results.jsonl')", first_run
     )
-    layout_page.locator("button", has_text="Pick").click()
+    layout_page.locator("button[data-action='pick']").click()
     layout_page.evaluate(
         "records => window.ViewV2.loadRecords(records, 'results.jsonl')", second_run
     )
