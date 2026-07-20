@@ -45,6 +45,18 @@ shape.
 
 Tests: 8 new. Full suite: 1,364 passed, 1 deselected.
 
+### Chore(view): engine disclosure scaffolding (#38)
+
+Added renderEngineDetails() dispatcher with renderFagDetails() (full
+7-feature breakdown, IIIF image, found-by provenance) and a
+renderNewspapersDetails() stub placeholder.
+
+- Added <details class="engine-disclosure"> section below candidates.
+- Dispatcher selects renderer by record.engine.
+- Added Playwright tests for both engine paths.
+
+Tests: 5 new. Full suite: 1,369 passed, 1 deselected.
+
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
 
 The SearchEngine Protocol abstraction (#33) + the

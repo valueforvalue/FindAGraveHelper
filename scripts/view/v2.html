@@ -124,6 +124,87 @@ select:focus-visible {
     display: none;
 }
 
+.engine-disclosure {
+    border-top: 1px solid var(--line);
+    padding: 0.8rem 1rem;
+}
+
+.engine-disclosure summary {
+    cursor: pointer;
+    color: var(--accent-dark);
+    font-weight: 700;
+    font-size: 0.82rem;
+}
+
+.engine-disclosure summary:hover {
+    color: var(--accent);
+}
+
+.disclosure-body {
+    margin-top: 0.65rem;
+    font-size: 0.78rem;
+}
+
+.disclosure-candidate {
+    border-bottom: 1px solid var(--line);
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.65rem;
+}
+
+.disclosure-candidate:last-child {
+    border-bottom: 0;
+    margin-bottom: 0;
+}
+
+.disclosure-candidate .breakdown {
+    margin-top: 0.35rem;
+}
+
+.disclosure-candidate .found-by {
+    color: var(--muted);
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+}
+
+.disclosure-stub {
+    color: var(--muted);
+    font-style: italic;
+}
+
+.breakdown-row {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin: 1px 0;
+}
+
+.breakdown-label {
+    width: 85px;
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+.breakdown-bar {
+    display: inline-block;
+    height: 6px;
+    background: #eee;
+    border-radius: 3px;
+    width: 100px;
+    overflow: hidden;
+}
+
+.breakdown-bar > div {
+    height: 100%;
+    background: var(--accent);
+}
+
+.breakdown-val {
+    width: 35px;
+    text-align: right;
+    font-size: 0.7rem;
+    font-family: Consolas, "Courier New", monospace;
+}
+
 .app-header {
     position: sticky;
     top: 0;
@@ -996,6 +1077,7 @@ function renderRecord(record) {
                 </div>
                 ${candidateHtml}
             </section>
+            ${renderEngineDetails(record)}
             <section class="record-notes" aria-labelledby="${headingId}">
                 <div class="notes-grid">
                     <label>
@@ -1218,6 +1300,69 @@ function populateEngineFilter() {
             select.appendChild(option);
         }
     }
+}
+
+function renderFagDetails(record) {
+    const allFeatureBars = [];
+    const candidates = record.candidates || [];
+    for (const candidate of candidates) {
+        const evidence = candidate.evidence?.score_breakdown || {};
+        if (!Object.keys(evidence).length) continue;
+        const featOrder = [
+            ['last_name', 'last name', 1],
+            ['first_name', 'first name', 1],
+            ['middle_name', 'middle name', 1],
+            ['ok_burial', 'OK burial', 0.3],
+            ['state', 'served state', 0.1],
+            ['veteran', 'VETERAN', 0.8],
+            ['year_window', 'death year', 0.5],
+        ];
+        const bars = featOrder.map(([key, label, max]) => {
+            const value = evidence[key] || 0;
+            const pct = Math.round((value / max) * 100);
+            return `
+                <div class="breakdown-row">
+                    <span class="breakdown-label">${escapeHtml(label)}</span>
+                    <span class="breakdown-bar">
+                        <div style="width:${pct}%"></div>
+                    </span>
+                    <span class="breakdown-val">${value.toFixed(2)}</span>
+                </div>`;
+        }).join('');
+        const raw = candidate.evidence?.raw || {};
+        const fb = raw._found_by || {};
+        const fbText = fb.strategy ? `<code>${escapeHtml(fb.strategy)}</code> ${escapeHtml(Object.entries(fb.params || {}).map(([k, v]) => `${k}=${v}`).join(' '))}` : '';
+        const imageUrl = safeUrl(candidate.media?.image_url);
+        const openUrl = safeUrl(candidate.url);
+        allFeatureBars.push(`
+            <div class="disclosure-candidate">
+                <strong>#${candidates.indexOf(candidate) + 1} ${escapeHtml(candidate.title || '')}</strong>
+                ${openUrl ? `<a href="${escapeHtml(openUrl)}" target="_blank" rel="noopener">open</a>` : ''}
+                ${imageUrl ? `<a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener">image</a>` : ''}
+                <div class="breakdown">${bars}</div>
+                ${fbText ? `<div class="found-by">Found by: ${fbText}</div>` : ''}
+            </div>`);
+    }
+    return allFeatureBars.join('');
+}
+
+function renderNewspapersDetails(_record) {
+    return '<div class="disclosure-stub">UI coming \u2014 Newspapers.com details not yet implemented.</div>';
+}
+
+function renderEngineDetails(record) {
+    let content = '';
+    if (record.engine === 'findagrave') {
+        content = renderFagDetails(record);
+    } else {
+        content = renderNewspapersDetails(record);
+    }
+    if (!content) return '';
+    return `
+        <details class="engine-disclosure">
+            <summary>${escapeHtml(record.engine)} details</summary>
+            <div class="disclosure-body">${content}</div>
+        </details>`;
 }
 
 function candidateToScraperRecord(candidate, record) {
@@ -1536,6 +1681,9 @@ window.ViewV2 = {
     getDecisions: () => decisions,
     getCollapsedRecords: () => collapsedRecords,
     getShowAllCandidateSections: () => showAllCandidateSections,
+    renderFagDetails,
+    renderNewspapersDetails,
+    renderEngineDetails,
 };
 
 tryAutoLoad();
