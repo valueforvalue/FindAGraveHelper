@@ -82,10 +82,11 @@ def test_cli_config_loads_and_runs(tmp_path, monkeypatch):
     cfg_path = tmp_path / "output" / "beta" / "config.json"
     import json
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-    cfg["input"] = str(pensioners_file)
-    cfg["cgr"] = str(cgr_file)
-    cfg["start_row"] = 0
-    cfg["end_row"] = 3
+    # v2 shape (issue #55): nested inputs
+    cfg["inputs"]["pensioners"] = str(pensioners_file)
+    cfg["inputs"]["cgr"] = str(cgr_file)
+    cfg["inputs"]["start_row"] = 0
+    cfg["inputs"]["end_row"] = 3
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     # Run with --config and --no-fag (no Playwright)
@@ -117,9 +118,12 @@ def test_cli_config_runname_mismatch_exits(tmp_path, monkeypatch):
     cfg_path = tmp_path / "output" / "foo" / "config.json"
     import json
     cfg_path.write_text(json.dumps({
+        "version": 2,
         "runname": "bar",
-        "input": str(pensioners_file),
-        "cgr": str(cgr_file),
+        "inputs": {
+            "pensioners": str(pensioners_file),
+            "cgr": str(cgr_file),
+        },
     }), encoding="utf-8")
 
     rc = cli_main(["--config", str(cfg_path), "--no-fag"])

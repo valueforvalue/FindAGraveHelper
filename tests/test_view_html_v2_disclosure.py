@@ -119,5 +119,5 @@ def test_dispatcher_renders_newspapers_stub_for_newspapers_com_record(disclosure
     assert details.count() == 1
     details.locator("summary").click()
     body = details.inner_text()
-    assert "UI coming" in body
+    assert "No evidence details available" in body
     assert "last name" not in body

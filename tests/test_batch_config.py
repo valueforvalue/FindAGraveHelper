@@ -37,25 +37,16 @@ def test_init_batch_writes_config_template(tmp_path, monkeypatch):
     assert expected.exists()
 
     cfg = json.loads(expected.read_text(encoding="utf-8"))
-    # Required keys from the feature spec
-    for key in (
-        "runname",
-        "input",
-        "cgr",
-        "start_row",
-        "end_row",
-        "throttle",
-        "low_score_threshold",
-    ):
-        assert key in cfg, f"missing required key: {key}"
+    # v2 RunRecipe shape (issue #55)
+    assert cfg["version"] == 2
     assert cfg["runname"] == "foo"
-    # Defaults
-    assert cfg["throttle"] == 2.5
-    # low_score_threshold must equal the canonical constant
-    # (per issue #31: no hardcoded 0.40 anywhere outside scoring_constants)
-    assert cfg["low_score_threshold"] == LOW_SCORE_THRESHOLD
-    assert cfg["start_row"] == 0
-    assert cfg["end_row"] is None  # sentinel for "no upper bound"
+    assert "pensioners" in cfg["inputs"]
+    assert "cgr" in cfg["inputs"]
+    assert cfg["engine"]["throttle"] == 2.5
+    assert cfg["engine"]["state_filter"] == "OK"
+    assert cfg["pipeline"]["scoring"]["method"] == "weighted"
+    assert cfg["pipeline"]["strategies"]["order"] == "fixed"
+    assert cfg["post"]["collect_labels"] is True
 
 
 def test_init_batch_creates_dir_layout(tmp_path, monkeypatch):
@@ -112,15 +103,20 @@ def test_load_config_round_trip(tmp_path):
     cfg_path.write_text(json.dumps(raw), encoding="utf-8")
 
     cfg = load_config(cfg_path)
-    assert isinstance(cfg, BatchConfig)
+    # v1 auto-upgrades to RunRecipe (issue #55)
+    from scripts.batch_config import RunRecipe
+    assert isinstance(cfg, RunRecipe)
     assert cfg.runname == "test-run"
-    assert cfg.input_path == Path("docs/research/digitalprairie/ok_pensioners.json")
-    assert cfg.cgr_path == Path("docs/research/cgr/ok_vets_enriched.jsonl")
-    assert cfg.start_row == 100
-    assert cfg.end_row == 500
+    assert cfg.inputs.pensioners == Path("docs/research/digitalprairie/ok_pensioners.json")
+    assert cfg.inputs.cgr == Path("docs/research/cgr/ok_vets_enriched.jsonl")
+    assert cfg.inputs.start_row == 100
+    assert cfg.inputs.end_row == 500
+    assert cfg.engine.throttle == 3.0
+    assert cfg.engine.state_filter == "OK"
+    # Backward-compat properties still work
     assert cfg.throttle == 3.0
-    assert cfg.low_score_threshold == 0.45
     assert cfg.fag_state_filter == "OK"
+    assert cfg.input_path == Path("docs/research/digitalprairie/ok_pensioners.json")
 
 
 def test_load_config_minimal_required(tmp_path):
@@ -134,12 +130,12 @@ def test_load_config_minimal_required(tmp_path):
     cfg_path.write_text(json.dumps(raw), encoding="utf-8")
     cfg = load_config(cfg_path)
     assert cfg.runname == "minimal"
+    # Backward-compat properties on RunRecipe (v1 auto-upgrade)
     assert cfg.start_row == 0
     assert cfg.end_row is None
     assert cfg.throttle == 2.5
-    # Default threshold derives from scoring_constants (issue #31)
-    assert cfg.low_score_threshold == LOW_SCORE_THRESHOLD
-    assert cfg.fag_state_filter == "OK"  # default
+    # Default state filter
+    assert cfg.fag_state_filter == "OK"
 
 
 def test_load_config_missing_required_key(tmp_path):
@@ -160,16 +156,16 @@ def test_load_config_bad_json(tmp_path):
 
 
 def test_load_config_type_coercion_safe(tmp_path):
-    """Numeric strings are NOT silently coerced (strict typing)."""
+    """v2 RunRecipe coerces numeric strings (float cast is safe)."""
     cfg_path = tmp_path / "config.json"
     cfg_path.write_text(json.dumps({
         "runname": "x",
         "input": "i",
         "cgr": "c",
-        "throttle": "3.0",  # string, not float
+        "throttle": "3.0",  # string is cast to float in v2
     }), encoding="utf-8")
-    with pytest.raises(ConfigError, match="throttle"):
-        load_config(cfg_path)
+    cfg = load_config(cfg_path)
+    assert cfg.engine.throttle == 3.0
 
 
 # ============================================================

@@ -242,8 +242,8 @@ def test_cli_resume_sh_written_on_completion(tmp_path, monkeypatch):
 
     cfg_path = tmp_path / "output" / "gamma" / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-    cfg["input"] = str(pensioners_file)
-    cfg["cgr"] = str(cgr_file)
+    cfg["inputs"]["pensioners"] = str(pensioners_file)
+    cfg["inputs"]["cgr"] = str(cgr_file)
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     with patch("scripts.fag.fag_browser.make_fag_search_fn"):
@@ -271,8 +271,8 @@ def test_cli_resume_after_keyboard_interrupt(tmp_path, monkeypatch):
 
     cfg_path = tmp_path / "output" / "delta" / "config.json"
     cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
-    cfg["input"] = str(pensioners_file)
-    cfg["cgr"] = str(cgr_file)
+    cfg["inputs"]["pensioners"] = str(pensioners_file)
+    cfg["inputs"]["cgr"] = str(cgr_file)
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
     # Make scheduler finish first pensioner, then interrupt second.

@@ -84,6 +84,9 @@ def test_record_collapse_removes_expensive_rows_and_restores_them(filters_page):
     assert card.locator(".candidate-row").count() == 3
 
     toggle.click()
+    # Alpine x-if removes/attaches elements asynchronously.
+    # Wait for expanded sections to disappear.
+    card.locator(".record-status").wait_for(state="detached")
 
     assert toggle.get_attribute("aria-expanded") == "false"
     assert card.locator(".collapsed-summary").count() == 1

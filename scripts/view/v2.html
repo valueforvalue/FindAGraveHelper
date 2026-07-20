@@ -886,6 +886,7 @@ kbd {
                  :aria-labelledby="'record-' + hashId(record.id) + '-heading'">
             <!-- Collapsed state -->
             <template x-if="collapsedRecords.has(String(record.id))">
+                <div>
                 <section class="record-identity">
                     <div class="identity-main">
                         <button class="record-toggle" type="button" data-action="toggle-record"
@@ -910,7 +911,6 @@ kbd {
                     </div>
                 </div>
             </template>
-            <!-- Expanded state -->
             <template x-if="!collapsedRecords.has(String(record.id))">
                 <div>
                 <section class="record-identity">
@@ -1047,6 +1047,10 @@ kbd {
                         </template>
                     </div>
                     <div class="candidate-empty" x-show="!(record.candidates || []).length">No candidates found in this run.</div>
+                    <div class="candidate-section-header" x-show="hasHiddenCandidates(record)">
+                        <button class="button" type="button" data-action="show-all-candidates"
+                                @click="showAllCandidates(record.id)">Show all candidates</button>
+                    </div>
                 </section>
                 <template x-if="engineDetails(record)">
                     <details class="engine-disclosure">
@@ -1231,9 +1235,7 @@ function reviewApp() {
                     </section>
                 </article>`;
             };
-            this.renderEngineDetails = (record) => this.engineDetails(record);
-            this.renderFagDetails = (record) => this.renderFagDetails(record);
-            this.renderNewspapersDetails = (record) => this.renderNewspapersDetails(record);
+            // renderEngineDetails alias: tests call this; delegates to engineDetails.
             this.renderEngineDetails = (record) => this.engineDetails(record);
             this.getRecords = () => this.records;
             this.getDecisions = () => this.decisions;
@@ -1431,6 +1433,22 @@ function reviewApp() {
             return picked ? [picked] : [];
         },
 
+        hasHiddenCandidates(record) {
+            const d = this.decisionFor(record.id);
+            const pickedId = d?.memorial_id || null;
+            const candidates = record.candidates || [];
+            const maxVisible = 3;
+            const showAll = this.showAllCandidateSections.has(String(record.id));
+            if (showAll) return false;
+            if (!pickedId) return candidates.length > maxVisible;
+            return candidates.length > 1;
+        },
+
+        showAllCandidates(recordId) {
+            this.showAllCandidateSections.add(String(recordId));
+            this.showAllCandidateSections = new Set(this.showAllCandidateSections);
+        },
+
         // ── Actions ──
         pick(recordId, candidateId) {
             const record = this.records.find(r => String(r.id) === String(recordId));
@@ -1444,6 +1462,7 @@ function reviewApp() {
             d.at = new Date().toISOString();
             d.decision_type = undefined;
             this.showAllCandidateSections.delete(String(recordId));
+            this.showAllCandidateSections = new Set(this.showAllCandidateSections);
             this.decisionsDirty = true;
             this.saveDecisions();
         },
@@ -1484,23 +1503,32 @@ function reviewApp() {
 
         toggleCollapse(recordId) {
             const key = String(recordId);
-            if (this.collapsedRecords.has(key)) this.collapsedRecords.delete(key);
-            else this.collapsedRecords.add(key);
+            if (this.collapsedRecords.has(key)) {
+                this.collapsedRecords.delete(key);
+            } else {
+                this.collapsedRecords.add(key);
+            }
+            // Reassign for Alpine reactivity (Sets not auto-tracked in v3).
+            this.collapsedRecords = new Set(this.collapsedRecords);
         },
 
         collapseAll() {
             for (const r of this.records) this.collapsedRecords.add(String(r.id));
+            this.collapsedRecords = new Set(this.collapsedRecords);
         },
 
         expandAll() {
             this.collapsedRecords.clear();
             this.showAllCandidateSections.clear();
+            this.collapsedRecords = new Set();
+            this.showAllCandidateSections = new Set();
         },
 
         toggleCompare(recordId) {
             const key = String(recordId);
             if (this.compareRecords.has(key)) this.compareRecords.delete(key);
             else this.compareRecords.add(key);
+            this.compareRecords = new Set(this.compareRecords);
         },
 
         // ── Undo ──
@@ -1650,6 +1678,10 @@ function reviewApp() {
             this.collapsedRecords.clear();
             this.showAllCandidateSections.clear();
             this.compareRecords.clear();
+            // Reassign for Alpine reactivity.
+            this.collapsedRecords = new Set();
+            this.showAllCandidateSections = new Set();
+            this.compareRecords = new Set();
             this.decisionsDirty = false;
             this.undoStack = [];
             this.redoStack = [];
