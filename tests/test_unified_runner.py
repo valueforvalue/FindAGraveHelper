@@ -266,8 +266,10 @@ class TestAlwaysRunFaGPolicy:
 
         The clause language must mention both 'follow-up' (or
         'follow-up phase' / 'additional strategies') AND the
-        low-confidence criterion (best_score < 0.85 OR
-        fag_status in {ambiguous, too_many, no_results}).
+        low-confidence criterion (best_score < AUTO_ACCEPT_THRESHOLD
+        OR fag_status in {ambiguous, too_many, no_results}).
+        The threshold is referenced by name (from scoring_constants)
+        rather than as a literal, per issue #31.
         """
         from scripts.pipeline import core as unified_pipeline
         docstring = unified_pipeline.__doc__ or ""
@@ -279,6 +281,10 @@ class TestAlwaysRunFaGPolicy:
             "Without this endorsement, Phase 3 (leftover-investigation) "
             "would conflict with the always-run-FaG policy."
         )
-        assert "0.85" in docstring, (
-            "Docstring must document the 0.85 hard-target threshold."
+        # The threshold must be referenced by name, not as a literal,
+        # so the docstring stays in sync if AUTO_ACCEPT_THRESHOLD
+        # changes in scoring_constants.
+        assert "AUTO_ACCEPT_THRESHOLD" in docstring, (
+            "Docstring must reference AUTO_ACCEPT_THRESHOLD "
+            "(from scoring_constants) instead of a hardcoded literal."
         )

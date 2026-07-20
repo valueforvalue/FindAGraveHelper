@@ -34,6 +34,11 @@ resolved.
 import re
 from enum import Enum
 
+# Issue #31: Soundex fallback score derives from scoring_constants
+# (different concept from AUTO_ACCEPT_THRESHOLD — they share a
+# numeric value today but mean different things)
+from scripts.pipeline.scoring_constants import SOUNDEX_MATCH_SCORE
+
 
 class MatchStrength(Enum):
     STRONG = "strong"
@@ -135,7 +140,7 @@ def _combined_name_score(a: str, b: str) -> float:
         if a == b:
             return 1.0
         if _soundex(a) == _soundex(b):
-            return 0.85
+            return SOUNDEX_MATCH_SCORE
         return 0.0
 
 

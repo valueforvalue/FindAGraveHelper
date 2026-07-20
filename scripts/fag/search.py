@@ -96,13 +96,9 @@ log = logging.getLogger("search")
 # ============================================================
 # Tunables
 # ============================================================
-# Status values (T008 split regression: these were dropped from
-# scripts/fag/search.py when the file was split into private
-# modules in commit c217eff; restored from the pre-split
-# scripts/search_fag.py.)
-S_AUTO_ACCEPT = "auto_accept"
-S_AMBIGUOUS = "ambiguous"
-S_TOO_MANY = "too_many"
+# Canonical status strings live in scripts.pipeline.scoring_constants
+# (issue #31). The FaG-internal S_CAPTCHA + S_SKIP are different
+# signals (not PensionerRecord.status values) and stay local.
 S_CAPTCHA = "captcha"
 S_SKIP = "skip"
 

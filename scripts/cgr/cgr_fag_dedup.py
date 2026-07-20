@@ -154,9 +154,15 @@ def match_strength(pensioner: dict, cgr_row: dict) -> str:
 # A FaG result is "auto-resolved" when the harness classified it
 # with a status that doesn't need human review. CGR is the
 # confirmation signal, not a replacement for the FaG ladder.
-_AUTO_RESOLVED_FAG_STATUSES = {
-    "auto_accept", "both_match", "BOTH_MATCH",
-}
+#
+# This set MUST contain only canonical FaG status strings (the
+# values in scripts.pipeline.scoring_constants.STATUS_*).
+# 'both_match' is a CGR cross-confirmation record field, NOT a
+# status — it is consumed by scripts.state.report_generator and
+# must never enter the status check. 'BOTH_MATCH' is an internal
+# label, not a status enum value.
+from scripts.pipeline.scoring_constants import STATUS_AUTO_ACCEPT
+_AUTO_RESOLVED_FAG_STATUSES = frozenset({STATUS_AUTO_ACCEPT})
 
 
 def classify_pensioner(

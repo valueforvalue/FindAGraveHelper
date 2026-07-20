@@ -19,6 +19,9 @@ from scripts.batch_config import (  # noqa: E402
     load_config,
     validate_config_against_dir,
 )
+from scripts.pipeline.scoring_constants import (  # noqa: E402
+    LOW_SCORE_THRESHOLD,
+)
 
 
 # ============================================================
@@ -48,7 +51,9 @@ def test_init_batch_writes_config_template(tmp_path, monkeypatch):
     assert cfg["runname"] == "foo"
     # Defaults
     assert cfg["throttle"] == 2.5
-    assert cfg["low_score_threshold"] == 0.40
+    # low_score_threshold must equal the canonical constant
+    # (per issue #31: no hardcoded 0.40 anywhere outside scoring_constants)
+    assert cfg["low_score_threshold"] == LOW_SCORE_THRESHOLD
     assert cfg["start_row"] == 0
     assert cfg["end_row"] is None  # sentinel for "no upper bound"
 
@@ -132,7 +137,8 @@ def test_load_config_minimal_required(tmp_path):
     assert cfg.start_row == 0
     assert cfg.end_row is None
     assert cfg.throttle == 2.5
-    assert cfg.low_score_threshold == 0.40
+    # Default threshold derives from scoring_constants (issue #31)
+    assert cfg.low_score_threshold == LOW_SCORE_THRESHOLD
     assert cfg.fag_state_filter == "OK"  # default
 
 
@@ -180,7 +186,7 @@ def test_validate_config_against_dir_match(tmp_path):
         start_row=0,
         end_row=None,
         throttle=2.5,
-        low_score_threshold=0.40,
+        low_score_threshold=LOW_SCORE_THRESHOLD,
     )
     # Should not raise
     validate_config_against_dir(cfg, out_dir)
@@ -197,7 +203,7 @@ def test_config_validates_runname_matches_dir(tmp_path):
         start_row=0,
         end_row=None,
         throttle=2.5,
-        low_score_threshold=0.40,
+        low_score_threshold=LOW_SCORE_THRESHOLD,
     )
     with pytest.raises(ConfigError, match="runname.*bar.*dir.*foo"):
         validate_config_against_dir(cfg, out_dir)
@@ -215,7 +221,7 @@ def test_runname_is_slug_property():
         start_row=0,
         end_row=None,
         throttle=2.5,
-        low_score_threshold=0.40,
+        low_score_threshold=LOW_SCORE_THRESHOLD,
     )
     assert valid.runname_is_slug() is True
 
@@ -226,7 +232,7 @@ def test_runname_is_slug_property():
         start_row=0,
         end_row=None,
         throttle=2.5,
-        low_score_threshold=0.40,
+        low_score_threshold=LOW_SCORE_THRESHOLD,
     )
     assert invalid.runname_is_slug() is False
 

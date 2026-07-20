@@ -244,3 +244,113 @@ def test_view_html_field_set_matches_schema():
         f"Either add the read in normalizeStateRecord, or remove "
         f"the field from scripts/state/schema.py."
     )
+
+
+# ============================================================
+# Issue #16: spouse follow-up pane (deceased husbands; not
+# pensioners). The view.html must:
+#   - define a pane that's hidden when the followup list is empty
+#   - render a card per followup with the deceased husband's name
+#   - NOT include primary-pension buttons (no auto-accept, no
+#     fail-accept, no decision UI for followups)
+#   - include a stats pill that does NOT count toward "Decided"
+# ============================================================
+class TestSpouseFollowupsPaneContract:
+    """The pane is a reviewer aid for the deceased-husband
+    follow-up research workflow. It must be visually distinct
+    from primary pensioner cards and never be confused with one."""
+
+    def test_pane_element_exists_and_is_hidden_by_default(self):
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        assert 'id="spouseFollowupsPane"' in src, \
+            "pane element missing from view.html"
+        # The pane is hidden by default (display:none) so an
+        # empty followup list doesn't render an empty box.
+        m = re.search(
+            r'<section\s+id="spouseFollowupsPane"[^>]*>',
+            src,
+        )
+        assert m, "pane opening tag not found"
+        assert 'style="display:none;"' in m.group(0), \
+            "pane must default to display:none (only shown when populated)"
+
+    def test_pane_render_function_exists(self):
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        assert "function renderSpouseFollowupsPane" in src, \
+            "renderSpouseFollowupsPane function missing"
+        assert "function renderSpouseFollowupCard" in src, \
+            "renderSpouseFollowupCard function missing"
+        assert "function applySpouseFollowupsFromText" in src, \
+            "applySpouseFollowupsFromText function missing"
+
+    def test_no_primary_pension_buttons_in_followup_card(self):
+        """The followup card must NOT include any of the
+        primary-pension decision buttons (auto-accept,
+        fail-accept, no_results, etc.). Followups are a
+        research aid, not a decision UI."""
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        # Find the body of renderSpouseFollowupCard
+        m = re.search(
+            r"function\s+renderSpouseFollowupCard\s*\([\s\S]*?\n\}\s*\n",
+            src,
+        )
+        assert m, "renderSpouseFollowupCard body not found"
+        body = m.group(0)
+        for forbidden in (
+            "data-action=\"auto-accept\"",
+            "data-action=\"fail-accept\"",
+            "data-action=\"no-results\"",
+            "data-action=\"captcha\"",
+        ):
+            assert forbidden not in body, (
+                f"forbidden primary-pension button in followup card: {forbidden}"
+            )
+        # It SHOULD have a link to the FaG memorial (research)
+        assert "findagrave.com/memorial/" in body, \
+            "followup card should link to FaG memorial for research"
+
+    def test_stats_pill_is_separate_from_decided(self):
+        """The 'Spouse follow-ups N' pill must not be counted
+        in the 'Decided N' pill. Followups are research records,
+        not decisions."""
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        # Find the stats bar block
+        m = re.search(
+            r"function\s+updateStats\s*\(\s*\)[\s\S]{0,5000}?\n\}\n",
+            src,
+        )
+        assert m, "updateStats not found"
+        body = m.group(0)
+        # The 'Decided' pill is computed from decisions[p.pensioner_id]
+        # — a per-pensioner decision. The followup pill must not
+        # touch `decided`.
+        assert "Spouse follow-ups" in body
+        # The followup pill must use spouseFollowups.length
+        # directly, not piggy-back on a pensioner counter.
+        assert re.search(
+            r"Spouse follow-ups\s*\$\{spouseFollowups\.length\}",
+            body,
+        ), "followup pill must read spouseFollowups.length"
+
+    def test_followups_loaded_via_embedded_block_or_fetch(self):
+        """Either the embedded <script> block OR a sibling
+        fetch() of spouse_followups.jsonl must populate the pane."""
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        assert "spouse_followups.jsonl" in src, \
+            "fetch URL for spouse_followups.jsonl missing"
+        assert "embedded-spouse-followups" in src, \
+            "embedded script id for followups missing"
+
+    def test_pane_style_is_visually_distinct_from_pensioner(self):
+        """CSS class .spouse-followup-pane must exist and be
+        visually distinct from .pensioner (different background,
+        border, or accent)."""
+        src = Path("scripts/view.html").read_text(encoding="utf-8")
+        m = re.search(
+            r"\.spouse-followup-pane\s*\{[^}]+\}",
+            src,
+        )
+        assert m, ".spouse-followup-pane CSS block missing"
+        css = m.group(0)
+        # Must have a background OR border distinct from .pensioner
+        assert ("background" in css or "border" in css)

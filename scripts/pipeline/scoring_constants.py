@@ -36,6 +36,15 @@ LOW_SCORE_THRESHOLD: float = 0.40
 #: is 'needs_review' (auto-derived, not a constant itself).
 NEEDS_REVIEW_THRESHOLD: float = LOW_SCORE_THRESHOLD
 
+#: Score assigned by the Soundex-only fallback in
+#: scripts/cgr/cgr_matcher.py when two names share a Soundex
+#: code but are not identical. NOT the same as the
+#: auto-accept threshold — this is the confidence that a
+#: phonetic-only match is meaningful on its own. Kept here
+#: so the Soundex fallback and the rest of the scoring
+#: pipeline share a single source of truth.
+SOUNDEX_MATCH_SCORE: float = 0.85
+
 
 # ============================================================
 # Status strings (the canonical enum of PensionerRecord.status)

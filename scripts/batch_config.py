@@ -20,6 +20,11 @@ from dataclasses import dataclass, field, asdict
 from pathlib import Path
 from typing import Optional
 
+# Issue #31: derive the default low-score threshold from
+# scoring_constants so the CLI flag and the production scorer
+# never drift.
+from scripts.pipeline.scoring_constants import LOW_SCORE_THRESHOLD
+
 
 # ============================================================
 # Errors
@@ -60,7 +65,7 @@ class BatchConfig:
     start_row: int = 0
     end_row: Optional[int] = None
     throttle: float = 2.5
-    low_score_threshold: float = 0.40
+    low_score_threshold: float = LOW_SCORE_THRESHOLD
     # FaG locationId scope. Default "OK" scopes all FaG searches to
     # Oklahoma via locationId=state_38. Other values: any US state
     # abbr ("TX", "MS"), "US" for country_4, or "" to disable the
@@ -87,7 +92,7 @@ REQUIRED_KEYS = ("runname", "input", "cgr")
 DEFAULT_START_ROW = 0
 DEFAULT_END_ROW = None
 DEFAULT_THROTTLE = 2.5
-DEFAULT_LOW_SCORE_THRESHOLD = 0.40
+DEFAULT_LOW_SCORE_THRESHOLD = LOW_SCORE_THRESHOLD
 DEFAULT_FAG_STATE_FILTER = "OK"
 
 

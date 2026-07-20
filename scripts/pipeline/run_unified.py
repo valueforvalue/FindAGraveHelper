@@ -133,6 +133,7 @@ class UnifiedRunnerConfig:
 EMBEDDED_DATA_PLACEHOLDER = "<!--EMBEDDED_RESULTS_JSONL-->"
 EMBEDDED_DD_MATCH_PLACEHOLDER = "<!--EMBEDDED_DD_MATCH_JSON-->"
 EMBEDDED_SPOUSE_MATCH_PLACEHOLDER = "<!--EMBEDDED_SPOUSE_MATCH_JSON-->"
+EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER = "<!--EMBEDDED_SPOUSE_FOLLOWUPS_JSON-->"
 
 
 def copy_view_html_if_missing(
@@ -218,6 +219,23 @@ def copy_view_html_if_missing(
             text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, block)
         else:
             text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, "")
+
+    # J16: spouse_followups sidecar (deceased husbands; not
+    # pensioners). JSONL (one record per line), so we read it
+    # as text and embed as a single <script> block.
+    spouse_followups_path = dest_dir / "spouse_followups.jsonl"
+    if EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER in text:
+        if spouse_followups_path.exists():
+            sidecar = spouse_followups_path.read_text(encoding="utf-8")
+            safe = sidecar.replace("</script>", "<\\/script>")
+            block = (
+                f'<script type="application/json" id="embedded-spouse-followups">\n'
+                f'{safe}\n'
+                f'</script>\n'
+            )
+            text = text.replace(EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER, block)
+        else:
+            text = text.replace(EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER, "")
 
     dest.write_text(text, encoding="utf-8")
     return True

@@ -369,3 +369,60 @@ class TestCLIOutputFormat:
         assert out["pensioner_id_to_person_id"]["42"] is not None
         # Pensioner 99 maps to a singleton (pensioner_99).
         assert out["pensioner_id_to_person_id"]["99"] == "pensioner_99"
+
+
+# ============================================================
+# Issue #31: Soundex fallback score derives from scoring_constants
+# ============================================================
+class TestSoundexFallbackUsesCanonicalConstant:
+    """The Soundex-only fallback in cgr_matcher._combined_name_score
+    must read its score from scoring_constants.SOUNDEX_MATCH_SCORE,
+    not a hardcoded literal. This pins the migration so a future
+    refactor can't silently re-introduce drift."""
+
+    def test_soundex_fallback_returns_canonical_constant(self, monkeypatch):
+        """Block the phonetic_match import to force the Soundex
+        fallback path, then assert the returned score equals
+        scoring_constants.SOUNDEX_MATCH_SCORE (not a literal 0.85)."""
+        import builtins
+        import sys
+        _real_import = builtins.__import__
+
+        def _fake_import(name, globals=None, locals=None, fromlist=(), level=0):
+            if "phonetic_match" in name:
+                raise ImportError("forced by test (issue #31)")
+            return _real_import(name, globals, locals, fromlist, level)
+
+        monkeypatch.setattr(builtins, "__import__", _fake_import)
+
+        if "scripts.cgr.cgr_matcher" in sys.modules:
+            del sys.modules["scripts.cgr.cgr_matcher"]
+        from scripts.cgr.cgr_matcher import _combined_name_score
+        from scripts.pipeline.scoring_constants import SOUNDEX_MATCH_SCORE
+
+        # Smith / Smyth share Soundex S530.
+        s = _combined_name_score("Smith", "Smyth")
+        assert s == SOUNDEX_MATCH_SCORE
+
+    def test_soundex_match_score_is_its_own_module_attribute(self):
+        """SOUNDEX_MATCH_SCORE is its own attribute on
+        scoring_constants (not an alias for AUTO_ACCEPT_THRESHOLD).
+        Both are 0.85 today, but they're different concepts
+        (phonetic-match fallback vs. auto-accept threshold) and
+        must remain independently editable."""
+        import scripts.pipeline.scoring_constants as sc
+        # Both defined as distinct module-level names
+        assert "SOUNDEX_MATCH_SCORE" in dir(sc)
+        assert "AUTO_ACCEPT_THRESHOLD" in dir(sc)
+        # They happen to share a value today
+        assert sc.SOUNDEX_MATCH_SCORE == sc.AUTO_ACCEPT_THRESHOLD == 0.85
+        # But they are stored as separate module attributes,
+        # not as the same object. The cleanest way to check
+        # this without float interning shenanigans: read the
+        # module's source line for each.
+        import inspect
+        src = inspect.getsource(sc)
+        assert "SOUNDEX_MATCH_SCORE" in src
+        # Sanity: each constant gets its own assignment line
+        assert src.count("SOUNDEX_MATCH_SCORE: float = 0.85") == 1
+        assert src.count("AUTO_ACCEPT_THRESHOLD: float = 0.85") == 1

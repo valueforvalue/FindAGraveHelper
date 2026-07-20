@@ -248,6 +248,81 @@
   .filter-row { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
   .file-status { font-size: 12px; color: #666; margin-left: auto; }
   .export-status { font-size: 12px; color: #28a745; margin-top: 8px; }
+
+  /* J16: spouse follow-up pane (deceased husbands; not pensioners).
+     Visually distinct from .pensioner cards: lighter background,
+     dashed border, purple accent, no primary-pension buttons. */
+  .spouse-followup-pane {
+    background: #faf6ff;
+    border: 1px dashed #b07ad6;
+    border-radius: 6px;
+    padding: 16px;
+    margin-bottom: 16px;
+  }
+  .spouse-followup-pane h2 {
+    font-size: 18px;
+    margin: 0 0 8px 0;
+    color: #5a2d82;
+  }
+  .spouse-followup-pane h2 .count {
+    font-weight: normal;
+    color: #888;
+  }
+  .spouse-followup-note {
+    font-size: 12px;
+    color: #5a2d82;
+    margin: 0 0 12px 0;
+  }
+  .spouse-followup-card {
+    background: #fff;
+    border: 1px solid #d8c4ea;
+    border-radius: 4px;
+    padding: 10px 12px;
+    margin-bottom: 8px;
+  }
+  .spouse-followup-card header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+  .spouse-followup-badge {
+    background: #5a2d82;
+    color: #fff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .spouse-followup-card h3 {
+    font-size: 15px;
+    margin: 4px 0;
+  }
+  .spouse-followup-card .marriage {
+    color: #888;
+    font-size: 12px;
+  }
+  .spouse-followup-card .strength {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 3px;
+    text-transform: uppercase;
+  }
+  .spouse-followup-card .strength-strong { background: #d4edda; color: #155724; }
+  .spouse-followup-card .strength-medium { background: #fff3cd; color: #856404; }
+  .spouse-followup-card .strength-weak { background: #f8d7da; color: #721c24; }
+  .spouse-followup-meta,
+  .spouse-followup-via,
+  .spouse-followup-state,
+  .spouse-followup-links {
+    font-size: 12px;
+    margin: 4px 0;
+    color: #444;
+  }
+  .spouse-followup-links a {
+    color: #5a2d82;
+  }
 </style>
 </head>
 <body>
@@ -306,6 +381,20 @@
 
 <main id="results"></main>
 
+<!-- J16: spouse follow-ups pane (deceased husbands; not pensioners).
+     Populated by loadSpouseFollowupsFromText() / fetchSourceJson().
+     Distinct from the main results list because these records
+     are not on the OK pension roll. -->
+<section id="spouseFollowupsPane" class="spouse-followup-pane" style="display:none;">
+  <h2>Spouse follow-ups <span class="count" id="spouseFollowupsCount"></span></h2>
+  <p class="spouse-followup-note">
+    These are deceased husbands identified via their widow's pension.
+    They are not in the OK pension roll and should never be counted as
+    'Decided' or 'Auto-accept' pensioners.
+  </p>
+  <div id="spouseFollowupsList"></div>
+</section>
+
 <!-- J9: placeholder. Replaced at copy time with a <script
      type="application/json"> block containing the matching
      results.jsonl. The page reads from it first; falls back
@@ -332,6 +421,13 @@
      render the gold 'Spouse match' badge + filter; falls back
      to fetch(). -->
 <!--EMBEDDED_SPOUSE_MATCH_JSON-->
+
+<!-- J16: spouse follow-ups (deceased husbands). Replaced at
+     copy time with a <script type="application/json"> block
+     containing the spouse_followups.jsonl sidecar. Used to
+     render the 'Spouse follow-ups' pane above the main list.
+     Falls back to fetch() (works under http://, not file://). -->
+<!--EMBEDDED_SPOUSE_FOLLOWUPS_JSON-->
 
 <!-- J8: modal for the digitalprairie "View source" button.
      Populated by fetchSourceJson(url) and dismissed via the
@@ -804,6 +900,7 @@ function updateStats() {
         <span class="pill" style="background:#e2e3e5;color:#383d41">DD pending ${total - ddMatched}</span>
         <span class="pill" style="background:#fff3cd;color:#856404">Spouse matched ${spouseMatched}</span>
         <span class="pill" style="background:#e2e3e5;color:#383d41">Spouse known ${spouseKnown} / ${total}</span>
+        <span class="pill" style="background:#f0e6ff;color:#5a2d82" title="Deceased husbands identified via widow's pension (not pensioners)">Spouse follow-ups ${spouseFollowups.length}</span>
     `;
 }
 
@@ -1552,6 +1649,13 @@ async function tryAutoLoad() {
         } else {
             await loadDdMatchSidecar();
         }
+        // J16: try to load embedded spouse_followups first; fall back to fetch.
+        const embeddedFollowups = document.getElementById('embedded-spouse-followups');
+        if (embeddedFollowups && embeddedFollowups.textContent.trim()) {
+            applySpouseFollowupsFromText(embeddedFollowups.textContent, 'embedded');
+        } else {
+            await loadSpouseFollowupsSidecar();
+        }
         return;
     }
     // 2) Fetch from same dir (works under http://, not file://).
@@ -1571,6 +1675,8 @@ async function tryAutoLoad() {
             applyLoaded(loadFromText(text, url.split('/').pop()));
             // J14: also try to fetch the dd_match sidecar (best effort).
             await loadDdMatchSidecar();
+            // J16: also try to fetch the spouse_followups sidecar.
+            await loadSpouseFollowupsSidecar();
             return;
         } catch (e) {
             // try next candidate
@@ -1606,6 +1712,108 @@ async function loadDdMatchSidecar() {
         }
     }
     // No sidecar found - that's fine, the badge/filter just won't activate.
+}
+
+// ============================================================
+// J16: spouse follow-ups (deceased husbands).
+// Distinct from the main pensioner list: these records describe
+// someone identified via their widow's pension, not someone in
+// the OK pension roll. Rendered in a separate pane above the
+// main results, with no primary-pension buttons.
+// ============================================================
+let spouseFollowups = [];   // array of followup records
+
+async function loadSpouseFollowupsSidecar() {
+    const here = new URL(window.location.href);
+    const urls = [
+        new URL('spouse_followups.jsonl', here).toString(),
+        new URL('./spouse_followups.jsonl', here).toString(),
+    ];
+    for (const url of urls) {
+        try {
+            const r = await fetch(url);
+            if (!r.ok) continue;
+            const text = await r.text();
+            applySpouseFollowupsFromText(text, url.split('/').pop());
+            return;
+        } catch (e) {
+            // try next URL
+        }
+    }
+    // No sidecar found - that's fine, the pane just stays hidden.
+}
+
+function applySpouseFollowupsFromText(text, sourceLabel) {
+    let records = [];
+    try {
+        // JSONL: one record per non-empty line
+        records = text.split('\n')
+            .map(l => l.trim())
+            .filter(l => l.length > 0)
+            .map(l => JSON.parse(l));
+    } catch (e) {
+        console.warn('spouse_followups sidecar parse failed (' + sourceLabel + '):', e);
+        return;
+    }
+    if (!Array.isArray(records)) return;
+    spouseFollowups = records;
+    renderSpouseFollowupsPane();
+    updateStats();
+}
+
+function renderSpouseFollowupsPane() {
+    const pane = document.getElementById('spouseFollowupsPane');
+    const list = document.getElementById('spouseFollowupsList');
+    const count = document.getElementById('spouseFollowupsCount');
+    if (!pane || !list) return;
+    if (!spouseFollowups.length) {
+        pane.style.display = 'none';
+        return;
+    }
+    pane.style.display = '';
+    count.textContent = `(${spouseFollowups.length})`;
+    list.innerHTML = spouseFollowups.map(f => renderSpouseFollowupCard(f)).join('');
+}
+
+function renderSpouseFollowupCard(f) {
+    const wid = escapeHtml(f.widow_name || `pensioner #${f.widow_pensioner_id}`);
+    const widId = f.widow_pensioner_id;
+    const spFirst = escapeHtml(f.spouse_captured_first || '');
+    const spMid = f.spouse_captured_middle ? ' ' + escapeHtml(f.spouse_captured_middle) : '';
+    const spLast = escapeHtml(f.spouse_captured_last || '');
+    const spDisplay = escapeHtml(f.spouse_captured_display || `${spFirst}${spMid} ${spLast}`.trim());
+    const memId = f.spouse_captured_memorial_id || '';
+    const slug = f.spouse_captured_slug || '';
+    const marriage = f.spouse_captured_marriage_year
+        ? ` <span class="marriage">m. ${escapeHtml(f.spouse_captured_marriage_year)}</span>` : '';
+    const strength = f.spouse_match_strength || 'medium';
+    const role = escapeHtml(f.spouse_role_label || 'deceased husband');
+    const state = escapeHtml(f.spouse_research_state || 'needs_research');
+    // FaG memorial link, no primary-pension buttons.
+    const fagUrl = memId
+        ? `https://www.findagrave.com/memorial/${memId}/${slug}`
+        : '';
+    const fagLink = fagUrl
+        ? `<a href="${escapeHtml(fagUrl)}" target="_blank" rel="noopener">FaG memorial ${memId}</a>`
+        : '';
+    return `
+<article class="spouse-followup-card" data-widow-pid="${widId}">
+  <header>
+    <span class="spouse-followup-badge">Deceased husband (not a pensioner)</span>
+    <span class="strength strength-${escapeHtml(strength)}">${escapeHtml(strength)}</span>
+  </header>
+  <h3>${spDisplay}</h3>
+  <p class="spouse-followup-meta">
+    ${role}
+  </p>
+  <p class="spouse-followup-via">
+    Via widow: <strong>${wid}</strong> (pensioner #${widId})${marriage}
+  </p>
+  <p class="spouse-followup-state">
+    Research state: <strong>${state}</strong>
+  </p>
+  <p class="spouse-followup-links">${fagLink}</p>
+</article>`;
 }
 
 // applyDdMatchFromText: parses a dd_match.json sidecar text and

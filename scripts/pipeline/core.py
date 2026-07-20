@@ -27,10 +27,11 @@ DECISION POLICY (LOCKED 2026-07-16):
 FOLLOW-UP PHASE (LOCKED 2026-07-16):
 
   Rows whose first pass resulted in a low-confidence match
-  (best_score < 0.85, or fag_status in {ambiguous, too_many,
-  no_results}) are eligible for a follow-up phase that runs
-  additional FaG strategies until either (a) a top candidate
-  scores > 0.85 or (b) all follow-up strategies are exhausted.
+  (best_score < AUTO_ACCEPT_THRESHOLD, or fag_status in {ambiguous,
+  too_many, no_results}) are eligible for a follow-up phase that
+  runs additional FaG strategies until either (a) a top candidate
+  scores >= AUTO_ACCEPT_THRESHOLD or (b) all follow-up strategies
+  are exhausted.
 
   Follow-up strategies include (but are not limited to): spouse
   cross-search (if CGR row has spouse data), birth-state

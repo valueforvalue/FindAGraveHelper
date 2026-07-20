@@ -282,3 +282,59 @@ def test_run_dedup_loads_cgr_blocking_index(tmp_path):
     # Year extraction
     assert p1["cgr_match_summary"].get("cgr_birth_year") == "1845"
     assert p1["cgr_match_summary"].get("cgr_death_year") == "1925"
+
+# ============================================================
+# Issue #31: _AUTO_RESOLVED_FAG_STATUSES is a status set, not a
+# mixed status+field set. 'both_match' is a record field, not a
+# status; 'BOTH_MATCH' is an internal label, not a status. None
+# belong in a status check.
+# ============================================================
+class TestAutoResolvedFagStatusesSet:
+    """The set that decides whether FaG is self-resolved must
+    contain only canonical FaG status strings. 'both_match' is a
+    CGR cross-confirmation field on the record, not a status;
+    'BOTH_MATCH' is an internal label that doesn't appear in
+    the STATUS_* enum. Both are noise in the status check."""
+
+    def test_set_contains_only_status_auto_accept(self):
+        """After the #31 migration, the set has exactly one entry:
+        STATUS_AUTO_ACCEPT. 'both_match' and 'BOTH_MATCH' were
+        wrongly mixed in; they're not statuses."""
+        from scripts.cgr.cgr_fag_dedup import _AUTO_RESOLVED_FAG_STATUSES
+        from scripts.pipeline.scoring_constants import STATUS_AUTO_ACCEPT
+        # The set must contain only canonical status strings
+        for s in _AUTO_RESOLVED_FAG_STATUSES:
+            # Every member must be a STATUS_* value (i.e. one of
+            # the canonical FaG statuses, not a field name or
+            # internal label)
+            from scripts.pipeline import scoring_constants as sc
+            canonical = {
+                getattr(sc, name)
+                for name in dir(sc)
+                if name.startswith("STATUS_") and isinstance(getattr(sc, name), str)
+            }
+            assert s in canonical, (
+                f"'{s}' is not a canonical STATUS_* value; "
+                f"only status strings belong in this set"
+            )
+        # And the canonical auto_accept must be there
+        assert STATUS_AUTO_ACCEPT in _AUTO_RESOLVED_FAG_STATUSES
+
+    def test_both_match_is_treated_as_record_field_not_status(self, tmp_path):
+        """Pensioners with fag_status='auto_accept' classify as
+        'clear' (no CGR match, FaG self-resolved). The 'both_match'
+        record field is consumed by report_generator separately;
+        the dedup status check must not depend on it."""
+        results = tmp_path / "results.jsonl"
+        cgr_path = tmp_path / "cgr.jsonl"
+        out_json = tmp_path / "out.json"
+
+        _write_jsonl(results, [
+            _pensioner(pid=1, last="Smith", first="John", fag_status="auto_accept"),
+        ])
+        report = cfd.run_dedup(
+            results_path=results,
+            cgr_path=cgr_path,
+            output_path=out_json,
+        )
+        assert report["pensioners"]["1"]["cgr_dedup_status"] == "clear"

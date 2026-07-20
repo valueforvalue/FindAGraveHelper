@@ -132,6 +132,7 @@ def test_view_html_copy_byte_identical(tmp_path):
         "<!--EMBEDDED_RESULTS_JSONL-->",
         "<!--EMBEDDED_DD_MATCH_JSON-->",
         "<!--EMBEDDED_SPOUSE_MATCH_JSON-->",
+        "<!--EMBEDDED_SPOUSE_FOLLOWUPS_JSON-->",
     ):
         src_text = src_text.replace(placeholder, "")
         dst_text = dst_text.replace(placeholder, "")
@@ -143,7 +144,7 @@ def test_view_html_copy_byte_identical(tmp_path):
     # immediately after the script tag — only real embed blocks
     # have that pattern.
     for embed_id in ("embedded-results-jsonl", "embedded-dd-match",
-                     "embedded-spouse-match"):
+                     "embedded-spouse-match", "embedded-spouse-followups"):
         pat = re.compile(
             r'<script\s+type="application/json"\s+id="' + embed_id
             + r'"[^>]*>\s*\{[\s\S]*?</script>\n?',

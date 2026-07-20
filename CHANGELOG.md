@@ -4,6 +4,100 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Perf: spouse scrape cache + lower throttle (#13)
+
+The post-pipeline spouse-scrape pass used the same 1.5s throttle
+as the strategy ladder. The scrape pass only navigates to one
+trusted URL pattern (`/memorial/<id>/<slug>`), already warmed up,
+and doesn't dodge Cloudflare Turnstile bursts. Tuned two ways:
+
+- **Lower throttle.** `SCRAPE_THROTTLE_SECONDS = 0.5` (was 1.5s
+  implicitly). Wired as a module-level constant so the CLI default
+  (`--throttle`) and the function default both read from one
+  source. Pinned by test.
+- **Per-run memorial cache.** A `_MemorialCache` class stores
+  memorial-page responses keyed by `(memorial_id, slug)`. Persists
+  to `output/<runname>/memorial_cache.jsonl` so a re-run can reuse
+  it. TTL of 7 days by mtime (older files are treated as miss).
+  Multiple pensioners that share a husband's memorial now hit
+  the cache instead of re-navigating. Cache hit count surfaced
+  in the returned stats (`cache_hits`) and the
+  `spouse_compare` sidecar.
+
+Cost on the full 7,709-pensioner roster: instead of ~3,800 page
+hits at 1.5s each (~95 min), the first run is ~32 min and
+re-runs amortize to the cache hit rate (multiple widows → same
+husband = single fetch).
+
+### Feature: separate spouse follow-up pane for deceased husbands (#16)
+
+The `spouse_compare` step now emits a separate audit log of
+deceased-husband follow-ups to
+`output/<runname>/spouse_followups.jsonl`. These records are
+distinct from primary pensioner records: the deceased husband
+is not in the OK pension roll, must not be counted as
+"Decided" or "Auto-accept", and gets a different visual
+treatment in the review UI.
+
+**Schema** (per record):
+  widow_pensioner_id, widow_name, from_top_candidate,
+  spouse_match_strength, spouse_captured_first/middle/last/
+  display/memorial_id/slug/marriage_year, spouse_role_label
+  (always notes "no ACW pension on file"), spouse_research_state
+  (default "needs_research"), captured_at.
+
+**view.html** gets a new pane above the main results list. CSS
+class `.spouse-followup-pane` is visually distinct from
+`.pensioner` cards (light purple, dashed border, no
+primary-pension buttons). Stats bar shows a separate
+"Spouse follow-ups N" pill that does NOT count toward
+"Decided" or "Auto-accept". Embedded via the new
+`EMBEDDED_SPOUSE_FOLLOWUPS_JSON` placeholder; falls back to
+`fetch('spouse_followups.jsonl')`.
+
+The interactive "Mark research complete" + notes field for
+each follow-up is deferred to a follow-up slice; the pane
+currently shows the captured data only.
+
+### Refactor: complete scoring_constants migration (#31)
+
+Completed the migration of hardcoded thresholds and status strings to
+`scripts/pipeline/scoring_constants.py`:
+
+- `scripts/batch_config.py` — `LOW_SCORE_THRESHOLD` is now imported
+  from `scoring_constants`. Both the dataclass default and the
+  module-level `DEFAULT_LOW_SCORE_THRESHOLD` derive from the
+  canonical value.
+- `scripts/cgr/cgr_matcher.py` — Soundex fallback now uses
+  `scoring_constants.SOUNDEX_MATCH_SCORE` (a new constant,
+  intentionally distinct from `AUTO_ACCEPT_THRESHOLD` even though
+  they share a numeric value today — different concepts).
+- `scripts/cgr/cgr_fag_dedup.py` — `_AUTO_RESOLVED_FAG_STATUSES`
+  now contains only `STATUS_AUTO_ACCEPT`. The `both_match` field
+  was a record field, not a status; the old set conflated the two
+  and could misclassify records that have `both_match` populated
+  but a `fag_status` other than `auto_accept`.
+- `scripts/fag/search.py` — dead constants `S_AUTO_ACCEPT`,
+  `S_AMBIGUOUS`, `S_TOO_MANY` removed. The FAG-internal signals
+  `S_CAPTCHA` and `S_SKIP` remain (different concept, not a
+  `PensionerRecord.status`). Canonical status strings are
+  imported from `scoring_constants.STATUS_*` as needed.
+- `scripts/pipeline/core.py` — module docstring references
+  `AUTO_ACCEPT_THRESHOLD` by name instead of the literal `0.85`.
+
+Tests updated to assert against the canonical constant, not the
+literal value, so future threshold tweaks are caught by the type
+checker instead of silently passing.
+
+Not migrated (out of scope, future work):
+- `scripts/blackboard/decision_policy.py` — re-declares
+  `LOW_SCORE_THRESHOLD = 0.40` and a parallel set of `STATUS_*`
+  constants. The blackboard layer should import from
+  `scoring_constants`; tracked as a follow-up.
+- `scripts/pipeline/leftover_investigation.py` — has a local
+  `INVESTIGATE_FAG_STATUSES` that duplicates
+  `scoring_constants.INVESTIGATE_FAG_STATUSES`.
+
 ### Tests: align regression net with testing philosophy
 
 - Replaced shallow Knowledge Source name/eligibility checks with behavior
