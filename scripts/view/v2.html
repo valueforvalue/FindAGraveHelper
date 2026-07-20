@@ -910,8 +910,8 @@ function lifespan(attributes) {
 
 function renderSourceLinks(record) {
     const links = [];
-    const cardUrl = safeUrl(record.attributes.pensioncard_url);
-    const sourceUrl = safeUrl(record.attributes.source_url);
+    const cardUrl = safeUrl(fixDigitalPrairieUrl(record.attributes.pensioncard_url));
+    const sourceUrl = safeUrl(fixDigitalPrairieUrl(record.attributes.source_url));
     if (cardUrl) {
         links.push(`<a href="${escapeHtml(cardUrl)}" target="_blank" rel="noopener">→ source card</a>`);
     }
@@ -919,6 +919,34 @@ function renderSourceLinks(record) {
         links.push(`<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">↗ View source</a>`);
     }
     return links.join('');
+}
+
+function fixDigitalPrairieUrl(url) {
+    if (typeof url !== 'string') return url;
+    if (url.includes('digitalprairie.ok.gov/digital/singleitem/')) {
+        return url.replace('/digital/singleitem/', '/digital/api/singleitem/');
+    }
+    return url;
+}
+
+function buildIiifThumbnailUrl(pageId) {
+    return `https://digitalprairie.ok.gov/iiif/2/pensioncard:${pageId}/full/300,/0/default.jpg`;
+}
+
+function renderPensionerCardImage(record) {
+    const pages = record.attributes?.pensioncard_pages || [];
+    if (!pages.length) return '';
+    const title = record.title || 'pensioner';
+    return pages.map((pageId, i) => {
+        const src = buildIiifThumbnailUrl(pageId);
+        const alt = `${escapeHtml(title)} pension card ${i + 1}`;
+        return `<a href="${src.replace('/300,/', '/full/')}" target="_blank" title="Click for full size">
+                    <img src="${src}" alt="${alt}" loading="lazy"
+                         style="max-width:240px; max-height:160px; margin:4px 6px 0 0;
+                                border:1px solid #ccc; border-radius:3px;
+                                vertical-align:top; background:#fafafa;" />
+                </a>`;
+    }).join('');
 }
 
 function renderEvidenceMeter(name, label, value, maximum) {
@@ -1049,6 +1077,7 @@ function renderRecord(record) {
                         <h2 id="${headingId}">${escapeHtml(recordTitle)}</h2>
                         ${meta.length ? `<div class="record-meta">${meta.map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>` : ''}
                         <div class="source-links">${renderSourceLinks(record)}</div>
+                        ${renderPensionerCardImage(record)}
                     </div>
                     <span class="record-id">#${escapeHtml(record.id)}</span>
                 </div>

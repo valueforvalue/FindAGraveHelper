@@ -67,6 +67,12 @@ Changed the runner default from `scripts/view.html` (v1) to
   to keep the old layout in new run directories.
 - No byte-identical output change in existing tests.
 
+### Fix(view): restore pension card IIIF images in v2 (#38)
+
+The v2 rewrite dropped three v1 helpers: `fixDigitalPrairieUrl`,
+`buildIiifThumbnailUrl`, and `renderPensionerCardImage`. Restored them
+and wired pension card images back into the record identity section.
+
 Tests: 0 new. Full suite: 1,369 passed, 1 deselected.
 
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
