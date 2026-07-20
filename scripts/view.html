@@ -607,10 +607,8 @@ function normalizeStateRecord(rec) {
             // scrape); null when not yet compared.
             spouse_match: rec.spouse_match || null,
             timestamp: rec.timestamp || '',
-            // #22: carry through the remaining PensionerRecord
-            // fields so the JS-side normalizer covers the full
-            // Python-side schema (test_view_html_field_set_matches_schema).
-            cgr_skipped_fag: !!rec.cgr_skipped_fag,
+            // Status, candidates, and user-visible metadata used below are the
+            // review UI contract. Obsolete policy fields stay out of this projection.
             error: rec.error || '',
             extras: rec.extras || {},
             fag_status: rec.fag_status || '',
@@ -643,8 +641,7 @@ function normalizeStateRecord(rec) {
         pensioner_spouse_last:   rec.pensioner_spouse_last   || '',
         spouse_match: rec.spouse_match || null,
         timestamp: rec.timestamp || '',
-        // #22: same field-set coverage as the unified branch above.
-        cgr_skipped_fag: false,
+        // Same field-set coverage as the unified branch above.
         error: rec.error || '',
         extras: rec.extras || {},
         fag_status: rec.fag_status || '',

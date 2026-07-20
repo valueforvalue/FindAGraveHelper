@@ -24,7 +24,8 @@ import pytest
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
-from scripts.pipeline.run_unified import (  # noqa: E402
+from scripts.blackboard.scheduler import BlackboardScheduler
+from scripts.pipeline.run_unified import (
     UnifiedRunnerConfig,
     run_batch,
     cli_main,
@@ -274,19 +275,21 @@ def test_cli_resume_after_keyboard_interrupt(tmp_path, monkeypatch):
     cfg["cgr"] = str(cgr_file)
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
-    # Make BrowserSession.search raise KeyboardInterrupt on 2nd pensioner
+    # Make scheduler finish first pensioner, then interrupt second.
+    original_run = BlackboardScheduler.run
     call_count = {"n": 0}
-    orig_search = None
 
-    def fake_search(pensioner, **kwargs):
+    def interrupt_after_one(self, *args, **kwargs):
         call_count["n"] += 1
         if call_count["n"] == 2:
             raise KeyboardInterrupt("simulated user abort")
-        return [], "no_results"
+        return original_run(self, *args, **kwargs)
 
-    with patch("scripts.blackboard.scheduler.BlackboardScheduler.run",
-               side_effect=KeyboardInterrupt("simulated")):
-        rc = cli_main(["--config", str(cfg_path)])
+    with patch(
+        "scripts.blackboard.scheduler.BlackboardScheduler.run",
+        new=interrupt_after_one,
+    ):
+        rc = cli_main(["--config", str(cfg_path), "--no-fag"])
 
     # cli_main returns 130 on KeyboardInterrupt
     assert rc == 130

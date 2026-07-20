@@ -10,11 +10,12 @@ Public surface:
 """
 from __future__ import annotations
 
+import hashlib
 import logging
-import uuid
 from typing import Any
 
 from scripts.blackboard.schema import (
+    Kind,
     Observation,
     PlanScope,
     QueryPlan,
@@ -23,6 +24,11 @@ from scripts.blackboard.schema import (
 from scripts.blackboard.store import BlackboardStore
 
 log = logging.getLogger("regional_planner")
+
+
+def _stable_id(*parts: str) -> str:
+    value = "\x1f".join(parts)
+    return hashlib.sha1(value.encode("utf-8")).hexdigest()[:12]
 
 
 class RegionalPlannerKS:
@@ -58,6 +64,9 @@ class RegionalPlannerKS:
     # Texas migration indicators
     _TEXAS_HINTS = ("texas", "tx", "reconstruction", "migrated to texas")
 
+    def __init__(self, *, enable_search: bool = True) -> None:
+        self.enable_search = enable_search
+
     def eligible(self, item: WorkItem) -> bool:
         return item.knowledge_source == "RegionalPlannerKS"
 
@@ -77,31 +86,33 @@ class RegionalPlannerKS:
         plan_observations: list[Observation] = []
         for plan in plans:
             store.enqueue_plan(plan)
-            plan_observations.append(
-                Observation(
-                    observation_id=f"obs-plan-{uuid.uuid4().hex[:12]}",
-                    pensioner_id=item.pensioner_id,
-                    kind="FaGSearchPlan",  # type: ignore[arg-type]
-                    source="RegionalPlannerKS",
-                    source_version="1",
-                    run_id=item.pass_id,
-                    pass_id="1",
-                    caused_by=item.work_id,
-                    payload=plan.to_dict(),
-                )
+            plan_observation = Observation(
+                observation_id=f"obs-plan-{plan.plan_id}",
+                pensioner_id=item.pensioner_id,
+                kind=Kind.FaGSearchPlan,
+                source="RegionalPlannerKS",
+                source_version="1",
+                run_id=item.pass_id,
+                pass_id="1",
+                caused_by=item.work_id,
+                payload=plan.to_dict(),
             )
+            store.append_observation(plan_observation)
+            plan_observations.append(plan_observation)
 
-        # Enqueue FaG scraper work for each plan
-        for plan in plans:
-            store.enqueue_work(
-                WorkItem(
-                    work_id=f"work-fag-{uuid.uuid4().hex[:12]}",
-                    pensioner_id=item.pensioner_id,
-                    knowledge_source="FaGScraperKS",
-                    plan_id=plan.plan_id,
-                    pass_id="1",
+        # Enqueue provider work only for browser-enabled runs. Dry/no-FaG
+        # runs still persist plans for observability but leave no orphan work.
+        if self.enable_search:
+            for plan in plans:
+                store.enqueue_work(
+                    WorkItem(
+                        work_id=f"work-fag-{plan.plan_id}",
+                        pensioner_id=item.pensioner_id,
+                        knowledge_source="FaGScraperKS",
+                        plan_id=plan.plan_id,
+                        pass_id="1",
+                    )
                 )
-            )
 
         log.info(
             "RegionalPlannerKS: %d plans for pensioner %d.",
@@ -151,7 +162,10 @@ class RegionalPlannerKS:
         # 1. Oklahoma (always first for this project)
         plans.append(
             QueryPlan(
-                plan_id=f"plan-ok-{uuid.uuid4().hex[:8]}",
+                plan_id=(
+                f"plan-ok-{pensioner_id}-"
+                f"{_stable_id(str(pensioner_id), 'OK', 'B1-exact')}"
+            ),
                 pensioner_id=pensioner_id,
                 strategy="B1-exact",
                 params=dict(base_params),
@@ -166,7 +180,10 @@ class RegionalPlannerKS:
         if origin_state and origin_state != "OK":
             plans.append(
                 QueryPlan(
-                    plan_id=f"plan-regiment-{uuid.uuid4().hex[:8]}",
+                    plan_id=(
+                        f"plan-regiment-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), origin_state, 'B1-exact')}"
+                    ),
                     pensioner_id=pensioner_id,
                     strategy="B1-exact",
                     params=dict(base_params),
@@ -182,7 +199,10 @@ class RegionalPlannerKS:
         if self._has_texas_evidence(pensioner):
             plans.append(
                 QueryPlan(
-                    plan_id=f"plan-texas-{uuid.uuid4().hex[:8]}",
+                    plan_id=(
+                        f"plan-texas-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), 'TX', 'B1-exact')}"
+                    ),
                     pensioner_id=pensioner_id,
                     strategy="B1-exact",
                     params=dict(base_params),
@@ -195,7 +215,10 @@ class RegionalPlannerKS:
         # 4. US-wide fallback
         plans.append(
             QueryPlan(
-                plan_id=f"plan-us-{uuid.uuid4().hex[:8]}",
+                plan_id=(
+                    f"plan-us-{pensioner_id}-"
+                    f"{_stable_id(str(pensioner_id), 'US', 'B4-fuzzy-last')}"
+                ),
                 pensioner_id=pensioner_id,
                 strategy="B4-fuzzy-last",
                 params=dict(base_params),

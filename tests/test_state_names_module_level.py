@@ -85,25 +85,35 @@ def test_parse_results_page_does_not_recreate_dict():
 
 
 class TestStateScoreNowUsed:
-    """Bug 2.2: state_score was computed but not added to score sum."""
+    """Bug 2.2: matching burial state must affect observable score."""
 
-    def test_score_candidate_includes_state_score(self):
-        import inspect
-        from scripts import search_fag
-        src = inspect.getsource(search_fag.score_candidate)
-        # The score formula must reference state_score; previously it didn't.
-        assert "state_score" in src, (
-            "score_candidate must reference state_score in the score "
-            "formula. The current formula at line ~534 omits it (Bug 2.2)."
-        )
-        # And the score formula itself should include a coefficient for it.
-        import re
-        match = re.search(r"score\s*=\s*\(([^)]+)\)", src, re.DOTALL)
-        assert match is not None, "Could not find score formula in score_candidate"
-        formula = match.group(1)
-        assert "state_score" in formula, (
-            f"state_score is computed but not added to the score formula:\n{formula}"
-        )
+    def test_matching_state_increases_score(self):
+        from scripts.fag.scoring import score_candidate
+
+        local = {
+            "first_name": "John",
+            "middle_name": "",
+            "last_name": "Smith",
+            "_state_abbr": "TX",
+            "_death_year": "",
+        }
+        candidate = {
+            "memorial_id": "1",
+            "slug": "john-smith",
+            "details": {
+                "state": "TX",
+                "birth_year": "1840",
+                "death_year": "1920",
+                "is_veteran": False,
+            },
+        }
+        matching_score, matching_breakdown = score_candidate(local, candidate)
+        candidate["details"]["state"] = "VA"
+        other_score, other_breakdown = score_candidate(local, candidate)
+
+        assert matching_breakdown["state"] == pytest.approx(0.1)
+        assert other_breakdown["state"] == 0.0
+        assert matching_score > other_score
 
 
 class TestLouisianaTypo:

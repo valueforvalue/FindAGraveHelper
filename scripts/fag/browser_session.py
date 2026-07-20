@@ -46,6 +46,8 @@ class BrowserSession:
         max_consecutive_errors: int = 10,
         user_agent: str | None = None,
     ) -> None:
+        if throttle < 2.5:
+            raise ValueError("BrowserSession throttle must be at least 2.5 seconds")
         self.throttle = throttle
         self.reset_every = max(reset_every, 1)  # prevent modulo-zero
         self.headless = headless
@@ -141,7 +143,11 @@ class BrowserSession:
     # ----------------------------------------------------------
 
     def search(
-        self, pensioner: dict[str, Any], *, state_filter: str | None = None
+        self,
+        pensioner: dict[str, Any],
+        *,
+        state_filter: str | None = None,
+        strategy_name: str | None = None,
     ) -> tuple[list[dict[str, Any]], str]:
         """Run FaG search for one pensioner. Thread-safe.
 
@@ -166,6 +172,7 @@ class BrowserSession:
                     self._page, pensioner,
                     throttle_seconds=self.throttle,
                     state_filter=sf,
+                    strategy_name=strategy_name,
                 )
             except Exception as e:
                 self._consecutive_errors += 1

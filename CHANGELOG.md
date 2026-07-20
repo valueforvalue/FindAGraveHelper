@@ -4,6 +4,25 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Tests: align regression net with testing philosophy
+
+- Replaced shallow Knowledge Source name/eligibility checks with behavior
+  tests for provider gating, search scope mapping, observation persistence,
+  candidate classification, and refinement-plan enqueueing.
+- Made scheduler tests assert exact `BLOCKED` and `RETRYABLE` states; added
+  browser-mode and explicit no-FaG integration coverage.
+- Fixed scheduler CLI wiring so normal runs enable `BrowserSession`; only
+  `--no-fag` and dry runs disable FaG. Scheduler now honors `--limit`,
+  persists plan observations with deterministic resume-safe IDs, dispatches
+  scorer/refiner work, executes one named strategy per QueryPlan, records empty
+  search outcomes, atomically projects state with per-row fsync, and bounds
+  retries with delayed backoff. Refreshed `scripts/smoke_diff.py` config wiring.
+- Consolidated same-fixture CGR parser assertions with parametrized coverage.
+- Replaced source-grep score assertion with observable matching-state score
+  behavior; added teardown-error cleanup coverage.
+- Removed obsolete `cgr_skipped_fag` review-UI projection and trimmed duplicate
+  policy guards. Updated application control test to its button behavior.
+
 ### Refactor: Blackboard architecture + scheduler pipeline (38 slices, 25 commits)
 
 Complete architectural refactor of the Find a Grave Helper Python harness

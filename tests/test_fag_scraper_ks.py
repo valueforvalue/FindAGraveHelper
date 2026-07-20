@@ -1,27 +1,166 @@
-"""Tests for FaGScraperKS and CGRFetcherKS — Phase 6 Slice 6.2."""
+"""Behavior tests for FaGScraperKS and CGRFetcherKS."""
 
-from scripts.blackboard.schema import WorkItem
+from contextlib import contextmanager
+
+import pytest
+
+from scripts.blackboard.schema import Kind, PlanScope, QueryPlan, WorkItem
+from scripts.blackboard.store import SqliteBlackboardStore
 from scripts.knowledge.fag_scraper import CGRFetcherKS, FaGScraperKS
 
 
-def test_fag_scraper_ks_name():
-    ks = FaGScraperKS()
-    assert ks.name == "FaGScraperKS"
+class _RecordingGate:
+    def __init__(self) -> None:
+        self.kinds: list[str] = []
+
+    @contextmanager
+    def acquire(self, kind: str):
+        self.kinds.append(kind)
+        yield object()
 
 
-def test_fag_scraper_eligible_for_its_own_work():
-    ks = FaGScraperKS()
-    item = WorkItem(work_id="w1", pensioner_id=1, knowledge_source="FaGScraperKS")
-    assert ks.eligible(item) is True
+class _RecordingSession:
+    def __init__(self) -> None:
+        self.calls: list[tuple[dict, str | None]] = []
+
+    def search(
+        self,
+        pensioner: dict,
+        *,
+        state_filter: str | None = None,
+        strategy_name: str | None = None,
+    ):
+        self.calls.append((pensioner, state_filter, strategy_name))
+        return [
+            {
+                "memorial_id": "50923719",
+                "slug": "william-looney",
+                "name": "William Looney",
+                "score": 0.91,
+            }
+        ], "auto_accept"
 
 
-def test_fag_scraper_not_eligible_for_other_work():
-    ks = FaGScraperKS()
-    item = WorkItem(work_id="w1", pensioner_id=1, knowledge_source="OtherKS")
-    assert ks.eligible(item) is False
+@pytest.fixture
+def store(tmp_path):
+    blackboard = SqliteBlackboardStore(tmp_path / "blackboard.db")
+    blackboard.open()
+    yield blackboard
+    blackboard.close()
 
 
-def test_fag_scraper_estimated_cost():
-    ks = FaGScraperKS()
-    item = WorkItem(work_id="w1", pensioner_id=1, knowledge_source="FaGScraperKS")
-    assert ks.estimated_cost(item) == 1
+def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store):
+    plan = QueryPlan(
+        plan_id="plan-1",
+        pensioner_id=7,
+        strategy="B1-exact",
+        params={"first_name": "William", "last_name": "Looney"},
+        scope=PlanScope.US,
+    )
+    store.enqueue_plan(plan)
+    item = WorkItem(
+        work_id="work-1",
+        pensioner_id=7,
+        knowledge_source="FaGScraperKS",
+        plan_id=plan.plan_id,
+    )
+    gate = _RecordingGate()
+    session = _RecordingSession()
+
+    observations = FaGScraperKS(browser_session=session, gate=gate).invoke(
+        item, store
+    )
+
+    assert gate.kinds == ["search"]
+    assert session.calls == [
+        (
+            {"first_name": "William", "last_name": "Looney", "id": 7},
+            "US",
+            "B1-exact",
+        )
+    ]
+    assert len(observations) == 1
+    assert observations[0].kind == Kind.FaGCandidateFetch
+    assert observations[0].caused_by == "work-1"
+    assert observations[0].payload == {
+        "memorial_id": "50923719",
+        "slug": "william-looney",
+        "name": "William Looney",
+        "score": 0.91,
+        "via_strategy": "B1-exact",
+        "via_scope": "US",
+    }
+    persisted = store.read_observations_since(None)
+    assert [obs.observation_id for obs in persisted] == [
+        observations[0].observation_id
+    ]
+    score_work = store.con.execute(
+        "SELECT knowledge_source FROM work_items WHERE work_id = ?",
+        ("work-score-7-1",),
+    ).fetchone()
+    assert score_work == ("CandidateScorerKS",)
+
+
+def test_fag_scraper_persists_empty_search_status(store):
+    plan = QueryPlan(
+        plan_id="plan-empty",
+        pensioner_id=7,
+        strategy="B1-exact",
+        params={"first_name": "Nobody", "last_name": "Missing"},
+        scope=PlanScope.OK,
+    )
+    store.enqueue_plan(plan)
+    item = WorkItem(
+        work_id="work-empty",
+        pensioner_id=7,
+        knowledge_source="FaGScraperKS",
+        plan_id=plan.plan_id,
+    )
+    session = _RecordingSession()
+    session.search = lambda *args, **kwargs: ([], "no_results")
+
+    observations = FaGScraperKS(
+        browser_session=session, gate=_RecordingGate()
+    ).invoke(item, store)
+
+    assert len(observations) == 1
+    assert observations[0].payload == {
+        "_search_status": "no_results",
+        "via_strategy": "B1-exact",
+        "via_scope": "OK",
+    }
+
+
+def test_fag_scraper_without_plan_does_not_touch_provider(store):
+    item = WorkItem(
+        work_id="work-missing-plan",
+        pensioner_id=7,
+        knowledge_source="FaGScraperKS",
+    )
+    gate = _RecordingGate()
+    session = _RecordingSession()
+
+    observations = FaGScraperKS(browser_session=session, gate=gate).invoke(
+        item, store
+    )
+
+    assert observations == []
+    assert gate.kinds == []
+    assert session.calls == []
+    assert store.read_observations_since(None) == []
+
+
+def test_cgr_fetcher_persists_corroboration_observation(store):
+    item = WorkItem(
+        work_id="work-cgr",
+        pensioner_id=7,
+        knowledge_source="CGRFetcherKS",
+    )
+
+    observations = CGRFetcherKS().invoke(item, store)
+
+    assert len(observations) == 1
+    assert observations[0].kind == Kind.CGRCorroboration
+    assert observations[0].caused_by == "work-cgr"
+    assert observations[0].payload["status"] == "fetched"
+    assert len(store.read_observations_since(None)) == 1

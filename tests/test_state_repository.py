@@ -12,6 +12,7 @@ format directly. The Repository owns:
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import pytest
@@ -156,6 +157,18 @@ def test_replace_all_overwrites_file(repo, state_path):
     repo.replace_all([_record(10), _record(20)])
     ids = [r["pensioner_id"] for r in repo.iter_all()]
     assert ids == [10, 20]
+
+
+def test_replace_all_fsyncs_each_record_before_atomic_replace(
+    repo, state_path, monkeypatch
+):
+    fsync_calls: list[int] = []
+    monkeypatch.setattr(os, "fsync", lambda fd: fsync_calls.append(fd))
+
+    repo.replace_all([_record(1), _record(2)])
+
+    assert len(fsync_calls) == 2
+    assert [r["pensioner_id"] for r in repo.iter_all()] == [1, 2]
 
 
 def test_replace_all_atomic_writes_via_tmp_then_rename(repo, state_path):

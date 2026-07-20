@@ -9,6 +9,8 @@ We are CONSERVATIVE: capture every label/value pair the page shows.
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -18,54 +20,34 @@ from scripts.cgr.cgr_cem import parse_cgr_cem
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
 
 
-def test_parse_rose_hill_cemetery_returns_dict():
+@pytest.fixture
+def parsed_cemetery() -> dict:
+    """Parse recorded cemetery page once per test that needs full data."""
+    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
+    return parse_cgr_cem(html)
+
+
+def test_parse_rose_hill_cemetery_returns_dict(parsed_cemetery):
     """cemDetails_88159 parses to a non-empty dict."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    result = parse_cgr_cem(html)
-    assert isinstance(result, dict)
-    assert len(result) > 0
+    assert isinstance(parsed_cemetery, dict)
+    assert parsed_cemetery
 
 
-def test_parse_rose_hill_name():
-    """Cemetery name is 'Rose Hill Cemetery'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["name"] == "Rose Hill Cemetery"
-
-
-def test_parse_rose_hill_city():
-    """City is 'Chickasha'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["city"] == "Chickasha"
-
-
-def test_parse_rose_hill_county():
-    """County is 'Grady'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["county"] == "Grady"
-
-
-def test_parse_rose_hill_state():
-    """State is 'OK'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["state"] == "OK"
-
-
-def test_parse_rose_hill_latitude():
-    """Latitude is '35.0314' (parsed to string, not float — preserve precision)."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["latitude"] == "35.0314"
-
-
-def test_parse_rose_hill_longitude():
-    """Longitude is '-97.9453'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["longitude"] == "-97.9453"
-
-
-def test_parse_rose_hill_marker_type():
-    """Marker type is 'Confederate'."""
-    html = (FIXTURE_DIR / "cemDetails_88159.html").read_text(encoding="iso-8859-1")
-    assert parse_cgr_cem(html)["marker_type"] == "Confederate"
+@pytest.mark.parametrize(
+    ("field", "expected"),
+    [
+        ("name", "Rose Hill Cemetery"),
+        ("city", "Chickasha"),
+        ("county", "Grady"),
+        ("state", "OK"),
+        ("latitude", "35.0314"),
+        ("longitude", "-97.9453"),
+        ("marker_type", "Confederate"),
+    ],
+)
+def test_parse_rose_hill_fields(parsed_cemetery, field, expected):
+    """Recorded fields remain faithful to CGR source page."""
+    assert parsed_cemetery[field] == expected
 
 
 def test_parse_rose_hill_condition():

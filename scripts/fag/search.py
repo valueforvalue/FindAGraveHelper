@@ -222,7 +222,8 @@ def warmup_session(page: Page, log_) -> bool:
 
 def search_one_pensioner(page: Page, pensioner: dict,
                           throttle_seconds: Optional[float] = None,
-                          state_filter: Optional[str] = None) -> dict:
+                          state_filter: Optional[str] = None,
+                          strategy_name: Optional[str] = None) -> dict:
     """Run the strategy ladder for one pensioner. Return a state record.
 
     throttle_seconds: if provided, sleep this long between
@@ -288,7 +289,15 @@ def search_one_pensioner(page: Page, pensioner: dict,
     any_error = False
     parse_error_streak = 0
 
-    for name, fn in STRATEGIES:
+    selected_strategies = STRATEGIES
+    if strategy_name is not None:
+        selected_strategies = [
+            (name, fn) for name, fn in STRATEGIES if name == strategy_name
+        ]
+        if not selected_strategies:
+            raise ValueError(f"Unknown FaG strategy: {strategy_name}")
+
+    for name, fn in selected_strategies:
         # Build per-strategy closure for F2/F3 which need pensioner
         if name == "F2-regiment-bio":
             params = strategy_regiment_bio(first, middle, last, pensioner.get("regiment", ""), pensioner.get("death_year"))

@@ -57,7 +57,7 @@ class FaGScraperKS:
 
         # Acquire gate token
         with self._gate.acquire("search") as token:
-            candidates = self._execute_search(plan, token)
+            candidates, status = self._execute_search(plan, token)
 
         # Emit observations
         observations: list[Observation] = []
@@ -75,6 +75,36 @@ class FaGScraperKS:
             )
             store.append_observation(obs)
             observations.append(obs)
+
+        if not candidates:
+            obs = Observation(
+                observation_id=f"obs-fag-{plan.plan_id}-empty",
+                pensioner_id=item.pensioner_id,
+                kind=Kind.FaGCandidateFetch,
+                source="FaGScraperKS",
+                source_version="1",
+                run_id=item.pass_id,
+                pass_id=item.pass_id,
+                caused_by=item.work_id,
+                payload={
+                    "_search_status": status,
+                    "via_strategy": plan.strategy,
+                    "via_scope": plan.scope.value,
+                },
+            )
+            store.append_observation(obs)
+            observations.append(obs)
+
+        # Score once after all search work in this pass. Duplicate plan
+        # invocations converge on one idempotent WorkItem.
+        store.enqueue_work(
+            WorkItem(
+                work_id=f"work-score-{item.pensioner_id}-{item.pass_id}",
+                pensioner_id=item.pensioner_id,
+                knowledge_source="CandidateScorerKS",
+                pass_id=item.pass_id,
+            )
+        )
 
         log.info(
             "FaGScraperKS: %d candidates for pensioner %d (plan %s).",
@@ -138,7 +168,7 @@ class FaGScraperKS:
 
     def _execute_search(
         self, plan: QueryPlan, token: Any
-    ) -> list[dict[str, Any]]:
+    ) -> tuple[list[dict[str, Any]], str]:
         """Run the actual FaG search for one QueryPlan.
 
         Builds a full pensioner dict from plan params (which now
@@ -159,21 +189,25 @@ class FaGScraperKS:
         }
         sf = scope_to_filter.get(plan.scope.value if hasattr(plan.scope, 'value') else str(plan.scope))
 
-        if self._session is not None:
-            candidates, _status = self._session.search(pensioner, state_filter=sf)
-            return [
-                {
-                    "memorial_id": c.get("memorial_id", ""),
-                    "slug": c.get("slug", ""),
-                    "name": c.get("name", ""),
-                    "score": c.get("score", 0.0),
-                    "via_strategy": plan.strategy,
-                    "via_scope": plan.scope.value,
-                }
-                for c in candidates
-            ]
+        if self._session is None:
+            return [], "not_run"
 
-        return []
+        candidates, status = self._session.search(
+            pensioner,
+            state_filter=sf,
+            strategy_name=plan.strategy,
+        )
+        return [
+            {
+                "memorial_id": c.get("memorial_id", ""),
+                "slug": c.get("slug", ""),
+                "name": c.get("name", ""),
+                "score": c.get("score", 0.0),
+                "via_strategy": plan.strategy,
+                "via_scope": plan.scope.value,
+            }
+            for c in candidates
+        ], status
 
 
 class CGRFetcherKS:

@@ -31,7 +31,7 @@ def extract_total(text):
 def main():
     results = []
     session = BrowserSession(
-        throttle=0.0,  # no throttle needed for probe
+        throttle=2.5,
         reset_every=9999,
         headless=False,
         state_filter="",

@@ -12,6 +12,8 @@ is to faithfully extract what the page shows.
 import sys
 from pathlib import Path
 
+import pytest
+
 ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(ROOT))
 
@@ -21,39 +23,32 @@ from scripts.cgr.cgr_results import parse_cgr_results
 FIXTURE_DIR = ROOT / "tests" / "fixtures" / "cgr"
 
 
-def test_parse_william_looney_results_returns_one_record():
-    """Search for William Looney returns 1 record (id 88159)."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert len(results) == 1
+@pytest.fixture
+def william_looney_results() -> list[dict]:
+    """Parse recorded result page once per test that needs full data."""
+    html = (FIXTURE_DIR / "results_william_looney.html").read_text(
+        encoding="iso-8859-1"
+    )
+    return parse_cgr_results(html)
 
 
-def test_parse_william_looney_record_has_id():
-    """Each result has an integer id field."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert results[0]["id"] == 88159
+def test_parse_william_looney_results_returns_one_record(william_looney_results):
+    """Search for William Looney returns one record."""
+    assert len(william_looney_results) == 1
 
 
-def test_parse_william_looney_record_has_name():
-    """Name field carries the full display name as shown."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert "William G (Guy) Looney" in results[0]["name"]
-
-
-def test_parse_william_looney_record_has_unit():
-    """Unit field shows '34 TX' (state + ordinal)."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert results[0]["unit"] == "34 TX"
-
-
-def test_parse_william_looney_record_has_born():
-    """Born field shows the date as written (we don't parse to date object yet)."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert "May 24 1840" in results[0]["born"]
+@pytest.mark.parametrize(
+    ("field", "expected"),
+    [
+        ("id", 88159),
+        ("name", "William G (Guy) Looney"),
+        ("unit", "34 TX"),
+        ("born", "May 24 1840"),
+    ],
+)
+def test_parse_william_looney_fields(william_looney_results, field, expected):
+    """Recorded fields remain faithful to CGR result page."""
+    assert william_looney_results[0][field] == expected
 
 
 def test_parse_no_results_returns_empty_list():
@@ -69,19 +64,15 @@ def test_parse_empty_html_returns_empty_list():
     assert results == []
 
 
-def test_parse_returns_records_as_dicts():
-    """Each result is a dict (not a list or tuple)."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
-    assert isinstance(results[0], dict)
+def test_parse_returns_records_as_dicts(william_looney_results):
+    """Each result is a dict, not positional data."""
+    assert isinstance(william_looney_results[0], dict)
 
 
-def test_parse_result_keys_match_expected():
-    """Each result has exactly: id, name, unit, born (no missing keys)."""
-    html = (FIXTURE_DIR / "results_william_looney.html").read_text(encoding="iso-8859-1")
-    results = parse_cgr_results(html)
+def test_parse_result_keys_match_expected(william_looney_results):
+    """Each result exposes parser contract fields."""
     expected_keys = {"id", "name", "unit", "born"}
-    assert set(results[0].keys()) >= expected_keys
+    assert set(william_looney_results[0]) >= expected_keys
 
 
 def test_parse_handles_multiple_matches():

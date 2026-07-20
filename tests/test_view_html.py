@@ -79,12 +79,16 @@ def test_source_card_link_present():
     assert 'source card' in VIEW_HTML, "expected 'source card' label"
 
 
-def test_application_link_present():
-    """The pensions-application link renders as 'application' beside source card."""
-    assert 'application' in VIEW_HTML, "expected 'application' label for app backlink"
-    # Must be inside an anchor with the backlink href
-    assert re.search(r'<a[^>]*>\s*application\s*</a>|application\b.*?</a>', VIEW_HTML), \
-        "expected application link to be an anchor"
+def test_application_action_present():
+    """Pension application opens through view-source action."""
+    pattern = (
+        r'p\.backlink\s*\?\s*`<button[^`]*data-action="view-source"'
+        r'[^`]*data-url="\$\{escapeHtml\(fixDigitalPrairieUrl\(p\.backlink\)\)\}"'
+        r'[^`]*>application</button>`'
+    )
+    assert re.search(pattern, VIEW_HTML, re.DOTALL), (
+        "expected application view-source button wired to backlink"
+    )
 
 
 def test_backlink_field_consumed_in_normalize():
@@ -215,7 +219,7 @@ def _python_field_set() -> set:
     # Derived fields — produced by state_normalize.normalize_state_record
     derived = {
         "status", "ranked_candidates", "best_score",
-        "best_candidate", "cgr_skipped_fag", "strategies_run",
+        "best_candidate", "strategies_run",
     }
     return typed | derived
 

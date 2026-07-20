@@ -307,8 +307,8 @@ class JsonlStateRepository:
         with tmp_path.open("w", encoding="utf-8") as f:
             for rec in records:
                 f.write(json.dumps(rec, ensure_ascii=False) + "\n")
-            f.flush()
-            os.fsync(f.fileno())
+                f.flush()
+                os.fsync(f.fileno())
         # Atomic rename — POSIX guarantees readers see either old or new.
         # On Windows, os.replace() handles the cross-filesystem case.
         os.replace(tmp_path, self._path)

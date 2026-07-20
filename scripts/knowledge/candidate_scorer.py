@@ -8,8 +8,8 @@ and emits new QueryPlans for refinement (spouse, global, nickname).
 """
 from __future__ import annotations
 
+import hashlib
 import logging
-import uuid
 from typing import Any
 
 from scripts.blackboard.decision_policy import (
@@ -27,6 +27,11 @@ from scripts.blackboard.schema import (
 from scripts.blackboard.store import BlackboardStore
 
 log = logging.getLogger("knowledge_sources")
+
+
+def _stable_id(*parts: str) -> str:
+    value = "\x1f".join(parts)
+    return hashlib.sha1(value.encode("utf-8")).hexdigest()[:12]
 
 
 # ============================================================
@@ -52,6 +57,7 @@ class CandidateScorerKS:
             for o in observations
             if o.pensioner_id == item.pensioner_id
             and o.kind == Kind.FaGCandidateFetch
+            and o.payload.get("memorial_id")
         ]
 
         # Get pensioner context for decision
@@ -74,7 +80,7 @@ class CandidateScorerKS:
 
         # Emit ScoreObserved
         obs = Observation(
-            observation_id=f"obs-score-{uuid.uuid4().hex[:12]}",
+            observation_id=f"obs-score-{item.pensioner_id}-{item.pass_id}",
             pensioner_id=item.pensioner_id,
             kind=Kind.ScoreObserved,
             source="CandidateScorerKS",
@@ -85,6 +91,17 @@ class CandidateScorerKS:
             payload=decision.to_dict(),
         )
         store.append_observation(obs)
+
+        # Queue refinement after persisting decision. Scheduler invokes this
+        # only after all initial scraper items have completed.
+        store.enqueue_work(
+            WorkItem(
+                work_id=f"work-refine-{item.pensioner_id}",
+                pensioner_id=item.pensioner_id,
+                knowledge_source="DeepRefinerKS",
+                pass_id=item.pass_id,
+            )
+        )
 
         log.info(
             "CandidateScorerKS: pensioner %d -> %s (score=%.3f).",
@@ -142,33 +159,42 @@ class DeepRefinerKS:
         if decision.status == "auto_accept":
             return []
 
-        plans = self._generate_refinements(item.pensioner_id, decision)
+        pensioner_obs = [
+            o
+            for o in observations
+            if o.pensioner_id == item.pensioner_id
+            and o.kind == Kind.PensionerImported
+        ]
+        pensioner_params = dict(pensioner_obs[0].payload) if pensioner_obs else {}
+        plans = self._generate_refinements(
+            item.pensioner_id, decision, pensioner_params
+        )
         plan_obs: list[Observation] = []
 
         for plan in plans[: self.MAX_REFINEMENTS]:
             store.enqueue_plan(plan)
             store.enqueue_work(
                 WorkItem(
-                    work_id=f"work-fag-refine-{uuid.uuid4().hex[:12]}",
+                    work_id=f"work-fag-{plan.plan_id}",
                     pensioner_id=item.pensioner_id,
                     knowledge_source="FaGScraperKS",
                     plan_id=plan.plan_id,
                     pass_id="2",  # refinement pass
                 )
             )
-            plan_obs.append(
-                Observation(
-                    observation_id=f"obs-refine-{uuid.uuid4().hex[:12]}",
-                    pensioner_id=item.pensioner_id,
-                    kind=Kind.FaGSearchPlan,
-                    source="DeepRefinerKS",
-                    source_version="1",
-                    run_id=item.pass_id,
-                    pass_id="2",
-                    caused_by=item.work_id,
-                    payload=plan.to_dict(),
-                )
+            plan_observation = Observation(
+                observation_id=f"obs-refine-{plan.plan_id}",
+                pensioner_id=item.pensioner_id,
+                kind=Kind.FaGSearchPlan,
+                source="DeepRefinerKS",
+                source_version="1",
+                run_id=item.pass_id,
+                pass_id="2",
+                caused_by=item.work_id,
+                payload=plan.to_dict(),
             )
+            store.append_observation(plan_observation)
+            plan_obs.append(plan_observation)
 
         log.info(
             "DeepRefinerKS: %d refinement plans for pensioner %d.",
@@ -184,19 +210,26 @@ class DeepRefinerKS:
     # ----------------------------------------------------------
 
     def _generate_refinements(
-        self, pensioner_id: int, decision: Decision
+        self,
+        pensioner_id: int,
+        decision: Decision,
+        pensioner_params: dict[str, Any] | None = None,
     ) -> list[QueryPlan]:
         """Generate refinement plans based on score state."""
         plans: list[QueryPlan] = []
+        params = dict(pensioner_params or {})
 
         if decision.status == "no_candidates" or decision.top_score < 0.30:
             # Try broader scopes
             plans.append(
                 QueryPlan(
-                    plan_id=f"plan-refine-us-{uuid.uuid4().hex[:8]}",
+                    plan_id=(
+                        f"plan-refine-us-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), 'US', 'B4-fuzzy-last')}"
+                    ),
                     pensioner_id=pensioner_id,
                     strategy="B4-fuzzy-last",
-                    params={},
+                    params=dict(params),
                     scope=PlanScope.US,
                     reason="Refinement: no/low candidates; trying US-wide.",
                     estimated_requests=1,
@@ -207,10 +240,13 @@ class DeepRefinerKS:
             # Try nickname + spouse scopes
             plans.append(
                 QueryPlan(
-                    plan_id=f"plan-refine-global-{uuid.uuid4().hex[:8]}",
+                    plan_id=(
+                        f"plan-refine-global-review-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), 'Global', 'C1-cw-context')}"
+                    ),
                     pensioner_id=pensioner_id,
                     strategy="C1-cw-context",
-                    params={},
+                    params=dict(params),
                     scope=PlanScope.Global,
                     reason="Refinement: ambiguous result; trying global.",
                     estimated_requests=1,
@@ -220,10 +256,13 @@ class DeepRefinerKS:
         if decision.status == "low_score":
             plans.append(
                 QueryPlan(
-                    plan_id=f"plan-refine-global-{uuid.uuid4().hex[:8]}",
+                    plan_id=(
+                        f"plan-refine-global-low-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), 'Global', 'B1-exact')}"
+                    ),
                     pensioner_id=pensioner_id,
                     strategy="B1-exact",
-                    params={},
+                    params=dict(params),
                     scope=PlanScope.Global,
                     reason="Refinement: low score; trying global exact.",
                     estimated_requests=1,

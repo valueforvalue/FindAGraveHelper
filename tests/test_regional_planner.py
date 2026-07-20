@@ -1,5 +1,7 @@
 """Tests for scripts/knowledge/regional_planner.py — Phase 6 Slice 6.1."""
 
+from scripts.blackboard.schema import Kind, Observation, WorkItem
+from scripts.blackboard.store import SqliteBlackboardStore
 from scripts.knowledge.regional_planner import RegionalPlannerKS
 
 
@@ -72,3 +74,68 @@ def test_planner_does_not_duplicate_ok():
     # Should not have two OK plans
     ok_count = sum(1 for p in plans if p.scope.value == "OK")
     assert ok_count == 1
+
+
+def test_invoke_persists_plans_and_enqueues_search_and_score_work(tmp_path):
+    """Planner output is durable and drives downstream scheduler stages."""
+    store = SqliteBlackboardStore(tmp_path / "blackboard.db")
+    store.open()
+    store.append_observation(
+        Observation(
+            observation_id="obs-pensioner",
+            pensioner_id=7,
+            kind=Kind.PensionerImported,
+            source="test",
+            source_version="1",
+            run_id="test",
+            pass_id="1",
+            payload=_pensioner(),
+        )
+    )
+    item = WorkItem(
+        work_id="work-plan-7",
+        pensioner_id=7,
+        knowledge_source="RegionalPlannerKS",
+    )
+
+    observations = RegionalPlannerKS().invoke(item, store)
+
+    persisted_ids = {
+        obs.observation_id for obs in store.read_observations_since(None)
+    }
+    assert {obs.observation_id for obs in observations} <= persisted_ids
+    work = store.con.execute(
+        "SELECT knowledge_source, COUNT(*) FROM work_items GROUP BY knowledge_source"
+    ).fetchall()
+    assert dict(work) == {"FaGScraperKS": 2}
+    store.close()
+
+
+def test_invoke_no_fag_mode_persists_plans_without_orphan_work(tmp_path):
+    """No-FaG planner records intent but creates no unserviceable work."""
+    store = SqliteBlackboardStore(tmp_path / "blackboard.db")
+    store.open()
+    store.append_observation(
+        Observation(
+            observation_id="obs-pensioner",
+            pensioner_id=7,
+            kind=Kind.PensionerImported,
+            source="test",
+            source_version="1",
+            run_id="test",
+            pass_id="1",
+            payload=_pensioner(),
+        )
+    )
+    item = WorkItem(
+        work_id="work-plan-7",
+        pensioner_id=7,
+        knowledge_source="RegionalPlannerKS",
+    )
+
+    observations = RegionalPlannerKS(enable_search=False).invoke(item, store)
+
+    assert len(observations) == 2
+    assert store.con.execute("SELECT COUNT(*) FROM query_plans").fetchone()[0] == 2
+    assert store.con.execute("SELECT COUNT(*) FROM work_items").fetchone()[0] == 0
+    store.close()

@@ -16,6 +16,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import time
 from typing import Protocol, runtime_checkable
 
 from scripts.blackboard.schema import Observation, WorkItem, WorkState
@@ -77,9 +78,11 @@ class BlackboardScheduler:
         self,
         store: BlackboardStore,
         lease_seconds: int = 30,
+        max_attempts: int = 3,
     ) -> None:
         self.store = store
         self.lease_seconds = lease_seconds
+        self.max_attempts = max(max_attempts, 1)
         self._knowledge_sources: list[KnowledgeSource] = []
         self._ks_by_name: dict[str, KnowledgeSource] = {}
 
@@ -133,10 +136,22 @@ class BlackboardScheduler:
                     "KnowledgeSource %s failed on work %s: %s",
                     ks.name, item.work_id, exc,
                 )
-                self.store.complete_work(
-                    item.work_id, WorkState.RETRYABLE
-                )
-                return True  # Count as dispatched (will retry)
+                if item.attempt >= self.max_attempts:
+                    self.store.complete_work(
+                        item.work_id, WorkState.TERMINAL
+                    )
+                else:
+                    self.store.complete_work(
+                        item.work_id, WorkState.RETRYABLE
+                    )
+                    self.store.defer_retryable_work(
+                        item.work_id,
+                        time.strftime(
+                            "%Y-%m-%dT%H:%M:%SZ",
+                            time.gmtime(time.time() + min(2 ** item.attempt, 60)),
+                        ),
+                    )
+                return True
 
             observation_ids = [o.observation_id for o in observations]
             self.store.complete_work(

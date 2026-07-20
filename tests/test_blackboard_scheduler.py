@@ -60,6 +60,24 @@ class _FailingKS:
         return 1
 
 
+class _FailOnceKS(_EchoKS):
+    """Fail first attempt, then succeed on scheduler retry."""
+
+    name = "FailOnceKS"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def eligible(self, item: WorkItem) -> bool:
+        return item.knowledge_source == self.name
+
+    def invoke(self, item: WorkItem, store) -> list[Observation]:
+        self.calls += 1
+        if self.calls == 1:
+            raise RuntimeError("transient failure")
+        return super().invoke(item, store)
+
+
 class _IneligibleKS:
     """Test KS that never claims work."""
 
@@ -100,6 +118,13 @@ def _work(wid: str, ks: str, pid: int = 1) -> WorkItem:
 # ============================================================
 
 
+def _work_state(store, work_id: str) -> WorkState:
+    value = store.con.execute(
+        "SELECT state FROM work_items WHERE work_id = ?", (work_id,)
+    ).fetchone()[0]
+    return WorkState(value)
+
+
 def test_scheduler_registers_and_runs(tmp_path):
     """Scheduler registers a KS and processes one work item."""
     store = _store(tmp_path)
@@ -138,24 +163,67 @@ def test_scheduler_ineligible_marks_blocked(tmp_path):
     store.enqueue_work(_work("w-blocked", "IneligibleKS"))
     scheduler.run(max_iterations=1)
 
-    # The work item should now be in BLOCKED state
-    # Can't directly read work items from store, but claim should return None
-    claimed = store.claim_work("IneligibleKS")
-    assert claimed is None  # already processed
+    assert _work_state(store, "w-blocked") == WorkState.BLOCKED
     store.close()
 
 
-def test_scheduler_failing_marks_retryable(tmp_path):
-    """Failing KS marks work as retryable."""
+def test_scheduler_failing_defers_retry(tmp_path):
+    """Failing KS returns work to READY with retry deadline."""
     store = _store(tmp_path)
-    scheduler = BlackboardScheduler(store)
+    scheduler = BlackboardScheduler(store, max_attempts=2)
     scheduler.register(_FailingKS())
 
     store.enqueue_work(_work("w-fail", "FailingKS"))
     processed = scheduler.run(max_iterations=1)
 
     assert processed == 1
-    # Work should be retryable (claimable again after stale lease)
+    assert _work_state(store, "w-fail") == WorkState.READY
+    not_before = store.con.execute(
+        "SELECT not_before FROM work_items WHERE work_id = ?", ("w-fail",)
+    ).fetchone()[0]
+    assert not_before is not None
+    store.close()
+
+
+def test_scheduler_retries_retryable_work(tmp_path):
+    """Transient failure returns to READY and succeeds next iteration."""
+    store = _store(tmp_path)
+    scheduler = BlackboardScheduler(store)
+    ks = _FailOnceKS()
+    scheduler.register(ks)
+    store.enqueue_work(_work("w-retry", ks.name))
+
+    processed = scheduler.run(max_iterations=1)
+    store.con.execute(
+        "UPDATE work_items SET not_before = NULL WHERE work_id = ?",
+        ("w-retry",),
+    )
+    processed += scheduler.run(max_iterations=1)
+
+    assert processed == 2
+    assert ks.calls == 2
+    assert _work_state(store, "w-retry") == WorkState.SUCCEEDED
+    assert len(store.read_observations_since(None)) == 1
+    store.close()
+
+
+def test_scheduler_stops_retrying_at_attempt_budget(tmp_path):
+    """Persistent failure becomes TERMINAL instead of spinning forever."""
+    store = _store(tmp_path)
+    scheduler = BlackboardScheduler(store, max_attempts=2)
+    scheduler.register(_FailingKS())
+    store.enqueue_work(_work("w-terminal", "FailingKS"))
+
+    processed = 0
+    for _ in range(2):
+        processed += scheduler.run(max_iterations=1)
+        store.con.execute(
+            "UPDATE work_items SET not_before = NULL WHERE work_id = ?",
+            ("w-terminal",),
+        )
+
+    assert processed == 2
+    assert _work_state(store, "w-terminal") == WorkState.TERMINAL
     store.close()
 
 

@@ -69,6 +69,10 @@ class BlackboardStore(Protocol):
         """Mark work item complete and optionally link observations."""
         ...
 
+    def defer_retryable_work(self, work_id: str, not_before: str) -> None:
+        """Move retryable work to ready with an earliest retry time."""
+        ...
+
     def set_provider_not_before(self, provider: str, until: str) -> None:
         """Set provider-wide cooldown deadline (ISO 8601)."""
         ...
@@ -77,6 +81,16 @@ class BlackboardStore(Protocol):
         self, cursor: str | None
     ) -> list[Observation]:
         """Read observations recorded after the given cursor (ISO 8601)."""
+        ...
+
+    def read_observations_for_pensioner(
+        self, pensioner_id: int
+    ) -> list[Observation]:
+        """Read observations for one pensioner in durable order."""
+        ...
+
+    def has_pending_work(self, pensioner_id: int) -> bool:
+        """Return True when pensioner has ready/leased/retryable work."""
         ...
 
     def enqueue_plan(self, plan: QueryPlan) -> None:
@@ -193,12 +207,12 @@ class SqliteBlackboardStore:
     # ----------------------------------------------------------
 
     def append_observation(self, obs: Observation) -> None:
-        """Durably write one observation in an IMMEDIATE transaction."""
+        """Durably write one observation; duplicate IDs are idempotent."""
         now = obs.recorded_at or _now_iso()
         self.con.execute("BEGIN IMMEDIATE")
         try:
             self.con.execute(
-                """INSERT INTO observations
+                """INSERT OR IGNORE INTO observations
                    (observation_id, pensioner_id, kind, source,
                     source_version, run_id, pass_id, caused_by,
                     recorded_at, payload)
@@ -370,6 +384,22 @@ class SqliteBlackboardStore:
             self.con.rollback()
             raise
 
+    def defer_retryable_work(self, work_id: str, not_before: str) -> None:
+        """Move retryable work to ready with an earliest retry time."""
+        self.con.execute("BEGIN IMMEDIATE")
+        try:
+            self.con.execute(
+                """UPDATE work_items
+                   SET state = 'ready', leased_by = NULL,
+                       completed_at = NULL, not_before = ?
+                   WHERE work_id = ? AND state = 'retryable'""",
+                (not_before, work_id),
+            )
+            self.con.commit()
+        except Exception:
+            self.con.rollback()
+            raise
+
     # ----------------------------------------------------------
     # Provider cooldowns
     # ----------------------------------------------------------
@@ -399,6 +429,29 @@ class SqliteBlackboardStore:
     # ----------------------------------------------------------
     # Query plans
     # ----------------------------------------------------------
+
+    def read_observations_for_pensioner(
+        self, pensioner_id: int
+    ) -> list[Observation]:
+        """Return one pensioner's observations in stable insertion order."""
+        rows = self.con.execute(
+            """SELECT * FROM observations
+               WHERE pensioner_id = ?
+               ORDER BY recorded_at, rowid""",
+            (pensioner_id,),
+        ).fetchall()
+        return [_row_to_observation(row) for row in rows]
+
+    def has_pending_work(self, pensioner_id: int) -> bool:
+        """Return True when work remains nonterminal for pensioner."""
+        row = self.con.execute(
+            """SELECT 1 FROM work_items
+               WHERE pensioner_id = ?
+                 AND state IN ('ready', 'leased', 'retryable')
+               LIMIT 1""",
+            (pensioner_id,),
+        ).fetchone()
+        return row is not None
 
     def enqueue_plan(self, plan: QueryPlan) -> None:
         """Store a query plan."""
@@ -464,6 +517,9 @@ class JsonlBlackboardStore:
     ) -> None:
         pass
 
+    def defer_retryable_work(self, work_id: str, not_before: str) -> None:
+        pass
+
     def set_provider_not_before(self, provider: str, until: str) -> None:
         pass
 
@@ -471,6 +527,14 @@ class JsonlBlackboardStore:
         self, cursor: str | None
     ) -> list[Observation]:
         return []
+
+    def read_observations_for_pensioner(
+        self, pensioner_id: int
+    ) -> list[Observation]:
+        return []
+
+    def has_pending_work(self, pensioner_id: int) -> bool:
+        return False
 
     def enqueue_plan(self, plan: QueryPlan) -> None:
         pass

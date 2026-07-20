@@ -92,9 +92,16 @@ def test_cli_config_loads_and_runs(tmp_path, monkeypatch):
     with patch("scripts.fag.fag_browser.make_fag_search_fn") as mfsf:
         rc = cli_main(["--config", str(cfg_path), "--no-fag"])
     assert rc == 0
-    # Results file should exist under output/beta/
+    assert mfsf.call_count == 0
     state = tmp_path / "output" / "beta" / "results.jsonl"
     assert state.exists()
+    rows = [
+        json.loads(line)
+        for line in state.read_text(encoding="utf-8").splitlines()
+        if line.strip()
+    ]
+    assert len(rows) == 3
+    assert all(row["ranked_candidates"] == [] for row in rows)
 
 
 def test_cli_config_runname_mismatch_exits(tmp_path, monkeypatch):

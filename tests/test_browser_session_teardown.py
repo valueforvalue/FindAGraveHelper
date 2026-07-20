@@ -52,9 +52,39 @@ def test_close_calls_teardown_in_reverse_order():
         "browser.close",
         "playwright.__exit__",
     ], f"Expected reverse order, got {call_order}"
+def test_throttle_below_floor_rejected():
+    """BrowserSession never accepts a FaG throttle below project floor."""
+    import pytest
 
-
-def test_browser_session_imports():
-    """BrowserSession can be imported."""
     from scripts.fag.browser_session import BrowserSession
-    assert BrowserSession is not None
+
+    with pytest.raises(ValueError, match="2.5"):
+        BrowserSession(throttle=0.1)
+
+
+def test_close_continues_after_teardown_error():
+    """One close failure must not leak remaining browser resources."""
+    from scripts.fag.browser_session import BrowserSession
+
+    session = BrowserSession.__new__(BrowserSession)
+    session._page = MagicMock()
+    session._ctx = MagicMock()
+    session._browser = MagicMock()
+    session._pw_cm = MagicMock()
+    session._playwright = MagicMock()
+    session._started = True
+    session._page.close.side_effect = RuntimeError("page already closed")
+
+    context = session._ctx
+    browser = session._browser
+    playwright_manager = session._pw_cm
+
+    session.close()
+
+    context.close.assert_called_once_with()
+    browser.close.assert_called_once_with()
+    playwright_manager.__exit__.assert_called_once_with(None, None, None)
+    assert session._page is None
+    assert session._ctx is None
+    assert session._browser is None
+    assert session._pw_cm is None

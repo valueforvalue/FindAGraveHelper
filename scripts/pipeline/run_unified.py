@@ -101,7 +101,9 @@ class UnifiedRunnerConfig:
     # dedup (scripts/cgr/cgr_fag_dedup.py). When None, the dedup
     # is skipped.
     cgr_path: Optional[Path] = None
-    # Browser (kept abstract; the actual FaG search is injected)
+    # Browser mode. False means explicit --no-fag / dry-run execution.
+    enable_fag: bool = True
+    # Browser (legacy runner only; scheduler owns BrowserSession directly).
     fag_search_fn: Optional[Callable] = None
     # Per-run isolation (J5-S2)
     # Filename for per-pensioner results within out_dir. Defaults to
@@ -1046,167 +1048,159 @@ def run_batch_scheduler(
     config: UnifiedRunnerConfig,
     log: Optional[logging.Logger] = None,
 ) -> BatchResult:
-    """Run the pipeline via BlackboardScheduler instead of god-loop.
+    """Run pensioners through Blackboard one durable vertical at a time.
 
-    Flow:
-      1. Ingest pensioners as PensionerImported observations
-      2. Ingest CGR vets as observations
-      3. Enqueue RegionalPlannerKS work per pensioner
-      4. Register all Knowledge Sources
-      5. Run scheduler
-      6. Project results via ProjectionBuilder -> state.jsonl + report
+    Each pensioner is ingested, scheduled, projected, and fsynced to the
+    state file before the next pensioner starts. Existing state rows are
+    treated as complete resume checkpoints.
     """
-    import time as _time
-    from scripts.blackboard.scheduler import BlackboardScheduler
-    from scripts.blackboard.schema import (
-        Kind,
-        Observation,
-        WorkItem,
-    )
-    from scripts.blackboard.store import BlackboardStore
-    from scripts.knowledge.ingestion import IngestionKS
-    from scripts.knowledge.regional_planner import RegionalPlannerKS
-    from scripts.knowledge.fag_scraper import FaGScraperKS
-    from scripts.knowledge.candidate_scorer import CandidateScorerKS
     from scripts.blackboard.projector import ProjectionBuilder
+    from scripts.blackboard.scheduler import BlackboardScheduler
+    from scripts.blackboard.schema import Kind, Observation, WorkItem
+    from scripts.blackboard.store import BlackboardStore
+    from scripts.knowledge.candidate_scorer import CandidateScorerKS, DeepRefinerKS
+    from scripts.knowledge.fag_scraper import FaGScraperKS
+    from scripts.knowledge.regional_planner import RegionalPlannerKS
+    from scripts.state.repository import JsonlStateRepository
 
     if log is None:
         log = logging.getLogger("run_unified")
 
     store: BlackboardStore = getattr(config, "_blackboard_store", None)
     if store is None:
-        raise ValueError("Blackboard store must be opened before calling run_batch_scheduler")
+        raise ValueError(
+            "Blackboard store must be opened before calling run_batch_scheduler"
+        )
+    if config.out_dir is None:
+        raise ValueError("UnifiedRunnerConfig.out_dir must be set")
 
     out_dir = Path(config.out_dir)
     out_dir.mkdir(parents=True, exist_ok=True)
-    state_path = out_dir / config.results_filename
+    state_repo = JsonlStateRepository(out_dir / config.results_filename)
+    if not state_repo.path.exists():
+        state_repo.path.touch()
+    completed_ids = {
+        int(record["pensioner_id"])
+        for record in state_repo.iter_all(strict=True)
+        if record.get("pensioner_id") is not None
+    }
+    bounded = pensioners[: config.limit] if config.limit else pensioners
+    remaining = [
+        pensioner
+        for pensioner in bounded
+        if int(pensioner.get("id") or pensioner.get("application_number") or 0)
+        not in completed_ids
+    ]
 
-    result = BatchResult(
-        total=len(pensioners),
-        started_at=_time.time(),
-    )
+    result = BatchResult(total=len(pensioners), started_at=time.time())
+    run_id = config.run_manifest.run_id if config.run_manifest else "run"
 
-    # 1. Ingest pensioners as observations
-    log.info("Ingesting %d pensioners into Blackboard...", len(pensioners))
-    for p in pensioners:
-        pid = p.get("id") or p.get("application_number") or 0
-        obs = Observation(
-            observation_id=f"obs-ingest-{pid}",
-            pensioner_id=int(pid),
-            kind=Kind.PensionerImported,
-            source="run_unified",
-            source_version="1",
-            run_id=config.run_manifest.run_id if config.run_manifest else "run",
-            pass_id="ingest",
-            payload=dict(p),
-        )
-        store.append_observation(obs)
-
-    # 2. Ingest CGR vets
-    log.info("Ingesting CGR vet records...")
-    for cem in cemeteries:
-        for vet in cem.get("veterans", []):
-            vid = vet.get("id", 0)
-            obs = Observation(
-                observation_id=f"obs-cgr-vet-{vid}",
-                pensioner_id=0,  # CGR records are not pensioner-specific
-                kind=Kind.CGRCorroboration,
-                source="run_unified",
-                source_version="1",
-                run_id=config.run_manifest.run_id if config.run_manifest else "run",
-                pass_id="ingest",
-                payload=dict(vet),
+    # CGR observations are run-level evidence and idempotent by veteran ID.
+    for cemetery in cemeteries:
+        for veteran in cemetery.get("veterans", []):
+            veteran_id = veteran.get("id", 0)
+            store.append_observation(
+                Observation(
+                    observation_id=f"obs-cgr-vet-{veteran_id}",
+                    pensioner_id=0,
+                    kind=Kind.CGRCorroboration,
+                    source="run_unified",
+                    source_version="1",
+                    run_id=run_id,
+                    pass_id="ingest",
+                    payload=dict(veteran),
+                )
             )
-            store.append_observation(obs)
 
-    # 3. Enqueue planner work for each pensioner
-    log.info("Enqueuing planner work for %d pensioners...", len(pensioners))
-    for p in pensioners:
-        pid = p.get("id") or p.get("application_number") or 0
-        store.enqueue_work(
-            WorkItem(
-                work_id=f"work-plan-{pid}",
-                pensioner_id=int(pid),
-                knowledge_source="RegionalPlannerKS",
-            )
-        )
-
-    # 4. Register Knowledge Sources
     scheduler = BlackboardScheduler(store)
-    scheduler.register(IngestionKS())
-    planner = RegionalPlannerKS()
-    scheduler.register(planner)
+    scheduler.register(RegionalPlannerKS(enable_search=config.enable_fag))
 
-    # Build FaG scraper with real BrowserSession
     browser_session = None
-    if config.fag_search_fn is not None:
+    if config.enable_fag:
         from scripts.fag.browser_session import BrowserSession
 
-        log.info("Starting BrowserSession for scheduler path...")
         browser_session = BrowserSession(
-            throttle=0.0,  # RequestGate + search_one_pensioner handle throttling
+            throttle=config.throttle_seconds,
             reset_every=250,
             headless=False,
             state_filter="OK",
         )
         browser_session.start()
-        scraper = FaGScraperKS(browser_session=browser_session)
-        scheduler.register(scraper)
+        scheduler.register(FaGScraperKS(browser_session=browser_session))
 
     scheduler.register(CandidateScorerKS())
+    scheduler.register(DeepRefinerKS())
+    builder = ProjectionBuilder()
 
-    # 5. Run scheduler
     try:
-        log.info("Running BlackboardScheduler...")
-        processed = scheduler.run()
-        log.info("Scheduler finished: %d work items processed.", processed)
-        result.processed = processed
+        for pensioner in remaining:
+            pensioner_id = int(
+                pensioner.get("id")
+                or pensioner.get("application_number")
+                or 0
+            )
+            store.append_observation(
+                Observation(
+                    observation_id=f"obs-ingest-{pensioner_id}",
+                    pensioner_id=pensioner_id,
+                    kind=Kind.PensionerImported,
+                    source="run_unified",
+                    source_version="1",
+                    run_id=run_id,
+                    pass_id="ingest",
+                    payload=dict(pensioner),
+                )
+            )
+            store.enqueue_work(
+                WorkItem(
+                    work_id=f"work-plan-{pensioner_id}",
+                    pensioner_id=pensioner_id,
+                    knowledge_source="RegionalPlannerKS",
+                )
+            )
+
+            result.processed += scheduler.run()
+            if store.has_pending_work(pensioner_id):
+                log.warning(
+                    "Pensioner %d has deferred work; state row not checkpointed yet.",
+                    pensioner_id,
+                )
+                continue
+            observations = store.read_observations_for_pensioner(pensioner_id)
+            candidates_by_id: dict[str, dict] = {}
+            for observation in observations:
+                if (
+                    observation.kind != Kind.FaGCandidateFetch
+                    or not observation.payload.get("memorial_id")
+                ):
+                    continue
+                memorial_id = str(observation.payload["memorial_id"])
+                current = candidates_by_id.get(memorial_id)
+                if current is None or observation.payload.get(
+                    "score", 0.0
+                ) > current.get("score", 0.0):
+                    candidates_by_id[memorial_id] = observation.payload
+
+            row = builder.build_state_row(
+                pensioner_id=pensioner_id,
+                pensioner_data=dict(pensioner),
+                candidates=list(candidates_by_id.values()),
+            )
+            state_repo.append(row)
+            if row.get("status") == "auto_accept":
+                result.auto_accepts += 1
     finally:
         if browser_session is not None:
             browser_session.close()
 
-    # 6. Project results
-    log.info("Building projection...")
-    builder = ProjectionBuilder()
-    observations = store.read_observations_since(None)
-
-    # Group observations by pensioner_id
-    by_pid: dict[int, dict] = {}
-    for obs in observations:
-        pid = obs.pensioner_id
-        if pid == 0:
-            continue
-        if pid not in by_pid:
-            by_pid[pid] = {"pensioner": {}, "candidates": [], "cgr": None, "spouse": None}
-        if obs.kind == Kind.PensionerImported:
-            by_pid[pid]["pensioner"] = obs.payload
-        elif obs.kind == Kind.FaGCandidateFetch:
-            by_pid[pid]["candidates"].append(obs.payload)
-
-    rows = []
-    for pid, groups in sorted(by_pid.items()):
-        row = builder.build_state_row(
-            pensioner_id=pid,
-            pensioner_data=groups["pensioner"],
-            candidates=groups["candidates"],
-        )
-        rows.append(row)
-        if row.get("status") == "auto_accept":
-            result.auto_accepts += 1
-
-    # Write projection
-    import json
-    with state_path.open("w", encoding="utf-8") as f:
-        for row in rows:
-            f.write(json.dumps(row, ensure_ascii=False) + "\n")
-
-    result.finished_at = _time.time()
+    result.finished_at = time.time()
     log.info(
-        "Scheduler batch complete: %d rows projected to %s. Elapsed: %.1f min",
-        len(rows), state_path, result.elapsed_seconds / 60,
+        "Scheduler batch complete: %d/%d pensioners projected to %s",
+        len(remaining),
+        len(bounded),
+        state_repo.path,
     )
     return result
-
 
 def cli_main(argv: Optional[list[str]] = None) -> int:
     """CLI entry point: parse args, init Playwright, run batch.
@@ -1531,6 +1525,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         low_score_threshold=args.low_score_threshold,
         max_cgr_candidates=20,
         limit=args.limit,
+        enable_fag=not args.no_fag and not args.dry_run,
         fag_search_fn=fag_search_fn,
         write_heartbeat_every=args.heartbeat_every,
         checkpoint_every=args.checkpoint_every,

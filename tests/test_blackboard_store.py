@@ -71,6 +71,17 @@ def test_append_and_read_observation(sqlite_store):
     assert results[0].payload["memorial_id"] == "123"
 
 
+def test_append_duplicate_observation_is_idempotent(sqlite_store):
+    obs = _obs("obs-same", pid=42, payload={"memorial_id": "123"})
+
+    sqlite_store.append_observation(obs)
+    sqlite_store.append_observation(obs)
+
+    results = sqlite_store.read_observations_since(None)
+    assert len(results) == 1
+    assert results[0].observation_id == "obs-same"
+
+
 def test_read_since_cursor(sqlite_store):
     """read_observations_since filters by recorded_at."""
     obs1 = _obs("obs-1")
@@ -125,6 +136,45 @@ def test_complete_work_marks_terminal(sqlite_store):
     # Cannot re-claim completed work
     claimed = sqlite_store.claim_work("FaGScraper")
     assert claimed is None
+
+
+def test_defer_retryable_work_honors_not_before(sqlite_store):
+    """Retryable work waits until its retry deadline."""
+    item = _work("w-retry")
+    sqlite_store.enqueue_work(item)
+    sqlite_store.claim_work("FaGScraper")
+    sqlite_store.complete_work("w-retry", WorkState.RETRYABLE)
+
+    sqlite_store.defer_retryable_work("w-retry", "2099-01-01T00:00:00Z")
+
+    assert sqlite_store.claim_work("FaGScraper") is None
+    sqlite_store.con.execute(
+        "UPDATE work_items SET not_before = NULL WHERE work_id = ?",
+        ("w-retry",),
+    )
+    claimed = sqlite_store.claim_work("FaGScraper")
+    assert claimed is not None
+    assert claimed.work_id == "w-retry"
+    assert claimed.attempt == 2
+
+
+def test_read_observations_for_pensioner_is_scoped(sqlite_store):
+    sqlite_store.append_observation(_obs("obs-p1", pid=1))
+    sqlite_store.append_observation(_obs("obs-p2", pid=2))
+
+    results = sqlite_store.read_observations_for_pensioner(2)
+
+    assert [obs.observation_id for obs in results] == ["obs-p2"]
+
+
+def test_has_pending_work_tracks_nonterminal_states(sqlite_store):
+    sqlite_store.enqueue_work(_work("w1", pid=7))
+    assert sqlite_store.has_pending_work(7) is True
+
+    sqlite_store.claim_work("FaGScraper")
+    sqlite_store.complete_work("w1", WorkState.SUCCEEDED)
+
+    assert sqlite_store.has_pending_work(7) is False
 
 
 def test_provider_cooldown(sqlite_store):

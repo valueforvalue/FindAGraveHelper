@@ -95,19 +95,14 @@ def _run_scheduler(
     cfg = UnifiedRunnerConfig(
         out_dir=out_dir,
         results_filename="results.jsonl",
-        use_scheduler=True,
+        enable_fag=real_fag,
         blackboard_db_path=db_path,
         run_manifest=RunManifest(
             manifest_id="smoke-scheduler",
             run_id="smoke-scheduler",
         ),
         throttle_seconds=throttle,
-        fag_search_fn=None,  # scheduler uses BrowserSession, not fag_search_fn
     )
-    # Need fag_search_fn truthy to trigger BrowserSession creation in run_batch_scheduler
-    if real_fag:
-        cfg.fag_search_fn = True  # type: ignore[assignment] — signal to create BrowserSession
-
     cfg._blackboard_store = store  # type: ignore[attr-defined]
 
     try:
@@ -154,8 +149,8 @@ def _run_legacy(
         out_dir=out_dir,
         results_filename="results.jsonl",
         throttle_seconds=throttle,
+        enable_fag=False,
         fag_search_fn=fag_fn,
-        use_scheduler=False,
     )
 
     run_batch(pensioners, cems, cfg)
