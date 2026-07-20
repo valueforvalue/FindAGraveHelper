@@ -38,6 +38,7 @@ class ProjectionBuilder:
         cgr_data: dict[str, Any] | None = None,
         spouse_data: dict[str, Any] | None = None,
         dd_data: dict[str, Any] | None = None,
+        engine: str = "findagrave",
     ) -> dict[str, Any]:
         """Build one state.jsonl row from projection inputs.
 
@@ -48,6 +49,8 @@ class ProjectionBuilder:
             cgr_data: CGR corroboration evidence (optional).
             spouse_data: spouse match evidence (optional).
             dd_data: DixieData match evidence (optional).
+            engine: engine name for common projection ("findagrave",
+                "newspapers_com").
 
         Returns:
             A dict compatible with state.jsonl row format.
@@ -90,6 +93,30 @@ class ProjectionBuilder:
             badges.append("dd_match")
         row["badges"] = badges
 
+        # Common engine-agnostic projection (issue #39).
+        # Convert candidates to common shape for v2 view.html.
+        if engine == "newspapers_com":
+            common_candidates = [
+                _convert_np_candidate_for_projection(c) for c in candidates
+            ]
+        else:
+            common_candidates = [
+                _convert_fag_candidate_for_projection(c) for c in candidates
+            ]
+        row["common"] = {
+            "id": pensioner_id,
+            "title": row["pensioner_name"],
+            "engine": engine,
+            "status": decision.status,
+            "best_score": decision.top_score,
+            "candidates": common_candidates,
+            "corroboration": {
+                "cgr": cgr_data or {},
+                "dd_match": dd_data or {},
+                "spouse_match": spouse_data or {},
+            },
+        }
+
         return row
 
     def build_report_stats(
@@ -118,3 +145,68 @@ class ProjectionBuilder:
             sort_keys=True,
         )
         return hashlib.sha256(canonical.encode()).hexdigest()
+
+
+# ============================================================
+# Candidate conversion helpers (issue #39)
+# ============================================================
+
+def _convert_fag_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
+    """Convert a raw FaG candidate to common shape."""
+    details = c.get("details") or {}
+    evidence = c.get("score_evidence") or {}
+    score_breakdown = evidence.get("score_breakdown", {})
+    common_bd = {}
+    if score_breakdown:
+        common_bd = {
+            "last_name": score_breakdown.get("last", 0),
+            "first_name": score_breakdown.get("first", 0),
+            "middle_name": score_breakdown.get("middle", 0),
+            "year_window": score_breakdown.get("death", 0),
+            "state": score_breakdown.get("state", 0),
+            "ok_burial": score_breakdown.get("ok_burial", 0),
+            "veteran": score_breakdown.get("veteran", 0),
+        }
+    return {
+        "id": str(c.get("memorial_id", "")),
+        "title": c.get("name", ""),
+        "url": c.get("backlink", ""),
+        "score": c.get("score", 0),
+        "attributes": {
+            "birth_year": details.get("birth_year", ""),
+            "death_year": details.get("death_year", ""),
+            "state": details.get("state", ""),
+        },
+        "media": {
+            "image_url": c.get("iiif_url", ""),
+        },
+        "evidence": {
+            "score_breakdown": common_bd,
+            "raw": c,
+        },
+    }
+
+
+def _convert_np_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
+    """Convert a raw Newspapers.com candidate to common shape."""
+    return {
+        "id": str(c.get("id", "")),
+        "title": c.get("title", ""),
+        "url": (
+            f"https://www.newspapers.com{c['href']}"
+            if c.get("href")
+            else ""
+        ),
+        "score": c.get("score", 0),
+        "attributes": {
+            "date": c.get("iso_date", ""),
+            "location": c.get("location", ""),
+        },
+        "media": {
+            "image_url": c.get("thumbnail", ""),
+        },
+        "evidence": {
+            "score_breakdown": c.get("score_evidence", {}),
+            "raw": c,
+        },
+    }

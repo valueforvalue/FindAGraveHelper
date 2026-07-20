@@ -46,10 +46,10 @@ class TestFaGEngineAttributes:
         e = FaGEngine()
         assert e.base_url == "https://www.findagrave.com/memorial/search"
 
-    def test_ladder_has_12_strategies(self):
-        # 10 generic + F2 (regiment-bio) + F3 (nickname)
+    def test_ladder_has_13_strategies(self):
+        # 10 generic + F2 (regiment-bio) + F3 (nickname) + F4 (follow-up)
         e = FaGEngine()
-        assert len(e.ladder) == 12
+        assert len(e.ladder) == 13
 
     def test_ladder_contains_fag_specific(self):
         e = FaGEngine()
@@ -330,3 +330,58 @@ class TestFaGEngineEndToEnd:
         # The score used the FaG scorer
         for c in result["candidates"]:
             assert 0.0 <= c["score"] <= 1.0
+
+
+# ============================================================
+# to_common_candidate (issue #39)
+# ============================================================
+class TestFaGToCommonCandidate:
+    """FaGEngine.to_common_candidate maps FaG fields to common shape."""
+
+    def test_basic_conversion(self):
+        """FaG candidate fields map to common keys."""
+        e = FaGEngine()
+        candidate = {
+            "memorial_id": 12345,
+            "name": "John Q. Smith",
+            "backlink": "https://findagrave.com/memorial/12345",
+            "score": 0.85,
+            "details": {
+                "birth_year": "1844",
+                "death_year": "1932",
+                "state": "Oklahoma",
+            },
+            "iiif_url": "https://images.findagrave.com/photos/12345.jpg",
+            "score_evidence": {
+                "score_breakdown": {
+                    "last": 0.9,
+                    "first": 0.8,
+                    "death": 0.5,
+                },
+            },
+        }
+        result = e.to_common_candidate(candidate)
+        assert result["id"] == "12345"
+        assert result["title"] == "John Q. Smith"
+        assert result["url"] == "https://findagrave.com/memorial/12345"
+        assert result["score"] == 0.85
+        assert result["attributes"]["birth_year"] == "1844"
+        assert result["attributes"]["death_year"] == "1932"
+        assert result["attributes"]["state"] == "Oklahoma"
+        assert result["media"]["image_url"] == "https://images.findagrave.com/photos/12345.jpg"
+        assert result["evidence"]["score_breakdown"]["last_name"] == 0.9
+        assert result["evidence"]["score_breakdown"]["first_name"] == 0.8
+        assert result["evidence"]["score_breakdown"]["year_window"] == 0.5
+        # raw preserved
+        assert result["evidence"]["raw"] is candidate
+
+    def test_empty_candidate(self):
+        """Empty candidate yields safe defaults."""
+        e = FaGEngine()
+        result = e.to_common_candidate({})
+        assert result["id"] == ""
+        assert result["title"] == ""
+        assert result["url"] == ""
+        assert result["score"] == 0
+        assert result["attributes"]["birth_year"] == ""
+        assert result["evidence"]["score_breakdown"] == {}

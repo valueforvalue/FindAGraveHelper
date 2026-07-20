@@ -434,6 +434,34 @@ class NewspapersComEngine:
         """
         return dict(params)
 
+    def to_common_candidate(self, candidate: dict) -> dict:
+        """Convert a Newspapers.com candidate to the common shape.
+
+        Newspapers-specific fields (href, iso_date, location, thumbnail)
+        are mapped to the common id/url/attributes/media fields.
+        """
+        return {
+            "id": str(candidate.get("id", "")),
+            "title": candidate.get("title", ""),
+            "url": (
+                f"https://www.newspapers.com{candidate['href']}"
+                if candidate.get("href")
+                else ""
+            ),
+            "score": candidate.get("score", 0),
+            "attributes": {
+                "date": candidate.get("iso_date", ""),
+                "location": candidate.get("location", ""),
+            },
+            "media": {
+                "image_url": candidate.get("thumbnail", ""),
+            },
+            "evidence": {
+                "score_breakdown": candidate.get("score_evidence", {}),
+                "raw": candidate,
+            },
+        }
+
     def throttle_seconds(self) -> float:
         """Inter-request throttle (seconds).
 

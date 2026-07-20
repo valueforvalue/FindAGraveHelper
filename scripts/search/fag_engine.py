@@ -33,7 +33,7 @@ from scripts.fag.response_classifier import (
 )
 from scripts.search.context import SearchContext
 from scripts.search.engine import Classification, SearchEngine
-from scripts.search.fag_strategies import F2_REGIMENT_BIO, F3_NICKNAME
+from scripts.search.fag_strategies import F2_REGIMENT_BIO, F3_NICKNAME, F4_FOLLOW_UP
 from scripts.search.strategies import STRATEGIES as _GENERIC_STRATEGIES
 
 
@@ -64,7 +64,7 @@ class FaGEngine:
 
     name = "findagrave"
     base_url = _FAG_BASE_URL
-    ladder = list(_GENERIC_STRATEGIES) + [F2_REGIMENT_BIO, F3_NICKNAME]
+    ladder = list(_GENERIC_STRATEGIES) + [F2_REGIMENT_BIO, F3_NICKNAME, F4_FOLLOW_UP]
 
     def build_url(self, params: dict) -> str:
         """Compose the FaG search URL from a params dict.
@@ -158,6 +158,56 @@ class FaGEngine:
             return THROTTLE_SECONDS
         except ImportError:
             return 2.5
+
+    def follow_up_search(self, page, ctx: SearchContext) -> dict:
+        """Run follow-up search (F4) for needs-research pensioners.
+
+        Uses broadened parameters: no state filter, surname-only,
+        wider year window (±10), fuzzy spelling. Returns the same
+        shape as search_one.
+        """
+        from scripts.search.engine import default_search_one
+        return default_search_one(self, page, ctx, strategy_name="F4-follow-up")
+
+    def to_common_candidate(self, candidate: dict) -> dict:
+        """Convert a FaG candidate to the common shape.
+
+        FaG-specific fields (memorial_id, backlink, iiif_url) are
+        mapped to the common id/url/media fields. Evidence is
+        wrapped in the standard score_breakdown + raw envelope.
+        """
+        details = candidate.get("details") or {}
+        evidence = candidate.get("score_evidence") or {}
+        score_breakdown = evidence.get("score_breakdown", {})
+        common_bd = {}
+        if score_breakdown:
+            common_bd = {
+                "last_name": score_breakdown.get("last", 0),
+                "first_name": score_breakdown.get("first", 0),
+                "middle_name": score_breakdown.get("middle", 0),
+                "year_window": score_breakdown.get("death", 0),
+                "state": score_breakdown.get("state", 0),
+                "ok_burial": score_breakdown.get("ok_burial", 0),
+                "veteran": score_breakdown.get("veteran", 0),
+            }
+        return {
+            "id": str(candidate.get("memorial_id", "")),
+            "title": candidate.get("name", ""),
+            "url": candidate.get("backlink", ""),
+            "score": candidate.get("score", 0),
+            "attributes": {
+                "birth_year": details.get("birth_year", ""),
+                "death_year": details.get("death_year", ""),
+                "state": details.get("state", ""),
+            },
+            "media": {
+                "image_url": candidate.get("iiif_url", ""),
+            },
+            "evidence": {
+                "score_breakdown": common_bd,
+                "raw": candidate,
+            },
+        }
 
 
 # ============================================================

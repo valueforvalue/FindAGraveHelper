@@ -118,6 +118,18 @@ class FakeSearchEngine:
         self.throttle_calls.append(())
         return 0.0
 
+    def to_common_candidate(self, candidate: dict) -> dict:
+        """Convert a fake candidate to common shape for tests."""
+        return {
+            "id": str(candidate.get("id", "")),
+            "title": candidate.get("name", ""),
+            "url": "",
+            "score": candidate.get("score", 0),
+            "attributes": {},
+            "media": {},
+            "evidence": {"score_breakdown": {}, "raw": candidate},
+        }
+
 
 class _NormalClassification(Classification):
     @property

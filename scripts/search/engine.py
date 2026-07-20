@@ -148,6 +148,29 @@ class SearchEngine(Protocol):
         """
         ...
 
+    # ----- Wire-format projection -----
+
+    def to_common_candidate(self, candidate: dict) -> dict:
+        """Convert an engine-specific candidate to the common
+        engine-agnostic shape.
+
+        Every engine MUST implement this so the pipeline and
+        view.html can consume any engine's output without
+        engine-specific field names.
+
+        Returns a dict with keys:
+          - id:       stable identifier (string).
+          - title:    display name.
+          - url:      link to the source page.
+          - score:    confidence in [0, 1].
+          - attributes: free-form dict (birth_year, death_year,
+                        state, date, location, etc.).
+          - evidence: dict with at minimum:
+              - score_breakdown: feature → value mapping.
+              - raw: the original engine-specific candidate.
+        """
+        ...
+
 
 # ============================================================
 # Classification (response type)

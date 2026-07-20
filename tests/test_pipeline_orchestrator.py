@@ -107,6 +107,17 @@ class FakeSearchEngine:
     def throttle_seconds(self) -> float:
         return 0.0
 
+    def to_common_candidate(self, candidate: dict) -> dict:
+        return {
+            "id": str(candidate.get("id", "")),
+            "title": candidate.get("name", ""),
+            "url": "",
+            "score": candidate.get("score", 0),
+            "attributes": {},
+            "media": {},
+            "evidence": {"score_breakdown": {}, "raw": candidate},
+        }
+
 
 # ============================================================
 # Stub page + engine wiring helpers

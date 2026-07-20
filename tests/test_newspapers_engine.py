@@ -493,3 +493,57 @@ class TestEngineInPipeline:
         ctx = SearchContext(first="John", last="Smith")
         result = default_search_one(e, _Page(), ctx)
         assert result["candidates"][0]["id"] == "1"
+
+
+# ============================================================
+# to_common_candidate (issue #39)
+# ============================================================
+class TestNewspapersToCommonCandidate:
+    """NewspapersComEngine.to_common_candidate maps fields to common shape."""
+
+    def test_basic_conversion(self):
+        """Newspapers candidate fields map to common keys."""
+        from scripts.search.newspapers_engine import NewspapersComEngine
+        e = NewspapersComEngine()
+        candidate = {
+            "id": "12345",
+            "title": "The Daily Oklahoman \u2022 Page 3",
+            "href": "/image/12345/?match=1&terms=smith",
+            "score": 0.6,
+            "iso_date": "1896-08-22",
+            "location": "Oklahoma City, Oklahoma, USA",
+            "thumbnail": "/img/thumbnail/12345.jpg",
+            "score_evidence": {
+                "last_name_in_title": True,
+                "state_in_location": True,
+                "year_in_window": (1840, 1930),
+            },
+        }
+        result = e.to_common_candidate(candidate)
+        assert result["id"] == "12345"
+        assert result["title"] == "The Daily Oklahoman \u2022 Page 3"
+        assert result["url"] == "https://www.newspapers.com/image/12345/?match=1&terms=smith"
+        assert result["score"] == 0.6
+        assert result["attributes"]["date"] == "1896-08-22"
+        assert result["attributes"]["location"] == "Oklahoma City, Oklahoma, USA"
+        assert result["media"]["image_url"] == "/img/thumbnail/12345.jpg"
+        assert result["evidence"]["score_breakdown"]["last_name_in_title"] is True
+        assert result["evidence"]["raw"] is candidate
+
+    def test_empty_candidate(self):
+        """Empty candidate yields safe defaults."""
+        from scripts.search.newspapers_engine import NewspapersComEngine
+        e = NewspapersComEngine()
+        result = e.to_common_candidate({})
+        assert result["id"] == ""
+        assert result["title"] == ""
+        assert result["url"] == ""
+        assert result["score"] == 0
+        assert result["attributes"]["date"] == ""
+
+    def test_missing_href(self):
+        """Candidate without href produces empty url."""
+        from scripts.search.newspapers_engine import NewspapersComEngine
+        e = NewspapersComEngine()
+        result = e.to_common_candidate({"id": "99", "title": "X"})
+        assert result["url"] == ""

@@ -172,3 +172,66 @@ def test_normalize_record_defaults_missing_engine_and_collections(normalization_
         "dd_match": None,
         "spouse_match": None,
     }
+
+
+def test_normalize_v2_reads_common_key_when_present(normalization_page):
+    """When record has common key, normalizeRecordV2 uses it directly."""
+    record = {
+        "pensioner_id": 42,
+        "pensioner_name": "Test Pensioner",
+        "pensioner_first": "Test",
+        "pensioner_last": "Pensioner",
+        "fag_status": "auto_accept",
+        "common": {
+            "id": 42,
+            "title": "Test Pensioner (from common)",
+            "engine": "newspapers_com",
+            "status": "needs_review",
+            "best_score": 0.75,
+            "candidates": [
+                {
+                    "id": "999",
+                    "title": "News Article",
+                    "url": "https://example.com/999",
+                    "score": 0.75,
+                    "attributes": {"date": "1896-01-01"},
+                    "evidence": {"score_breakdown": {}, "raw": {}},
+                }
+            ],
+            "corroboration": {
+                "cgr": [{"cgr_id": "cgr-1"}],
+                "dd_match": None,
+                "spouse_match": None,
+            },
+        },
+    }
+    result = normalization_page.evaluate(
+        "record => window.ViewV2.normalizeRecordV2(record)", record
+    )
+    # Common fields win when present
+    assert result["title"] == "Test Pensioner (from common)"
+    assert result["engine"] == "newspapers_com"
+    assert result["status"] == "needs_review"
+    assert result["best_score"] == 0.75
+    assert result["candidates"][0]["id"] == "999"
+    assert result["candidates"][0]["title"] == "News Article"
+    # Legacy attributes still merged
+    assert result["attributes"]["first"] == "Test"
+    assert result["attributes"]["last"] == "Pensioner"
+    # Corroboration from common
+    assert result["corroboration"]["cgr"] == [{"cgr_id": "cgr-1"}]
+
+
+def test_normalize_v2_falls_back_when_no_common_key(normalization_page):
+    """Without common key, normalizeRecordV2 delegates to normalizeRecord."""
+    result = normalization_page.evaluate(
+        "record => window.ViewV2.normalizeRecordV2(record)",
+        {
+            "pensioner_id": "8",
+            "pensioner_name": "Legacy Pensioner",
+            "fag_records": [],
+        },
+    )
+    assert result["title"] == "Legacy Pensioner"
+    assert result["engine"] == "findagrave"
+    assert result["candidates"] == []

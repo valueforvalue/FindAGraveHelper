@@ -59,3 +59,35 @@ def f3_nickname(ctx: SearchContext):
 
 F2_REGIMENT_BIO = FunctionStrategy("F2-regiment-bio", f2_regiment_bio)
 F3_NICKNAME = FunctionStrategy("F3-nickname", f3_nickname)
+
+
+def f4_follow_up(ctx: SearchContext):
+    """F4: follow-up search for needs-research pensioners.
+
+    Broadened parameters designed as a last-attempt pass:
+      - No state filter (US-wide search)
+      - Surname-only (drops first name for fuzzy matching)
+      - Wider year window: ±10 instead of ±5
+      - Fuzzy spelling enabled
+
+    Returns None when last name is missing (can't search surname-only).
+    """
+    if not ctx.last:
+        return None
+    params: dict = {
+        "lastname": ctx.last,
+        "fuzzy": "true",
+    }
+    # Wider year window: ±10
+    by = int(ctx.birth_year) if (ctx.birth_year and ctx.birth_year.isdigit()) else None
+    dy = int(ctx.death_year) if (ctx.death_year and ctx.death_year.isdigit()) else None
+    if by is not None:
+        params["birthyear"] = str(by - 10)
+        params["birthyear_range"] = "20"
+    if dy is not None:
+        params["deathyear"] = str(dy - 10)
+        params["deathyear_range"] = "20"
+    return params
+
+
+F4_FOLLOW_UP = FunctionStrategy("F4-follow-up", f4_follow_up)

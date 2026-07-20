@@ -467,7 +467,141 @@ def result_to_dict(result: PipelineResult,
         )
         if pages:
             record["pensioncard_pages"] = pages
+    # Common engine-agnostic projection (issue #39).
+    # Emitted alongside legacy fields so v2 view.html can read
+    # either shape; v1 view.html ignores the common key.
+    record["common"] = _build_common_record(
+        pensioner_id=record["pensioner_id"],
+        pensioner_name=record["pensioner_name"],
+        engine=getattr(result, "engine_name", None) or "findagrave",
+        status=record["fag_status"],
+        best_score=record["best_score"],
+        candidates=record["fag_records"],
+        engine_for_convert=(
+            result.engine_for_convert
+            if hasattr(result, "engine_for_convert")
+            else None
+        ),
+        corroboration={
+            "cgr": record["cgr_records"],
+            "dd_match": record.get("both_match"),
+            "spouse_match": _build_spouse_section(result),
+        },
+    )
     return record
+
+
+def _build_spouse_section(result) -> dict | None:
+    """Extract spouse match info from a PipelineResult."""
+    spouse = result.pensioner or {}
+    first = spouse.get("spouse_first_name", "") or ""
+    last = spouse.get("spouse_last_name", "") or ""
+    if not first and not last:
+        return None
+    return {
+        "first": first,
+        "last": last,
+        "matched": bool(result.both_match),
+    }
+
+
+def _build_common_record(
+    pensioner_id,
+    pensioner_name: str,
+    engine: str,
+    status: str,
+    best_score: float,
+    candidates: list[dict],
+    engine_for_convert=None,
+    corroboration: dict | None = None,
+) -> dict:
+    """Build the engine-agnostic common record shape (issue #39).
+
+    If engine_for_convert is provided (a SearchEngine instance),
+    candidates are converted via engine.to_common_candidate().
+    Otherwise they are converted inline based on engine name
+    ("findagrave" → FaG fields mapped to common shape).
+    """
+    common_candidates = candidates
+    if engine_for_convert is not None and hasattr(engine_for_convert, "to_common_candidate"):
+        common_candidates = [
+            engine_for_convert.to_common_candidate(c)
+            for c in candidates
+        ]
+    elif engine == "findagrave":
+        common_candidates = [_convert_fag_candidate(c) for c in candidates]
+    elif engine == "newspapers_com":
+        common_candidates = [_convert_newspapers_candidate(c) for c in candidates]
+    return {
+        "id": pensioner_id,
+        "title": pensioner_name,
+        "engine": engine,
+        "status": status,
+        "best_score": best_score,
+        "candidates": common_candidates,
+        "corroboration": corroboration or {},
+    }
+
+
+def _convert_fag_candidate(c: dict) -> dict:
+    """Convert a raw FaG candidate to common shape without an engine instance."""
+    details = c.get("details") or {}
+    evidence = c.get("score_evidence") or {}
+    score_breakdown = evidence.get("score_breakdown", {})
+    common_bd = {}
+    if score_breakdown:
+        common_bd = {
+            "last_name": score_breakdown.get("last", 0),
+            "first_name": score_breakdown.get("first", 0),
+            "middle_name": score_breakdown.get("middle", 0),
+            "year_window": score_breakdown.get("death", 0),
+            "state": score_breakdown.get("state", 0),
+            "ok_burial": score_breakdown.get("ok_burial", 0),
+            "veteran": score_breakdown.get("veteran", 0),
+        }
+    return {
+        "id": str(c.get("memorial_id", "")),
+        "title": c.get("name", ""),
+        "url": c.get("backlink", ""),
+        "score": c.get("score", 0),
+        "attributes": {
+            "birth_year": details.get("birth_year", ""),
+            "death_year": details.get("death_year", ""),
+            "state": details.get("state", ""),
+        },
+        "media": {
+            "image_url": c.get("iiif_url", ""),
+        },
+        "evidence": {
+            "score_breakdown": common_bd,
+            "raw": c,
+        },
+    }
+
+
+def _convert_newspapers_candidate(c: dict) -> dict:
+    """Convert a raw Newspapers.com candidate to common shape."""
+    return {
+        "id": str(c.get("id", "")),
+        "title": c.get("title", ""),
+        "url": (
+            f"https://www.newspapers.com{c['href']}"
+            if c.get("href")
+            else ""
+        ),
+        "score": c.get("score", 0),
+        "attributes": {
+            "date": c.get("iso_date", ""),
+            "location": c.get("location", ""),
+        },
+        "media": {
+            "image_url": c.get("thumbnail", ""),
+        },
+        "evidence": {
+            "score_breakdown": c.get("score_evidence", {}),
+            "raw": c,
+        },
+    }
 
 
 # ============================================================

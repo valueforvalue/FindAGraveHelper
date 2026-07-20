@@ -4,6 +4,90 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Feature(wire): engine-agnostic common record shape (#39)
+
+Added `to_common_candidate()` to SearchEngine Protocol. FaGEngine and
+NewspapersComEngine convert engine-specific candidates to common shape.
+Pipeline writes `common` key alongside legacy fields in results.jsonl.
+v2.html reads `common` directly via `normalizeRecordV2()`, falling back
+to `normalizeRecord()` for legacy files.
+
+- Protocol: `to_common_candidate()` method on SearchEngine
+- FaG: maps memorial_id/backlink/iiif_url to id/url/media
+- Newspapers: maps href/iso_date/location/thumbnail to common shape
+- Pipeline: `_build_common_record()` + `_convert_fag_candidate()` helpers
+- Projection: `build_state_row()` emits common projection
+- View: `normalizeRecordV2()` reads common key when present
+- Tests: 7 new (engine + normalize)
+
+### Feature(view): dark mode (#48)
+
+Added `@media (prefers-color-scheme: dark)` block with tuned palette
+for card backgrounds, text, pills, badges, and engine badges.
+
+### Feature(view): unsaved-work warning (#47)
+
+`beforeunload` listener fires native browser dialog when decisions
+changed since last save/sidecar-import. Dirty flag cleared on save,
+sidecar load, and new file load.
+
+### Feature(view): drag-and-drop file loading (#50)
+
+Full-page drop zone accepts `.jsonl` and `.json` files. Visual overlay
+on dragover, delegates to `loadFromText()`.
+
+### Feature(view): needs-research decision type (#52)
+
+New "Needs research" button alongside No-match. Sets `decision_type:
+'needs_research'`. Filter option, stats count, scraper export includes
+needs_research records. Sidecar preserves decision type.
+
+### Feature(view): keyboard shortcuts (#45)
+
+`j`/`↓` next record, `k`/`↑` prev record, `p` pick top candidate,
+`n` no-match. Footer bar shows shortcuts. No interference with text
+inputs.
+
+### Feature(view): undo stack (#51)
+
+Ctrl+Z undoes last decision action (pick, remove, no-match, notes).
+Ctrl+Y / Ctrl+Shift+Z redoes. Stack holds up to 50 actions. Clears
+on new file load or sidecar import.
+
+### Feature(view): chunked rendering (#46)
+
+First 50 records render synchronously; remaining render in chunks via
+`requestAnimationFrame`. Stats bar updates immediately.
+
+### Feature(view): Newspapers.com details disclosure (#40)
+
+Engine disclosure now renders newspaper-specific evidence: date,
+location, keyword match results (last name in title, state in
+location, year window).
+
+### Feature(view): compare top-3 side-by-side (#41)
+
+"Compare top 3" toggle switches candidate list to 3-column grid
+layout for horizontal comparison.
+
+### Feature(view): richer scraper export (#42)
+
+Export includes `_source_pensioner_app_number`, `_source_pensioner_birth_year`,
+`_source_pensioner_death_year`, `_source_pensioner_regiment`,
+`_source_pensioner_company`.
+
+### Feature(view): per-engine UI badges (#43)
+
+Engine badges now color-coded: green for findagrave, purple for
+newspapers_com. Dark mode variants.
+
+### Feature(search): follow-up strategy (#53)
+
+F4-follow-up strategy for needs-research pensioners: no state filter,
+surname-only, wider year window (±10), fuzzy spelling. Added to
+FaGEngine ladder. `follow_up_search()` method on FaGEngine.
+View marks follow-up candidates with "follow-up" badge.
+
 ### Refactor: view.html v2 layout normalization (#38)
 
 Started v2 review UI as separate `scripts/view/v2.html`, leaving
