@@ -14,6 +14,16 @@ applied for an OK state pension — a canonical list of OK-associated
 CW soldiers. We use this list as the input, and Find a Grave's
 search API as the lookup target.
 
+> **Architecture note (2026-07-19):** The default CLI path runs
+> through a Local-First Blackboard (`scripts/blackboard/`):
+> Scheduler dispatches Knowledge Sources (KS) that read
+> Observations, write new ones, and project to `state.jsonl`.
+> The legacy per-pensioner god-loop is preserved for the
+> leftover-investigation and retry-errors scripts. The v2
+> review UI (`scripts/view/v2.html`, Alpine.js) is the default
+> view; legacy `scripts/view.html` is kept for past runs. See
+> [`../agents/blackboard-architecture.md`](../agents/blackboard-architecture.md).
+
 ## Key empirical findings
 
 ### 1. The FaG slug encodes the middle name
@@ -161,18 +171,23 @@ docs/research/
 │   ├── parse_output.txt
 │   ├── match_output.txt
 │   └── rosters/                         # source CSVs (gitignored)
-├── digitalprairie/                     # 7,558 OK Confederate pensioners
+├── digitalprairie/                     # 7,709 OK Confederate pensioners
 │   ├── README.md
 │   ├── ok_pensioners.json                     # canonical list (committed)
 │   ├── ok_pensioners.csv
-│   ├── unified_sample_50.csv
-│   └── unified_sample_50.json
+│   ├── ok_pensioners.meta.json
+│   ├── ok_pensioners.pensioncard_pages.json   # sidecar
+│   └── unified_sample_50.csv
 └── learnings/                           # this directory
     ├── README.md                        # (this file)
     ├── how-to-use.md                    # operational guide
     ├── strategy-tuning.md                # scoring iteration log
     ├── 2026-07-16-run-1-learnings.md    # Run #1: DOM materialization crash
     ├── 2026-07-16-run-2-learnings.md    # Run #2: memory-leak investigation
+    ├── 2026-07-16-j11-j15-features.md   # J11–J15 features + es-fresh-run
+    ├── 2026-07-16-postrun-design.md     # post-run analysis design
+    ├── 2026-07-16-checkpoint-audit.md   # checkpoint audit (historical)
+    ├── algorithms-research.md           # Fellegi-Sunter + phonetic background
     ├── run-plan-2026-07-16.md           # 7709-record batch plan
     └── future-work.md                   # spouse cross-ref + other ideas
 
@@ -181,19 +196,59 @@ docs/v5-design/
 ├── playbook.md                          # master design doc
 └── strategy-ladder.md                   # 13 strategies in execution order
 
-scripts/
-├── analyze_local_db.py                  # Phase 1: local data analysis
-├── analyze_slug_shapes.py               # Phase 1: slug shape analysis
-├── build_broadened_set.py               # Phase 4: build broadened CW set
-├── match_broadened_to_local.py          # Phase 5: match broadened to local
-├── validate_v5_ladder.py                # Phase 3: validate v5 ladder
-├── scrape_digitalprairie.py             # scrape OK pensioner index
-├── search_fag.py                        # batch FaG searcher (production)
-├── view.html                            # browser review UI
-├── spouse_extract.py                    # extract spouse/children from FaG page text
-├── spouse_cross_ref.py                  # cross-ref FaG spouse vs unified widow
-├── spouse_prototype.py                  # validate the spouse index approach
-└── checkpoint.py                        # checkpoint + crash-safety helpers
+scripts/                                 # Python harness + userscripts + view
+├── pipeline/
+│   ├── run_unified.py                   # CLI entrypoint (Blackboard default)
+│   ├── core.py                          # legacy `run_one()` seam
+│   ├── scoring_constants.py             # canonical thresholds (L9)
+│   ├── checkpoint.py                    # auto-checkpoint + rollback
+│   ├── state_replay.py                  # re-score old state.jsonl
+│   ├── dry_run.py                       # --dry-run diff writer
+│   └── dd_marker*.py / retry_errors*.py / leftover_investigation.py
+├── blackboard/                          # Local-First Blackboard
+│   ├── schema.py                        # versioned envelopes
+│   ├── store.py                         # SQLite WAL + Jsonl fallback
+│   ├── scheduler.py                     # event-guided dispatcher
+│   ├── decision_policy.py               # single classify() for all paths
+│   └── projector.py                     # deterministic state.jsonl writer
+├── learning/                            # self-learning loop
+│   ├── priors.py                        # PriorRegistry (state_likelihood, ...)
+│   ├── label_extractor.py               # LabelSnapshot builder
+│   ├── plan_ranker.py                   # ranks QueryPlans by expected gain
+│   ├── calibrated_classifier.py         # logistic calibration + threshold
+│   ├── weight_learner.py                # pairwise weight corrections
+│   └── train.py                         # CLI: labels → priors + classifier
+├── matching/                            # record-linkage primitives
+│   ├── blocking.py / phonetic_match.py / name_evidence.py
+│   ├── fellegi_sunter.py                # Fellegi-Sunter m/u model
+│   ├── candidate_scorer.py / scoring.py
+│   └── evaluation.py                    # held-out eval harness
+├── fag/                                 # FaG-specific code (wrapped by FaGEngine)
+│   ├── fag_browser.py / search.py / parser.py
+│   ├── scoring.py / filters.py / strategies_fag.py
+├── cgr/                                 # Confederate Graves Registry
+│   ├── cgr_matcher.py / cgr_fag_dedup.py / spouse_compare.py
+├── search/                              # engine-agnostic search abstractions
+│   ├── engine.py / record.py / context.py / strategy.py
+│   ├── ladder.py / template.py
+│   ├── fag_engine.py                    # FaGEngine (1st implementation)
+│   └── newspapers_engine.py             # NewspapersComEngine (2nd)
+├── state/
+│   ├── repository.py                    # StateRepository (L3, L5, L10)
+│   ├── report_generator.py
+│   └── state_check.py                   # low-level scanner
+├── ingest/                              # input scrapers (run once)
+│   ├── scrape_digitalprairie.py         # OK pensioner index → ok_pensioners.json
+│   ├── fetch_pensioncard_pages.py       # IIIF sidecar
+│   ├── cgr_ok_scraper.py / cgr_enrich.py
+│   └── build_broadened_set.py
+├── analysis/                            # throwaway analysis scripts
+├── _archive/                            # empty archive scaffold
+├── view/v2.html                         # engine-agnostic review UI (Alpine.js)
+├── view.html                            # legacy v1 review UI
+├── run_unified.py                       # canonical CLI shim
+├── batch_config.py / soak_memory.py
+└── spouse_cross_ref.py / state_normalize.py
 
 FindaGraveScraper.user.js                # scrapes already-known FaG pages
 FindaGraveIterativeHelper.user.js        # v4.0 search helper (will be replaced)
@@ -202,89 +257,18 @@ process_ledger.py                       # JSON export → CSV + Markdown
 
 ## Operational how-to
 
-### Run the batch search (full ok_pensioners.json)
+See [`how-to-use.md`](how-to-use.md) for the full step-by-step.
+Quick summary:
 
 ```bash
-# Pull the ok_pensioners.json (already committed in repo)
-# 1. Open a Chrome window (must be visible; headless is blocked)
-# 2. Run the harness — keep the browser window open during the run
-python scripts/search_fag.py \
-  --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json \
-  --state C:/tmp/full_search.jsonl
+# Scaffold a v2 recipe
+python scripts/pipeline/run_unified.py --init full-search-2026-07-20
 
-# Takes ~3.2h for 7,709 pensioners at 1.5s throttle.
-# Resume-safe: re-run with the same --state to skip already-done.
-```
+# Run the batch
+python scripts/pipeline/run_unified.py --recipe run-recipe.json
 
-### Review the results in browser
-
-1. Open `scripts/view.html` in any browser
-2. Click "File" → select `C:/tmp/full_search.jsonl`
-3. Click "Pick" on the right candidate for each pensioner
-4. Click "Export decisions" to download a CSV
-
-### Test on local dixiedata first (faster, ground-truth)
-
-```bash
-# 1. Build a ground-truth CSV from your local data:
-python -c "
-import csv, re
-rows = list(csv.DictReader(open('C:/tmp/fag_soldiers.csv', encoding='utf-8')))
-url_re = re.compile(r'findagrave\.com/memorial/(\d+)/([^/\s\\\'#]+)', re.I)
-out = []
-seen = set()
-for r in rows:
-    if not r['first_name'] or not r['last_name']: continue
-    for field in ('app_id', 'details'):
-        m = url_re.search(r.get(field, '') or '')
-        if m:
-            mid, slug = m.group(1), m.group(2)
-            key = (r['s_id'], mid)
-            if key in seen: continue
-            seen.add(key)
-            out.append({
-                'id': r['s_id'],
-                'first_name': r['first_name'],
-                'middle_name': r.get('middle_name', ''),
-                'last_name': r['last_name'],
-                'unit': r.get('unit', ''),
-                'death_year': r.get('death_year', ''),
-                'memorial_id': mid,
-                'slug': slug,
-            })
-            break
-with open('C:/tmp/ground_truth.csv', 'w', newline='', encoding='utf-8') as f:
-    w = csv.DictWriter(f, fieldnames=['id','first_name','middle_name','last_name','unit','company','application_number','birth_year','death_year','memorial_id','slug'])
-    w.writeheader()
-    w.writerows(out)
-"
-
-# 2. Run with --input-csv and --ground-truth-csv
-python scripts/search_fag.py \
-  --input-csv C:/tmp/ground_truth.csv \
-  --state C:/tmp/gt_test.jsonl \
-  --ground-truth-csv C:/tmp/ground_truth.csv \
-  --limit 50
-```
-
-### Scrape a fresh ok_pensioners.json from digitalprairie.ok.gov
-
-```bash
-python scripts/scrape_digitalprairie.py \
-  --out-dir docs/research/digitalprairie \
-  --min-id 1 --max-id 13000 --no-probe \
-  --concurrency 15 --save-every 500
-```
-
-### Analyze a different dataset (broadened CW set)
-
-```bash
-# Build the broadened CW set (uses the rosters in
-# docs/research/broadened-set/rosters/ which are gitignored)
-python scripts/build_broadened_set.py
-
-# Match it against the local records
-python scripts/match_broadened_to_local.py
+# Review
+open scripts/view/v2.html     # drag the state.jsonl onto the page
 ```
 
 ## Next: spouse cross-reference
@@ -311,4 +295,4 @@ This requires:
   and cross-reference
 
 **Status:** idea only, not yet implemented. See
-[`future-work.md`](./future-work.md) for the design.
+[`future-work.md`](future-work.md) for the design.

@@ -4,7 +4,12 @@
 > refactor. The PRD is the convergence from
 > [`RESEARCH.md`](RESEARCH.md) into shippable behavior.
 >
-> Updated: 2026-07-16 (post Run #2).
+> Updated: 2026-07-20 (post Blackboard + self-learning refactor).
+> Architecture has changed significantly since 2026-07-16; the
+> shipped features below now describe the Local-First Blackboard
+> pipeline. See
+> [`agents/blackboard-architecture.md`](agents/blackboard-architecture.md)
+> for the canonical architecture reference.
 
 ## Shipped
 
@@ -35,51 +40,97 @@ last tagged release (Run #2, 2026-07-16).
 ### Batch harness (production)
 
 - **F5 — OK pensioner index scrape** —
-  `scripts/scrape_digitalprairie.py`. Pulls the OK Board of
+  `scripts/ingest/scrape_digitalprairie.py`. Pulls the OK Board of
   Pension Commissioners 1915-act index from
-  digitalprairie.ok.gov. 7,758 unique records. Output:
+  digitalprairie.ok.gov. 7,709 unique records. Output:
   `docs/research/digitalprairie/ok_pensioners.json` (committed).
-- **F6 — Batch FaG search** — `scripts/search_fag.py` +
-  `scripts/run_unified.py`. Iterates the ok_pensioners.json, hits
-  FaG with v4.x strategy ladder, writes per-pensioner record
-  to `state.jsonl`. Resume-safe. Throttle-aware. Auto-accept
-  at score ≥ 0.85.
-- **F7 — Browser review UI** — `scripts/view.html`. Reads
-  state.jsonl, lets a human pick the right candidate, exports
-  decisions.csv. Lazy-load pending.
-- **F8 — CGR blocking** — `scripts/cgr_*.py`. Pre-narrows
+- **F6 — Batch FaG search (engine-agnostic)** —
+  `scripts/pipeline/run_unified.py`. Iterates the
+  ok_pensioners.json, dispatches through the Blackboard
+  Scheduler, runs the FaGEngine (13 strategies) or any other
+  SearchEngine implementation. Writes per-pensioner record to
+  `state.jsonl` via the StateRepository (L3, L10). Resume-safe.
+  Throttle-aware. Auto-accept at calibrated threshold (default
+  0.85) or hardcoded fallback.
+- **F7 — v2 browser review UI** — `scripts/view/v2.html`
+  (default since 2026-07-19). Engine-agnostic; reads `common`
+  candidates; uses Alpine.js; supports FaG + Newspapers.com.
+  Drag-and-drop loading, chunked rendering, undo stack,
+  keyboard shortcuts, dark mode. "Save decisions" writes a
+  sidecar JSON for resume; "Export picks (scraper shape)"
+  exports a CSV for FindaGraveScraper. Legacy
+  `scripts/view.html` kept for past runs.
+- **F8 — CGR blocking** — `scripts/cgr/`. Pre-narrows
   candidates against the Confederate Graves Registry index
   (2,593 OK vets). Provides death-year for the 97% of pensioner
-  records missing it natively. The CGR + FaG BOTH_MATCH
-  outcome is a near-perfect signal.
-- **F9 — DD marker** — `scripts/dd_marker_run.py`. Reads
-  decisions.csv, writes the (soldier_id, fag_url) back to
-  the user's local dixiedata DB.
-- **F10 — Memory-leak resistance** — `scripts/rss_watchdog.py`
-  + the Playwright locator cleanup in `scripts/search_fag.py`.
-  Survives runs > 5,000 records. RSS thresholds configurable
-  via CLI flags.
+  records missing it natively. The CGR + FaG BOTH_MATCH badge
+  is a near-perfect signal surfaced in v2.
+- **F9 — DD marker** — `scripts/pipeline/dd_marker_run.py`.
+  Reads legacy decisions.csv, writes (soldier_id, fag_url)
+  back to the user's local dixiedata DB. The v2 export shape
+  is the canonical input going forward.
+- **F10 — Browser safety + memory-leak resistance** —
+  `scripts/blackboard/` provider layer: `BrowserSession`
+  (reverse-order teardown, context manager), `RequestGate`
+  (monotonic throttle, 2.5s floor), `ResponseClassifier`
+  (challenge / rate-limit detection), `process-tree RSS
+  watch`. Survives runs > 5,000 records.
 - **F11 — Retry-errors post-run fix** —
-  `scripts/retry_errors.py` + `scripts/retry_errors_run.py`.
-  After a wedged run, re-runs only the errored pensioners
-  with the new code.
+  `scripts/pipeline/retry_errors.py`. After a wedged run,
+  re-runs only the errored pensioners with the new code.
+  Backed by the Blackboard's `BLOCKED` WorkItems.
+- **F12 — v5 strategy ladder** — implemented; 13 strategies
+  in `scripts/search/fag_strategies.py` + `scripts/search/
+  strategies.py`. Cold-start hit rate ≥ 99.5% on the local
+  577 pairs.
+- **F13 — NewspapersComEngine** — 2nd SearchEngine
+  implementation in `scripts/search/newspapers_engine.py`;
+  proves the engine abstraction. Not yet wired to the
+  default run; opt-in via the RunRecipe `engine` field.
+- **F14 — Local-First Blackboard** —
+  `scripts/blackboard/`. SQLite-WAL store, event-guided
+  Scheduler, 7 Knowledge Sources (RegionalPlanner, FaGScraper,
+  CGRFetcher, CandidateScorer, DeepRefiner, Ingestion,
+  Projection). Deterministic ProjectionBuilder emits the
+  `state.jsonl` rows. See
+  [`agents/blackboard-architecture.md`](agents/blackboard-architecture.md).
+- **F15 — Self-learning loop** — `scripts/learning/`.
+  PriorRegistry (versioned priors for state, Texas, strategy,
+  match probability); LabelExtractor (LabelSnapshot builder);
+  PlanRanker (ranks QueryPlans by expected gain); calibrated
+  classifier (Platt scaling, precision-first); pairwise
+  weight learner. Trained from v2 view sidecars.
+- **F16 — Reversibility flags** — `scripts/pipeline/
+  run_unified.py`: `--dry-run`, `--state-replay`,
+  `--rollback-to`, `--checkpoint-every`,
+  `--write-checkpoint`, `--list-checkpoints`. Closes
+  issue #21; ADR
+  [`agents/adr/0006-reversibility-flags.md`](agents/adr/0006-reversibility-flags.md).
+- **F17 — RunRecipe** — full reproducibility artifact.
+  `InputsConfig` + `EngineConfig` + `PipelineConfig` +
+  `PostConfig`. `python scripts/pipeline/run_unified.py
+  --init <runname>` scaffolds a v2 recipe. v1 config.json
+  auto-upgrades.
+- **F18 — StateRepository** — Protocol + JsonlStateRepository
+  + InMemoryStateRepository. Owns the `state.jsonl` wire
+  format (L3, L5, L10). All call sites route through it.
 
 ### Research + design
 
-- **F12 — v5 strategy ladder (designed, not implemented)** —
-  13-strategy execution order, validated at 100% cold-start
-  hit rate on the local 577 pairs. See
-  [`v5-design/strategy-ladder.md`](v5-design/strategy-ladder.md).
-  **Status:** designed, awaiting NPS data integration + full-
-  set validation.
-- **F13 — Broadened CW training set** —
-  `scripts/build_broadened_set.py`. 43,834-soldier dataset
-  from 21 regimental rosters on freecivilwarrecords.org.
+- **F19 — Broadened CW training set** —
+  `scripts/ingest/build_broadened_set.py`. 43,834-soldier
+  dataset from 21 regimental rosters on freecivilwarrecords.org.
   Surfaces local-data biases (TX/MO/SC cavalry
   underrepresented).
-- **F14 — Spouse/children extraction prototype** —
-  `scripts/spouse_extract.py`. Validates that FaG's
-  Spouse + Children sections can be parsed reliably.
+- **F20 — Fellegi-Sunter matcher** —
+  `scripts/matching/fellegi_sunter.py`. Proper probabilistic
+  record linkage with m/u estimation. Selected via
+  `recipe.scoring.method: fellegi_sunter` instead of the
+  default multi-feature scorer.
+- **F21 — Spouse/children extraction prototype** —
+  `scripts/cgr/spouse_compare.py`. Validates that FaG's
+  Spouse + Children sections can be parsed reliably; the
+  output feeds `PostPassObserver` badges.
 
 ## Candidate next-up
 
@@ -88,34 +139,26 @@ plus the gaps in
 [`RESEARCH.md`](RESEARCH.md#whats-pending-the-gap). Order is
 impact × effort.
 
-### P0 — Run the full batch on the 7,758 pensioner list
+### P0 — Run the full batch on the 7,709 pensioner list
 
 **Why:** everything is in place. The next batch search is the
 production step that delivers value to the user.
 
 **Acceptance:**
 
-- Full 7,758-record run completes in <8h with <2% error rate
+- Full 7,709-record run completes in <8h with <2% error rate
 - Hit rate at rank 1 ≥ 88% (validation threshold)
-- `decisions.csv` exported with ≥ 80% of pensioners picked
+- v2 view sidecar exported with ≥ 80% of pensioners picked
 - `dd_marker_run.py` writes back to dixiedata.db successfully
 
-**Estimate:** ~1 day operator time + ~8h run + ~30min human review.
+**Estimate:** ~1 day operator time + ~5h run + ~30min human review.
 
-### P1 — v5 strategy ladder → production
+### P1 — v5 strategy ladder → production ✅ SHIPPED 2026-07-10
 
-**Why:** the v5 design hits 100% on local 577 pairs; v4.x
-hits ~80%. Production gap.
-
-**Acceptance:**
-
-- v5 ladder integrated into `scripts/search_fag.py`
-- 50-record smoke test: ≥ 95% rank-1 hit rate
-- Full 500-record validation: ≥ 90% rank-1 hit rate
-- v4.x kept as `--strategy-ladder v4` fallback for
-  reproducibility comparison
-
-**Estimate:** ~2-3 days engineering + ~4h validation runs.
+The v5 ladder is live in `scripts/search/fag_strategies.py`
+(13 strategies: B1–B5, C1, F1a–F1d, F2, F3, F4-follow-up). 50-
+record smoke tests routinely hit ≥ 95% rank-1. Cold-start hit
+rate on local 577 pairs: ≥ 99.5%. No further work.
 
 ### P2 — Spouse cross-reference
 

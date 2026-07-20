@@ -316,20 +316,27 @@ how to test a new engine.
 | `scripts/search/strategy.py` | `Strategy` Protocol + `FunctionStrategy` |
 | `scripts/search/ladder.py` | `run_ladder()` (mode="first" or mode="all") |
 | `scripts/search/strategies.py` | 10 generic FaG-shape strategies + positional shims |
-| `scripts/search/fag_strategies.py` | F2/F3 (regiment, nickname) for FaG |
+| `scripts/search/fag_strategies.py` | F2/F3 (regiment, nickname) + F4 (follow-up) for FaG |
 | `scripts/search/templates.py` | Sample template-form strategies |
 | `scripts/search/template.py` | `TemplateStrategy` + the DSL |
 | `scripts/search/record.py` | `SearchRecord` + `from_pensioner` / `to_pensioner_dict` |
-| `scripts/search/engine.py` | `SearchEngine` Protocol + `default_search_one` |
-| `scripts/search/fag_engine.py` | `FaGEngine` (one implementation) |
-| `scripts/search/newspapers_engine.py` | `NewspapersComEngine` (second implementation) |
+| `scripts/search/engine.py` | `SearchEngine` Protocol + `default_search_one` + `to_common_candidate` |
+| `scripts/search/fag_engine.py` | `FaGEngine` (1st implementation; 13 strategies) |
+| `scripts/search/newspapers_engine.py` | `NewspapersComEngine` (2nd implementation; 3 strategies) |
 | `scripts/search/record_fag_adapter.py` | Bridge: pensioner dict → SearchRecord → engine |
 
-The pipeline layer (`scripts/pipeline/core.py`) consumes the
-abstractions. The FaG-specific orchestration (CAPTCHA waits,
-1015 backoff, per-strategy throttle) stays in
-`scripts/fag/search.py`; the engine path uses the simpler
-`default_search_one` flow.
+The Blackboard layer (`scripts/blackboard/`) wraps the
+abstractions: `FaGScraperKS` consumes an engine, emits
+`FaGSearchExecuted` observations. `RegionalPlannerKS` emits
+`QueryPlan` work items the engine consumes via
+`engine.ordered_ladder(ctx)` (when a `PlanRanker` is
+registered; otherwise the static ladder order applies).
+
+FaG-specific orchestration (CAPTCHA waits, 1015 backoff,
+per-strategy throttle) lives in `BrowserSession` +
+`RequestGate` + `ResponseClassifier` under
+`scripts/blackboard/` (provider safety layer). The engine
+path itself uses the simpler `default_search_one` flow.
 
 ---
 
@@ -390,3 +397,70 @@ If `result.engine_result["candidates"]` is empty:
   the page title in the browser.
 - The orchestrator caught an exception. Check
   `result.engine_result["error"]`.
+
+---
+
+## 8. Engine-agnostic common shape
+
+Every engine that wants to play with the v2 view, the
+Blackboard Projector, or the scraper export must implement
+`to_common_candidate(native_candidate) -> CommonCandidate`.
+The `CommonCandidate` dataclass is defined in
+`scripts/search/engine.py` and has these fields:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `id` | str | Engine-native identifier (`memorial_id` for FaG; record id for Newspapers.com). |
+| `url` | str | Canonical page URL. |
+| `name` | str | Display name. |
+| `score` | float | In `[0, 1]`. The engine's `score()` output. |
+| `evidence` | dict | Engine-specific evidence (match_strength, dates, locations, IIIF links). |
+| `engine` | str | Engine name (`findagrave`, `newspapers_com`, ...). |
+| `media` | str | Optional. IIIF thumbnail URL or image. |
+
+The ProjectionBuilder writes one `common` array per record
+alongside the legacy `ranked_candidates`. v2 reads `common`
+directly via `normalizeRecordV2()`; the legacy FaG fields
+stay alongside for back-compat with v1 `view.html`.
+
+### Implementing `to_common_candidate`
+
+```python
+def to_common_candidate(self, native: dict) -> CommonCandidate:
+    return CommonCandidate(
+        id=native["memorial_id"],
+        url=f"https://www.findagrave.com/memorial/{native['memorial_id']}/{native['slug']}",
+        name=native["name"],
+        score=native["score"],
+        evidence={
+            "match_strength": native.get("match_strength"),
+            "burial_location": native.get("burial_location"),
+            "death_date": native.get("death_date"),
+        },
+        engine="findagrave",
+        media=native.get("iiif_url"),
+    )
+```
+
+### Test it
+
+```python
+def test_fag_to_common_candidate_roundtrip():
+    native = {
+        "memorial_id": "50923719",
+        "slug": "william-pickney-looney",
+        "name": "William Pickney Looney",
+        "score": 0.92,
+        "match_strength": "high",
+        "burial_location": "Rose Hill Cemetery, OK",
+        "death_date": "1907",
+        "iiif_url": "https://www.findagrave.com/iiif/2/50923719/...",
+    }
+    engine = FaGEngine()
+    common = engine.to_common_candidate(native)
+    assert common.id == "50923719"
+    assert common.url.endswith("/william-pickney-looney")
+    assert common.engine == "findagrave"
+    assert common.media is not None
+    assert 0 <= common.score <= 1
+```

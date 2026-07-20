@@ -150,7 +150,7 @@ See `parse_output.txt` for the full list. Highlights:
 
 ## Match against local data
 
-`scripts/match_broadened_to_local.py` joins our 1,147 local records
+`scripts/analysis/match_broadened_to_local.py` joins our 1,147 local records
 against the broadened set on `(last_name, first_initial,
 state_from_unit)`.
 
@@ -225,10 +225,10 @@ for code in UNY0005RI UTN0010RI UOH0023RI UMA0054RI00C UPA0007RI; do
 done
 
 # 2. Build the normalized training set:
-python scripts/build_broadened_set.py
+python scripts/ingest/build_broadened_set.py
 
 # 3. Match against local records (requires local_soldiers_with_fag.csv):
-python scripts/match_broadened_to_local.py
+python scripts/analysis/match_broadened_to_local.py
 ```
 
 ## Sources

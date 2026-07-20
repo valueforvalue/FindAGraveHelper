@@ -82,10 +82,11 @@ _Avoid_: scored candidate (the candidate is always ranked; the
 attribute is `score`, not `ranked`).
 
 **Strategy**:
-One query shape in the v5 strategy ladder. There are 13
-strategies in execution order, from "exact sniper" (Strategy
-1, name-only, no metadata) through "broadened surname" (the
-fallback). See [`docs/v5-design/strategy-ladder.md`](docs/v5-design/strategy-ladder.md).
+One query shape in the v5 strategy ladder. The FaGEngine
+ladder has 13 strategies (12 base + F4 follow-up) in
+execution order, from "exact sniper" (Strategy 1, name-only,
+no metadata) through "broadened surname" (the fallback). See
+[`docs/v5-design/strategy-ladder.md`](docs/v5-design/strategy-ladder.md).
 _Avoid_: step, query (a strategy is the conceptual shape; a
 query is the URL instance).
 
@@ -97,19 +98,185 @@ record combines the application file with the pension card.
 _Avoid_: index card (the pension card is the *front*; the
 application file is the *back*).
 
+**Common candidate**:
+The engine-agnostic shape a candidate takes once it crosses
+the SearchEngine boundary. Every engine maps its native
+result into `id`, `url`, `name`, `score`, `evidence`,
+`engine`, and optional `media` (IIIF thumbnail) so downstream
+layers (Projector, v2.html) can consume it without engine
+branching. The legacy FaG-shaped fields (`memorial_id`,
+`slug`, `backlink`, `iiif_url`) stay alongside the `common`
+key for back-compat with v1 view.html.
+_Avoid_: normalized candidate, universal record (the shape is
+a domain projection, not a generic JSON-LD-ish container).
+
+**StateRepository**:
+The Protocol that owns the `state.jsonl` wire format. Six
+methods (`append`, `iter_all`, `get`, `update`,
+`replace_all`, `check`). The `JsonlStateRepository`
+implementation enforces L3 (per-pensioner flush + fsync) and
+L5 (newline-delimited JSON, one record per line) so business
+logic never touches the wire format directly. The
+`InMemoryStateRepository` is the test-side double.
+_Avoid_: writer, JSONL module (the Repository IS the wire
+format owner).
+
+**Blackboard**:
+The local-first coordination pattern this repo adopted
+(2026-07-17, 38-slice refactor). A SQLite-WAL store holds
+durable Observations and WorkItems; an event-guided
+Scheduler dispatches Knowledge Sources (KS) that read
+observations, produce new ones, and claim work items. The
+ProjectionBuilder deterministically reduces observations
+into state.jsonl rows. Replaces the legacy per-pensioner
+god-loop. See
+[`docs/agents/blackboard-architecture.md`](docs/agents/blackboard-architecture.md).
+_Avoid_: queue, event bus (the Blackboard has both a
+work-queue and a pub-sub, but neither name captures the
+separation of durable state + KS dispatch).
+
+**Observation**:
+A typed envelope written to the Blackboard by a Knowledge
+Source. `Kind` enum: `FaGSearchPlan`, `FaGSearchExecuted`,
+`CGRCorroboration`, `DixieDataMatch`, `SpouseMatch`,
+`ScoreObserved`, `DecisionObserved`, etc. Observations are
+immutable; new state comes from appending a new observation.
+_Avoid_: event (observations are typed + durable; events are
+ephemeral).
+
+**WorkItem**:
+A unit of durable work the Scheduler hands to a Knowledge
+Source. States: `READY → LEASED → SUCCEEDED / RETRYABLE /
+BLOCKED / TERMINAL`. The Scheduler enforces leases (TTL) so
+a crashed KS doesn't permanently lock its work.
+_Avoid_: job, task (a task is one KS invocation; a WorkItem
+crosses KS invocations via the LEASED state).
+
+**QueryPlan**:
+A typed strategy execution plan emitted by `RegionalPlannerKS`
+and consumed by `FaGScraperKS`. Carries the geographic scope
+(`OK → regiment → Texas → US`), the strategy name to run,
+and the budget. The PlanRanker re-orders these per-pensioner
+using the PriorRegistry; the scheduler dispatches them.
+_Avoid_: query, request (a QueryPlan is one strategy shape;
+a query is the URL instance).
+
+**Knowledge Source (KS)**:
+One of seven domain agents registered with the Scheduler:
+`RegionalPlannerKS`, `FaGScraperKS`, `CGRFetcherKS`,
+`CandidateScorerKS`, `DeepRefinerKS`, `IngestionKS`,
+`ProjectionKS`. Each KS declares an `eligible_work_kinds`
+set, an `invoke(work_item) → observations` method, and
+cooldown / budget gates. The Blackboard Scheduler dispatches
+based on eligible-work rather than a fixed pipeline order.
+_Avoid_: module, handler (a KS is contract-bound; a module
+just exists).
+
+**Decision**:
+An immutable verdict produced by `DecisionPolicy.classify()`.
+Carries `status`, `top_score`, `gap`, `threshold_used`, and
+`policy_version`. Single source of truth for live runs,
+replays, and dry-runs. The v2.html uses the `status`; the
+ProjectionBuilder uses the rest. Versioned via
+`policy_version` so a replay can recover the exact decision
+rule.
+_Avoid_: classification (a Classification is the engine-level
+paywall/captcha/normal enum; a Decision is the per-record
+verdict).
+
+**PriorRegistry**:
+A versioned deterministic lookup table the PlanRanker reads
+to choose plan order. Tables: `state_likelihood` (regiment →
+state probability), `texas_likelihood`, `strategy_usefulness`
+(per-strategy hit rate), `match_probability` calibration.
+Loaded from `priors_v2.json`; updated by `train.py`. Versioned
+so a replay can recover the exact policy.
+_Avoid_: model file, weights (the registry is a deterministic
+table, not a learned model).
+
+**CalibratedClassifier**:
+Logistic-regression calibration over the raw scoring output.
+Trained on labeled (`LabelSnapshot`) pairs; produces
+calibrated probability and an auto-accept threshold that
+hits a target precision (default 0.95). Replaces hardcoded
+thresholds in `DecisionPolicy` when present.
+_Avoid_: ML model (this is a single-feature logistic
+calibration, not a deep model — the name is descriptive,
+not aspirational).
+
+**PlanRanker**:
+Ranks QueryPlans by expected information gain using the
+PriorRegistry. Enforces hard constraints (budget, cooldowns,
+dedup). Advisory: ranks without overriding safety gates.
+_Avoid_: scheduler (the Scheduler dispatches; the PlanRanker
+orders).
+
+**FellegiSunter**:
+Probabilistic record linkage via the Fellegi-Sunter m/u
+likelihood-ratio model. Features: name_similarity,
+birth_year_match, unit_state_match, first_initial_match,
+metaphone_last. Trained on labeled match/non-match pairs;
+selected via `recipe.scoring.method: fellegi_sunter`.
+_Avoid_: classifier, fuzzy match (Fellegi-Sunter is
+probabilistic with m/u estimation; the others are heuristic).
+
+**PairwiseWeightLearner**:
+Learns corrected scoring weights from pairwise comparisons
+(`picked_candidate`, `rejected_candidate`) of labeled
+results. Uses logistic regression on feature deltas.
+Output: weight corrections that close the gap between
+auto-scored rank and human-decided rank. Operates on
+`_score_gap_to_top` / `_winning_strategy` / `_feature_deltas`
+fields the v2.html adds to its scraper export.
+_Avoid_: weight tuner (this is a learned correction, not a
+manual knob).
+
+**RunRecipe**:
+A complete run recipe that captures every togglable feature
+as a config key: `InputsConfig` (pensioners, CGR), `EngineConfig`
+(engine choice, throttle), `PipelineConfig` (modules, scoring
+method, strategies, decision policy), `PostConfig` (DD marker,
+spouse scrape, checkpoint cadence). The config file IS the
+reproducibility artifact; `python scripts/pipeline/run_unified.py
+--init <runname>` scaffolds a v2 recipe. v1 `config.json`
+auto-upgrades.
+_Avoid_: config, settings (RunRecipe is the unit of
+reproducibility; settings are local tweaks).
+
+**LabelSnapshot**:
+A versioned training label pairing a pensioner_id to a
+human-review decision plus its source-policy provenance
+(`source_policy_version`, `extracted_at`). The
+LabelExtractor builds these from the v2.html sidecar +
+ground-truth CSV + CGR/spouse evidence. Stored in SQLite
+with a temporal split to prevent label leakage across
+policy versions.
+_Avoid_: training data (the snapshot is versioned; the data
+is the union of all snapshots).
+
 ## Relationships
 
 - A **Pensioner** has zero or one **Match** (per FaG candidate).
 - A **Pensioner** has zero or more **Candidates** (FaG search results).
 - A **Candidate** is a **Ranked candidate** iff it has a `score`.
 - A **Pensioner** has one **Outcome** (the harness's verdict).
+- A **Candidate** projects to one **Common candidate** (engine-
+  agnostic shape) so downstream layers don't branch on engine.
 - A **Pension card** has zero or one **Spouse cross-reference**
   (planned future work; see
   [`docs/learnings/future-work.md`](docs/learnings/future-work.md) §1).
 - A **Slug** has one of four shapes (1-part, 2-part, 3-part,
   hyphenated); the `first_middle-last` shape is the canonical
   3-part form.
-- The **State file** has one record per **Pensioner**.
+- The **State file** has one record per **Pensioner**; the
+  **StateRepository** owns the wire format.
+- A **Blackboard** holds many **Observations** and **WorkItems**
+  in flight; one **Knowledge Source** at a time claims each
+  **WorkItem**.
+- A **QueryPlan** maps to one **Strategy** invocation; many
+  QueryPlans can be ranked by one **PlanRanker** call.
+- A **Decision** has one **policy_version**; replays recover
+  the exact rule by reading the version.
 
 ## Example dialogue
 
@@ -249,3 +416,60 @@ search succeeded. Use Playwright + `playwright-stealth` with
 **Earned by:** Phase 1 research, 2026-07-08. Cited again in
 Run #1 when a one-off `requests` test for "speed" got blocked
 in 5 seconds.
+
+### L9. Canonical scoring constants, not local copies
+
+Auto-accept, low-score, and gap thresholds drift across the
+codebase if each module re-declares its own copy. The
+canonical source is
+[`scripts/pipeline/scoring_constants.py`](scripts/pipeline/scoring_constants.py).
+Every threshold that gates a per-record verdict imports from
+there. Local copies are deprecated aliases (PEP 562
+`__getattr__`) and emit `DeprecationWarning`. New code MUST
+NOT re-declare thresholds.
+
+**Earned by:** Issue #37 — `blackboard/decision_policy.py`
+re-declared `LOW_SCORE_THRESHOLD = 0.40` and a parallel set
+of `STATUS_*` constants. Resolved by migration; pinning via
+`tests/test_scoring_constants_dedup.py`.
+
+### L10. Per-row fsync on every state write (Python)
+
+Every `state.jsonl` append MUST end with `f.flush();
+os.fsync(f.fileno())` before the next pensioner starts. The
+`StateRepository.append()` method enforces this; calling
+code MUST NOT bypass the Repository. A partial-write crash
+loses the last record (acceptable; L3 minimizes the window).
+
+**Earned by:** L3 enforcement iteration (issue #22). The
+original `write_unified_line` and `write_checkpoint` only
+flushed — added `os.fsync` so a `kill -9` can't lose a
+whole record.
+
+### L11. Deterministic observation IDs (Blackboard)
+
+Every observation written to the Blackboard MUST carry a
+deterministic ID derived from its payload (e.g. SHA-256 of
+`(kind, pensioner_id, plan_id, strategy_name, ts_bucket)`).
+Resume + replay MUST NOT see duplicate observations for the
+same logical event. The store's `append_observation()` runs
+the dedup; calling code SHOULD NOT pre-assign IDs.
+
+**Earned by:** Scheduler Phase 5 (2026-07-19). Without
+deterministic IDs, a resume re-emitted the same FaG search
+observation and doubled the work-item count.
+
+### L12. Lease TTL on dispatched work (Scheduler)
+
+Every WorkItem leased to a Knowledge Source MUST carry a
+TTL (default 60s). The Scheduler reclaims leases past the
+deadline. A KS that crashes mid-invocation does NOT
+permanently lock its work; the next claim cycle re-runs it.
+Cancelled leases bump an `attempts` counter; after 3 failed
+attempts the WorkItem transitions to `BLOCKED` (operator
+review) instead of looping.
+
+**Earned by:** Scheduler Phase 5 smoke runs. The first
+scheduler run wedged when FaGScraperKS hit a Cloudflare
+challenge mid-invoke; without TTL, the lease survived
+forever and no other pensioner got processed.

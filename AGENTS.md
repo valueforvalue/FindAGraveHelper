@@ -19,38 +19,55 @@ or copy-writing work.
 
 **Stack:** Tampermonkey userscripts (browser) + Python harness
 (`scripts/*.py`, Playwright + stealth) + static-HTML review UI
-(`scripts/view.html`). Per-stack rules in
+(`scripts/view/v2.html`, default since 2026-07-19; legacy
+`scripts/view.html` kept for past runs). Per-stack rules in
 [`docs/agents/addenda/python-playwright-userscript.md`](docs/agents/addenda/python-playwright-userscript.md).
 
-**The search pipeline is engine-agnostic.** The pipeline
-consumes a `SearchEngine` Protocol; `FaGEngine` is the worked
-example (Find a Grave + Cloudflare + state filter), and
-`NewspapersComEngine` is a 2nd implementation that proved the
-abstraction. To add a new strategy or a new engine, read
+**Architecture is a Local-First Blackboard.** The CLI runs
+through `scripts/pipeline/run_unified.py` → Scheduler →
+Knowledge Sources → ProjectionBuilder. See
+[`docs/agents/blackboard-architecture.md`](docs/agents/blackboard-architecture.md).
+
+**Search is engine-agnostic.** Pipeline consumes `SearchEngine`
+Protocol; `FaGEngine` + `NewspapersComEngine` are the two
+implementations. See
 [`docs/agents/search-abstraction.md`](docs/agents/search-abstraction.md).
 
+**The runner self-learns.** After each batch, v2 view exports
+pick-vs-rank deltas; `scripts/learning/train.py` retrains the
+PlanRanker priors and CalibratedClassifier.
+
 **File map:**
-- `CONTEXT.md` — glossary + laws (Tier-0)
+- `CONTEXT.md` — glossary + laws L1–L12 (Tier-0)
 - `docs/agents/` — agent-facing docs (Tier-0 / Tier-1 / Tier-2)
 - `docs/learnings/` — run logs that earned the laws (Tier-2)
-- `scripts/` — Python harness + userscripts + view.html
-- `scripts/search/` — domain-agnostic search abstractions
-  (Strategy, SearchEngine, SearchRecord, run_ladder, template
-  DSL). Engine implementations: `fag_engine.py`,
-  `newspapers_engine.py`.
-- `scripts/pipeline/` — per-record pipeline (orchestrator +
-  scoring + CGR blocking). `core.py::run_one()` is the seam.
-- `scripts/fag/` — FaG-specific code (parser, scoring, filters,
-  browser session). Wrapped by `FaGEngine`.
-- `tests/` — pytest regression net (run with `pytest`)
+- `scripts/` — Python harness + userscripts + view
+- `scripts/search/` — Strategy / SearchEngine / SearchRecord
+  abstractions + engine implementations
+- `scripts/blackboard/` — schema, store, Scheduler,
+  DecisionPolicy, ProjectionBuilder
+- `scripts/learning/` — PriorRegistry, PlanRanker,
+  CalibratedClassifier, PairwiseWeightLearner
+- `scripts/pipeline/` — orchestrator + run CLI
+  (`run_unified.py`)
+- `scripts/matching/` — record-linkage primitives
+- `scripts/fag/` — FaG-specific code (wrapped by `FaGEngine`)
+- `scripts/cgr/` — Confederate Graves Registry integration
+- `scripts/state/` — `state.jsonl` wire format +
+  StateRepository
+- `scripts/view/v2.html` — engine-agnostic review UI (Alpine.js)
+- `scripts/ingest/` — input scrapers (digitalprairie, CGR,
+  pensioncard pages)
+- `tests/` — pytest regression net
 - `docs/research/` — research workspace (Tier-2)
 - `docs/v5-design/` — v5 strategy ladder design (Tier-2)
 
 **Build + test:**
-- `pytest tests/` — run all tests
+- `pytest tests/` — run all tests (~1,381 passing)
 - `pytest tests/test_<name>.py` — run one file
 - `python scripts/soak_memory.py` — manual Playwright leak smoke
 - `python -m playwright install chromium` — first-time setup
+- `python scripts/pipeline/run_unified.py --help` — runner CLI
 
 ## Hard rules
 

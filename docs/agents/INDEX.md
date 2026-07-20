@@ -24,10 +24,10 @@ should not start work without these in context.
 
 | Doc | Token cost | Purpose |
 |---|---|---|
-| [`../../AGENTS.md`](../../AGENTS.md) | ~500 | File map, build/test, hard rules, Tier-0 wiring |
-| [`../../CONTEXT.md`](../../CONTEXT.md) | ~1.5K | Glossary + 8 laws (L1–L8) earned by real bugs |
+| [`../../AGENTS.md`](../../AGENTS.md) | ~700 | File map, build/test, hard rules, Tier-0 wiring |
+| [`../../CONTEXT.md`](../../CONTEXT.md) | ~2K | Glossary + 12 laws (L1–L12) earned by real bugs |
 
-**Tier-0 budget:** ~2K tokens.
+**Tier-0 budget:** ~2.7K tokens.
 
 ### When to load Tier-0
 
@@ -94,6 +94,51 @@ in that role. Don't load the whole table.
 
 **Tier-1 budget (view.html role):** ~3.5K tokens.
 
+### Role: "Implementing the v2 review UI (Alpine.js)"
+
+`scripts/view/v2.html` is the default view since 2026-07-19.
+Engine-agnostic; reads `common` candidate shape; uses
+Alpine.js for reactivity; chunked rendering + drag-and-drop
+loading; undo stack; keyboard shortcuts.
+
+| Doc | Token cost | Purpose |
+|---|---|---|
+| [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline |
+| [`cross-layer-contract.md`](cross-layer-contract.md) | ~1.5K | The `common` candidate shape + badge fields |
+| [`search-abstraction.md` §"Engine-agnostic common shape"](search-abstraction.md) | ~700 | `to_common_candidate()` contract |
+| [`blackboard-architecture.md` §"ProjectionBuilder"](blackboard-architecture.md) | ~500 | Which fields the row carries |
+| [`bug-catalog.md` §"Review UI layer"](bug-catalog.md) | ~500 | Drag-drop + sidecar persistence |
+
+**Tier-1 budget (v2 view role):** ~4.7K tokens.
+
+### Role: "Operating the Blackboard + scheduler"
+
+The default CLI path. Covers Scheduler dispatch, KS
+invocations, projection, and the self-learning loop.
+
+| Doc | Token cost | Purpose |
+|---|---|---|
+| [`blackboard-architecture.md`](blackboard-architecture.md) | ~4K | Schema, store, Scheduler, KS, ProjectionBuilder, self-learning |
+| [`pipeline-architecture.md`](pipeline-architecture.md) | ~2.5K | Visual: where the Blackboard sits in the flow |
+| [`cross-layer-contract.md`](cross-layer-contract.md) | ~1.5K | The state.jsonl wire format the ProjectionBuilder emits |
+| [`search-abstraction.md`](search-abstraction.md) | ~3K | The engine layer the Blackboard wraps |
+| [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline |
+| [`bug-catalog.md` §"Python layer"](bug-catalog.md) | ~700 | Python-specific bug patterns |
+| [`addenda/python-playwright-userscript.md` §"Python"](addenda/python-playwright-userscript.md) | ~400 | Per-layer recipes |
+
+**Tier-1 budget (Blackboard role):** ~13.6K tokens.
+
+### Role: "Tuning the self-learning loop"
+
+| Doc | Token cost | Purpose |
+|---|---|---|
+| [`blackboard-architecture.md` §"Self-learning loop"](blackboard-architecture.md) | ~1K | PriorRegistry / LabelExtractor / CalibratedClassifier / WeightLearner roles |
+| [`blackboard-architecture.md` §"Adding a new Knowledge Source"](blackboard-architecture.md) | ~500 | KS contract (where labels feed back in) |
+| [`search-abstraction.md`](search-abstraction.md) | ~3K | The strategy shapes the PlanRanker re-orders |
+| [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline |
+
+**Tier-1 budget (learning-loop role):** ~6K tokens.
+
 ### Role: "Adding a new search engine or strategy"
 
 | Doc | Token cost | Purpose |
@@ -133,13 +178,19 @@ Loaded when a specific question surfaces. Not pre-loaded.
 | [`../../docs/research/README.md`](../../docs/research/README.md) | ~1.5K | Research workspace index |
 | [`../../docs/v5-design/playbook.md`](../../docs/v5-design/playbook.md) | ~2K | v5 strategy ladder master design |
 | [`../../docs/v5-design/strategy-ladder.md`](../../docs/v5-design/strategy-ladder.md) | ~2K | 13-strategy execution order |
+| [`../../docs/learnings/2026-07-16-j11-j15-features.md`](../../docs/learnings/2026-07-16-j11-j15-features.md) | ~3K | Spouse + DD features that fed the v2 view + Blackboard |
+| [`../../docs/learnings/2026-07-16-postrun-design.md`](../../docs/learnings/2026-07-16-postrun-design.md) | ~2K | CGR dedup + leftover-investigation; superseded by Blackboard ProjectionBuilder |
+| [`../../docs/learnings/algorithms-research.md`](../../docs/learnings/algorithms-research.md) | ~2K | Fellegi-Sunter + phonetic algorithm background |
 
 ---
 
 ## Cross-references
 
 - [`../../AGENTS.md`](../../AGENTS.md) — Tier-0 wiring hub
-- [`../../CONTEXT.md`](../../CONTEXT.md) — Tier-0 glossary + laws
+- [`../../CONTEXT.md`](../../CONTEXT.md) — Tier-0 glossary + laws L1–L12
+- [`blackboard-architecture.md`](blackboard-architecture.md) — Blackboard / Scheduler / KS / projection
+- [`search-abstraction.md`](search-abstraction.md) — strategy + engine abstraction
+- [`pipeline-architecture.md`](pipeline-architecture.md) — visual diagram
 - [`bug-catalog.md`](bug-catalog.md) — bug patterns with citations
 - [`cross-layer-contract.md`](cross-layer-contract.md) — wire formats
 - [`addenda/`](addenda/) — per-stack rules

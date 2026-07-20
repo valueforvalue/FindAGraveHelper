@@ -142,16 +142,16 @@ soldiers.
 
 ```bash
 # Phase 1 — analyze local DB
-python scripts/analyze_local_db.py
+python scripts/analysis/analyze_local_db.py
 
 # Phase 4 — rebuild broadened set (requires rosters in broadened-set/rosters/)
-python scripts/build_broadened_set.py
+python scripts/ingest/build_broadened_set.py
 
 # Phase 5 — match broadened to local
-python scripts/match_broadened_to_local.py
+python scripts/analysis/match_broadened_to_local.py
 
 # Phase 6 — pull OK Confederate pension records from Digital Prairie
-python scripts/scrape_digitalprairie.py \
+python scripts/ingest/scrape_digitalprairie.py \
     --out-dir docs/research/digitalprairie \
     --min-id 1 --max-id 13000 --no-probe \
     --concurrency 15 --save-every 500

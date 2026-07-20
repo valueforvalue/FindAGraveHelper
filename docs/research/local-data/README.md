@@ -116,7 +116,7 @@ This validates it as the highest-impact addition.
   to soldiers, raw form)
 - `local_soldiers_with_fag.csv` — cleaned/sanitized version with stable
   column ordering for analysis
-- `analysis_output.txt` — full output of `scripts/analyze_local_db.py`
+- `analysis_output.txt` — full output of `scripts/analysis/analyze_local_db.py`
 - `validation_results.md` — full strategy-ladder validation results
 
 ## Reproducing
@@ -126,8 +126,8 @@ This validates it as the highest-impact addition.
 cd C:/Development/dixiedata
 sqlite3 -header -csv .dixiedata/dixiedata.db "<see query above>" > C:/tmp/fag_soldiers.csv
 
-# Then run analysis:
-python scripts/analyze_local_db.py
-python scripts/analyze_slug_shapes.py
-python scripts/validate_v5_ladder.py
+# Then run analysis (scripts moved to scripts/analysis/ subpackage):
+python scripts/analysis/analyze_local_db.py
+python scripts/analysis/analyze_slug_shapes.py
+python scripts/analysis/validate_v5_ladder.py
 ```

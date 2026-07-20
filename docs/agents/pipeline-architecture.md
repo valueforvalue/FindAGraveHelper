@@ -4,11 +4,17 @@
 > (issues, PRs, README) without any plugin. ASCII version below
 > for terminal / log-tail viewing.
 >
-> **Last major update:** 2026-07-20. Reflects the abstraction
-> refactor (issues #33–#36): `SearchContext` + `Strategy` Protocol
-> + `SearchEngine` Protocol + `SearchRecord`. FaG and Newspapers.com
-> are both real `SearchEngine` implementations; the pipeline is
-> engine-agnostic.
+> **Last major update:** 2026-07-20. Reflects the Local-First
+> Blackboard (38-slice refactor, 2026-07-17 → 2026-07-19):
+> Scheduler + Knowledge Sources + ProjectionBuilder. The
+> search layer remains engine-agnostic (issues #33–#36):
+> `SearchContext` + `Strategy` Protocol + `SearchEngine`
+> Protocol + `SearchRecord`. FaG and Newspapers.com are both
+> real `SearchEngine` implementations. The v2 review UI
+> (`scripts/view/v2.html`, default since 2026-07-19) reads
+> engine-agnostic `common` candidates. The self-learning loop
+> (`scripts/learning/`) feeds back into the PlanRanker and
+> DecisionPolicy from review-decision sidecars.
 
 ## What this pipeline does
 
@@ -127,7 +133,7 @@ flowchart TB
     end
 
     %% ============ FaG STRATEGY LADDER ============
-    subgraph FAGLAD[FaG LADDER - 12 strategies]
+    subgraph FAGLAD[FaG LADDER - 13 strategies]
         B1["B1-exact: last+first+exactspelling"]
         B2["B2-middle-initial"]
         B3["B3-first-initial-fuzzy"]
@@ -140,6 +146,7 @@ flowchart TB
         F1D["F1d-year-window"]
         F2["F2-regiment-bio"]
         F3["F3-nickname"]
+        F4["F4-follow-up (no-state, surname-only, wide year)"]
     end
 
     %% ============ Newspapers.com LADDER ============
@@ -195,8 +202,8 @@ flowchart TB
     ENGINE --> BOTH
 
     %% FaG ladder
-    FAGENG --> B1 & B2 & B3 & B4 & B5 & C1 & F1A & F1B & F1C & F1D & F2 & F3
-    B1 & B2 & B3 & B4 & B5 & C1 & F1A & F1B & F1C & F1D & F2 & F3 -->|"page.goto per strategy"| FAGSITE
+    FAGENG --> B1 & B2 & B3 & B4 & B5 & C1 & F1A & F1B & F1C & F1D & F2 & F3 & F4
+    B1 & B2 & B3 & B4 & B5 & C1 & F1A & F1B & F1C & F1D & F2 & F3 & F4 -->|"page.goto per strategy"| FAGSITE
     FAGSITE -->|"HTML"| FAGENG
     FAGENG --> FAGENG_BUILD["build_url / parse_results_page<br/>score / classify / apply_filters<br/>(the 6 building blocks)"]
 
@@ -305,71 +312,103 @@ THROTTLE + SAFETY (L1):
    `Strategy` (URL params) → `SearchEngine` (HTTP + parse).
    Each layer is independently extensible. New record source?
    Add a `from_<source>` builder. New strategy? Write a function
-   or a template. New engine? Implement the 6-block Protocol.
+   or a template. New engine? Implement the 6-block Protocol
+   plus `to_common_candidate()` for engine-agnostic projection.
 
 2. **Two engines today**: `FaGEngine` (the worked example for
-   a hostile backend with Cloudflare + paywall + state filter)
-   and `NewspapersComEngine` (the 2nd engine, added in #36 to
-   prove the abstraction). The pipeline consumes either
-   unchanged via `config.engine = ...`.
+   a hostile backend with Cloudflare + paywall + state filter;
+   13 strategies, including F4 follow-up) and `NewspapersComEngine`
+   (the 2nd engine, added in #36 to prove the abstraction; 3
+   strategies). The pipeline consumes either unchanged via
+   `config.engine = ...`.
 
-3. **Two parallel ingest paths** (digitalprairie + CGR) produce
+3. **Local-First Blackboard** in `scripts/blackboard/`: the
+   Scheduler dispatches Knowledge Sources (KS) that read
+   Observations from a SQLite-WAL store and emit new ones.
+   ProjectionBuilder deterministically reduces observations
+   into `state.jsonl` rows. The CLI runs through this path by
+   default; the legacy god-loop is import-only.
+
+4. **Self-learning loop** in `scripts/learning/`: review
+   sidecars feed LabelExtractor → PriorRegistry +
+   CalibratedClassifier + PairwiseWeightLearner. The PlanRanker
+   re-orders QueryPlans per pensioner; the DecisionPolicy
+   swaps hardcoded thresholds for calibrated ones. **Advisory**
+   — never overrides safety gates (cooldown, budget, dedup).
+
+5. **Two parallel ingest paths** (digitalprairie + CGR) produce
    the input files. These run **once** and the output is
-   committed.
+   committed. `scripts/ingest/` is the home.
 
-4. **Per-record pipeline** is a single function (`run_one`)
-   with three phases: CGR blocking → engine search → both-match
-   detection. CGR is **opt-in** and **never gates** the engine
-   search (POLICY-LOCKED 2026-07-16).
+6. **Per-record pipeline** (`scripts/pipeline/core.py`) is the
+   legacy seam (`run_one()`). The Blackboard path runs through
+   `scripts/blackboard/scheduler.py` with KSs replacing the
+   in-loop steps. CGR is **opt-in** and **never gates** the
+   engine search (POLICY-LOCKED 2026-07-16).
 
-5. **Engine search** is the slow part: per-strategy page
+7. **Engine search** is the slow part: per-strategy page
    navigations, throttled. The strategy ladder lives in
-   `engine.ladder` (per engine; FaG has 12, Newspapers.com
-   has 3).
+   `engine.ladder` (per engine; FaG has 13, Newspapers.com
+   has 3). The PlanRanker re-orders FaG strategies per-
+   pensioner using the PriorRegistry.
 
-6. **Outputs** are multiple JSONL files: per-record results,
+8. **Outputs** are multiple JSONL files: per-record results,
    outliers (follow-up candidates), per-run reports. Each run
    writes to its own `output/<runname>/` directory.
 
-7. **`view.html` is the review layer** — the pipeline's output
-   is the *input* to the browser-based reviewer. Picks/notes
-   get written back via the "Export" button.
+9. **`v2.html` is the review layer** — engine-agnostic;
+   reads `common` candidate shape; uses Alpine.js. Picks/notes
+   get written back via the "Export picks" button (scraper
+   shape) or "Save decisions" (sidecar). Drag-and-drop loading
+   + chunked rendering + undo stack. Legacy `view.html` kept
+   for past runs.
 
-8. **Post-run CGR <-> engine dedup** (J7) cross-checks CGR-side
-   matches against final engine picks, annotating each
-   record with `cgr_dedup_status`.
+10. **Post-run read-only observation passes**
+    (`PostPassObserver`) cross-check CGR-side matches and
+    DixieData matches against final engine picks. Read-only
+    on the canonical row; emits badges (`cgr_match`,
+    `spouse_match`, `dd_match`, `needs_research`, `follow_up`)
+    that drive v2 view's filter chips.
 
 ---
 
 ## How the abstractions compose
 
-The pipeline's `run_one()` function is the seam. A future
-contributor reads that function and the abstraction doc
-(`docs/agents/search-abstraction.md`) and can answer:
+The pipeline's `run_one()` function is the legacy seam; the
+default path now runs through the Blackboard Scheduler. A
+future contributor reads the relevant doc and can answer:
 
 - "How do I add a new strategy?" → write a function or a
-  template, append to the engine's ladder.
+  template, append to the engine's ladder. See
+  [`search-abstraction.md`](search-abstraction.md).
 - "How do I add a new engine?" → implement the 6 `SearchEngine`
-  building blocks. The Newspapers.com engine is the worked
-  example.
+  building blocks + `to_common_candidate()`. The Newspapers.com
+  engine is the worked example.
+- "How do I add a new Knowledge Source?" → extend `Kind` enum,
+  write the KS class with `eligible_work_kinds` + `invoke()`,
+  register with the Scheduler. See
+  [`blackboard-architecture.md`](blackboard-architecture.md).
 - "How do I add a new record source?" → add a
   `from_<source>(...)` constructor in `record.py`.
 
-The pipeline never changes. The state schema never changes
-(it's the engine-agnostic dict; the engine's result lands
-in `attributes`). The view.html review UI is the only
-per-engine place that needs adaptation, and even that is
-in the "future work" column for Newspapers.com.
+The Blackboard never changes per KS — the Scheduler dispatches
+by eligible-work. The state schema never changes per engine —
+every engine maps to `common` candidates, and the
+ProjectionBuilder writes the canonical row.
 
 ---
 
 ## Where to read more
 
-- `docs/agents/search-abstraction.md` — how to add strategies
-  and engines, with worked examples.
+- [`blackboard-architecture.md`](blackboard-architecture.md) —
+  Blackboard + Scheduler + KS + projection + self-learning
+- [`search-abstraction.md`](search-abstraction.md) — how to
+  add strategies and engines, with worked examples
 - `scripts/search/` — the abstraction modules (record, context,
-  strategy, ladder, engine, template).
-- `scripts/search/fag_engine.py` — FaGEngine (1st engine).
+  strategy, ladder, engine, template)
+- `scripts/search/fag_engine.py` — FaGEngine (1st engine)
 - `scripts/search/newspapers_engine.py` — NewspapersComEngine
-  (2nd engine, proof of abstraction).
-- `scripts/pipeline/core.py` — `run_one()` is the seam.
+  (2nd engine, proof of abstraction)
+- `scripts/blackboard/` — schema, store, scheduler, projector
+- `scripts/learning/` — self-learning loop
+- `scripts/pipeline/core.py` — `run_one()` is the legacy seam

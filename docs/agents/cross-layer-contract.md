@@ -23,8 +23,11 @@ Python `process_ledger.py`).
 
 ## The wire format: `state.jsonl`
 
-One JSON object per line, written by Python, consumed by
-`view.html`. Schema (Python keys, JSON values):
+One JSON object per line, written by the Python
+ProjectionBuilder, consumed by `scripts/view/v2.html` (default)
+or the legacy `scripts/view.html`. Schema (Python keys, JSON
+values); since 2026-07-20 the ProjectionBuilder emits the v2
+common-candidate shape:
 
 ```json
 {
@@ -35,7 +38,22 @@ One JSON object per line, written by Python, consumed by
   "last_name": "Looney",
   "unit": "Co. I, 4th TN Cav. Rgmnt., C.S.A.",
   "death_year": "1907",
-  "outcome": "BOTH_MATCH",
+  "engine": "findagrave",
+  "common": [
+    {
+      "id": "50923719",
+      "url": "https://www.findagrave.com/memorial/50923719/william-pickney-looney",
+      "name": "William Pickney Looney",
+      "score": 0.92,
+      "evidence": {
+        "match_strength": "high",
+        "burial_location": "...",
+        "death_date": "1907"
+      },
+      "engine": "findagrave",
+      "media": "https://www.findagrave.com/iiif/2/50923719/..."
+    }
+  ],
   "ranked_candidates": [
     {
       "memorial_id": "50923719",
@@ -48,29 +66,52 @@ One JSON object per line, written by Python, consumed by
       "url": "https://www.findagrave.com/memorial/50923719/william-pickney-looney"
     }
   ],
+  "outcome": "auto_accept",
+  "badges": ["cgr_match", "needs_research"],
+  "decision": {
+    "status": "auto_accept",
+    "top_score": 0.92,
+    "gap": 0.18,
+    "threshold_used": 0.85,
+    "policy_version": "1"
+  },
   "auto_accept": true,
   "decided": false,
   "decided_choice": null,
-  "scraped_at": "2026-07-16T14:32:10.000Z"
+  "policy_version": "1",
+  "scraped_at": "2026-07-20T14:32:10.000Z"
 }
 ```
+
+The `common` key carries the engine-agnostic shape every
+candidate takes once it crosses the SearchEngine boundary
+(`SearchEngine.to_common_candidate()`). v2 reads it directly;
+the legacy FaG fields stay alongside for the legacy
+`view.html`. See
+[`search-abstraction.md` §"Engine-agnostic common shape"](search-abstraction.md)
+for the full field list.
 
 ### Required keys
 
 | Key | Type | Notes |
 |---|---|---|
 | `pensioner_id` | string | The pensioner ID from `digitalprairie/ok_pensioners.json`. Stable across runs. |
-| `outcome` | enum | `BOTH_MATCH`, `auto_accept`, `too_many`, `ambiguous`, `no_results`, `error`. |
-| `ranked_candidates` | array | Empty for `no_results` and `error`. |
+| `engine` | string | Engine that produced the candidates (`findagrave`, `newspapers_com`). |
+| `common` | array | Engine-agnostic candidate shape. Empty for `no_results` and `error`. |
+| `outcome` | enum | `auto_accept`, `ambiguous`, `too_many`, `no_results`, `error`, `needs_research`. |
+| `ranked_candidates` | array | Legacy engine-specific candidates (kept for back-compat with v1 view.html). |
+| `policy_version` | string | The `DecisionPolicy` version that produced the outcome. |
 | `scraped_at` | ISO 8601 | When this record was written. |
 
 ### Optional keys
 
 | Key | Type | Notes |
 |---|---|---|
-| `decided` | bool | `view.html` flips to `true` after a human picks. |
+| `badges` | array | v2 view filter chips: `cgr_match`, `spouse_match`, `dd_match`, `needs_research`, `follow_up`. |
+| `decision` | object | Structured Decision (status, top_score, gap, threshold_used, policy_version). |
+| `decided` | bool | `v2.html` flips to `true` after a human picks. |
 | `decided_choice` | string \| null | The memorial_id the human picked. |
-| `auto_accept` | bool | High-confidence score, ≥0.85. Set by harness, reviewable in UI. |
+| `auto_accept` | bool | High-confidence score (≥ calibrated threshold). Set by harness, reviewable in UI. |
 
 ### Constraints
 
@@ -84,13 +125,24 @@ One JSON object per line, written by Python, consumed by
 
 ## The review-UI input: `state.jsonl`
 
-`view.html` opens the file with `File` → `Pick`, parses one
-JSON object per line, and shows:
+**Default since 2026-07-19**: `scripts/view/v2.html` opens the
+file via drag-and-drop or "File" → "Open", reads the
+engine-agnostic `common` candidates, and shows:
 
-- The pensioner metadata (name, unit, death year)
-- The ranked candidates as a clickable list
-- A "Pick" button per candidate that sets `decided_choice`
-- A "Export decisions" button that downloads `decisions.csv`
+- The pensioner metadata (name, unit, death year) + IIIF pension card image
+- The ranked candidates as a clickable list with engine-specific
+  evidence (FaG veteran flag, burial location, IIIF thumb;
+  Newspapers.com date + location + match position)
+- "Pick" / "No match" / "Needs research" buttons per record
+- "Save decisions" + "Export picks (scraper shape)" buttons
+  that download a sidecar JSON for resume + a CSV for the
+  FindaGraveScraper userscript
+- Keyboard shortcuts (`j`/`k`, `p`/`n`), undo stack, filter chips
+  by badge, dark-mode support
+
+**Legacy**: `scripts/view.html` reads only the FaG-shaped
+`ranked_candidates` array and is kept available for past
+runs. New runs default to v2.
 
 The CSV schema:
 
@@ -149,14 +201,17 @@ harness raises and exits. The outer loop in
 | Surface | Target | Measured |
 |---|---|---|
 | Python harness per-pensioner | <3.5s | Run #1, Run #2 averages |
-| Python harness full 7,758-record run | <8h | Run #1 ETA |
-| `view.html` first-paint for 7,758 records | <2s | n/a (loads file lazily) |
+| Python harness full 7,709-record run | <8h | Run #1 ETA |
+| Blackboard Scheduler dispatch | <50ms / work item | smoke runs |
+| `v2.html` first-paint for 7,709 records | <2s | chunked render (50 sync, rest via rAF) |
+| `view.html` first-paint for 7,709 records | <2s | n/a (loads file lazily) |
 | Userscript scrape per page | <1s | smoke test |
 
 Performance regressions in the Python harness are usually
 Playwright memory leaks. Run
-`scripts/soak_memory.py --max-slope-mb-per-10 50` after any
-change to `fag_browser.py`.
+`python scripts/soak_memory.py --max-slope-mb-per-10 50`
+after any change to `scripts/fag/fag_browser.py` or the
+Blackboard provider code.
 
 ## Cross-references
 

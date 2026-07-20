@@ -62,7 +62,7 @@ Each record in `ok_pensioners.json` has:
 
 ## How the data was pulled
 
-See `scripts/scrape_digitalprairie.py`. It:
+See `scripts/ingest/scrape_digitalprairie.py`. It:
 
 1. Iterates ID range 1..N for each collection
 2. Hits the CONTENTdm v13 single-item API at
@@ -80,7 +80,7 @@ Scrape rate: ~50 records/sec with concurrency 15. Full run is
 ## Reproducing the scrape
 
 ```bash
-python scripts/scrape_digitalprairie.py \
+python scripts/ingest/scrape_digitalprairie.py \
     --out-dir docs/research/digitalprairie \
     --min-id 1 --max-id 13000 --no-probe \
     --concurrency 15 --save-every 500

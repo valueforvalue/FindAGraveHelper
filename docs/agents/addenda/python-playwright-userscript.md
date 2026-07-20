@@ -24,18 +24,24 @@ Three runnable surfaces share one repository:
    run an iterative search helper. Plain JS, no build step,
    paste-into-Tampermonkey distribution.
 2. **Python harness** (`scripts/*.py`) drives a Playwright
-   Chromium to search FaG programmatically. Resume-safe via
-   `state.jsonl` flushing per-pensioner. Heavy IO, throttle-
-   sensitive, memory-leak-prone.
-3. **Browser review UI** (`scripts/view.html`) loads the
-   `state.jsonl`, lets a human pick the right candidate per
-   pensioner, exports decisions as CSV. Static HTML + JS,
-   no build, no server.
+   Chromium to search FaG programmatically. Default CLI is
+   `scripts/pipeline/run_unified.py` which dispatches through
+   the Blackboard Scheduler in `scripts/blackboard/`.
+   Resume-safe via `state.jsonl` flushing per-pensioner
+   (L3, L10). Heavy IO, throttle-sensitive, memory-leak-prone.
+3. **Browser review UI** (`scripts/view/v2.html`, default
+   since 2026-07-19; legacy `scripts/view.html` kept for past
+   runs) loads the `state.jsonl`, lets a human pick the right
+   candidate per pensioner, exports decisions as a sidecar
+   JSON for resume + a CSV for the FindaGraveScraper userscript.
+   Engine-agnostic; reads `common` candidates; uses Alpine.js.
 
 The cross-layer contract between them lives in
 [`../cross-layer-contract.md`](../cross-layer-contract.md).
 The per-layer bug catalog lives in
 [`../bug-catalog.md`](../bug-catalog.md).
+The architecture overview lives in
+[`../blackboard-architecture.md`](../blackboard-architecture.md).
 
 ## Stack-specific laws (Python + Playwright + userscripts)
 
@@ -121,7 +127,7 @@ userscript + simulates the pipeline).
   outcome (`BOTH_MATCH`, `auto_accept`, `no_results`,
   `error`).
 
-### Playwright (scripts/fag/fag_browser.py)
+### Playwright (scripts/fag/fag_browser.py, scripts/blackboard/)
 
 - **Stealth + warmup**: launch with
   `playwright-stealth`, then visit
@@ -136,6 +142,14 @@ userscript + simulates the pipeline).
   `gc.collect()` after parsing. Same for
   `page.inner_text("body")` — the full-page string lives
   until function exit unless you `del` it.
+- **Subprocess-isolate the second Playwright session**: when
+  one workflow needs two `sync_playwright` sessions (e.g.
+  the FaG search loop + the spouse scrape post-pass), don't
+  share the asyncio loop — invoke the second as a
+  subprocess so it gets a fresh event loop. The
+  `scripts/pipeline/run_unified.py` runner does this for
+  the spouse scrape (cost: ~300ms Python startup;
+  negligible vs the 30-min run).
 
 ### Userscripts (*.user.js)
 
@@ -149,19 +163,29 @@ userscript + simulates the pipeline).
   contributors editing the panel need a stable contract.
   The README points at `FindaGraveScraper.user.js` line 1.
 
-### Static HTML (scripts/view.html)
+### Static HTML (scripts/view/v2.html, scripts/view.html)
 
-- **No build step** — the file is opened directly in a
-  browser. Any new dependency must be a single file or a
-  CDN URL.
-- **State file is the input contract** — `view.html` reads
-  `state.jsonl`, never a transformed derivative. If you
-  want a different shape, transform in Python and write a
-  new `state.jsonl`.
-- **Decisions export is the output contract** — the CSV
-  schema is consumed by `scripts/pipeline/dd_marker_run.py` to mark
-  records in the user's local dixiedata DB. Changes to the
-  schema break the round-trip; treat as breaking.
+- **No build step** — v2.html ships Alpine.js via CDN; v1
+  is plain JS. Both open directly in a browser. Any new
+  dependency must be a single file or a CDN URL.
+- **State file is the input contract** — v2.html reads
+  `state.jsonl` (the engine-agnostic `common` candidates);
+  the legacy view.html reads the FaG-shaped
+  `ranked_candidates`. If you want a different shape,
+  transform in Python (ProjectionBuilder) and write a new
+  `state.jsonl`.
+- **Sidecar persistence** — v2 "Save decisions" writes a
+  sidecar JSON (`decisions_<run>.json`) auto-loaded on
+  next open. Drag-and-drop loading accepts `.jsonl` and
+  `.json`. Decisions CSV export is the user-facing
+  output; the sidecar is the resume mechanism.
+- **Decisions export is the output contract** — the v2
+  "Export picks (scraper shape)" button emits CSV in the
+  FindaGraveScraper.userscript shape. The legacy
+  `view.html` decisions CSV is consumed by
+  `scripts/pipeline/dd_marker_run.py` to mark records in
+  the user's local dixiedata DB. Schema changes break
+  the round-trip; treat as breaking.
 
 ## Python testing recipes
 
