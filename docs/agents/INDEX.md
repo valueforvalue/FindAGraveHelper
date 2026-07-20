@@ -119,6 +119,7 @@ invocations, projection, and the self-learning loop.
 | Doc | Token cost | Purpose |
 |---|---|---|
 | [`blackboard-architecture.md`](blackboard-architecture.md) | ~4K | Schema, store, Scheduler, KS, ProjectionBuilder, self-learning |
+| [`diagrams.md`](diagrams.md) | ~3K | Class / sequence / state diagrams for the Blackboard + Self-learning loop |
 | [`pipeline-architecture.md`](pipeline-architecture.md) | ~2.5K | Visual: where the Blackboard sits in the flow |
 | [`cross-layer-contract.md`](cross-layer-contract.md) | ~1.5K | The state.jsonl wire format the ProjectionBuilder emits |
 | [`search-abstraction.md`](search-abstraction.md) | ~3K | The engine layer the Blackboard wraps |
@@ -181,6 +182,7 @@ Loaded when a specific question surfaces. Not pre-loaded.
 | [`../../docs/learnings/2026-07-16-j11-j15-features.md`](../../docs/learnings/2026-07-16-j11-j15-features.md) | ~3K | Spouse + DD features that fed the v2 view + Blackboard |
 | [`../../docs/learnings/2026-07-16-postrun-design.md`](../../docs/learnings/2026-07-16-postrun-design.md) | ~2K | CGR dedup + leftover-investigation; superseded by Blackboard ProjectionBuilder |
 | [`../../docs/learnings/algorithms-research.md`](../../docs/learnings/algorithms-research.md) | ~2K | Fellegi-Sunter + phonetic algorithm background |
+| [`diagrams.md`](diagrams.md) | ~3K | Class / sequence / state diagrams for Blackboard + Self-learning |
 
 ---
 
@@ -189,6 +191,7 @@ Loaded when a specific question surfaces. Not pre-loaded.
 - [`../../AGENTS.md`](../../AGENTS.md) — Tier-0 wiring hub
 - [`../../CONTEXT.md`](../../CONTEXT.md) — Tier-0 glossary + laws L1–L12
 - [`blackboard-architecture.md`](blackboard-architecture.md) — Blackboard / Scheduler / KS / projection
+- [`diagrams.md`](diagrams.md) — class + sequence + state diagrams (companion to blackboard-architecture.md)
 - [`search-abstraction.md`](search-abstraction.md) — strategy + engine abstraction
 - [`pipeline-architecture.md`](pipeline-architecture.md) — visual diagram
 - [`bug-catalog.md`](bug-catalog.md) — bug patterns with citations

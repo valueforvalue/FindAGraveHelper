@@ -331,6 +331,10 @@ coupling to other KSs; communicate by writing observations.
 
 - [`pipeline-architecture.md`](pipeline-architecture.md) —
   Mermaid + ASCII visual of how the parts fit
+- [`diagrams.md`](diagrams.md) — class / sequence / state
+  diagrams for the Blackboard data model, per-pensioner
+  flow, self-learning loop, and WorkItem lifecycle. The
+  *what*; this doc is the *why*.
 - [`search-abstraction.md`](search-abstraction.md) — how
   the engine layer the Blackboard wraps works
 - `scripts/blackboard/` — schema, store, scheduler,
