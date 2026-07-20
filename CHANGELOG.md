@@ -4,6 +4,92 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Feature: NewspapersComEngine — 2nd real search engine (#36)
+
+The SearchEngine Protocol abstraction (#33) + the
+SearchRecord Protocol (#34) + the engine-agnostic
+orchestrator (#35) come together here. NewspapersComEngine
+is a real 2nd implementation of SearchEngine, validating
+that the abstraction is sufficient to add a new search
+backend without touching the pipeline.
+
+**Newspapers.com surface** (probed live with a logged-in
+account; data saved to `data/probe/newspapers_q_*.html`):
+  - URL: `https://www.newspapers.com/search/?keyword=...&date-start=...&date-end=...&entity-types=page,obituary,marriage,birth&sort=score-desc`
+  - Result card: `<div id="{record_id}" class="SearchResult_ArticleResult__...">`
+  - Each result: id, href (`/image/{id}/?match=N&terms=...`),
+    title (`{paper} • Page {N}`), date (`Weekday, Month DD, YYYY`),
+    location (`City, State, Country`), match_position, thumbnail.
+  - Logged-in free accounts see results but with an upsell
+    modal on top. Subscribers see full results.
+  - Cloudflare-protected; less aggressive than FaG.
+
+**NewspapersComEngine** (`scripts/search/newspapers_engine.py`)
+
+  Implements the 6 SearchEngine building blocks:
+  - `build_url`: composes the keyword search URL with the
+    entity-types filter, year window derived from
+    `ctx.birth_year`/`ctx.death_year`, and `sort=score-desc`.
+  - `parse_results_page`: extracts the 10+ result cards
+    per page via regex (id, href, title, date, location,
+    match_position, thumbnail). Date parsed to ISO 8601.
+  - `score`: confidence from last name in title (0.4) +
+    first name (0.2) + state in location (0.2) + year in
+    window (0.2). Caps at 1.0.
+  - `classify_response`: title-based challenge detection;
+    paywall vs. normal vs. no_results.
+  - `apply_filters`: identity (Newspapers.com filters are
+    in the URL).
+  - `throttle_seconds`: 1.0s (lenient, vs. FaG's 2.5s).
+
+  Ladder: 3 strategies (N1 keyword, N2 lastname-only,
+  N3 with-state).
+
+**Validation**
+
+  - A NewspapersComEngine run through `run_one()` produces
+    a `PipelineResult` with engine-specific fields attached.
+    The orchestrator consumes it unchanged.
+  - 33 new tests pin the engine's behavior, including an
+    end-to-end test that parses 10 real results from the
+    saved HTML and scores them against a test pensioner.
+  - `FakeNewspapersComEngine` exists in tests so future
+    search-engine tests can mock the engine.
+
+**Probe** (`scripts/analysis/_probe_newspapers.py`)
+
+  Manual-login probe that opens a visible browser, lets the
+  user log in, runs 3 searches, and saves the result HTML
+  + cookies. Output: `data/probe/newspapers_q_*.html`
+  (used by the test suite as a fixture).
+
+**What this proves**
+
+  - The SearchEngine Protocol captures the right shape for
+    any text-search backend. Adding Newspapers.com was a
+    ~600-line module (engine) + ~500-line test file, with
+    ZERO changes to the pipeline, the orchestrator, or the
+    state schema.
+  - The `ladder` abstraction generalizes: Newspapers.com
+    uses keyword queries, FaG uses URL params; both plug
+    into the same `run_ladder()`.
+  - The wire format is engine-agnostic at the orchestrator
+    level (engine_result field) but FaG-compatible at the
+    output level (fag_records/fag_status for back-compat).
+
+Tests: 1295 -> 1328 (+33 new). 0 regressions.
+
+**Out of scope** (future work)
+
+  - OCR snippet extraction (the page-level OCR text that
+    shows the actual mention of the name in the newspaper).
+    Would need a separate page fetch.
+  - Pagination: the probe found 72 matches per page. A
+    full search would walk multiple pages.
+  - Per-engine UI in view.html: today the review UI
+    handles FaG-shaped results; a Newspapers.com pane
+    would be a follow-up.
+
 ### Refactor: pipeline orchestrator consumes SearchEngine + SearchRecord (#35)
 
 The unified pipeline now takes a `SearchRecord` and an
