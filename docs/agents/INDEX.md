@@ -94,6 +94,17 @@ in that role. Don't load the whole table.
 
 **Tier-1 budget (view.html role):** ~3.5K tokens.
 
+### Role: "Adding a new search engine or strategy"
+
+| Doc | Token cost | Purpose |
+|---|---|---|
+| [`search-abstraction.md`](search-abstraction.md) | ~3K | How to add a strategy (function or template form), how to add a new engine (Protocol + 6 building blocks), worked examples |
+| [`pipeline-architecture.md`](pipeline-architecture.md) | ~2.5K | Mermaid diagram showing the 3 abstraction layers + 2 engines (FaG, Newspapers.com) + pipeline composition |
+| [`feature-protocol.md`](feature-protocol.md) | ~1.5K | Slice discipline for the new code path |
+| [`tdd.md`](tdd.md) | ~1.5K | Behavior tests for the new strategy or engine |
+
+**Tier-1 budget (new-engine role):** ~8.5K tokens.
+
 ### Role: "Designing a feature or refactor"
 
 | Doc | Token cost | Purpose |

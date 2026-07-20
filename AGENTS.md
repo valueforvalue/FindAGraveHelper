@@ -22,11 +22,26 @@ or copy-writing work.
 (`scripts/view.html`). Per-stack rules in
 [`docs/agents/addenda/python-playwright-userscript.md`](docs/agents/addenda/python-playwright-userscript.md).
 
+**The search pipeline is engine-agnostic.** The pipeline
+consumes a `SearchEngine` Protocol; `FaGEngine` is the worked
+example (Find a Grave + Cloudflare + state filter), and
+`NewspapersComEngine` is a 2nd implementation that proved the
+abstraction. To add a new strategy or a new engine, read
+[`docs/agents/search-abstraction.md`](docs/agents/search-abstraction.md).
+
 **File map:**
 - `CONTEXT.md` — glossary + laws (Tier-0)
 - `docs/agents/` — agent-facing docs (Tier-0 / Tier-1 / Tier-2)
 - `docs/learnings/` — run logs that earned the laws (Tier-2)
 - `scripts/` — Python harness + userscripts + view.html
+- `scripts/search/` — domain-agnostic search abstractions
+  (Strategy, SearchEngine, SearchRecord, run_ladder, template
+  DSL). Engine implementations: `fag_engine.py`,
+  `newspapers_engine.py`.
+- `scripts/pipeline/` — per-record pipeline (orchestrator +
+  scoring + CGR blocking). `core.py::run_one()` is the seam.
+- `scripts/fag/` — FaG-specific code (parser, scoring, filters,
+  browser session). Wrapped by `FaGEngine`.
 - `tests/` — pytest regression net (run with `pytest`)
 - `docs/research/` — research workspace (Tier-2)
 - `docs/v5-design/` — v5 strategy ladder design (Tier-2)
@@ -78,6 +93,10 @@ this file stays short; for full guidance follow the links below.
   [`docs/agents/bug-catalog.md`](docs/agents/bug-catalog.md)
 - Cross-layer contract (Python ⇄ view.html ⇄ userscripts):
   [`docs/agents/cross-layer-contract.md`](docs/agents/cross-layer-contract.md)
+- Search abstraction (how to add strategies + engines):
+  [`docs/agents/search-abstraction.md`](docs/agents/search-abstraction.md)
+- Pipeline architecture (Mermaid diagram + ASCII):
+  [`docs/agents/pipeline-architecture.md`](docs/agents/pipeline-architecture.md)
 - 3-tier progressive disclosure index:
   [`docs/agents/INDEX.md`](docs/agents/INDEX.md)
 - Domain glossary + laws: [`CONTEXT.md`](CONTEXT.md) — read
