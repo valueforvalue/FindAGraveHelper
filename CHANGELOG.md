@@ -104,6 +104,44 @@ new convention is enforced (pytest refuses undefined
 markers by default). Default `addopts` filter unchanged;
 diag probes still run with `pytest -m diag` intentionally.
 
+### Docs: port agent-stack e32b853 framework trim (2 of 7 recommendations)
+
+Mirrors the agent-stack commit e32b853 self-trim. Of the 7
+recommendations in the agent-stack audit, 2 apply here:
+
+- **#1 — Externalize tip-index from
+  `docs/agents/pragmatic-principles.md`** to
+  `docs/audit/pragmatic-tips-index-2026-07.md` (new dir +
+  new file). The per-tip reference table (§6, ~100 rows),
+  the count summary (§7), and the 9-chapter cross-reference
+  (§9) move to an on-demand reference doc; the spine now
+  contains §1–§5 only. `docs/agents/pragmatic-principles.md`:
+  1229 → 918 lines (−311 / Tier-1 load). Internal cross-refs
+  normalized from `agents/`-relative to `audit/`-relative
+  paths.
+- **#2 — Tighten `docs/agents/testing-philosophy.md`
+  §Relationship to TDD** from 14 → 9 lines. Named
+  `tdd.md` §Anti-patterns as the named-violation list with
+  a direct link. No semantic change; the overlap is
+  structural (tdd = process, testing-philosophy = quality
+  bar).
+
+Not applied: #3 (no Go addendum to split — the Python
+addendum at `docs/agents/addenda/python-playwright-userscript.md`
+is already focused on Python recipes + per-layer
+guidance), #4 (no `commit-and-branch.md` doc; branch +
+commit rules live in `AGENTS.md` which is already Tier-0),
+#5 (no placeholder sections in INDEX.md or other docs),
+#6 (no `docs-index-scheme.md` carrying the Prompt-cache
+alignment section — INDEX.md uses a budget-driven model
+without that machinery), #7 (no MITRE/OWASP Authoritative
+cross-references table — the `bug-catalog.md` is the
+standalone per-layer bug catalog).
+
+Per-session token savings: ~1.5K for an agent loading the
+docs/agents spine. The framework's 2K Tier-0 ceiling now
+holds for this repo.
+
 ### Docs: amend Blackboard refactor plan with Phase 8 — self-learning
 
 Added Phase 8 (Self-Learning and Adaptive Plan Ranking) to the

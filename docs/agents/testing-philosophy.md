@@ -214,17 +214,17 @@ that fail the checklist are cut candidates.
 
 ## Relationship to TDD
 
-[`tdd.md`](tdd.md) defines the **process**: write the RED test
-first, watch it fail, write the code, watch it pass, refactor.
-This doc defines the **quality bar**: the test you write in the
-RED step must be one that earns its place per the principles
-above. A RED test that asserts `rec.Code == 200` with no body
-check satisfies the TDD process but fails the quality bar — it
-will go green even if the handler renders the wrong page.
+[`tdd.md`](tdd.md) defines the **process** (RED → GREEN →
+REFACTOR). This doc defines the **quality bar** for the RED
+test (which tests earn their place). Together:
 
-The TDD process + the testing philosophy together:
-- **TDD:** the test exists before the code (timing)
-- **Philosophy:** the test catches a real bug (quality)
+- **TDD** — the test exists before the code (timing)
+- **Philosophy** — the test catches a real bug (quality)
+
+A RED test that asserts `rec.Code == 200` with no body check
+satisfies the TDD process but fails the quality bar. See
+[`tdd.md`](tdd.md) §"Anti-patterns" for the named TDD-side
+violations (“Mocking the seam”, “Speculative tests”, etc.).
 
 ## Sources
 
