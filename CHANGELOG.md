@@ -4,6 +4,39 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: deduplicate scoring_constants between blackboard + pipeline (#37)
+
+The `blackboard.decision_policy` module re-declared its own
+`LOW_SCORE_THRESHOLD=0.40`, `AUTO_ACCEPT_THRESHOLD=0.70`, and a
+parallel set of `STATUS_*` constants — drift the same shape as
+the original issue #31. Resolved:
+
+- **FaG-search decision thresholds moved to scoring_constants:**
+  `FAG_AUTO_ACCEPT_THRESHOLD=0.70`, `FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH=0.60`,
+  `FAG_AUTO_ACCEPT_GAP=0.10`. The `FAG_` prefix makes the
+  distinction with the pipeline-decision `AUTO_ACCEPT_THRESHOLD=0.85`
+  explicit. They're different gates (search vs. pipeline), not
+  the same value drift.
+- **STATUS_NO_CANDIDATES** moved to scoring_constants as a
+  Decision.status value (distinct from STATUS_NO_RESULTS which
+  is a PensionerRecord.status). Comment in the module
+  documents the layer distinction.
+- **decision_policy.py imports** all thresholds + statuses from
+  scoring_constants. Local re-declarations removed.
+- **Back-compat:** the unprefixed `AUTO_ACCEPT_THRESHOLD` /
+  `AUTO_ACCEPT_THRESHOLD_NO_DEATH` / `AUTO_ACCEPT_GAP` are kept
+  as deprecated aliases via PEP 562 module-level `__getattr__`.
+  Accessing them emits `DeprecationWarning`. Existing callers
+  compile and run; new code uses the `FAG_` prefix.
+- **Existing tests updated** to use the prefixed names; no
+  silent drift. `tests/test_decision_policy.py` was renamed
+  to import `FAG_AUTO_ACCEPT_*` instead of the unprefixed
+  names. `tests/test_scoring_constants_dedup.py` (new, 13
+  tests) pins the deprecation shim and the canonical-source
+  imports.
+
+Tests: 1193 -> 1206 (+13 new). 0 regressions.
+
 ### Refactor: generalized search strategy system (hybrid model)
 
 The search strategy layer was F1-specific (Find a Grave + pensioner

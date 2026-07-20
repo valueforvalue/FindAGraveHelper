@@ -36,6 +36,36 @@ LOW_SCORE_THRESHOLD: float = 0.40
 #: is 'needs_review' (auto-derived, not a constant itself).
 NEEDS_REVIEW_THRESHOLD: float = LOW_SCORE_THRESHOLD
 
+# ============================================================
+# FaG-search decision thresholds
+# ============================================================
+# These are the gates the blackboard DecisionPolicy applies
+# to one search run (per strategy ladder result). Distinct
+# from the pipeline-decision AUTO_ACCEPT_THRESHOLD above,
+# which is the gate the unified pipeline applies to a
+# pensioner record as a whole. Both gates must clear for a
+# pensioner to be marked STATUS_AUTO_ACCEPT.
+#
+#   FAG-search auto-accept    pipeline-decision auto-accept
+#   FAG_AUTO_ACCEPT_THRESHOLD   AUTO_ACCEPT_THRESHOLD
+#             0.70                        0.85
+#
+# The two are intentionally different values for different
+# stages. Don't "consolidate" them.
+
+#: FaG-search auto-accept threshold when the pensioner has a
+#: known death year. Top-1 candidate must hit this score.
+FAG_AUTO_ACCEPT_THRESHOLD: float = 0.70
+
+#: FaG-search auto-accept threshold when the pensioner has NO
+#: known death year. Lower because the max achievable score
+#: is smaller (no death-year evidence to add).
+FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH: float = 0.60
+
+#: Top candidate must beat #2 by this gap for auto-accept
+#: when multiple candidates exist.
+FAG_AUTO_ACCEPT_GAP: float = 0.10
+
 #: Score assigned by the Soundex-only fallback in
 #: scripts/cgr/cgr_matcher.py when two names share a Soundex
 #: code but are not identical. NOT the same as the
@@ -81,6 +111,14 @@ STATUS_NEEDS_REVIEW: str = "needs_review"
 #: FaG strategy didn't run for this record (dry-run mode, or
 #: pipeline short-circuited).
 STATUS_NOT_RUN: str = "not_run"
+
+#: DecisionPolicy output: the candidate list was empty. This
+#: is a Decision.status (the policy's verdict), NOT a
+#: PensionerRecord.status (the wire-format value the pipeline
+#: emits). It can map to STATUS_NO_RESULTS at the record
+#: boundary, but the strings are kept distinct because the
+#: concepts are at different layers.
+STATUS_NO_CANDIDATES: str = "no_candidates"
 
 #: All Fag statuses that should trigger the follow-up phase
 #: (per scripts/pipeline/leftover_investigation.py).

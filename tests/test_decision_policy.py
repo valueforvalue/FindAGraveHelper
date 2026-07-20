@@ -1,9 +1,11 @@
 """Tests for scripts/blackboard/decision_policy.py — Phase 3 Slice 3.3."""
 
 from scripts.blackboard.decision_policy import (
-    AUTO_ACCEPT_GAP,
-    AUTO_ACCEPT_THRESHOLD,
-    AUTO_ACCEPT_THRESHOLD_NO_DEATH,
+    # Issue #37: use the FAG_-prefixed names from scoring_constants.
+    # The unprefixed names still work (deprecated) but emit warnings.
+    FAG_AUTO_ACCEPT_GAP,
+    FAG_AUTO_ACCEPT_THRESHOLD,
+    FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH,
     LOW_SCORE_THRESHOLD,
     STATUS_AUTO_ACCEPT,
     STATUS_LOW_SCORE,
@@ -49,25 +51,25 @@ def test_low_score_below_floor():
 
 
 def test_single_candidate_auto_accept_with_death():
-    """Single candidate >= AUTO_ACCEPT_THRESHOLD with death year -> auto_accept."""
+    """Single candidate >= FAG_AUTO_ACCEPT_THRESHOLD with death year -> auto_accept."""
     ctx = DecisionContext(
         candidates=[_cand(0.80)],
         local_death_year="1890",
     )
     d = classify(ctx)
     assert d.status == STATUS_AUTO_ACCEPT
-    assert d.threshold_used == AUTO_ACCEPT_THRESHOLD
+    assert d.threshold_used == FAG_AUTO_ACCEPT_THRESHOLD
 
 
 def test_single_candidate_auto_accept_no_death():
-    """Single candidate >= AUTO_ACCEPT_THRESHOLD_NO_DEATH without death -> auto_accept."""
+    """Single candidate >= FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH without death -> auto_accept."""
     ctx = DecisionContext(
         candidates=[_cand(0.65)],
         local_death_year=None,
     )
     d = classify(ctx)
     assert d.status == STATUS_AUTO_ACCEPT
-    assert d.threshold_used == AUTO_ACCEPT_THRESHOLD_NO_DEATH
+    assert d.threshold_used == FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH
 
 
 # ============================================================

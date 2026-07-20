@@ -8,42 +8,83 @@ Public surface:
   - DecisionPolicy (dataclass)
   - classify(candidates, context) -> Decision
   - POLICY_VERSION_1 (canonical v1 thresholds)
+
+Thresholds + status strings are imported from
+scripts.pipeline.scoring_constants (issue #37). This module
+keeps the prefixed names (FAG_AUTO_ACCEPT_THRESHOLD) and the
+status names as re-exports for call-site readability, but the
+canonical values live in scoring_constants.
+
+DEPRECATION: the unprefixed names (AUTO_ACCEPT_THRESHOLD,
+AUTO_ACCEPT_THRESHOLD_NO_DEATH, AUTO_ACCEPT_GAP) remain as
+aliases for one release, emitting DeprecationWarning. They
+will be removed in the next major version. New code should
+use the FAG_-prefixed names.
 """
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field
 from typing import Any
 
 # ============================================================
-# Canonical thresholds — single source of truth
+# Canonical thresholds + statuses (issue #37)
 # ============================================================
+# Single source of truth: scripts.pipeline.scoring_constants.
+# We import here so call sites can write either
+#   from scripts.blackboard.decision_policy import FAG_AUTO_ACCEPT_THRESHOLD
+# or
+#   from scripts.pipeline.scoring_constants import FAG_AUTO_ACCEPT_THRESHOLD
+# and get the same value.
+
+from scripts.pipeline.scoring_constants import (  # noqa: F401
+    FAG_AUTO_ACCEPT_THRESHOLD,
+    FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH,
+    FAG_AUTO_ACCEPT_GAP,
+    LOW_SCORE_THRESHOLD,
+    STATUS_AUTO_ACCEPT,
+    STATUS_NEEDS_REVIEW,
+    STATUS_LOW_SCORE,
+    STATUS_NO_CANDIDATES,
+    STATUS_ERROR,
+    STATUS_AMBIGUOUS,
+)
+
 
 POLICY_VERSION_1 = "1"
 
-#: Top score must reach this for auto-accept when death year is known.
-AUTO_ACCEPT_THRESHOLD: float = 0.70
-
-#: Top score must reach this for auto-accept when death year is missing.
-AUTO_ACCEPT_THRESHOLD_NO_DEATH: float = 0.60
-
-#: Top candidate must beat #2 by this gap for auto-accept with multiple
-#: candidates.
-AUTO_ACCEPT_GAP: float = 0.10
-
-#: Scores below this are classified as low_score (needs human review).
-LOW_SCORE_THRESHOLD: float = 0.40
-
 
 # ============================================================
-# Status constants
+# Back-compat aliases (deprecated; will be removed)
 # ============================================================
+# The unprefixed names AUTO_ACCEPT_THRESHOLD / etc. are kept
+# for one release as aliases. They emit DeprecationWarning on
+# attribute access (not on import) so tests can pin the
+# warning behaviour.
 
-STATUS_AUTO_ACCEPT = "auto_accept"
-STATUS_NEEDS_REVIEW = "needs_review"
-STATUS_LOW_SCORE = "low_score"
-STATUS_NO_CANDIDATES = "no_candidates"
-STATUS_ERROR = "error"
-STATUS_AMBIGUOUS = "ambiguous"
+def __getattr__(name):
+    """PEP 562 module-level __getattr__: emit DeprecationWarning
+    when legacy names are accessed, then return the canonical
+    value. Keeps existing callers compiling while signalling
+    that the names are going away."""
+    _legacy = {
+        "AUTO_ACCEPT_THRESHOLD": FAG_AUTO_ACCEPT_THRESHOLD,
+        "AUTO_ACCEPT_THRESHOLD_NO_DEATH": FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH,
+        "AUTO_ACCEPT_GAP": FAG_AUTO_ACCEPT_GAP,
+    }
+    if name in _legacy:
+        warnings.warn(
+            f"scripts.blackboard.decision_policy.{name} is deprecated; "
+            f"use FAG_AUTO_ACCEPT_THRESHOLD (or import from "
+            f"scripts.pipeline.scoring_constants). The unprefixed name "
+            f"is being removed in the next major version.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return _legacy[name]
+    raise AttributeError(
+        f"module {__name__!r} has no attribute {name!r}"
+    )
 
 
 # ============================================================
@@ -149,14 +190,14 @@ def classify(
     _auto_accept = (
         auto_accept_threshold
         if auto_accept_threshold is not None
-        else AUTO_ACCEPT_THRESHOLD
+        else FAG_AUTO_ACCEPT_THRESHOLD
     )
     _auto_accept_no_death = (
         auto_accept_threshold_no_death
         if auto_accept_threshold_no_death is not None
-        else AUTO_ACCEPT_THRESHOLD_NO_DEATH
+        else FAG_AUTO_ACCEPT_THRESHOLD_NO_DEATH
     )
-    _gap = auto_accept_gap if auto_accept_gap is not None else AUTO_ACCEPT_GAP
+    _gap = auto_accept_gap if auto_accept_gap is not None else FAG_AUTO_ACCEPT_GAP
     _low_score = (
         low_score_threshold if low_score_threshold is not None else LOW_SCORE_THRESHOLD
     )
