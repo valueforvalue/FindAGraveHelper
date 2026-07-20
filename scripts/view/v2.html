@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<!--
+  view.html v2: browser-only review UI for existing state.jsonl output.
+
+  Contract:
+  - normalizeRecord() is sole FaG-shaped input boundary.
+  - Rendering uses common record/candidate fields only.
+  - state.jsonl remains immutable; reviewer state stays in browser storage.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Search results review</title>
+<style>
+:root {
+    color-scheme: light;
+    --ink: #18212b;
+    --muted: #647181;
+    --line: #d9e0e7;
+    --line-strong: #b8c3ce;
+    --paper: #ffffff;
+    --canvas: #edf1f4;
+    --accent: #155f85;
+    --accent-dark: #0d4866;
+    --accent-soft: #e7f2f7;
+    --success: #1f6d42;
+    --success-soft: #e5f4eb;
+    --warning: #7a5600;
+    --warning-soft: #fff3cf;
+    --danger: #982f32;
+    --danger-soft: #fae7e8;
+    --radius: 0.35rem;
+    --shadow: 0 0.1rem 0.35rem rgb(26 42 56 / 10%);
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: "Segoe UI", Tahoma, sans-serif;
+    font-size: 0.875rem;
+    line-height: 1.45;
+}
+
+button,
+input,
+textarea {
+    font: inherit;
+}
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible {
+    outline: 0.18rem solid #72b8dc;
+    outline-offset: 0.12rem;
+}
+
+.app-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--line-strong);
+    background: rgb(255 255 255 / 96%);
+    box-shadow: var(--shadow);
+}
+
+.header-inner {
+    width: min(100%, 90rem);
+    margin: 0 auto;
+    padding: 0.9rem 1rem;
+}
+
+.header-top,
+.header-actions,
+.stats-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+}
+
+.header-top {
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+h1 {
+    margin: 0;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+}
+
+.file-picker,
+.button {
+    min-height: 2.25rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--paper);
+    color: var(--ink);
+}
+
+.file-picker {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.35rem 0.65rem;
+    cursor: pointer;
+}
+
+.file-picker:hover,
+.button:hover {
+    border-color: var(--accent);
+    background: var(--accent-soft);
+}
+
+.file-picker input {
+    max-width: 16rem;
+    margin-left: 0.5rem;
+}
+
+.stats-bar {
+    margin-top: 0.65rem;
+}
+
+.stat {
+    display: inline-flex;
+    gap: 0.3rem;
+    align-items: baseline;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 0.15rem 0.55rem;
+    background: #f7f9fa;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.stat strong {
+    color: var(--ink);
+}
+
+.load-status {
+    min-height: 1.25rem;
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-size: 0.8rem;
+}
+
+.load-status.error {
+    color: var(--danger);
+}
+
+.results {
+    width: min(100%, 90rem);
+    margin: 0 auto;
+    padding: 1rem;
+}
+
+.welcome,
+.record-card {
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: var(--paper);
+    box-shadow: var(--shadow);
+}
+
+.welcome {
+    padding: 2.5rem 1.25rem;
+    color: var(--muted);
+    text-align: center;
+}
+
+.record-card {
+    margin-bottom: 0.8rem;
+    overflow: hidden;
+}
+
+.record-identity,
+.record-status,
+.record-candidates,
+.record-notes {
+    padding: 0.8rem 1rem;
+}
+
+.record-status,
+.record-candidates,
+.record-notes {
+    border-top: 1px solid var(--line);
+}
+
+.identity-main {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: start;
+}
+
+.engine-badge,
+.status-pill,
+.decision-pill,
+.picked-badge,
+.best-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.engine-badge {
+    border: 1px solid var(--accent);
+    padding: 0.28rem 0.5rem;
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+    text-transform: lowercase;
+}
+
+.identity-title h2 {
+    margin: -0.1rem 0 0.2rem;
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 1.15rem;
+    line-height: 1.2;
+}
+
+.record-id {
+    color: var(--muted);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 0.78rem;
+}
+
+.record-meta,
+.source-links,
+.corroboration-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.8rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.source-links {
+    margin-top: 0.35rem;
+}
+
+.source-links a,
+.candidate-links a {
+    color: var(--accent-dark);
+    text-underline-offset: 0.15rem;
+}
+
+.status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(10rem, 1fr));
+    gap: 0.75rem;
+}
+
+.status-block {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.eyebrow {
+    color: var(--muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.status-pill,
+.decision-pill {
+    padding: 0.3rem 0.55rem;
+    background: #e9edf1;
+    color: #43505c;
+}
+
+.status-pill.auto_accept,
+.decision-pill.picked,
+.picked-badge {
+    background: var(--success-soft);
+    color: var(--success);
+}
+
+.status-pill.ambiguous,
+.status-pill.too_many,
+.decision-pill.none_match {
+    background: var(--warning-soft);
+    color: var(--warning);
+}
+
+.status-pill.no_results,
+.status-pill.error {
+    background: var(--danger-soft);
+    color: var(--danger);
+}
+
+.corroboration-summary {
+    margin-top: 0.55rem;
+}
+
+.candidate-section-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    align-items: baseline;
+    margin-bottom: 0.55rem;
+}
+
+.candidate-count {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.candidate-list {
+    overflow: hidden;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+}
+
+.candidate-row {
+    display: grid;
+    grid-template-columns: 2.2rem minmax(15rem, 1fr) auto;
+    gap: 0.65rem;
+    align-items: center;
+    padding: 0.7rem;
+    background: #fbfcfd;
+}
+
+.candidate-row + .candidate-row {
+    border-top: 1px solid var(--line);
+}
+
+.candidate-row.picked {
+    background: var(--success-soft);
+}
+
+.candidate-row.removed {
+    background: #f4f5f6;
+    color: var(--muted);
+    opacity: 0.68;
+}
+
+.candidate-rank {
+    align-self: start;
+    color: var(--muted);
+    font-family: Consolas, "Courier New", monospace;
+    font-weight: 700;
+}
+
+.candidate-title-line,
+.candidate-score-line,
+.candidate-action-line,
+.candidate-links,
+.candidate-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.55rem;
+}
+
+.candidate-title {
+    font-family: Georgia, "Times New Roman", serif;
+    font-size: 0.98rem;
+    font-weight: 700;
+}
+
+.candidate-details {
+    color: var(--muted);
+    font-size: 0.78rem;
+}
+
+.best-badge,
+.picked-badge {
+    padding: 0.25rem 0.45rem;
+}
+
+.best-badge {
+    background: var(--accent-soft);
+    color: var(--accent-dark);
+}
+
+.candidate-score-line {
+    margin-top: 0.4rem;
+}
+
+.candidate-score {
+    min-width: 3rem;
+    color: var(--accent-dark);
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.evidence-meter {
+    display: inline-grid;
+    grid-template-columns: auto 3.5rem;
+    gap: 0.3rem;
+    align-items: center;
+    color: var(--muted);
+    font-size: 0.7rem;
+}
+
+.evidence-track {
+    height: 0.38rem;
+    overflow: hidden;
+    border-radius: 999px;
+    background: #dce3e8;
+}
+
+.evidence-fill {
+    height: 100%;
+    background: var(--accent);
+}
+
+.candidate-action-line {
+    margin-top: 0.5rem;
+}
+
+.candidate-links {
+    margin-right: auto;
+    font-size: 0.78rem;
+}
+
+.candidate-note {
+    min-width: 12rem;
+    flex: 1 1 16rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.35rem 0.5rem;
+    background: var(--paper);
+}
+
+.candidate-actions {
+    justify-content: flex-end;
+}
+
+.button {
+    padding: 0.38rem 0.7rem;
+    cursor: pointer;
+}
+
+.button.primary {
+    border-color: var(--success);
+    background: var(--success);
+    color: #fff;
+    font-weight: 700;
+}
+
+.button.primary:hover {
+    border-color: #155333;
+    background: #155333;
+}
+
+.button.remove {
+    width: 2.25rem;
+    padding-inline: 0;
+    color: var(--danger);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.candidate-empty {
+    padding: 1rem;
+    color: var(--muted);
+    font-style: italic;
+}
+
+.notes-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 0.65rem;
+    align-items: end;
+}
+
+.record-notes label {
+    display: grid;
+    gap: 0.3rem;
+}
+
+.record-notes textarea {
+    width: 100%;
+    min-height: 4rem;
+    resize: vertical;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.5rem 0.6rem;
+    background: #fbfcfd;
+}
+
+@media (max-width: 48rem) {
+    .header-inner,
+    .results {
+        padding-inline: 0.65rem;
+    }
+
+    .header-top,
+    .status-grid,
+    .notes-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+    }
+
+    .file-picker {
+        justify-content: space-between;
+    }
+
+    .candidate-row {
+        grid-template-columns: 2rem minmax(0, 1fr);
+    }
+
+    .candidate-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    .candidate-note {
+        flex-basis: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto;
+        transition: none;
+    }
+}
+</style>
+</head>
+<body>
+<header class="app-header">
+    <div class="header-inner">
+        <div class="header-top">
+            <h1 id="runTitle">Search results review</h1>
+            <div class="header-actions">
+                <label class="file-picker" for="resultsFile">
+                    Open results
+                    <input id="resultsFile" type="file" accept=".jsonl,.json">
+                </label>
+            </div>
+        </div>
+        <div id="statsBar" class="stats-bar" aria-label="Run statistics"></div>
+        <p id="loadStatus" class="load-status" role="status" aria-live="polite">
+            Open results.jsonl to begin review.
+        </p>
+    </div>
+</header>
+
+<main id="results" class="results">
+    <div class="welcome">No search records loaded.</div>
+</main>
+
+<!-- Replaced by runner when v2 generation lands; fetch fallback works over HTTP. -->
+<!--EMBEDDED_RESULTS_JSONL-->
+
+<script>
+'use strict';
+
+// Input boundary. FaG-shaped wire names must not escape these functions.
+function fagEvidenceToCommon(bd) {
+    if (!bd) return {};
+    return {
+        last_name: bd.last || 0,
+        first_name: bd.first || 0,
+        middle_name: bd.middle || 0,
+        year_window: bd.death || 0,
+        state: bd.state || 0,
+        ok_burial: bd.ok_burial || 0,
+        veteran: bd.veteran || 0,
+    };
+}
+
+function normalizeRecord(rec) {
+    const candidates = (rec.fag_records || rec.ranked_candidates || []).map(candidate => ({
+        id: candidate.memorial_id,
+        title: candidate.name || '',
+        url: candidate.backlink || '',
+        score: candidate.score || 0,
+        attributes: {
+            birth_year: candidate.details?.birth_year || '',
+            death_year: candidate.details?.death_year || '',
+            state: candidate.details?.state || '',
+        },
+        media: {
+            image_url: candidate.iiif_url || '',
+        },
+        evidence: {
+            score_breakdown: fagEvidenceToCommon(candidate.score_breakdown),
+            raw: candidate,
+        },
+    }));
+
+    let bestScore = rec.best_score || 0;
+    if (!bestScore && candidates.length) {
+        bestScore = Math.max(...candidates.map(candidate => candidate.score));
+    }
+
+    return {
+        id: rec.pensioner_id,
+        title: rec.pensioner_name || '',
+        engine: rec.engine || 'findagrave',
+        attributes: {
+            first: rec.pensioner_first || '',
+            middle: rec.pensioner_middle || '',
+            last: rec.pensioner_last || '',
+            application_number: rec.pensioner_app_number || '',
+            birth_year: rec.pensioner_birth_year || '',
+            death_year: rec.pensioner_death_year || '',
+            regiment: rec.regiment || '',
+            company: rec.company || '',
+            pensioncard_url: rec.pensioncard_backlink || '',
+            source_url: rec.backlink || '',
+            pensioncard_pages: rec.pensioncard_pages || [],
+            spouse: {
+                first: rec.pensioner_spouse_first || '',
+                middle: rec.pensioner_spouse_middle || '',
+                last: rec.pensioner_spouse_last || '',
+            },
+            both_match: rec.both_match || null,
+        },
+        status: rec.fag_status || rec.status || 'unknown',
+        best_score: bestScore,
+        candidates,
+        corroboration: {
+            cgr: rec.cgr_records || [],
+            dd_match: rec.dd_match || null,
+            spouse_match: rec.spouse_match || null,
+        },
+    };
+}
+
+let records = [];
+let decisions = {};
+let sourceLabel = 'results.jsonl';
+let recordsFingerprint = 'empty';
+
+function escapeHtml(value) {
+    if (value == null) return '';
+    return String(value).replace(/[&<>"']/g, character => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;',
+    })[character]);
+}
+
+function safeUrl(value) {
+    if (!value) return '';
+    try {
+        const parsed = new URL(value, window.location.href);
+        return ['http:', 'https:'].includes(parsed.protocol) ? parsed.href : '';
+    } catch (_error) {
+        return '';
+    }
+}
+
+function parseRecordsText(text) {
+    const trimmed = text.trim();
+    if (!trimmed) return [];
+    if (trimmed.startsWith('[')) {
+        const parsed = JSON.parse(trimmed);
+        if (!Array.isArray(parsed)) throw new Error('Expected JSON array');
+        return parsed;
+    }
+    return trimmed.split(/\r?\n/)
+        .filter(line => line.trim())
+        .map(line => JSON.parse(line));
+}
+
+function decisionFor(recordId) {
+    return decisions[String(recordId)] || null;
+}
+
+function decisionLabel(decision) {
+    if (!decision) return 'undecided';
+    if (decision.memorial_id) return 'picked';
+    if (Object.prototype.hasOwnProperty.call(decision, 'memorial_id')) {
+        return 'none_match';
+    }
+    return 'undecided';
+}
+
+function decisionsStorageKey() {
+    return `view-v2-decisions-${recordsFingerprint}`;
+}
+
+function loadStoredDecisions() {
+    try {
+        decisions = JSON.parse(localStorage.getItem(decisionsStorageKey()) || '{}');
+    } catch (_error) {
+        decisions = {};
+    }
+}
+
+function saveDecisions() {
+    try {
+        localStorage.setItem(decisionsStorageKey(), JSON.stringify(decisions));
+    } catch (_error) {
+        // Review remains usable when browser storage is unavailable.
+    }
+}
+
+function ensureDecision(recordId) {
+    const key = String(recordId);
+    if (!decisions[key]) {
+        decisions[key] = {
+            removed_candidates: [],
+            candidate_notes: {},
+            notes: '',
+        };
+    }
+    decisions[key].removed_candidates ||= [];
+    decisions[key].candidate_notes ||= {};
+    decisions[key].notes ||= '';
+    return decisions[key];
+}
+
+function plural(count, singular, pluralForm = null) {
+    const fallbackPlural = singular.endsWith('ch') || singular.endsWith('sh')
+        ? `${singular}es`
+        : `${singular}s`;
+    return `${count} ${count === 1 ? singular : (pluralForm || fallbackPlural)}`;
+}
+
+function lifespan(attributes) {
+    if (!attributes.birth_year && !attributes.death_year) return '';
+    return `${attributes.birth_year || '?'}–${attributes.death_year || '?'}`;
+}
+
+function renderSourceLinks(record) {
+    const links = [];
+    const cardUrl = safeUrl(record.attributes.pensioncard_url);
+    const sourceUrl = safeUrl(record.attributes.source_url);
+    if (cardUrl) {
+        links.push(`<a href="${escapeHtml(cardUrl)}" target="_blank" rel="noopener">→ source card</a>`);
+    }
+    if (sourceUrl) {
+        links.push(`<a href="${escapeHtml(sourceUrl)}" target="_blank" rel="noopener">↗ View source</a>`);
+    }
+    return links.join('');
+}
+
+function renderEvidenceMeter(name, label, value, maximum) {
+    const percent = Math.max(0, Math.min(100, Math.round((Number(value || 0) / maximum) * 100)));
+    return `
+        <span class="evidence-meter" data-feature="${escapeHtml(name)}">
+            <span>${escapeHtml(label)}</span>
+            <span class="evidence-track" role="progressbar" aria-label="${escapeHtml(label)} evidence"
+                  aria-valuemin="0" aria-valuemax="100" aria-valuenow="${percent}">
+                <span class="evidence-fill" style="width:${percent}%"></span>
+            </span>
+        </span>`;
+}
+
+function renderCandidate(record, candidate, rank, decision) {
+    const attributes = candidate.attributes || {};
+    const evidence = candidate.evidence?.score_breakdown || {};
+    const removed = (decision?.removed_candidates || []).includes(String(candidate.id));
+    const picked = decision?.memorial_id === String(candidate.id);
+    const notes = decision?.candidate_notes?.[String(candidate.id)] || '';
+    const details = [lifespan(attributes), attributes.state].filter(Boolean).join(' · ');
+    const openUrl = safeUrl(candidate.url);
+    const imageUrl = safeUrl(candidate.media?.image_url);
+    const classes = ['candidate-row', picked ? 'picked' : '', removed ? 'removed' : '']
+        .filter(Boolean).join(' ');
+
+    return `
+        <article class="${classes}" data-candidate-id="${escapeHtml(candidate.id)}">
+            <div class="candidate-rank">#${rank}</div>
+            <div class="candidate-main">
+                <div class="candidate-title-line">
+                    <span class="candidate-title">${escapeHtml(candidate.title || 'Untitled candidate')}</span>
+                    ${details ? `<span class="candidate-details">${escapeHtml(details)}</span>` : ''}
+                    ${rank === 1 ? '<span class="best-badge">★ best</span>' : ''}
+                    ${picked ? '<span class="picked-badge">PICKED</span>' : ''}
+                </div>
+                <div class="candidate-score-line">
+                    <span class="candidate-score">${Number(candidate.score || 0).toFixed(2)}</span>
+                    ${renderEvidenceMeter('last_name', 'last', evidence.last_name, 1)}
+                    ${renderEvidenceMeter('first_name', 'first', evidence.first_name, 1)}
+                    ${renderEvidenceMeter('year_window', 'year', evidence.year_window, 0.5)}
+                </div>
+                <div class="candidate-action-line">
+                    <span class="candidate-links">
+                        ${openUrl ? `<a href="${escapeHtml(openUrl)}" target="_blank" rel="noopener">↗ open</a>` : ''}
+                        ${imageUrl ? `<a href="${escapeHtml(imageUrl)}" target="_blank" rel="noopener">⌥ image</a>` : ''}
+                    </span>
+                    <input class="candidate-note" type="text"
+                           data-action="candidate-note"
+                           data-record-id="${escapeHtml(record.id)}"
+                           data-candidate-id="${escapeHtml(candidate.id)}"
+                           aria-label="Notes for candidate ${escapeHtml(candidate.title || 'untitled candidate')}"
+                           placeholder="Candidate notes…"
+                           value="${escapeHtml(notes)}">
+                </div>
+            </div>
+            <div class="candidate-actions">
+                <button class="button primary" type="button" data-action="pick"
+                        data-record-id="${escapeHtml(record.id)}"
+                        data-candidate-id="${escapeHtml(candidate.id)}">Pick</button>
+                <button class="button remove" type="button" data-action="remove"
+                        data-record-id="${escapeHtml(record.id)}"
+                        data-candidate-id="${escapeHtml(candidate.id)}"
+                        aria-label="Remove ${escapeHtml(candidate.title || 'candidate')}">×</button>
+            </div>
+        </article>`;
+}
+
+function renderRecord(record) {
+    const decision = decisionFor(record.id);
+    const reviewState = decisionLabel(decision);
+    const attributes = record.attributes || {};
+    const spouse = attributes.spouse || {};
+    const recordTitle = record.title || 'Unnamed record';
+    const recordDomId = `record-${simpleHash(String(record.id))}`;
+    const headingId = `${recordDomId}-heading`;
+    const meta = [
+        attributes.regiment,
+        attributes.company ? `Company ${attributes.company}` : '',
+        lifespan(attributes),
+        attributes.application_number ? `app #${attributes.application_number}` : '',
+    ].filter(Boolean);
+    const candidates = record.candidates || [];
+    const candidateHtml = candidates.length
+        ? `<div class="candidate-list">${candidates.map(
+            (candidate, index) => renderCandidate(record, candidate, index + 1, decision)
+        ).join('')}</div>`
+        : '<div class="candidate-empty">No candidates found in this run.</div>';
+    const cgrCount = record.corroboration?.cgr?.length || 0;
+    const ddTracked = Boolean(record.corroboration?.dd_match);
+    const spouseKnown = Boolean(spouse.first && spouse.last);
+
+    return `
+        <article id="${recordDomId}" class="record-card" data-record-id="${escapeHtml(record.id)}"
+                 aria-labelledby="${headingId}">
+            <section class="record-identity">
+                <div class="identity-main">
+                    <span class="engine-badge">${escapeHtml(record.engine)}</span>
+                    <div class="identity-title">
+                        <h2 id="${headingId}">${escapeHtml(recordTitle)}</h2>
+                        ${meta.length ? `<div class="record-meta">${meta.map(item => `<span>${escapeHtml(item)}</span>`).join('')}</div>` : ''}
+                        <div class="source-links">${renderSourceLinks(record)}</div>
+                    </div>
+                    <span class="record-id">#${escapeHtml(record.id)}</span>
+                </div>
+            </section>
+            <section class="record-status" aria-labelledby="${headingId}">
+                <div class="status-grid">
+                    <div class="status-block">
+                        <span class="eyebrow">Status</span>
+                        <span class="status-pill ${escapeHtml(record.status)}">${escapeHtml(record.status)}</span>
+                    </div>
+                    <div class="status-block">
+                        <span class="eyebrow">Decision</span>
+                        <span class="decision-pill ${escapeHtml(reviewState)}">${escapeHtml(reviewState)}</span>
+                    </div>
+                </div>
+                <div class="corroboration-summary">
+                    <span>CGR ${plural(cgrCount, 'match')}</span>
+                    <span>DD tracked ${ddTracked ? '✓' : '✗'}</span>
+                    <span>Spouse known ${spouseKnown ? '✓' : '✗'}</span>
+                </div>
+            </section>
+            <section class="record-candidates" aria-labelledby="${headingId}">
+                <div class="candidate-section-header">
+                    <span class="eyebrow">Top candidates</span>
+                    <span class="candidate-count">${plural(candidates.length, 'candidate')}</span>
+                </div>
+                ${candidateHtml}
+            </section>
+            <section class="record-notes" aria-labelledby="${headingId}">
+                <div class="notes-grid">
+                    <label>
+                        <span class="eyebrow">Reviewer notes</span>
+                        <textarea data-action="record-note" data-record-id="${escapeHtml(record.id)}"
+                                  aria-label="Reviewer notes for ${escapeHtml(recordTitle)}"
+                                  placeholder="Record-level notes…">${escapeHtml(decision?.notes || '')}</textarea>
+                    </label>
+                    <button class="button" type="button" data-action="none-match"
+                            data-record-id="${escapeHtml(record.id)}">No match</button>
+                </div>
+            </section>
+        </article>`;
+}
+
+function updateStats() {
+    const counts = {};
+    let decided = 0;
+    for (const record of records) {
+        counts[record.status] = (counts[record.status] || 0) + 1;
+        if (decisionLabel(decisionFor(record.id)) !== 'undecided') decided += 1;
+    }
+    const statusStats = Object.entries(counts)
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([status, count]) => `<span class="stat"><strong>${count}</strong> ${escapeHtml(status)}</span>`)
+        .join('');
+    document.getElementById('statsBar').innerHTML = `
+        <span class="stat"><strong>${records.length}</strong> total</span>
+        <span class="stat"><strong>${decided}</strong> decided</span>
+        ${statusStats}`;
+}
+
+function wireActions() {
+    const results = document.getElementById('results');
+    results.querySelectorAll('[data-action="pick"]').forEach(button => {
+        button.addEventListener('click', () => {
+            const record = records.find(item => String(item.id) === button.dataset.recordId);
+            const candidate = record?.candidates.find(item => String(item.id) === button.dataset.candidateId);
+            if (!candidate) return;
+            const decision = ensureDecision(record.id);
+            decision.memorial_id = String(candidate.id);
+            decision.slug = candidate.evidence?.raw?.slug || '';
+            decision.by = 'user';
+            decision.at = new Date().toISOString();
+            saveDecisions();
+            render();
+        });
+    });
+
+    results.querySelectorAll('[data-action="remove"]').forEach(button => {
+        button.addEventListener('click', () => {
+            const decision = ensureDecision(button.dataset.recordId);
+            const candidateId = button.dataset.candidateId;
+            const index = decision.removed_candidates.indexOf(candidateId);
+            if (index >= 0) {
+                decision.removed_candidates.splice(index, 1);
+            } else {
+                decision.removed_candidates.push(candidateId);
+            }
+            saveDecisions();
+            render();
+        });
+    });
+
+    results.querySelectorAll('[data-action="candidate-note"]').forEach(input => {
+        input.addEventListener('change', () => {
+            const decision = ensureDecision(input.dataset.recordId);
+            if (input.value) {
+                decision.candidate_notes[input.dataset.candidateId] = input.value;
+            } else {
+                delete decision.candidate_notes[input.dataset.candidateId];
+            }
+            saveDecisions();
+        });
+    });
+
+    results.querySelectorAll('[data-action="record-note"]').forEach(textarea => {
+        textarea.addEventListener('change', () => {
+            ensureDecision(textarea.dataset.recordId).notes = textarea.value;
+            saveDecisions();
+        });
+    });
+
+    results.querySelectorAll('[data-action="none-match"]').forEach(button => {
+        button.addEventListener('click', () => {
+            const decision = ensureDecision(button.dataset.recordId);
+            decision.memorial_id = null;
+            decision.slug = null;
+            decision.by = 'user';
+            decision.at = new Date().toISOString();
+            saveDecisions();
+            render();
+        });
+    });
+}
+
+function render() {
+    const results = document.getElementById('results');
+    results.innerHTML = records.length
+        ? records.map(renderRecord).join('')
+        : '<div class="welcome">No search records loaded.</div>';
+    updateStats();
+    wireActions();
+}
+
+function simpleHash(value) {
+    let hash = 0;
+    for (let index = 0; index < value.length; index += 1) {
+        hash = ((hash << 5) - hash) + value.charCodeAt(index);
+        hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+}
+
+function loadRecords(rawRecords, label = 'results.jsonl') {
+    sourceLabel = label;
+    recordsFingerprint = simpleHash(JSON.stringify(rawRecords));
+    records = rawRecords.map(normalizeRecord);
+    loadStoredDecisions();
+    const countText = plural(records.length, 'record');
+    document.getElementById('runTitle').textContent = `Search results — ${label} (${countText})`;
+    document.getElementById('loadStatus').textContent = `Loaded ${countText} from ${label}.`;
+    document.getElementById('loadStatus').classList.remove('error');
+    render();
+    return records;
+}
+
+function loadFromText(text, label = 'results.jsonl') {
+    return loadRecords(parseRecordsText(text), label);
+}
+
+function showLoadError(error) {
+    const status = document.getElementById('loadStatus');
+    status.textContent = `Could not load results: ${error.message}`;
+    status.classList.add('error');
+}
+
+document.getElementById('resultsFile').addEventListener('change', async event => {
+    const file = event.target.files[0];
+    if (!file) return;
+    try {
+        loadFromText(await file.text(), file.name);
+    } catch (error) {
+        showLoadError(error);
+    } finally {
+        // Let reviewer retry same path after fixing malformed JSONL.
+        event.target.value = '';
+    }
+});
+
+async function tryAutoLoad() {
+    const embedded = document.getElementById('embedded-results-jsonl');
+    if (embedded?.textContent.trim()) {
+        loadFromText(embedded.textContent, 'embedded results.jsonl');
+        return;
+    }
+    if (window.location.protocol === 'file:') return;
+    try {
+        const response = await fetch('results.jsonl');
+        if (!response.ok) return;
+        loadFromText(await response.text(), 'results.jsonl');
+    } catch (_error) {
+        // File picker remains available when sibling fetch is blocked.
+    }
+}
+
+window.ViewV2 = {
+    fagEvidenceToCommon,
+    normalizeRecord,
+    parseRecordsText,
+    loadRecords,
+    loadFromText,
+    renderRecord,
+    getRecords: () => records,
+    getDecisions: () => decisions,
+};
+
+tryAutoLoad();
+</script>
+</body>
+</html>

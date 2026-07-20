@@ -4,6 +4,24 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: view.html v2 layout normalization (#38)
+
+Started v2 review UI as separate `scripts/view/v2.html`, leaving
+legacy `scripts/view.html` unchanged for past runs.
+
+- Added `normalizeRecord()` as sole FaG-shaped state boundary and
+  `fagEvidenceToCommon()` for generic score evidence names.
+- Added dense four-row cards for identity, status/corroboration,
+  candidates, and reviewer notes.
+- Preserved prominent Pick, remove, candidate-note, record-note,
+  and no-match actions in browser-only state.
+- Added text engine badges (default `findagrave`) and renderer
+  coverage using a normalized non-FaG-shaped record.
+- Added Playwright unit/layout tests plus a committed fixture derived
+  from `output/test-batch-25/results.jsonl`.
+
+Tests: 15 new. Full suite: 1,350 passed, 1 deselected.
+
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
 
 The SearchEngine Protocol abstraction (#33) + the
