@@ -1359,6 +1359,10 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--blackboard-db", type=Path, default=None,
                         help="Path to Blackboard SQLite database "
                              "(default: <out_dir>/blackboard.db).")
+    parser.add_argument("--view-html-source", type=Path, default=None,
+                        help="Source view.html to copy into the run directory "
+                             "(default: scripts/view/v2.html). "
+                             "Use scripts/view.html for the legacy v1 layout.")
     args = parser.parse_args(argv)
 
     # Issue #28 follow-up: if the user didn't pass
@@ -1550,7 +1554,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # J5-S2: per-run Results filename + view.html source.
         # Default results.jsonl; CLI/config can override.
         results_filename=getattr(args, "results_filename", "results.jsonl"),
-        view_html_source=getattr(args, "view_html_source", Path("scripts/view.html")),
+        view_html_source=getattr(args, "view_html_source", None) or Path("scripts/view/v2.html"),
         # J6: pensioncard pages sidecar (view.html embeds IIIF images).
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
         # J7: CGR path for post-run dedup.

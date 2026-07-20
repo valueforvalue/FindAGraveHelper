@@ -57,6 +57,18 @@ renderNewspapersDetails() stub placeholder.
 
 Tests: 5 new. Full suite: 1,369 passed, 1 deselected.
 
+### Chore(runner): default view source to v2 (#38)
+
+Changed the runner default from `scripts/view.html` (v1) to
+`scripts/view/v2.html` (new engine-agnostic layout).
+
+- Added `--view-html-source` CLI flag to override.
+- Legacy `scripts/view.html` stays available; pass it explicitly
+  to keep the old layout in new run directories.
+- No byte-identical output change in existing tests.
+
+Tests: 0 new. Full suite: 1,369 passed, 1 deselected.
+
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
 
 The SearchEngine Protocol abstraction (#33) + the
