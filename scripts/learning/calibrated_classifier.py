@@ -9,8 +9,10 @@ calibrated for target precision on held-out evaluation data.
 """
 from __future__ import annotations
 
+import json
 import math
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Any
 
 from scripts.learning.label_extractor import LabelSnapshot
@@ -88,6 +90,46 @@ class CalibratedClassifier:
         on held-out evaluation data.
         """
         return probability >= min_precision
+
+    # ------------------------------------------------------------------
+    # Persistence (issue #55)
+    # ------------------------------------------------------------------
+
+    def save(self, path: Path | str) -> None:
+        """Save classifier coefficients to a JSON file."""
+        path = Path(path)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            json.dumps({
+                "classifier_version": self.classifier_version,
+                "coeffs": self._coeffs,
+            }, indent=2),
+            encoding="utf-8",
+        )
+
+    @classmethod
+    def load(cls, path: Path | str) -> "CalibratedClassifier":
+        """Load classifier coefficients from a JSON file."""
+        raw = json.loads(Path(path).read_text(encoding="utf-8"))
+        return cls(
+            classifier_version=raw.get("classifier_version", "1"),
+            _coeffs=raw.get("coeffs", [0.0, 1.0]),
+        )
+
+    def threshold_for_precision(
+        self,
+        eval_split: list[LabelSnapshot],
+        features: list[dict[str, Any]],
+        target_precision: float = 0.95,
+    ) -> float:
+        """Find the probability threshold that achieves target_precision.
+
+        Uses binary search over the evaluation harness.
+        """
+        harness = EvaluationHarness()
+        return harness.calibrate_threshold(
+            self, eval_split, features, target_precision,
+        )
 
 
 @dataclass

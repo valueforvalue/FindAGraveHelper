@@ -2,6 +2,32 @@
 
 All notable changes to this project.
 
+## [Unreleased] — 2026-07-20
+
+### Feature(pipeline): config-driven run composition + wire learning modules (#55)
+
+Replaced thin BatchConfig with RunRecipe — a complete run recipe that
+captures every togglable feature as a config key. The config file IS the
+reproducibility artifact.
+
+- **Slice 0: RunRecipe** — new dataclass with InputsConfig, EngineConfig,
+  PipelineConfig (modules, scoring, strategies, decision), PostConfig.
+  Backward-compatible: v1 config.json auto-upgrades. Default v2 scaffold
+  via `python scripts/run_unified.py --init <runname>`.
+- **Slice 1: CalibratedClassifier** — `save()`/`load()`/`threshold_for_precision()`
+  on CalibratedClassifier. `decision_policy.classify()` accepts optional
+  classifier + target_precision params. When classifier present and threshold
+  is "auto", uses calibrated probability threshold instead of hardcoded constant.
+- **Slice 2: PlanRanker** — `rank_strategies()` method added. FaGEngine
+  accepts optional ranker; `ordered_ladder(ctx)` reorders strategies per-pensioner.
+  `default_search_one` uses ordered_ladder when available.
+- **Slice 3: Fellegi-Sunter** — `score_candidate()` convenience function
+  matching `fag/scoring.py` signature. Configurable via recipe
+  `scoring.method: fellegi_sunter`.
+- **Slice 4: LabelExtractor** — `from_decisions_file()` reads decisions
+  sidecar JSON. Post-batch label collection appends to labels.jsonl when
+  recipe sets `post.collect_labels: true`.
+
 ## [Unreleased] — 2026-07-19
 
 ### Feature(wire): engine-agnostic common record shape (#39)

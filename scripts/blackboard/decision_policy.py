@@ -151,15 +151,24 @@ def classify(
     auto_accept_threshold_no_death: float | None = None,
     auto_accept_gap: float | None = None,
     low_score_threshold: float | None = None,
+    classifier: Any | None = None,
+    target_precision: float = 0.95,
 ) -> Decision:
     """Classify a set of scored candidates into a decision.
 
     This is the single entry point for live search, replay, and
     dry-run. All paths use the same thresholds and logic.
 
+    Issue #55: when `classifier` is provided (a CalibratedClassifier)
+    and `auto_accept_threshold` is None, the threshold is computed
+    from the classifier's calibration curve targeting `target_precision`.
+    Falls back to hardcoded constants when no classifier is available.
+
     Args:
         context: scored candidates + metadata about the search.
         policy_version: which policy version to apply (default "1").
+        classifier: optional CalibratedClassifier for threshold calibration.
+        target_precision: target precision when using classifier (default 0.95).
 
     Returns:
         Decision with status, scores, gap, and rationale.
@@ -187,6 +196,25 @@ def classify(
 
     # Determine threshold based on death-year availability
     has_death = bool(context.local_death_year and context.local_death_year != "0")
+
+    # Issue #55: when a classifier is available and no explicit threshold
+    # was passed, use the classifier's calibrated probability threshold.
+    # Map the probability threshold back to a score threshold by finding
+    # the score at which predict_proba crosses target_precision.
+    if classifier is not None and auto_accept_threshold is None:
+        # Binary search: find the score where P(accept) >= target_precision
+        lo, hi = 0.0, 1.0
+        for _ in range(20):
+            mid = (lo + hi) / 2
+            prob = classifier.predict_proba({"best_score": mid})
+            if prob >= target_precision:
+                hi = mid
+            else:
+                lo = mid
+        calibrated = round(hi, 3)
+        auto_accept_threshold = calibrated
+        auto_accept_threshold_no_death = calibrated
+
     _auto_accept = (
         auto_accept_threshold
         if auto_accept_threshold is not None

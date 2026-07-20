@@ -71,6 +71,55 @@ class LabelExtractor:
 
         return labels
 
+    def from_decisions_file(self, path: Path | str) -> list[LabelSnapshot]:
+        """Extract labels from a decisions sidecar JSON file (#55).
+
+        Reads the v1 decisions export shape:
+          { version, decisions: { pid: { decision: { memorial_id, ... }, ... } } }
+
+        Maps reviewer decisions to labels:
+          - memorial_id present → accepted
+          - decision_type='needs_research' → ambiguous
+          - decision_type='none_match' or memorial_id=null → rejected
+        """
+        import time
+
+        path = Path(path)
+        if not path.exists():
+            return []
+
+        raw = json.loads(path.read_text(encoding="utf-8"))
+        decisions = raw.get("decisions", {})
+        if not decisions:
+            return []
+
+        now = time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
+        labels: list[LabelSnapshot] = []
+
+        for pid_str, entry in decisions.items():
+            d = (entry.get("decision") if isinstance(entry, dict) else None) or entry
+            if not isinstance(d, dict):
+                continue
+
+            review = "unreviewed"
+            if d.get("memorial_id"):
+                review = "accepted"
+            elif d.get("decision_type") == "needs_research":
+                review = "ambiguous"
+            elif "memorial_id" in d and not d["memorial_id"]:
+                review = "rejected"
+
+            label = LabelSnapshot(
+                pensioner_id=int(pid_str),
+                ground_truth_memorial_id=None,
+                human_review_decision=review,
+                extracted_at=now,
+                source_policy_version="1",
+            )
+            labels.append(label)
+
+        return labels
+
 
 class LabelStore:
     """SQLite store for LabelSnapshots with temporal split support."""

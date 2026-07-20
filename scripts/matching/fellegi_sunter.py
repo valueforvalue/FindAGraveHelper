@@ -262,3 +262,69 @@ def _safe_int(val: Any) -> int | None:
         return int(val)
     except (TypeError, ValueError):
         return None
+
+
+# ============================================================
+# Convenience scorer (issue #55) — same signature as fag/scoring.py
+# ============================================================
+
+def score_candidate(
+    local: dict, candidate: dict, *, model: MatchModel | None = None
+) -> tuple[float, dict]:
+    """Score a candidate against local context using Fellegi-Sunter.
+
+    Matches the signature of scripts.fag.scoring.score_candidate()
+    so it can be swapped in via recipe scoring.method.
+
+    Args:
+        local: pensioner dict with first_name, last_name, birth_year,
+               death_year, regiment
+        candidate: FaG candidate dict with name, details, etc.
+        model: optional pre-trained MatchModel. When None, returns
+               a default score (0.5) with reason="no_model".
+
+    Returns:
+        (score, evidence_dict)
+    """
+    if model is None:
+        return 0.5, {"reason": "no_fellegi_sunter_model", "score_breakdown": {}}
+
+    # Build features from local + candidate
+    p_name = NameEvidence.from_record({
+        "first_name": local.get("first_name", ""),
+        "last_name": local.get("last_name", ""),
+    })
+    c_name = NameEvidence.from_record({
+        "first_name": candidate.get("name", "").split()[0] if candidate.get("name") else "",
+        "last_name": candidate.get("name", "").split()[-1] if candidate.get("name") else "",
+    })
+    details = candidate.get("details") or {}
+
+    name_sim = p_name.fuzzy_match(c_name)
+
+    p_by = _safe_int(local.get("birth_year") or local.get("_birth_year"))
+    c_by = _safe_int(details.get("birth_year"))
+    birth_match = 1.0 if (p_by and c_by and abs(p_by - c_by) <= 2) else 0.0
+
+    p_unit = str(local.get("regiment", "")).upper()
+    c_state = str(details.get("state", "")).upper()
+    unit_match = 1.0 if (p_unit and c_state and c_state in _STATE_CODES and c_state in p_unit) else 0.0
+
+    p_first = str(local.get("first_name", ""))
+    c_name_str = str(candidate.get("name", ""))
+    init_match = 1.0 if (p_first and c_name_str and p_first[0].upper() == c_name_str[0].upper()) else 0.0
+
+    p_last = p_name.last_normalized
+    c_last = c_name.last_normalized
+    meta_match = 1.0 if (p_last[:3] == c_last[:3] and len(p_last) >= 3 and len(c_last) >= 3) else 0.0
+
+    features = {
+        "name_similarity": name_sim,
+        "birth_year_match": birth_match,
+        "unit_state_match": unit_match,
+        "first_initial_match": init_match,
+        "metaphone_last": meta_match,
+    }
+
+    probability, evidence = model.predict(features)
+    return probability, evidence

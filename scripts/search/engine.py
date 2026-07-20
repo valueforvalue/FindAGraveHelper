@@ -234,7 +234,11 @@ def default_search_one(
     inherit it and only override what differs.
     """
     # Build a working ladder (filtered by strategy_name if given)
-    ladder = engine.ladder
+    # Issue #55: use ordered_ladder() when engine supports it (ranker).
+    if hasattr(engine, "ordered_ladder"):
+        ladder = engine.ordered_ladder(ctx)
+    else:
+        ladder = engine.ladder
     if strategy_name is not None:
         ladder = [s for s in ladder if s.name == strategy_name]
         if not ladder:

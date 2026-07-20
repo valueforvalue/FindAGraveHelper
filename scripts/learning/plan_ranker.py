@@ -134,3 +134,43 @@ class PlanRanker:
         if "identity" in reason or "name" in reason:
             return "identity"
         return "any"
+
+    # ------------------------------------------------------------------
+    # Strategy ranking (issue #55) — simpler interface for engine use
+    # ------------------------------------------------------------------
+
+    def rank_strategies(
+        self,
+        strategy_names: list[str],
+        pensioner_context: dict[str, Any] | None = None,
+    ) -> list[str]:
+        """Rank strategy names by expected utility for a pensioner.
+
+        Wraps strategy names in minimal QueryPlan objects and delegates
+        to rank(). Returns strategy names in ranked order.
+        """
+        from scripts.blackboard.schema import PlanScope
+
+        # Map strategy name → PlanScope heuristically
+        def _scope_for(name: str) -> PlanScope:
+            n = name.lower()
+            if "follow-up" in n or "global" in n:
+                return PlanScope.US
+            if "regiment" in n:
+                return PlanScope.RegimentOrigin
+            return PlanScope.OK
+
+        plans = [
+            QueryPlan(
+                plan_id=f"plan-{name}",
+                pensioner_id=0,
+                strategy=name,
+                scope=_scope_for(name),
+                params={},
+                reason="",
+                estimated_requests=1,
+            )
+            for name in strategy_names
+        ]
+        ranked = self.rank(plans, pensioner_context=pensioner_context)
+        return [p.strategy for p in ranked]

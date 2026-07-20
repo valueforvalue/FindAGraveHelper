@@ -59,12 +59,48 @@ class FaGEngine:
     Attributes:
         name: "findagrave" — used in stats / audit trails.
         base_url: FaG's search-results URL.
-        ladder: 10 generic strategies + 2 FaG-specific (F2, F3).
+        ladder: 10 generic strategies + 3 FaG-specific (F2, F3, F4).
+            When ranker is provided, ladder is reordered per-pensioner.
     """
 
     name = "findagrave"
     base_url = _FAG_BASE_URL
     ladder = list(_GENERIC_STRATEGIES) + [F2_REGIMENT_BIO, F3_NICKNAME, F4_FOLLOW_UP]
+
+    def __init__(self, ranker: Any = None):
+        """Args:
+            ranker: optional PlanRanker for strategy ordering (#55).
+                When provided, use ordered_ladder() per pensioner.
+        """
+        self._ranker = ranker
+
+    def ordered_ladder(self, ctx: SearchContext | None = None) -> list:
+        """Return ladder, reordered by ranker if available (#55).
+
+        When no ranker is set, returns the default fixed-order ladder.
+        When ranker is set, ranks strategy names by expected utility
+        for this pensioner's context.
+        """
+        if self._ranker is None:
+            return list(self.ladder)
+        if ctx is None:
+            return list(self.ladder)
+        names = [s.name for s in self.ladder]
+        context = {
+            "regiment": ctx.extra("regiment", ""),
+            "first": ctx.first,
+            "last": ctx.last,
+            "birth_year": ctx.birth_year,
+            "death_year": ctx.death_year,
+            "state": ctx.state,
+        }
+        try:
+            ranked_names = self._ranker.rank_strategies(names, pensioner_context=context)
+        except Exception:
+            return list(self.ladder)
+        # Build ordered list preserving original strategy objects
+        name_to_strat = {s.name: s for s in self.ladder}
+        return [name_to_strat[n] for n in ranked_names if n in name_to_strat]
 
     def build_url(self, params: dict) -> str:
         """Compose the FaG search URL from a params dict.
