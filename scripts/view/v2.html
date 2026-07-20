@@ -49,7 +49,8 @@ body {
 
 button,
 input,
-textarea {
+textarea,
+select {
     font: inherit;
 }
 
@@ -61,9 +62,66 @@ a {
 button:focus-visible,
 a:focus-visible,
 input:focus-visible,
-textarea:focus-visible {
+textarea:focus-visible,
+select:focus-visible {
     outline: 0.18rem solid #72b8dc;
     outline-offset: 0.12rem;
+}
+
+.filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    align-items: center;
+    margin-top: 0.5rem;
+}
+
+.filter-row label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.filter-row select {
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--paper);
+    padding: 0.3rem 0.45rem;
+}
+
+.record-toggle {
+    width: 1.65rem;
+    height: 1.65rem;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    background: #f7f9fa;
+    color: var(--muted);
+    font-size: 1.05rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.record-toggle:hover {
+    border-color: var(--accent);
+    color: var(--accent-dark);
+}
+
+.collapsed-summary {
+    padding: 0.8rem 1rem;
+}
+
+.collapsed-summary .corroboration-line {
+    color: var(--muted);
+    font-size: 0.75rem;
+    margin-top: 0.3rem;
+}
+
+.candidate-row.hidden-sibling {
+    display: none;
 }
 
 .app-header {
@@ -548,11 +606,29 @@ h1 {
         <div class="header-top">
             <h1 id="runTitle">Search results review</h1>
             <div class="header-actions">
+                <button class="button" type="button" id="collapseAll">Collapse all</button>
+                <button class="button" type="button" id="expandAll">Expand all</button>
                 <label class="file-picker" for="resultsFile">
                     Open results
                     <input id="resultsFile" type="file" accept=".jsonl,.json">
                 </label>
             </div>
+        </div>
+        <div class="filter-row">
+            <label>Engine:
+                <select id="engineFilter">
+                    <option value="all">All engines</option>
+                </select>
+            </label>
+            <label>Decision:
+                <select id="decisionFilter">
+                    <option value="all">All</option>
+                    <option value="undecided">Undecided</option>
+                    <option value="picked">Picked</option>
+                    <option value="none_match">No match</option>
+                    <option value="follow_up">Follow-up</option>
+                </select>
+            </label>
         </div>
         <div id="statsBar" class="stats-bar" aria-label="Run statistics"></div>
         <p id="loadStatus" class="load-status" role="status" aria-live="polite">
@@ -648,6 +724,8 @@ let records = [];
 let decisions = {};
 let sourceLabel = 'results.jsonl';
 let recordsFingerprint = 'empty';
+let collapsedRecords = new Set();
+let showAllCandidateSections = new Set();
 
 function escapeHtml(value) {
     if (value == null) return '';
@@ -689,6 +767,7 @@ function decisionFor(recordId) {
 
 function decisionLabel(decision) {
     if (!decision) return 'undecided';
+    if (decision.decision_type === 'follow_up') return 'follow_up';
     if (decision.memorial_id) return 'picked';
     if (Object.prototype.hasOwnProperty.call(decision, 'memorial_id')) {
         return 'none_match';
@@ -837,10 +916,33 @@ function renderRecord(record) {
         attributes.application_number ? `app #${attributes.application_number}` : '',
     ].filter(Boolean);
     const candidates = record.candidates || [];
+    const pickedCandidateId = decision?.memorial_id || null;
+    const pickedCandidate = candidates.find(c => String(c.id) === String(pickedCandidateId));
+    const isPicked = Boolean(pickedCandidateId);
+    const showAllActive = showAllCandidateSections.has(String(record.id));
+    const maxVisible = 3;
+    const allVisible = showAllActive || !isPicked;
+    let visibleCandidates;
+    if (allVisible) {
+        visibleCandidates = showAllActive ? candidates : candidates.slice(0, maxVisible);
+    } else {
+        visibleCandidates = pickedCandidate ? [pickedCandidate] : [];
+    }
+    const hasHidden = (candidates.length > maxVisible && !showAllActive && !isPicked)
+        || (isPicked && candidates.length > 1 && !showAllActive);
+
     const candidateHtml = candidates.length
-        ? `<div class="candidate-list">${candidates.map(
-            (candidate, index) => renderCandidate(record, candidate, index + 1, decision)
-        ).join('')}</div>`
+        ? `<div class="candidate-list">${visibleCandidates.map(
+            (candidate, index) => renderCandidate(
+                record, candidate,
+                candidates.indexOf(candidate) + 1,
+                decision
+            )
+        ).join('')}
+        ${hasHidden ? `<div class="candidate-section-header">
+            <button class="button" type="button" data-action="show-all-candidates"
+                    data-record-id="${escapeHtml(record.id)}">Show all candidates</button>
+        </div>` : ''}</div>`
         : '<div class="candidate-empty">No candidates found in this run.</div>';
     const cgrCount = record.corroboration?.cgr?.length || 0;
     const ddTracked = Boolean(record.corroboration?.dd_match);
@@ -851,6 +953,11 @@ function renderRecord(record) {
                  aria-labelledby="${headingId}">
             <section class="record-identity">
                 <div class="identity-main">
+                    <button class="record-toggle" type="button"
+                            data-action="toggle-record"
+                            data-record-id="${escapeHtml(record.id)}"
+                            aria-expanded="true"
+                            aria-label="Collapse ${escapeHtml(recordTitle)}">⌃</button>
                     <span class="engine-badge">${escapeHtml(record.engine)}</span>
                     <div class="identity-title">
                         <h2 id="${headingId}">${escapeHtml(recordTitle)}</h2>
@@ -928,6 +1035,7 @@ function wireActions() {
             decision.slug = candidate.evidence?.raw?.slug || '';
             decision.by = 'user';
             decision.at = new Date().toISOString();
+            showAllCandidateSections.delete(String(record.id));
             saveDecisions();
             render();
         });
@@ -978,13 +1086,87 @@ function wireActions() {
             render();
         });
     });
+
+    results.querySelectorAll('[data-action="toggle-record"]').forEach(button => {
+        button.addEventListener('click', () => {
+            const recordId = button.dataset.recordId;
+            if (collapsedRecords.has(recordId)) {
+                collapsedRecords.delete(recordId);
+            } else {
+                collapsedRecords.add(recordId);
+            }
+            render();
+        });
+    });
+
+    results.querySelectorAll('[data-action="show-all-candidates"]').forEach(button => {
+        button.addEventListener('click', () => {
+            showAllCandidateSections.add(button.dataset.recordId);
+            render();
+        });
+    });
+}
+
+function renderCollapsedSummary(record, decision, reviewState) {
+    const candidates = record.candidates || [];
+    const topCandidate = candidates[0];
+    const topLine = topCandidate
+        ? `${Number(topCandidate.score || 0).toFixed(2)}  ${escapeHtml(topCandidate.title || '')}${topCandidate.attributes?.birth_year ? ' · ' + escapeHtml(topCandidate.attributes.birth_year) + '–' + escapeHtml(topCandidate.attributes.death_year || '?') : ''}${topCandidate.attributes?.state ? ' · ' + escapeHtml(topCandidate.attributes.state) : ''}`
+        : 'no candidates';
+    const cgrCount = record.corroboration?.cgr?.length || 0;
+    const ddTracked = Boolean(record.corroboration?.dd_match);
+    const spouseKnown = Boolean((record.attributes?.spouse?.first) && (record.attributes?.spouse?.last));
+    return `
+        <div class="collapsed-summary">
+            <span class="status-pill ${escapeHtml(record.status)}">${escapeHtml(record.status)}</span>
+            <span class="decision-pill ${escapeHtml(reviewState)}">${escapeHtml(reviewState)}</span>
+            <span>TOP 1: ${topLine}</span>
+            <div class="corroboration-line">
+                CGR ${cgrCount} match${cgrCount === 1 ? '' : 'es'}
+                · DD tracked ${ddTracked ? '✓' : '✗'}
+                · Spouse known ${spouseKnown ? '✓' : '✗'}
+            </div>
+        </div>`;
 }
 
 function render() {
     const results = document.getElementById('results');
-    results.innerHTML = records.length
-        ? records.map(renderRecord).join('')
-        : '<div class="welcome">No search records loaded.</div>';
+    const engineValue = document.getElementById('engineFilter').value;
+    const decisionValue = document.getElementById('decisionFilter').value;
+    const visible = records.filter(record => {
+        if (engineValue !== 'all' && record.engine !== engineValue) return false;
+        const label = decisionLabel(decisionFor(record.id));
+        if (decisionValue !== 'all' && label !== decisionValue) return false;
+        return true;
+    });
+    results.innerHTML = visible.length
+        ? visible.map(record => {
+            if (collapsedRecords.has(String(record.id))) {
+                const decision = decisionFor(record.id);
+                const headingId = `record-${simpleHash(String(record.id))}-heading`;
+                return `
+        <article class="record-card" data-record-id="${escapeHtml(record.id)}"
+                 aria-labelledby="${headingId}">
+            <section class="record-identity">
+                <div class="identity-main">
+                    <button class="record-toggle" type="button"
+                            data-action="toggle-record"
+                            data-record-id="${escapeHtml(record.id)}"
+                            aria-expanded="false"
+                            aria-label="Expand ${escapeHtml(record.title || 'unnamed record')}">⌄</button>
+                    <span class="engine-badge">${escapeHtml(record.engine)}</span>
+                    <div class="identity-title">
+                        <h2 id="${headingId}">${escapeHtml(record.title || 'Unnamed record')}</h2>
+                    </div>
+                    <span class="record-id">#${escapeHtml(record.id)}</span>
+                </div>
+            </section>
+            ${renderCollapsedSummary(record, decision, decisionLabel(decision))}
+        </article>`;
+            }
+            return renderRecord(record);
+        }).join('')
+        : '<div class="welcome">No records match current filters.</div>';
     updateStats();
     wireActions();
 }
@@ -1002,12 +1184,15 @@ function loadRecords(rawRecords, label = 'results.jsonl') {
     sourceLabel = label;
     recordsFingerprint = simpleHash(JSON.stringify(rawRecords));
     records = rawRecords.map(normalizeRecord);
+    collapsedRecords.clear();
+    showAllCandidateSections.clear();
     loadStoredDecisions();
     const countText = plural(records.length, 'record');
     document.getElementById('runTitle').textContent = `Search results — ${label} (${countText})`;
     document.getElementById('loadStatus').textContent = `Loaded ${countText} from ${label}.`;
     document.getElementById('loadStatus').classList.remove('error');
     render();
+    populateEngineFilter();
     return records;
 }
 
@@ -1015,11 +1200,40 @@ function loadFromText(text, label = 'results.jsonl') {
     return loadRecords(parseRecordsText(text), label);
 }
 
+function populateEngineFilter() {
+    const seen = new Set();
+    const select = document.getElementById('engineFilter');
+    select.innerHTML = '<option value="all">All engines</option>';
+    for (const record of records) {
+        if (!seen.has(record.engine)) {
+            seen.add(record.engine);
+            const option = document.createElement('option');
+            option.value = record.engine;
+            option.textContent = record.engine;
+            select.appendChild(option);
+        }
+    }
+}
+
 function showLoadError(error) {
     const status = document.getElementById('loadStatus');
     status.textContent = `Could not load results: ${error.message}`;
     status.classList.add('error');
 }
+
+document.getElementById('engineFilter').addEventListener('change', () => render());
+document.getElementById('decisionFilter').addEventListener('change', () => render());
+
+document.getElementById('collapseAll').addEventListener('click', () => {
+    for (const record of records) collapsedRecords.add(String(record.id));
+    render();
+});
+
+document.getElementById('expandAll').addEventListener('click', () => {
+    collapsedRecords.clear();
+    showAllCandidateSections.clear();
+    render();
+});
 
 document.getElementById('resultsFile').addEventListener('change', async event => {
     const file = event.target.files[0];
@@ -1057,8 +1271,11 @@ window.ViewV2 = {
     loadRecords,
     loadFromText,
     renderRecord,
+    populateEngineFilter,
     getRecords: () => records,
     getDecisions: () => decisions,
+    getCollapsedRecords: () => collapsedRecords,
+    getShowAllCandidateSections: () => showAllCandidateSections,
 };
 
 tryAutoLoad();

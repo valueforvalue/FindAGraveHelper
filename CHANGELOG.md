@@ -22,6 +22,13 @@ legacy `scripts/view.html` unchanged for past runs.
 
 Tests: 15 new. Full suite: 1,350 passed, 1 deselected.
 
+### Chore(view): add collapse + filter + picked-hides UX (#38)
+
+Added per-record collapse, data-populated engine filter, decision filter,
+and picked-candidate hiding with show-all override.
+
+Tests: 6 new. Full suite: 1,356 passed, 1 deselected.
+
 ### Feature: NewspapersComEngine — 2nd real search engine (#36)
 
 The SearchEngine Protocol abstraction (#33) + the
