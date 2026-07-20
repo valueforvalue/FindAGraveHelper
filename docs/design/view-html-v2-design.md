@@ -41,12 +41,42 @@ The user wants:
    browsable.
 4. The reviewer actions (Pick / remove / notes) to be
    **prominent**, not buried.
+5. The picks to be exportable in a shape the user's other
+   app already consumes (the `FindaGraveScraper.user.js`
+   export shape).
+6. The picks to persist across sessions and machines
+   **without** running Python (the user base can't run it).
 
 The "engine-aware scaffolding" point matters: the new layout
 should be one function that renders a generic record card,
 with engine-specific details behind a disclosure. Adding a
 new engine means writing the engine-specific disclosure, not
 rewriting the renderer.
+
+### What the user workflow actually looks like
+
+1. User runs a batch (today: 7,709 pensioners → FaG search →
+   `results.jsonl`).
+2. User opens `view.html` in a browser.
+3. The view auto-loads `decisions.json` from the same dir if
+   it exists; shows a banner: "Loaded N decisions."
+4. User reviews the records. For each, they pick the right
+   candidate (or mark "no match"). Notes and removes are
+   available.
+5. When the user is done with a session, they click
+   "Save decisions" → a `decisions.json` file is downloaded.
+6. The user moves the file to the output dir (overwriting
+   the previous one).
+7. The user clicks "Export picks (scraper shape)" → a
+   `memorials_archive.json` file is downloaded. They send
+   this to their downstream app.
+8. On the next session, the user reloads `view.html`. The
+   picks load from `decisions.json`. Their work is
+   preserved.
+
+**No Python is involved in any of the review steps.** The
+pipeline is for running the batch; the review is
+browser-only.
 
 ---
 
@@ -105,9 +135,22 @@ Issues:
 │ │      0.42  last [████] first [░░] year [██]       │ │
 │ │      ↗ open  ⌥ image  notes______  [Pick] [×]      │ │
 │ └────────────────────────────────────────────────────┘ │
-│ [compare top 3]  [show all 12]  [FaG details ⌄]        │
+│ [show all 12]  [FaG details ⌄]                          │
 ├──────────────────────────────────────────────────────────┤
 │ REVIEWER NOTES  [free-text area________________]         │  <- row 4: notes
+└──────────────────────────────────────────────────────────┘
+```
+
+The header at the top of the page has the action buttons:
+
+```
+┌──────────────────────────────────────────────────────────┐
+│ Search results — es-fresh-run (7,709 records)            │
+│ Stats: 200 decided · 500 auto · 1,200 needs_review ...  │
+│ Filters:  [engine ▾] [status ▾] [decision ▾]  search:   │
+│           [findagrave ▾] [auto_accept ▾] [undecided ▾] [ ]│
+│ [ Save decisions ]  [ Export picks (scraper shape) ]    │  <- two export buttons
+│ [ Import ]          [ Collapse all ]  [ Expand all ]    │  <- import + collapse
 └──────────────────────────────────────────────────────────┘
 ```
 
@@ -174,69 +217,109 @@ The header stays sticky. New affordances:
   etc." — engine-agnostic; populated from the data, not
   hardcoded.
 - **Decision filter** (new): "all / undecided / picked /
-  unpicked / follow_up" — reviewer's view of their work.
+  none_match / follow_up" — the reviewer's view of their
+  work. Implemented as a single-select filter dropdown.
 - **Search** (today): free-text by name/ID — unchanged.
 - **Stats bar** (today): decided/auto/ambiguous pills — moved
   to a left-side rail; right side gets the filters.
 
-### Compare mode
-
-The hardest review job: two close-score candidates. The
-layout today forces scrolling between them. The new
-`compare top 3` button opens a side-by-side diff:
-
-```
-┌──────────────────────────────────────────────────────┐
-│ COMPARE: Nancy A. Eads (pensioner #272)               │
-├──────────────────────────────────────────────────────┤
-│ #1 ★  0.85    │ #2     0.42    │ #3     0.31         │
-│ John Q. Smith │ Mary A. S. │ Bob J. S.             │
-│ 1844-1932 OK │ 1846-? IL │ 1844-? TX               │
-├──────────────┼────────────┼─────────────────────┤
-│ last  [████] │ last [████] │ last [░░░░]         │
-│ first [████] │ first [░░] │ first [██░░]         │
-│ year  [██]   │ year  [██] │ year  [██]            │
-├──────────────┼────────────┼─────────────────────┤
-│ ⌥ open       │ ⌥ open     │ ⌥ open               │
-│ [Pick #1]    │ [Pick #2]  │ [Pick #3]            │
-└──────────────────────────────────────────────────────┘
-```
-
-Closes when any [Pick] is clicked (auto-closes after the
-decision is made). Or the user clicks outside.
+A **Decided / Undecided** toggle is part of the decision
+filter. The Undecided view is the user's working view by
+default; switching to Decided shows records the user has
+picked / none_match / follow_up. (Not a separate page; just
+a filter state.)
 
 ### What the engine-aware scaffolding looks like
 
-Today, `view.html` accesses `c.memorial_id`, `c.slug`,
-`c.backlink`, `c.iiif_url`, `c.score_breakdown` (FaG-shaped).
-The new view.html accesses:
+The state.jsonl that today ships from the pipeline is
+**FaG-shaped** (no `engine` field; fields are `memorial_id`,
+`slug`, `backlink`, `iiif_url`, `score_breakdown` with FaG
+feature names). The new view.html is **engine-agnostic in
+layout** (one renderer, one normalization layer, engine-
+specific details behind a disclosure) but it **reads the
+FaG-shaped data unchanged**. The engine abstraction lives
+inside the view, not in the data.
 
-- `record.engine.name` — small badge in the header.
-- `candidates[i].id` — engine-agnostic primary key.
-- `candidates[i].title` — primary display label.
-- `candidates[i].url` — link.
-- `candidates[i].score` — engine's confidence.
-- `candidates[i].evidence.score_breakdown` — generic
-  feature names (last_name, first_name, middle_name,
-  year_window, state, other). Today's FaG breakdown uses
-  `last`/`first`/`middle`/`ok_burial`/`state`/`veteran`/`death`
-  — these get remapped to the generic names in a
-  `fag_evidence_to_common()` function that lives next to the
-  engine.
+**One normalization function at the top of the view.html**
+is the single point of FaG→common mapping. Everything
+downstream uses the normalized shape:
 
-FaG-specific details (the IIIF image, the full FaG
-score breakdown, the `_found_by` provenance) are in a
-disclosure that's labeled `FaG details`. Newspapers.com
-details (iso_date, location, paper, page) would be in a
-`Newspapers.com details` disclosure. The renderer doesn't
-care which engine produced the record; it just shows the
-engine's disclosure if expanded.
+```javascript
+// Single point of FaG→common mapping. The renderer never
+// sees c.memorial_id; it sees c.id.
+function normalizeRecord(rec) {
+    const cands = (rec.fag_records || []).map(c => ({
+        id:         c.memorial_id,
+        title:      c.name,
+        url:        c.backlink,
+        score:      c.score || 0,
+        evidence: {
+            score_breakdown: fagEvidenceToCommon(c.score_breakdown),
+            // Engine-specific data lives in `raw` for the
+            // engine-specific disclosure.
+            raw: c,
+        },
+    }));
+    return {
+        id:    rec.pensioner_id,
+        title: rec.pensioner_name,
+        // Engine name: today's records are all FaG, so we
+        // hardcode the default. When the v2 wire format lands,
+        // this reads from `rec.engine`. A one-line change.
+        engine: rec.engine || 'findagrave',
+        attributes: {
+            // FaG-specific fields live in `attributes` for the
+            // engine-specific disclosure.
+            first: rec.pensioner_first, last: rec.pensioner_last,
+            regiment: rec.regiment, /* ... */
+        },
+        status: rec.fag_status || 'unknown',
+        best_score: rec.best_score || 0,
+        candidates: cands,
+        corroboration: {
+            cgr: rec.cgr_records || [],
+            dd_match: rec.dd_match || null,
+            spouse_match: rec.spouse_match || null,
+        },
+    };
+}
+
+// Map FaG's score_breakdown feature names to the common
+// names. Today's features: last, first, middle, ok_burial,
+// state, veteran, death. Common: last_name, first_name,
+// middle_name, year_window, state, ok_burial, other.
+function fagEvidenceToCommon(bd) {
+    if (!bd) return {};
+    return {
+        last_name:   bd.last || 0,
+        first_name:  bd.first || 0,
+        middle_name: bd.middle || 0,
+        year_window: bd.death || 0,
+        state:       bd.state || 0,
+        ok_burial:   bd.ok_burial || 0,
+        veteran:     bd.veteran || 0,
+    };
+}
+```
+
+The renderer downstream uses `record.candidates[i].id`,
+`record.candidates[i].title`, `record.candidates[i].url`,
+`record.candidates[i].score`, `record.candidates[i].evidence.score_breakdown`
+— engine-agnostic names. The FaG-specific fields (IIIF image,
+`_found_by`, full `score_breakdown` feature list) live in
+`record.candidates[i].evidence.raw` and are shown in the
+**`FaG details`** disclosure.
+
+The engine badge in the card header reads `record.engine`.
+Today's records are all FaG; the field defaults to
+`"findagrave"` if missing. When the v2 wire format lands,
+this becomes `record.engine.name` from the wire format.
 
 The new renderer is **one function**. The engine-specific
 bits are in a separate `render_engine_details(record, engine)`
 function that dispatches on `engine.name`. Adding a new
-engine = writing a new `render_<engine>_details` function +
-providing the engine-agnostic shape. No renderer changes.
+engine = writing a new `render_<engine>_details` function.
+The renderer itself doesn't change.
 
 ### Decisions export: TWO buttons, sidecar persistence
 
@@ -270,32 +353,93 @@ after the batch.
 
 ### `decisions.json` shape
 
+The sidecar is the **same shape as today's `Export` payload**
+so users with existing tooling keep working. The view.html
+that produced it stays the same; only the storage target
+changes (localStorage → disk file).
+
 ```jsonc
 {
   "version": 1,
   "exported_at": "2026-07-20T03:15:00Z",
+  "source_file": "results.jsonl",
+  "stats": {
+    "total_pensioners": 50,
+    "decided": 12,
+    "by_status": {
+      "auto_accept": 4,
+      "needs_review": 6,
+      "no_results": 40
+    },
+    "by_cgr_dedup": {}
+  },
   "decisions": {
     "272": {
-      "memorial_id": "14994932",
-      "notes": "Spouse matches; correct person.",
-      "removed_candidates": ["14994933"],
-      "candidate_notes": {
-        "14994932": "correct match"
+      "decision": {
+        "memorial_id": "14994932",
+        "slug": "nancy-alice-eads",
+        "by": "user",
+        "at": "2026-07-20T03:15:00Z",
+        "notes": "Spouse matches; correct person.",
+        "removed_candidates": ["14994933"],
+        "candidate_notes": {
+          "14994932": "correct match"
+        }
       },
-      "decided_at": "2026-07-20T03:15:00Z"
+      "pensioner": { /* full pensioner record, self-contained */ },
+      "candidates": [ /* full candidate list, self-contained */ ],
+      "cgr_dedup_status": "follow_up_candidate",
+      "cgr_match_summary": null
     },
     "298": {
-      "decision": "no_match",
-      "notes": "No FaG result; manual check recommended.",
-      "decided_at": "2026-07-20T03:15:30Z"
+      "decision": {
+        "memorial_id": null,
+        "slug": null,
+        "by": "user",
+        "at": "2026-07-20T03:15:30Z",
+        "notes": "No FaG result; manual check recommended.",
+        "removed_candidates": [],
+        "candidate_notes": {}
+      },
+      "pensioner": { /* ... */ },
+      "candidates": [],
+      "cgr_dedup_status": null,
+      "cgr_match_summary": null
     }
   }
 }
 ```
 
-Same shape as today's `Export` payload's `decisions` map.
-Just on disk instead of in localStorage. The view.html
-auto-loads it at page open.
+The view.html that produces this is the same as today's
+`Export` button — no JS change. The new "Save decisions"
+button just calls the existing `exportDecisions()` function
+and triggers a download of the resulting JSON as
+`decisions.json`. The view.html's existing `Import` button
+already knows how to load this shape (via `parseInput` +
+`applyLoaded`).
+
+**Why the full record context is preserved:** if the user
+later loses `state.jsonl` (corruption, deletion), the picks
+are still recoverable from `decisions.json` because each
+record has the full pensioner + candidates snapshot. This
+matches the existing v1 export's design intent.
+
+**Filename handling.** The download's suggested filename is
+`decisions_<runname>.json` (e.g. `decisions_test-batch-25.json`)
+so the user can identify which run it belongs to. The
+view.html also accepts a sidecar named just `decisions.json`
+when the run is single-run (e.g. the user dropped the file
+in a run-specific dir). On page open, the view auto-loads in
+this order:
+1. `decisions_<basename>.json` (where basename matches the
+   current `results.jsonl`'s path), if present.
+2. `decisions.json` in the same dir, if present.
+3. localStorage (legacy, for backward compat with v1 sessions).
+
+If the user downloaded to their Downloads folder and
+forgot to move the file, the view shows a banner: "No
+decisions file found in this directory. Save and re-load, or
+move the downloaded file here and reload."
 
 ### view.html v2 buttons
 
@@ -466,20 +610,74 @@ empty arrays).
 
 ### Test plan
 
-A new test (`test_view_html_v2.py`) checks the new view.html
-v2 against a fixture past-run JSONL:
+Four layers of tests. The view.html is a single static
+file; tests run it through a headless browser (Playwright
+already a project dep) and assert on rendered output +
+button behaviors.
 
-- Open a fixture `output/test-batch-25/results.jsonl`.
-- Apply a fixture `decisions.json` with N decisions.
-- Verify the picks are loaded; the "Decided" filter view
-  shows N; the "Undecided" view shows the rest.
+**Unit tests** (`tests/test_view_html_normalize.py`):
+
+- `normalizeRecord(rec)` produces the expected engine-agnostic
+  shape for a typical FaG record (id, title, engine, attributes,
+  status, best_score, candidates[], corroboration).
+- `fagEvidenceToCommon(bd)` maps the FaG feature names to the
+  common names. `last` → `last_name`, `death` → `year_window`,
+  etc. Empty bd returns empty object.
+- `candidateToScraperRecord(cand, source_pensioner)` produces
+  the scraper-shaped record from a FaG candidate. Required
+  fields (`memorial_id`, `name`, `url`) populated; review
+  extensions (`_source_pensioner_id`, `_reviewer_decided_at`)
+  attached. `no_match` records produce a record with empty
+  scraper fields and a `_reviewer_decision` flag.
+- `pensionersToScraperExport(pensioners, decisions)` produces
+  the full export list (one record per picked FaG memorial +
+  one per `no_match` pensioner).
+
+**Integration tests** (`tests/test_view_html_v2.py`):
+
+- Open a fixture `output/test-batch-25/results.jsonl` in
+  Playwright; verify the page renders N record cards.
+- Auto-load a fixture `decisions.json`; verify N records
+  show the PICKED badge; verify the Decided filter view
+  shows N; the Undecided view shows the rest.
+- Click "Save decisions" → the page triggers a download;
+  the downloaded Blob's content matches the v1 export shape.
+- Click "Export picks" → the downloaded Blob's content is
+  the scraper-shaped list; one record per picked FaG
+  memorial; `_source_pensioner_id` is the pensioner_id from
+  the source record.
 - Pick a candidate in a record; verify the unpicked
-  candidates collapse; the "PICKED" badge appears.
-- Click "Save decisions" → download a Blob; verify the
-  content is the right decisions.json shape.
-- Click "Export picks" → download a Blob; verify the
-  content is the right scraper-shaped list (one record per
-  picked memorial, with `_source_pensioner_id` and friends).
+  candidates collapse; the "PICKED" badge appears; the
+  "Show all candidates" link re-expands them.
+- Click the ⌃ triangle on a card; verify the card collapses
+  to the summary line; click again to expand.
+- Apply the Engine filter "findagrave"; verify only FaG
+  records show. (Today: all records. After the v2 wire
+  format: a Newspapers.com run has a different badge.)
+- Click the Import button with a fixture decisions.json
+  file; verify the picks load and the records show the
+  PICKED badge.
+
+**Backward-compat tests:**
+
+- Old `view.html` runs (the existing test suite, which
+  passes today, stays passing) — the refactor is in a new
+  `view_v2.html`; the old `view.html` is unchanged.
+- Old `decisions` envelope export (the v1 shape with
+  `kind: 'export'`) loads correctly in v2.
+
+**Visual regression tests** (manual, not automated for this
+slice):
+
+- Render the new view.html against a real past run
+  (`output/es-fresh-run/`); eyeball that the layout reads
+  well. Iterate on the CSS until the user signs off.
+- Test the "save decisions" flow end-to-end: open the view,
+  make a pick, save, move the file, reload, verify the pick
+  is back.
+- Test the "export picks" flow end-to-end: open the view,
+  make picks, export, hand the file to the user's downstream
+  app, verify it consumes it.
 
 ### Why no CLI
 
@@ -505,12 +703,16 @@ workflow is browser-only.
   FaG produces FaG-shaped candidates; the view.html does the
   remap. A future slice moves the remap into the engine's
   `search_one` (per the design plan from the prior turn).
-- **No "compare" modal polish.** The compare view is
-  functional but the styling is minimal.
+- **No "compare" side-by-side view.** The hardest review job
+  is picking between two close-score candidates; a future
+  slice adds a "compare top 3" modal. Out of scope for now.
 - **No new filter facets.** The status / engine / decision
   filters are the three; future slices can add more.
 - **No multi-engine mixed runs.** A run is one engine; a
   future slice can show a side-by-side view.
+- **The "no_match" decision does not hide candidates** (the
+  rule is "picked hides others", not "decided hides others").
+  A no_match record still shows the full content.
 
 ---
 
@@ -520,35 +722,71 @@ workflow is browser-only.
 react to each one. Past runs in `output/` provide the
 test fixtures.
 
+**Important constraint:** the refactor is in a NEW file
+`scripts/view_v2.html` (or a path like `scripts/view/v2.html`
+if we want a folder). The existing `scripts/view.html` stays
+unchanged for backward-compat with old runs. The pipeline
+generates the new view.html (or the user copies it into the
+output dir).
+
+A flag in `scripts/run_unified.py` controls which view.html
+is generated. Default: v2 for new runs. Old runs in the
+output dir still have the v1 view.html from the previous
+batch; the user can opt-in to v2 for those by re-running.
+
 ### Commit 1: layout rework (engine-agnostic in structure, FaG data still)
 
-- New `view.html` (replaces the current one). ~1500 lines.
+- New `scripts/view/v2.html` (~1500 lines).
 - Reads the existing `state.jsonl` shape.
-- The engine-agnostic projection layer is a single function
-  `fag_evidence_to_common(candidate)` that maps FaG's
-  `score_breakdown` to the common feature names.
+- A `normalizeRecord(rec)` function at the top: the single
+  point of FaG→common mapping.
+- A `fagEvidenceToCommon(bd)` function: maps FaG feature
+  names to generic names.
+- The renderer uses the normalized shape; FaG-specific
+  fields live in `record.attributes` and
+  `record.candidates[i].evidence.raw` for the engine
+  disclosure.
+- Engine badge in the card header (default "findagrave").
 - All existing tests pass (the wire format is unchanged).
-- A new test (`test_view_html_layout.py`) checks the new
-  layout against a few past runs (es-fresh-run, test-batch-25).
+- New tests:
+  - `tests/test_view_html_normalize.py` (unit tests for the
+    normalize + remap functions).
+  - `tests/test_view_html_v2_layout.py` (Playwright
+    integration tests against a fixture past run).
 
-### Commit 2: collapse + filter + compare
+### Commit 2: collapse + filter + "hide others"
 
-- Per-record collapse (`⌃` triangle).
+- Per-record collapse (`⌃` triangle; default expanded).
+- "Collapse all" / "expand all" buttons at the top.
 - Engine filter (engine-agnostic; populated from the data).
-- Decision filter (picked / none_match / follow_up / undecided).
-- `compare top 3` button + modal.
-- "Picked hides others" within-record UX.
-- Test that the new affordances work.
+- Decision filter (all / undecided / picked / none_match /
+  follow_up).
+- "Picked hides others" within-record UX (the picked
+  candidate is shown; others collapse; "Show all
+  candidates" expands them).
+- New tests:
+  - `tests/test_view_html_v2_filters.py` (Playwright).
 
 ### Commit 3: two export buttons + sidecar persistence
 
 - New "Save decisions" button (the big green one). Downloads
-  `decisions.json` with the in-memory decisions map.
+  `decisions.json` in the v1 export shape. Suggested filename
+  is `decisions_<runname>.json`.
 - New "Export picks (scraper shape)" button. Downloads
   `memorials_archive.json` in the scraper shape.
-- Auto-load `decisions.json` on page open (with banner).
-- A test (`test_view_html_v2.py`) checks the new buttons
-  + sidecar against a fixture.
+- Auto-load `decisions.json` (or `decisions_<runname>.json`)
+  on page open. Banner shows: "Loaded N decisions from
+  <filename>."
+- A `candidateToScraperRecord(cand, source_pensioner)` and
+  `pensionersToScraperExport(pensioners, decisions)` function
+  in the view.html.
+- New tests:
+  - `tests/test_view_html_v2_exports.py` (Playwright:
+    trigger the download, parse the Blob, assert the
+    content).
+  - `tests/test_view_html_v2_sidecar.py` (load + reload
+    flow: write a fixture decisions.json, open the view,
+    verify the picks load).
 
 ### Commit 4: engine-agnostic scaffolding for future engines
 
@@ -562,21 +800,41 @@ test fixtures.
 
 ---
 
-## Open questions for the user
+## Decisions log
 
-1. **Should the engine-agnostic data shape work happen in
-   this slice, or as a follow-up?** My recommendation:
-   follow-up. The current slice is layout-only; the engine
-   shape work is a separate ~1-2 week slice.
+The user-facing decisions baked into this design (signed off
+during the design review):
 
-2. **Should the `score_breakdown` features be the generic
-   names (last_name, first_name, year_window) or the FaG
-   names (last, first, year) for now?** My recommendation:
-   generic, with a remap layer. A future Newspapers.com
-   details disclosure will use the generic names naturally.
+- **Engine-agnostic data shape** (v2 wire format) is a
+  follow-up, not this slice. The view.html v2 reads today's
+  FaG-shaped data via a `normalizeRecord()` layer.
+- **`score_breakdown` features** use generic names
+  (`last_name`, `first_name`, `year_window`, `state`,
+  `ok_burial`, `other`) with a remap from FaG's
+  `last`/`first`/`middle`/`ok_burial`/`state`/`veteran`/`death`.
+- **Per-record collapse** is a user-driven click, default
+  expanded. A "collapse all" / "expand all" button is a small
+  addition.
+- **Picks hide others** applies to picks only, not to
+  "no_match" decisions. A no_match record still shows the
+  full content; the user explicitly decided "no result here."
+- **Exports are two buttons**: "Save decisions" (downloads
+  `decisions.json` in the v1 export shape) and "Export picks"
+  (downloads `memorials_archive.json` in the scraper shape).
+- **State persistence is browser-only** (no Python). The
+  sidecar is `decisions.json`; localStorage is the legacy
+  fallback. The view auto-loads the sidecar at page open.
+- **Compare mode is not in this slice.** It's a useful
+  feature but a 1-2 day add. Deferred to a follow-up.
 
-3. **Should the per-record collapse be a user setting
-   (default expanded) or a user-driven click?**
-   My recommendation: default expanded (matches today's
-   behavior), click to collapse. A "collapse all" / "expand
-   all" button at the top is a small addition.
+## Future work (out of scope for this slice)
+
+- v2 wire format (engine-agnostic `state.jsonl`).
+- Newspapers.com details disclosure (today: stub).
+- "Compare top 3" side-by-side view for close-score candidates.
+- Richer extraction in the scraper-shaped export (family,
+  biography, full locations). Today: minimal; a future slice
+  adds a "deep scrape" pass to the pipeline.
+- Per-engine UI badges: today the badge is just text
+  (`[FaG]`, `[Newspapers.com]`); a future slice adds engine
+  icons + colors.
