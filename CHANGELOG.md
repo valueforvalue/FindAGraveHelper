@@ -4,6 +4,67 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: extract SearchEngine Protocol; FaGEngine as one implementation (#33)
+
+The unified pipeline now consumes a `SearchEngine` Protocol
+instead of importing FaG-specific code directly. The FaG
+implementation lives in `scripts/search/fag_engine.py` as
+`FaGEngine`, a thin adapter that bridges SearchContext ↔
+FaG's positional signatures and exposes the existing
+`scripts.fag.*` code through the engine surface.
+
+**Protocol** (`scripts/search/engine.py`)
+
+  `SearchEngine` is a `runtime_checkable` Protocol with six
+  building blocks (`build_url`, `parse_results_page`, `score`,
+  `classify_response`, `apply_filters`, `throttle_seconds`)
+  and one top-level method (`default_search_one` provided
+  as a free function for engines that want the simple
+  flow). The Protocol is structural — engines don't inherit
+  from anything; they just need the right shape.
+
+**FaGEngine** (`scripts/search/fag_engine.py`)
+
+  Concrete implementation. Owns the FaG search-URL constant,
+  the 12-strategy ladder (10 generic + F2 regiment + F3
+  nickname), the FaG scorer as the engine's `score()`, the
+  FaG `apply_location_filter` (locationId + linkedToName)
+  as the engine's `apply_filters()`, and a thin adapter
+  (`_FaGClassificationAdapter`) that bridges FaG's rich
+  `Classification` enum to the Protocol's boolean
+  `is_blocking` property.
+
+**Back-compat**
+
+  `scripts.fag.search.search_one_pensioner` is unchanged and
+  continues to work. The engine exists alongside it; new code
+  can use `FaGEngine()` directly. Migrating the FaG-specific
+  orchestration (CAPTCHA waits, 1015 backoff, per-strategy
+  throttle) into `FaGEngine.search_one()` is a follow-up
+  slice — the Protocol is the seam; the orchestrator
+  refactor comes in #35.
+
+**Tests** (`tests/test_search_engine.py` + `tests/test_fag_engine.py`)
+
+  39 new tests. Pinned:
+  - The Protocol is structurally satisfiable (FakeSearchEngine
+    conforms; partial implementations don't).
+  - `default_search_one` iterates the ladder, builds URLs,
+    parses, scores, merges; respects blocking classifications;
+    catches exceptions per-strategy without taking down the
+    run.
+  - `FaGEngine`'s six building blocks produce identical
+    results to the underlying FaG functions (bridge contract).
+  - The classification adapter maps FaG's enum to the
+    Protocol's boolean interface.
+  - End-to-end smoke: `default_search_one(FaGEngine(), ...)`
+    navigates, parses, scores, and returns a sensible result
+    with a stub page.
+
+Tests: 1206 -> 1246 (+39 new). 0 regressions. The
+abstraction is now testable with a fake engine, which is
+the precondition for #36 (a 2nd real engine).
+
 ### Refactor: deduplicate scoring_constants between blackboard + pipeline (#37)
 
 The `blackboard.decision_policy` module re-declared its own
