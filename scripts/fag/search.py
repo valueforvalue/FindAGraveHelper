@@ -64,8 +64,8 @@ from typing import Any, Optional
 sys.path.insert(0, str(Path(__file__).parent))
 from scripts.pipeline.checkpoint import write_checkpoint, read_checkpoint, record_failure
 from urllib.parse import urlencode
-from scripts.matching.regiment_keyword import strategy_regiment_bio, extract_regiment_phrases
-from scripts.matching.nickname_match import strategy_with_nickname, nickname_candidates
+from scripts.matching.regiment_keyword import extract_regiment_phrases
+from scripts.matching.nickname_match import nickname_candidates
 
 # Internal modules (T008 split)
 from scripts.fag.filters import (
@@ -285,24 +285,44 @@ def search_one_pensioner(page: Page, pensioner: dict,
     any_error = False
     parse_error_streak = 0
 
-    selected_strategies = STRATEGIES
+    # Refactor 2026-07-20: build a SearchContext from the pensioner
+    # and use run_ladder() to select a strategy. F2-regiment-bio and
+    # F3-nickname used to need a special-case here because they read
+    # pensioner fields beyond the positional signature; now they
+    # read from ctx.extras and live in scripts/search/fag_strategies.py.
+    from scripts.search.context import from_pensioner as _ctx_from_pensioner
+    from scripts.search.ladder import run_ladder as _run_ladder
+    from scripts.search.fag_strategies import (
+        F2_REGIMENT_BIO, F3_NICKNAME,
+    )
+
+    # Build the full FaG ladder: 10 generic + 2 FAG-specific.
+    full_ladder = list(STRATEGIES) + [F2_REGIMENT_BIO, F3_NICKNAME]
     if strategy_name is not None:
-        selected_strategies = [
-            (name, fn) for name, fn in STRATEGIES if name == strategy_name
-        ]
-        if not selected_strategies:
+        full_ladder = [s for s in full_ladder if s.name == strategy_name]
+        if not full_ladder:
             raise ValueError(f"Unknown FaG strategy: {strategy_name}")
 
-    for name, fn in selected_strategies:
-        # Build per-strategy closure for F2/F3 which need pensioner
-        if name == "F2-regiment-bio":
-            params = strategy_regiment_bio(first, middle, last, pensioner.get("regiment", ""), pensioner.get("death_year"))
-        elif name == "F3-nickname":
-            params = strategy_with_nickname(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"), pensioner)
-        else:
-            params = fn(first, middle, last, pensioner.get("birth_year"), pensioner.get("death_year"))
+    # Materialize the SearchContext once per pensioner. Strategies
+    # MUST NOT mutate it; this dataclass is frozen.
+    search_ctx = _ctx_from_pensioner(pensioner)
+
+    for strat in full_ladder:
+        # run_ladder() would normally pick; we want to iterate
+        # through applicable strategies and execute each (the
+        # runner does its own work between strategy picks). So
+        # we call strat.params() directly.
+        try:
+            params = strat.params(search_ctx)
+        except Exception:
+            # A buggy strategy MUST NOT take down the whole run;
+            # skip it and try the next.
+            log.warning("Strategy %s raised for pensioner %s; skipping",
+                        strat.name, pensioner.get("pensioner_id"))
+            continue
         if params is None:
             continue
+        name = strat.name
         # Restrict FaG to US (and US state if known) + ACW date window +
         # spouse name (if known from ok_pensioners.json) — J15:
         # linkedToName pre-filters candidates to those linked to the

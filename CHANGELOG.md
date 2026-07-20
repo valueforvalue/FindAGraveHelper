@@ -4,6 +4,75 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-19
 
+### Refactor: generalized search strategy system (hybrid model)
+
+The search strategy layer was F1-specific (Find a Grave + pensioner
+fields). Now it's domain-agnostic: a future Ancestry / FamilySearch
+/ Newspapers.com integration can ship its own ladder using the
+same primitives.
+
+**Layer 1 — SearchContext** (`scripts/search/context.py`)
+
+  Frozen dataclass with core fields (first/middle/last/birth_year/
+  death_year/state) + `extras` mapping for domain-specific data
+  (regiment, cemetery_id, maiden_name, etc.). `from_pensioner()`
+  maps a pensioner-style dict into a context. `ctx.has(...)` is
+  a guard helper. `ctx.extra(key, default)` is shorthand for
+  `extras.get(key, default)`.
+
+**Layer 2 — Strategy protocol** (`scripts/search/strategy.py`)
+
+  `Strategy.params(ctx) -> dict | None` is the contract. Two
+  implementations: `FunctionStrategy` (wraps a plain function;
+  the default for complex strategies) and `TemplateStrategy`
+  (hybrid: see below). `as_strategy(name, fn)` is the
+  convenience constructor.
+
+**Layer 3 — run_ladder()** (`scripts/search/ladder.py`)
+
+  Iterates a ladder and returns either the first applicable
+  strategy's params (mode="first", default) or every applicable
+  one (mode="all", for merge/rank workflows). One bad strategy
+  does NOT take down the ladder — exceptions are caught and
+  treated as "not applicable."
+
+**Layer 4 — F2/F3 removed from the runner special case**
+
+  `scripts/fag/search.py` used to special-case F2 (regiment bio)
+  and F3 (nickname) because they read pensioner fields beyond the
+  positional signature. Now they live in
+  `scripts/search/fag_strategies.py` as `FunctionStrategy`
+  instances, reading from `ctx.extras`. The runner builds a
+  single `SearchContext` per pensioner and lets `run_ladder`
+  pick a strategy. The 30-line `if name == "F2-..."` chain is
+  gone.
+
+**Layer 5 — Template DSL** (`scripts/search/template.py`)
+
+  Simple strategies (~90% of the ladder) can now be described as
+  a small dict of params instead of a Python function. DSL:
+    - `{field}` or `{extra.key}` for substitution
+    - `key?` suffix for conditional inclusion
+    - Built-in transforms: replace, slice, format, upper, lower,
+      choice
+    - `applies_when: [...]` for input guards
+  `TemplateStrategy.from_spec(dict)` and `from_yaml(text)`
+  (PyYAML) constructors. No user code execution; the DSL is
+  closed. `scripts/search/templates.py` ships 3 sample
+  strategies (B1, B5, F1a) in template form as a proof.
+
+**Back-compat**
+
+  The old positional signatures (`strategy_b1_exact(first, middle,
+  last, birth_year, death_year=None)`) are still importable from
+  `scripts.search.strategies` as thin shims that build a
+  SearchContext and call the new form. Will be deprecated in a
+  future release.
+
+**Tests: 1140 -> 1193** (+24 SearchContext/ladder, +29 template,
++5 template equivalence, -5 still passing from the original 10-
+strategy suite via shims).
+
 ### Perf: spouse scrape cache + lower throttle (#13)
 
 The post-pipeline spouse-scrape pass used the same 1.5s throttle
