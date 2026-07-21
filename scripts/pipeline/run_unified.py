@@ -1231,6 +1231,20 @@ def run_batch_scheduler(
     state_repo = JsonlStateRepository(out_dir / config.results_filename)
     if not state_repo.path.exists():
         state_repo.path.touch()
+
+    # Copy view.html into out_dir so the reviewer has a per-run page
+    # that works from file:// without a server. The legacy
+    # run_batch() path does this; the scheduler path was missing
+    # the call (issue: scheduler runs shipped without a view file).
+    # Default source is scripts/view/v2.html (the canonical review
+    # UI since 2026-07-19). Honor explicit config override (e.g.
+    # legacy scripts/view.html for past-run compatibility).
+    view_html_source = config.view_html_source or Path("scripts/view/v2.html")
+    copy_view_html_if_missing(
+        view_html_source,
+        out_dir,
+        results_path=state_repo.path,
+    )
     completed_ids = {
         int(record["pensioner_id"])
         for record in state_repo.iter_all(strict=True)

@@ -2,6 +2,7 @@
 
 import json
 import uuid
+from pathlib import Path
 
 from scripts.blackboard.schema import (
     Kind,
@@ -14,6 +15,8 @@ from scripts.pipeline.run_unified import (
     UnifiedRunnerConfig,
     run_batch_scheduler,
 )
+
+import pytest
 
 
 def _pensioner(pid: int, first="John", last="Smith") -> dict:
@@ -300,4 +303,106 @@ def test_scheduler_no_fag_mode_does_not_start_browser(tmp_path, monkeypatch):
         "SELECT COUNT(*) FROM work_items WHERE state = 'ready'"
     ).fetchone()[0]
     assert orphan_work == 0
+    store.close()
+
+
+def test_scheduler_copies_view_html_into_out_dir(tmp_path):
+    """Scheduler path must auto-ship a per-run view.html.
+
+    Regression test for the gap where `run_batch_scheduler`
+    shipped without a view file in `out_dir`, leaving the
+    reviewer with no per-run page. The legacy `run_batch()`
+    path already calls `copy_view_html_if_missing`; the
+    scheduler path was missing the call. The fix defaults
+    `view_html_source` to `scripts/view/v2.html` and calls
+    the same copy helper.
+    """
+    from scripts.pipeline.run_unified import copy_view_html_if_missing
+    from scripts.blackboard.schema import RunManifest
+    import uuid as _uuid
+
+    store = SqliteBlackboardStore(tmp_path / "bb.db")
+    store.open()
+
+    # Explicit source: a tiny HTML file we drop in tmp_path so
+    # the test doesn't depend on scripts/view/v2.html existing.
+    fake_source = tmp_path / "fake_v2.html"
+    fake_source.write_text(
+        "<!doctype html><html><body>fake v2</body></html>",
+        encoding="utf-8",
+    )
+
+    cfg = UnifiedRunnerConfig(
+        out_dir=tmp_path / "out",
+        results_filename="results.jsonl",
+        blackboard_db_path=tmp_path / "bb.db",
+        enable_fag=False,
+        view_html_source=fake_source,
+        run_manifest=RunManifest(
+            manifest_id=f"test-{_uuid.uuid4().hex[:8]}",
+            run_id="test-run",
+        ),
+    )
+    cfg._blackboard_store = store
+
+    run_batch_scheduler([_pensioner(1)], [_cemetery()], cfg)
+
+    copied = tmp_path / "out" / "view.html"
+    assert copied.exists(), "scheduler did not copy view.html"
+    assert "fake v2" in copied.read_text(encoding="utf-8")
+
+    # And: a second invocation is idempotent (no overwrite when
+    # the per-run copy already exists).
+    fake_source.write_text(
+        "<!doctype html><html><body>OVERWRITE</body></html>",
+        encoding="utf-8",
+    )
+    run_batch_scheduler([_pensioner(1)], [_cemetery()], cfg)
+    assert "OVERWRITE" not in copied.read_text(encoding="utf-8"), (
+        "scheduler must not overwrite an existing per-run view.html"
+    )
+
+    store.close()
+
+
+def test_scheduler_default_view_html_source_is_v2(tmp_path):
+    """When `view_html_source` is None, scheduler defaults to v2.
+
+    Pinned by docs/agents/cross-layer-contract.md
+    ('scripts/view/v2.html, default since 2026-07-19'). The
+    fallback exists in `run_batch_scheduler` itself so any
+    caller benefits, not just the CLI.
+    """
+    from scripts.blackboard.schema import RunManifest
+    import uuid as _uuid
+
+    store = SqliteBlackboardStore(tmp_path / "bb.db")
+    store.open()
+
+    cfg = UnifiedRunnerConfig(
+        out_dir=tmp_path / "out",
+        results_filename="results.jsonl",
+        blackboard_db_path=tmp_path / "bb.db",
+        enable_fag=False,
+        view_html_source=None,  # explicit None
+        run_manifest=RunManifest(
+            manifest_id=f"test-{_uuid.uuid4().hex[:8]}",
+            run_id="test-run",
+        ),
+    )
+    cfg._blackboard_store = store
+
+    # Scripts/view/v2.html exists in this repo (since 2026-07-19);
+    # the scheduler default must point at it. If the file is
+    # missing this test should be skipped, not silently pass.
+    repo_v2 = Path(__file__).parent.parent / "scripts" / "view" / "v2.html"
+    if not repo_v2.exists():
+        pytest.skip(f"canonical v2.html not present at {repo_v2}")
+
+    run_batch_scheduler([_pensioner(1)], [_cemetery()], cfg)
+
+    copied = tmp_path / "out" / "view.html"
+    assert copied.exists(), "scheduler did not copy default v2.html"
+    # v2.html is large; just verify it loaded the canonical file
+    assert copied.stat().st_size > 1000, "v2.html copy looks empty"
     store.close()

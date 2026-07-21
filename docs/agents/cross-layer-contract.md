@@ -13,7 +13,7 @@ independently:
 |---|---|---|
 | **Python harness** | `scripts/*.py` | local CLI |
 | **Userscripts** | `*.user.js` | paste into Tampermonkey |
-| **Review UI** | `scripts/view.html` | open in browser |
+| **Review UI** | `scripts/view/v2.html` | open in browser (default since 2026-07-19) |
 
 The Python harness writes a `state.jsonl`. The review UI
 reads the same `state.jsonl`. The userscripts have their
@@ -203,6 +203,7 @@ harness raises and exits. The outer loop in
 | Python harness per-pensioner | <3.5s | Run #1, Run #2 averages |
 | Python harness full 7,709-record run | <8h | Run #1 ETA |
 | Blackboard Scheduler dispatch | <50ms / work item | smoke runs |
+| `v2.html` per-run copy | <500ms | scheduler path auto-copies since 2026-07-20 fix |
 | `v2.html` first-paint for 7,709 records | <2s | chunked render (50 sync, rest via rAF) |
 | `view.html` first-paint for 7,709 records | <2s | n/a (loads file lazily) |
 | Userscript scrape per page | <1s | smoke test |
