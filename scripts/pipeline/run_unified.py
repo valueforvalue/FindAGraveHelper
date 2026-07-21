@@ -1271,6 +1271,24 @@ def run_batch_scheduler(
         out_dir,
         results_path=state_repo.path,
     )
+
+    # Load pensioncard_pages sidecar (issue #62). v2 view
+    # builds IIIF URLs from page_ids; without the sidecar the
+    # pensioner record lacks `pensioncard_pages` and the
+    # reviewer's pension card preview is empty.
+    pensioncard_pages_cache: dict[str, list[int]] = {}
+    if config.pensioncard_pages_path and config.pensioncard_pages_path.exists():
+        try:
+            pensioncard_pages_cache = json.loads(
+                config.pensioncard_pages_path.read_text(encoding="utf-8")
+            )
+            log.info(
+                "Loaded pensioncard_pages cache: %d entries from %s",
+                len(pensioncard_pages_cache),
+                config.pensioncard_pages_path,
+            )
+        except Exception as e:
+            log.warning("pensioncard_pages cache load failed: %s", e)
     completed_ids = {
         int(record["pensioner_id"])
         for record in state_repo.iter_all(strict=True)
@@ -1387,6 +1405,12 @@ def run_batch_scheduler(
                 pensioner_data=dict(pensioner),
                 candidates=list(candidates_by_id.values()),
             )
+            # Issue #62: populate pensioncard_pages from the
+            # sidecar so v2 view's pension card preview works.
+            if pensioncard_pages_cache:
+                pages = pensioncard_pages_cache.get(str(pensioner_id))
+                if pages:
+                    row["pensioncard_pages"] = pages
             state_repo.append(row)
             if row.get("status") == "auto_accept":
                 result.auto_accepts += 1

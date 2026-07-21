@@ -70,17 +70,88 @@ class ProjectionBuilder:
             ).strip(", "),
             "status": decision.status,
             "best_score": decision.top_score,
-            "ranked_candidates": candidates,
-            "fag_records": candidates,
+            # Issue #62: engine path emits candidates with `url`;
+            # the v1 + projector legacy shape used `backlink` and
+            # `iiif_url`. Normalize here so downstream consumers
+            # (state.jsonl, v2 normalizeRecord, v2 normalizeRecordV2)
+            # see both keys.
+            "ranked_candidates": [_normalize_candidate(c) for c in candidates],
+            "fag_records": [_normalize_candidate(c) for c in candidates],
             "_policy_version": self.policy_version,
         }
 
-        # Merge base pensioner fields
+        # Merge base pensioner fields. v2 (the canonical review
+        # UI) reads the v1 names directly off the state.jsonl
+        # row: pensioner_first / pensioner_middle / pensioner_last,
+        # pensioner_app_number, pensioner_birth_year,
+        # pensioner_death_year, pensioncard_backlink,
+        # pensioncard_pages, pensioner_spouse_first,
+        # pensioner_spouse_middle, pensioner_spouse_last,
+        # backlink (the pensioner record itself, not the
+        # candidate). Issue #62 close: missing fields broke v2
+        # display.
+        v1_pensioner_keys = (
+            "pensioner_first", "pensioner_middle", "pensioner_last",
+            "pensioner_app_number", "pensioner_birth_year",
+            "pensioner_death_year", "regiment", "company",
+            "pensioncard_backlink", "pensioncard_iiif_url",
+            "pensioncard_pages",
+            "pensioner_spouse_first", "pensioner_spouse_middle",
+            "pensioner_spouse_last", "backlink",
+        )
+        for v1_key in v1_pensioner_keys:
+            # The input pensioner uses the un-prefixed names
+            # (first_name, application_number, etc.); the v2
+            # view reads the pensioner_-prefixed names. Map
+            # both for back-compat.
+            if v1_key in pensioner_data:
+                row[v1_key] = pensioner_data[v1_key]
+                continue
+            # Map: pensioner_first -> first_name;
+            # pensioner_app_number -> application_number;
+            # pensioner_birth_year -> birth_year (input has
+            # no birth_year; the v1 records did). Spouse fields
+            # are spouse_first_name / spouse_middle_name /
+            # spouse_last_name in the input.
+            if v1_key == "pensioner_app_number":
+                unprefixed = "application_number"
+            elif v1_key == "pensioner_birth_year":
+                unprefixed = "birth_year"
+            elif v1_key == "pensioner_death_year":
+                unprefixed = "death_year"
+            elif v1_key == "pensioner_spouse_first":
+                unprefixed = "spouse_first_name"
+            elif v1_key == "pensioner_spouse_middle":
+                unprefixed = "spouse_middle_name"
+            elif v1_key == "pensioner_spouse_last":
+                unprefixed = "spouse_last_name"
+            elif v1_key == "pensioner_first":
+                unprefixed = "first_name"
+            elif v1_key == "pensioner_middle":
+                unprefixed = "middle_name"
+            elif v1_key == "pensioner_last":
+                unprefixed = "last_name"
+            elif v1_key == "backlink":
+                unprefixed = "backlink"
+            elif v1_key in ("pensioncard_backlink", "pensioncard_iiif_url"):
+                # Input has both `pensioncard_backlink` and
+                # `pensioncard_iiif_url` directly.
+                continue
+            else:
+                unprefixed = v1_key
+            if unprefixed in pensioner_data:
+                row[v1_key] = pensioner_data[unprefixed]
+
+        # Also keep the un-prefixed short names so the legacy
+        # surfaces (e.g. scripts/state/report_generator) keep
+        # working.
         for key in (
-            "first_name", "last_name", "regiment", "company",
-            "birth_year", "death_year", "application_number",
+            "first_name", "middle_name", "last_name",
+            "regiment", "company", "application_number",
+            "birth_year", "death_year",
+            "pensioncard_backlink", "pensioncard_pages",
         ):
-            if key in pensioner_data:
+            if key in pensioner_data and key not in row:
                 row[key] = pensioner_data[key]
 
         # Badges (computed by projection, not mutated by passes)
@@ -95,13 +166,18 @@ class ProjectionBuilder:
 
         # Common engine-agnostic projection (issue #39).
         # Convert candidates to common shape for v2 view.html.
+        # Normalize first so the common projection sees both
+        # `url` and `backlink` keys (issue #62).
         if engine == "newspapers_com":
             common_candidates = [
                 _convert_np_candidate_for_projection(c) for c in candidates
             ]
         else:
             common_candidates = [
-                _convert_fag_candidate_for_projection(c) for c in candidates
+                _convert_fag_candidate_for_projection(
+                    _normalize_candidate(c)
+                )
+                for c in candidates
             ]
         row["common"] = {
             "id": pensioner_id,
@@ -170,7 +246,9 @@ def _convert_fag_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
     return {
         "id": str(c.get("memorial_id", "")),
         "title": c.get("name", ""),
-        "url": c.get("backlink", ""),
+        # Issue #62: engine path emits `url` (canonical); the
+        # legacy path emitted `backlink`. Map both.
+        "url": c.get("backlink") or c.get("url", ""),
         "score": c.get("score", 0),
         "attributes": {
             "birth_year": details.get("birth_year", ""),
@@ -210,3 +288,31 @@ def _convert_np_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
             "raw": c,
         },
     }
+
+
+def _normalize_candidate(c: dict[str, Any]) -> dict[str, Any]:
+    """Project a candidate dict to the projector-row shape.
+
+    Issue #62: the engine path emits candidates with `url`;
+    the legacy v1 path emitted `backlink` and `iiif_url`.
+    v2 view's normalizeRecord reads `c.backlink`; the
+    common-candidate projection reads `c.url`. Normalize so
+    both keys are present, and synthesize `iiif_url` from
+    `memorial_id` when missing so v2's candidate thumbnails
+    work in either path.
+    """
+    out = dict(c)  # copy
+    if not out.get("backlink") and out.get("url"):
+        out["backlink"] = out["url"]
+    if not out.get("url") and out.get("backlink"):
+        out["url"] = out["backlink"]
+    if not out.get("iiif_url") and out.get("memorial_id"):
+        out["iiif_url"] = (
+            f"https://www.findagrave.com/iiif/2/"
+            f"memorial:{out['memorial_id']}/full/full/0/default.jpg"
+        )
+    if not out.get("media") and out.get("iiif_url"):
+        out["media"] = {"image_url": out["iiif_url"]}
+    elif out.get("media") and not out["media"].get("image_url") and out.get("iiif_url"):
+        out["media"]["image_url"] = out["iiif_url"]
+    return out

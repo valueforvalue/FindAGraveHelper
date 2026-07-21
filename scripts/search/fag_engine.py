@@ -123,6 +123,15 @@ class FaGEngine:
         """
         from scripts.fag.parser import parse_results_page
         _total, candidates = parse_results_page(page)
+        # Some parser paths (older runs, error fallbacks) omit
+        # `iiif_url`; v2 view needs it for candidate thumbnails.
+        # Build it from memorial_id if missing. Issue #62 close.
+        for c in candidates:
+            if not c.get("iiif_url") and c.get("memorial_id"):
+                c["iiif_url"] = (
+                    f"https://www.findagrave.com/iiif/2/"
+                    f"memorial:{c['memorial_id']}/full/full/0/default.jpg"
+                )
         return candidates
 
     def score(
