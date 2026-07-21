@@ -275,6 +275,16 @@ class FaGScraperKS:
                 return [], "no_page"
 
             try:
+                # Show progress overlay (issue #70)
+                p_name = f"{ctx.first or ''} {ctx.last or ''}".strip()
+                try:
+                    self._session.show_progress_overlay(
+                        pensioner_name=p_name,
+                        strategy=plan.strategy or "",
+                    )
+                except Exception:
+                    pass
+
                 # Issue #61 close: per-strategy throttle threaded
                 # through default_search_one so the engine path
                 # doesn't burst-fire 5-13 navigations inside the
@@ -307,6 +317,12 @@ class FaGScraperKS:
                     self._engine, page, ctx, engine_result,
                     throttle_fn=throttle_fn,
                 )
+
+            # Hide progress overlay (issue #70)
+            try:
+                self._session.hide_progress_overlay()
+            except Exception:
+                pass
 
             candidates = engine_result.get("candidates", []) or []
             status = engine_result.get("status", "no_results") or "no_results"

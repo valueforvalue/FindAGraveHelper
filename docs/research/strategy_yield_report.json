@@ -1,0 +1,596 @@
+[
+  {
+    "soldier": "Frank Troop",
+    "first": "Frank",
+    "middle": "C. A.",
+    "last": "Troop",
+    "death_year": "1911",
+    "truth_memorial_id": "37997921",
+    "bucket": "rare_surname",
+    "b1_hit": true,
+    "b1_rank": 1,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 0,
+        "elapsed_s": 0.667
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 3,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 2,
+        "unique_vs_b1": 2,
+        "elapsed_s": 0.662
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.636
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.451
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.425
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.691
+      }
+    ]
+  },
+  {
+    "soldier": "Silas Hudson",
+    "first": "Silas",
+    "middle": "",
+    "last": "Hudson",
+    "death_year": "1906",
+    "truth_memorial_id": "138585373",
+    "bucket": "rare_surname",
+    "b1_hit": true,
+    "b1_rank": 1,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 3,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 0,
+        "elapsed_s": 0.535
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 19,
+        "elapsed_s": 1.18
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 20,
+        "elapsed_s": 1.018
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.483
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.46
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.643
+      }
+    ]
+  },
+  {
+    "soldier": "Jahue Everett",
+    "first": "Jahue",
+    "middle": "Ballard",
+    "last": "Everett",
+    "death_year": "1930",
+    "truth_memorial_id": "22397759",
+    "bucket": "rare_surname",
+    "b1_hit": true,
+    "b1_rank": 1,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 0,
+        "elapsed_s": 0.603
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 2,
+        "unique_vs_b1": 19,
+        "elapsed_s": 1.041
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 1.055
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.446
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.893
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.684
+      }
+    ]
+  },
+  {
+    "soldier": "Dewitt Lee",
+    "first": "Dewitt",
+    "middle": "C.",
+    "last": "Lee",
+    "death_year": "1912",
+    "truth_memorial_id": "43909545",
+    "bucket": "common_surname",
+    "b1_hit": true,
+    "b1_rank": 1,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 3,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 0,
+        "elapsed_s": 0.596
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 19,
+        "elapsed_s": 1.208
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 3,
+        "unique_vs_b1": 18,
+        "elapsed_s": 1.218
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.817
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.664
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.763
+      }
+    ]
+  },
+  {
+    "soldier": "Zachary Jones",
+    "first": "Zachary",
+    "middle": "Taylor",
+    "last": "Jones",
+    "death_year": "1915",
+    "truth_memorial_id": "19845867",
+    "bucket": "common_surname",
+    "b1_hit": true,
+    "b1_rank": 1,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 0,
+        "elapsed_s": 1.122
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 19,
+        "elapsed_s": 0.868
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 4,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 2,
+        "unique_vs_b1": 3,
+        "elapsed_s": 0.615
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.461
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.487
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.744
+      }
+    ]
+  },
+  {
+    "soldier": "George Campbell",
+    "first": "George",
+    "middle": "Washington",
+    "last": "Campbell",
+    "death_year": "1918",
+    "truth_memorial_id": "23728390",
+    "bucket": "common_surname",
+    "b1_hit": true,
+    "b1_rank": 4,
+    "strategies": [
+      {
+        "name": "B1-exact",
+        "alias": "Exact name match",
+        "status": "ran",
+        "candidates": 11,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 4,
+        "unique_vs_b1": 0,
+        "elapsed_s": 0.898
+      },
+      {
+        "name": "B2-middle-initial",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "B3-first-initial-fuzzy",
+        "alias": "Fuzzy first name",
+        "status": "ran",
+        "candidates": 20,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 18,
+        "elapsed_s": 1.67
+      },
+      {
+        "name": "B4-fuzzy-last",
+        "alias": "Fuzzy last name",
+        "status": "ran",
+        "candidates": 6,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 4,
+        "unique_vs_b1": 2,
+        "elapsed_s": 0.773
+      },
+      {
+        "name": "B5-apostrophe",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "C1-cw-context",
+        "alias": "Civil War context",
+        "status": "ran",
+        "candidates": 1,
+        "total_fag": 0,
+        "hit": false,
+        "rank": null,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.527
+      },
+      {
+        "name": "F1a-birthyear-exact",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1b-deathyear",
+        "alias": "Death year filter",
+        "status": "ran",
+        "candidates": 11,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 8,
+        "unique_vs_b1": 7,
+        "elapsed_s": 0.703
+      },
+      {
+        "name": "F1c-year-sniper",
+        "status": "skipped",
+        "reason": "not_applicable"
+      },
+      {
+        "name": "F1d-year-window",
+        "alias": "Year window",
+        "status": "ran",
+        "candidates": 2,
+        "total_fag": 0,
+        "hit": true,
+        "rank": 1,
+        "unique_vs_b1": 1,
+        "elapsed_s": 0.777
+      }
+    ]
+  }
+]

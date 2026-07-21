@@ -343,14 +343,14 @@ def strategy_with_year_window(first, middle, last, birth_year, death_year):
 from scripts.search.strategy import FunctionStrategy  # noqa: E402
 
 STRATEGIES = [
-    FunctionStrategy("B1-exact",               b1_exact),
-    FunctionStrategy("B2-middle-initial",      b2_middle_initial),
-    FunctionStrategy("B3-first-initial-fuzzy", b3_first_initial_fuzzy),
-    FunctionStrategy("B4-fuzzy-last",          b4_fuzzy_last),
-    FunctionStrategy("B5-apostrophe",          b5_apostrophe_variants),
-    FunctionStrategy("C1-cw-context",          c1_cw_context),
-    FunctionStrategy("F1a-birthyear-exact",    with_birth_year),
-    FunctionStrategy("F1b-deathyear",          with_death_year),
-    FunctionStrategy("F1c-year-sniper",        year_sniper),
-    FunctionStrategy("F1d-year-window",        with_year_window),
+    FunctionStrategy("B1-exact",               b1_exact,               alias="Exact name match"),
+    FunctionStrategy("B2-middle-initial",      b2_middle_initial,      alias="Middle initial"),
+    FunctionStrategy("B3-first-initial-fuzzy", b3_first_initial_fuzzy, alias="Fuzzy first name"),
+    FunctionStrategy("B4-fuzzy-last",          b4_fuzzy_last,          alias="Fuzzy last name"),
+    FunctionStrategy("B5-apostrophe",          b5_apostrophe_variants, alias="Apostrophe variant"),
+    FunctionStrategy("C1-cw-context",          c1_cw_context,          alias="Civil War context"),
+    FunctionStrategy("F1a-birthyear-exact",    with_birth_year,        alias="Birth year filter"),
+    FunctionStrategy("F1b-deathyear",          with_death_year,        alias="Death year filter"),
+    FunctionStrategy("F1c-year-sniper",        year_sniper,            alias="Year sniper"),
+    FunctionStrategy("F1d-year-window",        with_year_window,       alias="Year window"),
 ]

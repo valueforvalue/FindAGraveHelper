@@ -72,11 +72,12 @@ class FunctionStrategy:
     Used for strategies that need real logic (regex, multi-step
     computation, conditional logic the template DSL can't express).
     """
-    __slots__ = ("name", "_fn")
+    __slots__ = ("name", "_fn", "alias")
 
-    def __init__(self, name: str, fn: Callable[[SearchContext], StrategyResult]):
+    def __init__(self, name: str, fn: Callable[[SearchContext], StrategyResult], alias: str = ""):
         self.name = name
         self._fn = fn
+        self.alias = alias or name
 
     def params(self, ctx: SearchContext) -> StrategyResult:
         return self._fn(ctx)
@@ -85,14 +86,14 @@ class FunctionStrategy:
         return f"FunctionStrategy({self.name!r})"
 
 
-def as_strategy(name: str, fn: Callable[[SearchContext], StrategyResult]) -> Strategy:
+def as_strategy(name: str, fn: Callable[[SearchContext], StrategyResult], alias: str = "") -> Strategy:
     """Convenience: wrap a function as a Strategy. Equivalent to
     `FunctionStrategy(name, fn)` but reads more naturally at the
     point of definition:
 
         STRATEGIES = [
-            as_strategy("B1-exact", lambda ctx: ...),
+            as_strategy("B1-exact", lambda ctx: ..., "Exact name match"),
             ...
         ]
     """
-    return FunctionStrategy(name, fn)
+    return FunctionStrategy(name, fn, alias=alias)

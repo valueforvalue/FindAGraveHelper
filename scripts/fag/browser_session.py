@@ -99,6 +99,9 @@ class BrowserSession:
         self._last_request_at: float = 0.0
         self._started: bool = False
 
+        # Mock FaG: when set, intercepts all FaG search URLs
+        self._mock_fag_fixture: str | None = None
+
     # ----------------------------------------------------------
     # Context manager
     # ----------------------------------------------------------
@@ -244,6 +247,44 @@ class BrowserSession:
         return self._request_count
 
     # ----------------------------------------------------------
+    # Mock FaG (issue #63)
+    # ----------------------------------------------------------
+
+    def enable_mock_fag(self, fixture_path: str) -> None:
+        """Intercept all FaG search URLs and return fixture HTML.
+
+        After calling this, every request to
+        ``**/findagrave.com/memorial/search**`` is fulfilled with
+        the contents of *fixture_path* instead of hitting the real
+        server. The fixture should be a saved HTML page from a
+        prior real FaG search result.
+
+        Safe to call multiple times (updates the fixture inline).
+        Call :meth:`disable_mock_fag` to remove the route.
+        """
+        from pathlib import Path
+        body = Path(fixture_path).read_bytes()
+        self._mock_fag_fixture = fixture_path
+
+        async def _handle(route: Any) -> None:
+            await route.fulfill(
+                status=200,
+                content_type="text/html; charset=utf-8",
+                body=body,
+            )
+        self._page.route("**/findagrave.com/memorial/search**", _handle)
+        log.info("Mock FaG enabled: fixture=%s (%d bytes)", fixture_path, len(body))
+
+    def disable_mock_fag(self) -> None:
+        """Remove the mock FaG route."""
+        try:
+            self._page.unroute("**/findagrave.com/memorial/search**")
+        except Exception as e:
+            log.debug("No mock FaG route to remove: %s", e)
+        self._mock_fag_fixture = None
+        log.info("Mock FaG disabled.")
+
+    # ----------------------------------------------------------
     # Internal
     # ----------------------------------------------------------
 
@@ -286,6 +327,11 @@ class BrowserSession:
         self._browser = browser
         self._ctx = ctx
         self._page = page
+
+        # Re-apply mock FaG route if it was active before reset
+        if self._mock_fag_fixture:
+            self.enable_mock_fag(self._mock_fag_fixture)
+
         log.info("BrowserSession browser ready.")
 
     def _throttle_wait(self) -> None:
@@ -400,3 +446,61 @@ class BrowserSession:
             or "page closed" in msg
             or "context closed" in msg
         )
+
+    # ----------------------------------------------------------
+    # Progress overlay (issue #70)
+    # ----------------------------------------------------------
+
+    def show_progress_overlay(
+        self,
+        pensioner_name: str = "",
+        pensioner_idx: int = 0,
+        pensioner_total: int = 0,
+        strategy: str = "",
+        elapsed_s: float = 0.0,
+        eta_s: float = 0.0,
+    ) -> None:
+        """Inject a fixed-position progress overlay into the page.
+
+        Call after page load, before parsing — must not interfere
+        with FaG page parsing. The overlay is a small div in the
+        top-right corner showing current progress.
+        """
+        try:
+            self._page.evaluate(
+                """(function() {
+                    var el = document.getElementById('_rpiv_progress');
+                    if (!el) {
+                        el = document.createElement('div');
+                        el.id = '_rpiv_progress';
+                        el.style.cssText = [
+                            'position:fixed; top:10px; right:10px; z-index:99999;',
+                            'background:rgba(0,0,0,0.78); color:#eee;',
+                            'padding:8px 14px; border-radius:6px;',
+                            'font:12px/1.4 Consolas,monospace;',
+                            'pointer-events:none; max-width:320px;',
+                        ].join('');
+                        document.body.appendChild(el);
+                    }
+                    el.innerHTML = arguments[0];
+                })""",
+                f"{pensioner_name or '...'} "
+                f"({pensioner_idx}/{pensioner_total})<br>"
+                f"{strategy or '...'}<br>"
+                f"elapsed {elapsed_s:.0f}s"
+                + (f"  ETA ~{eta_s:.0f}s" if eta_s else ""),
+            )
+        except Exception:
+            pass
+
+    def hide_progress_overlay(self) -> None:
+        """Remove the progress overlay from the page."""
+        try:
+            self._page.evaluate(
+                """(function() {
+                    var el = document.getElementById('_rpiv_progress');
+                    if (el) el.remove();
+                })()"""
+            )
+        except Exception:
+            pass

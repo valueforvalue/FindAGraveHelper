@@ -19,6 +19,38 @@ log = logging.getLogger("fag.parser")
 # results per page; this constant is the per-strategy total.
 MAX_FAG_RESULTS_TO_PARSE = 20
 
+# FaG UI boilerplate strings that appear in search result cards
+# but are not part of the memorial data. These are site-UI strings
+# that leak into parser output when inner_text captures decoration.
+_FAG_BOILERPLATE_STRS = [
+    "Flowers have been left.",
+    "Flowers have been left",
+    "Leave a flower",
+    "Leave flowers",
+    "Sponsored by",
+    "Added by",
+    "Created by",
+    "Find a Grave",
+    "Virtual Cemetery",
+    "drag images here",
+    "Photo added by",
+    "ADVERTISEMENT",
+]
+
+
+def _strip_fag_boilerplate(text: str) -> str:
+    """Remove known FaG UI boilerplate strings from candidate text.
+
+    Case-insensitive. Returns cleaned text. If the text is ONLY
+    boilerplate, returns empty string.
+    """
+    for s in _FAG_BOILERPLATE_STRS:
+        pattern = re.compile(re.escape(s), re.IGNORECASE)
+        text = pattern.sub("", text)
+    text = re.sub(r'\s{2,}', ' ', text)
+    return text.strip()
+
+
 # Regex constants (T008 split regression: restored from pre-split
 # scripts/search_fag.py — they were inlined before the split and
 # not migrated when the file was split into private modules.)
@@ -124,6 +156,9 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         except Exception:
             text = ""
         text = re.sub(r'\s+', ' ', text).strip()
+        text = _strip_fag_boilerplate(text)
+        if not text:
+            continue
 
         # Parse out name (first line of text), dates, veteran flag
         lines = [l.strip() for l in text.split('\n') if l.strip()] if text else []

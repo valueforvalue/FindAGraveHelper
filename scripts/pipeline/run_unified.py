@@ -145,6 +145,10 @@ class UnifiedRunnerConfig:
     # `enforce_throttle_floor` knob still applies to BrowserSession
     # construction (L1 hard floor at 2.5s by default).
     request_gate_min_interval: float = 2.5
+    # Issue #63: mock FaG API with HTML fixture (offline testing).
+    # When set, all findagrave.com/memorial/search requests are
+    # intercepted and fulfilled with the fixture HTML.
+    mock_fag_path: Optional[Path] = None
 
 
 # ============================================================
@@ -265,6 +269,59 @@ def copy_view_html_if_missing(
 
     dest.write_text(text, encoding="utf-8")
     return True
+
+
+# ============================================================
+# restart.sh (issue #68)
+# ============================================================
+
+def write_restart_script(
+    out_dir: Path,
+    config_path: Optional[Path] = None,
+    state_path: Optional[Path] = None,
+) -> Path:
+    """Write `restart.sh` to *out_dir* for resuming a failed run.
+
+    The generated script reconstructs CLI args from *config_path*
+    (or ``out_dir/config.json``) and resumes from *state_path*
+    (or the latest results.jsonl in the directory).
+
+    Returns the path to the written script.
+    """
+    out_dir = Path(out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    cfg = config_path or out_dir / "config.json"
+    if not cfg.is_absolute():
+        cfg = cfg.resolve()
+
+    lines = [
+        "#!/usr/bin/env bash",
+        "# restart.sh — resume a failed FindAGraveHelper run",
+        f"# Generated for run directory: {out_dir}",
+        "set -euo pipefail",
+        "",
+        f'RUN_DIR="{out_dir}"',
+        f'CONFIG="{cfg}"',
+        "",
+        'if [ ! -f "$CONFIG" ]; then',
+        '  echo "ERROR: config.json not found at $CONFIG" >&2',
+        '  exit 1',
+        'fi',
+        "",
+        'echo "Resuming run from $RUN_DIR"',
+        'echo "Config: $CONFIG"',
+        "",
+        f'exec python scripts/run_unified.py --config "$CONFIG" "$@"',
+    ]
+    script = out_dir / "restart.sh"
+    script.write_text("\n".join(lines) + "\n", encoding="utf-8")
+    # Make executable on POSIX
+    try:
+        script.chmod(0o755)
+    except Exception:
+        pass
+    return script
 
 
 # ============================================================
@@ -1258,6 +1315,9 @@ def run_batch_scheduler(
     if not state_repo.path.exists():
         state_repo.path.touch()
 
+    # Issue #68: write restart.sh for resuming failed runs
+    write_restart_script(out_dir)
+
     # Copy view.html into out_dir so the reviewer has a per-run page
     # that works from file:// without a server. The legacy
     # run_batch() path does this; the scheduler path was missing
@@ -1302,6 +1362,10 @@ def run_batch_scheduler(
     result = BatchResult(total=len(pensioners), started_at=time.time())
     run_id = config.run_manifest.run_id if config.run_manifest else "run"
 
+    # Issue #71: structured audit log
+    from scripts.pipeline.audit_log import RunAuditLog
+    audit_log: Any = None
+
     # CGR observations are run-level evidence and idempotent by veteran ID.
     for cemetery in cemeteries:
         for veteran in cemetery.get("veterans", []):
@@ -1336,6 +1400,8 @@ def run_batch_scheduler(
             enforce_throttle_floor=config.enforce_throttle_floor,
         )
         browser_session.start()
+        if config.mock_fag_path:
+            browser_session.enable_mock_fag(str(config.mock_fag_path))
         scheduler.register(
             FaGScraperKS(
                 browser_session=browser_session,
@@ -1349,6 +1415,9 @@ def run_batch_scheduler(
     builder = ProjectionBuilder()
 
     try:
+        # Issue #71: open structured audit log
+        audit_log = RunAuditLog.open(out_dir / "run_audit.jsonl")
+
         for pensioner in remaining:
             pensioner_id = int(
                 pensioner.get("id")
@@ -1411,6 +1480,13 @@ def run_batch_scheduler(
             state_repo.append(row)
             if row.get("status") == "auto_accept":
                 result.auto_accepts += 1
+
+            audit_log.pensioner_end(
+                pensioner_id=str(pensioner_id),
+                total_candidates=len(candidates_by_id),
+                status=row.get("status", "unknown"),
+                best_score=float(row.get("best_score", 0) or 0),
+            )
     finally:
         if browser_session is not None:
             browser_session.close()
@@ -1430,6 +1506,11 @@ def run_batch_scheduler(
     _collect_labels_if_enabled(config, out_dir, log)
 
     result.finished_at = time.time()
+    if audit_log is not None:
+        audit_log.summary(
+            total_pensioners=len(pensioners),
+        )
+        audit_log.close()
     log.info(
         "Scheduler batch complete: %d/%d pensioners projected to %s",
         len(remaining),
@@ -1584,6 +1665,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                         help="Skip the first N pensioners in the list")
     parser.add_argument("--no-fag", action="store_true",
                         help="Skip FaG search (CGR-only mode, for testing)")
+    parser.add_argument("--mock-fag", type=Path, default=None,
+                        help="Path to HTML fixture for mock FaG search. "
+                             "Intercepts all findagrave.com/memorial/search "
+                             "requests and returns the fixture instead. "
+                             "Cuts smoke-test wall-clock from ~270s to ~5s. "
+                             "See issue #63.")
     parser.add_argument("--heartbeat-every", type=int, default=50,
                         help="Heartbeat every N pensioners (default 50)")
     parser.add_argument("--no-rss-watchdog", action="store_true",
@@ -1856,6 +1943,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # The gate inherits the throttle value; with --allow-low-throttle
         # the gate drops to the same 1.5s budget. Issue #61 close.
         request_gate_min_interval=getattr(args, "throttle", 2.5),
+        mock_fag_path=args.mock_fag if args.mock_fag else None,
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:

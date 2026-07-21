@@ -559,6 +559,25 @@ h1 {
     color: var(--warning);
 }
 
+.strategy-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    padding: 0.2rem 0.45rem;
+    border: 1px solid var(--line-strong);
+    background: var(--canvas);
+    color: var(--muted);
+}
+
+.strategy-badge.type-b  { border-color: #5b8db8; background: #e4eef7; color: #2a5373; }
+.strategy-badge.type-c  { border-color: #5a9e6f; background: #e1f0e6; color: #2a5737; }
+.strategy-badge.type-f  { border-color: #c4903e; background: #faf0e0; color: #6b4512; }
+.strategy-badge.type-f4 { border-color: var(--warning); background: var(--warning-soft); color: var(--warning); }
+
 .candidate-score-line {
     margin-top: 0.4rem;
 }
@@ -803,6 +822,11 @@ h1 {
     .record-toggle {
         background: #22272e;
     }
+
+    .strategy-badge.type-b  { border-color: #4a7dab; background: #1a2e3b; color: #8ab8dc; }
+    .strategy-badge.type-c  { border-color: #4a8e5f; background: #1a3326; color: #8abf9d; }
+    .strategy-badge.type-f  { border-color: #b0802e; background: #332a15; color: #d4a85c; }
+    .strategy-badge.type-f4 { border-color: var(--warning); background: var(--warning-soft); color: var(--warning); }
 }
 
 kbd {
@@ -994,6 +1018,7 @@ kbd {
                                         <span class="best-badge" x-show="cidx === 0">★ best</span>
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
+                                        <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1333,13 +1358,54 @@ function reviewApp() {
 
         candidateDetails(candidate) {
             const attrs = candidate.attributes || {};
-            return [this.lifespan(attrs), attrs.state].filter(Boolean).join(' · ');
+            const raw = candidate.evidence?.raw || {};
+            const details = raw.details || {};
+            const parts = [this.lifespan(attrs), attrs.state];
+            if (details.cemetery) {
+                parts.push(details.cemetery);
+            }
+            return parts.filter(Boolean).join(' · ');
         },
 
         isFollowUp(candidate) {
             const raw = candidate.evidence?.raw || {};
             const fb = raw._found_by?.strategy || raw.found_by || '';
             return fb === 'F4-follow-up' || fb === 'follow-up';
+        },
+
+        strategyName(candidate) {
+            const raw = candidate.evidence?.raw || {};
+            return raw._found_by?.strategy || raw.found_by || '';
+        },
+
+        strategyLabel(candidate) {
+            const name = this.strategyName(candidate);
+            if (!name) return '';
+            // Use alias if available, otherwise prettify the code
+            const aliases = {
+                'B1-exact': 'Exact name',
+                'B2-middle-initial': 'Middle init',
+                'B3-first-initial-fuzzy': 'Fuzzy first',
+                'B4-fuzzy-last': 'Fuzzy last',
+                'B5-apostrophe': 'Apostrophe',
+                'C1-cw-context': 'CW context',
+                'F1a-birthyear-exact': 'Birth year',
+                'F1b-deathyear': 'Death year',
+                'F1c-year-sniper': 'Year sniper',
+                'F1d-year-window': 'Year window',
+            };
+            return aliases[name] || name;
+        },
+
+        strategyBadgeClass(candidate) {
+            const name = this.strategyName(candidate);
+            if (!name) return '';
+            const prefix = name.charAt(0).toLowerCase();
+            if (name.startsWith('F4')) return 'type-f4';
+            if (prefix === 'b') return 'type-b';
+            if (prefix === 'c') return 'type-c';
+            if (prefix === 'f') return 'type-f';
+            return '';
         },
 
         candidateNote(recordId, candidateId) {

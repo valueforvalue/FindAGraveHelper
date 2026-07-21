@@ -114,12 +114,15 @@ AUTO_ACCEPT_THRESHOLD = 0.70  # name+veteran+death match is sufficient
 AUTO_ACCEPT_THRESHOLD_NO_DEATH = 0.60
 AUTO_ACCEPT_GAP = 0.10  # top must beat #2 by this much for auto-accept
 PROMPT_THRESHOLD = 0.60
-THROTTLE_SECONDS = 2.5
 CAPTCHA_BACKOFF_SECONDS = 30.0
 MAX_CANDIDATES_PER_PENSIONER = 20
 MAX_FAG_RESULTS_TO_PARSE = 20  # per strategy
 
-BASE_URL = "https://www.findagrave.com/memorial/search"
+from scripts.fag.constants import FAG_SEARCH_BASE_URL, FAG_THROTTLE_FLOOR
+
+# Re-export for backward compatibility
+BASE_URL = FAG_SEARCH_BASE_URL
+THROTTLE_SECONDS = FAG_THROTTLE_FLOOR
 
 # FaG's location filter URL params. Verified via probes v7 + v8:
 #
