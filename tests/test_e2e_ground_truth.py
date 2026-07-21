@@ -29,7 +29,17 @@ from scripts.matching.evaluation import (
 
 
 GT_CSV = Path("C:/tmp/ground_truth.csv")
-GT_STATE = Path("C:/tmp/fag_gt/gt_state_e2e.jsonl")
+GT_OUT_DIR = Path("C:/tmp/fag_gt_e2e")
+GT_STATE = GT_OUT_DIR / "results.jsonl"  # current CLI writes results.jsonl
+
+# These tests require manual ground-truth data + a real FaG session.
+# Skip the entire module when the data file is absent so collection
+# doesn't error on the missing fixture.
+if not GT_CSV.exists():
+    pytest.skip(
+        f"{GT_CSV} not present; download ground-truth data first",
+        allow_module_level=True,
+    )
 
 
 def _load_ground_truth():
@@ -49,14 +59,17 @@ def _ensure_searcher_run():
     sentinel = GT_STATE.with_suffix(".e2e_sentinel")
     if sentinel.exists():
         return  # already ran in this session
+    # Clean up any prior run output so we start fresh.
     if GT_STATE.exists():
         GT_STATE.unlink()
+    if GT_OUT_DIR.exists():
+        import shutil
+        shutil.rmtree(GT_OUT_DIR, ignore_errors=True)
     result = subprocess.run(
         [
             "python", "scripts/run_unified.py",
             "--input-csv", str(GT_CSV),
-            "--state", str(GT_STATE),
-            "--ground-truth-csv", str(GT_CSV),
+            "--out", str(GT_OUT_DIR),
             "--limit", "50",
         ],
         cwd=ROOT,

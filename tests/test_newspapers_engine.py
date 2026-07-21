@@ -40,7 +40,7 @@ from scripts.search.newspapers_engine import (
 # ============================================================
 # HTML fixture: the real saved HTML from the probe
 # ============================================================
-HTML_FIXTURE = Path("data/probe/newspapers_q_john_smith_broad.html")
+HTML_FIXTURE = Path("tests/fixtures/newspapers/newspapers_q_john_smith_broad.html")
 
 
 @pytest.fixture
