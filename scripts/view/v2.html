@@ -936,7 +936,7 @@ kbd {
                                 </template>
                             </div>
                             <template x-for="(pageId, i) in (record.attributes?.pensioncard_pages || [])" :key="pageId">
-                                <a :href="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/' + '/0/default.jpg'.replace('full/', 'full/')" target="_blank" title="Click for full size">
+                                <a :href="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg'" target="_blank" title="Click for full size">
                                     <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/300,/0/default.jpg'"
                                          :alt="(record.title || 'pensioner') + ' pension card ' + (i + 1)"
                                          loading="lazy"
