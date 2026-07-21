@@ -135,21 +135,21 @@ def b5_apostrophe_variants(ctx):
 
 
 def c1_cw_context(ctx):
-    """C1: civil war bio context catch-all.
+    """C1: veteran-filtered search. Uses FaG isVeteran flag to
+    restrict results to verified veteran memorials. No bio text
+    filter — the veteran flag alone is the signal. Broader than
+    the old CSA-bio approach but every result is a real veteran.
 
-    Uses the narrowest bio term first ("Confederate States America"
-    or "United States Army") because the broader terms (Civil War,
-    Confederate) return hundreds of thousands of results.
+    Research (#69): old bio="Confederate States America" had 0%
+    hit rate. Dropping bio and keeping isVeteran=true gives the
+    scorer more candidates to work with.
     """
     if not ctx.first or not ctx.last:
         return None
-    # Try Confederate-specific first; the regex would be ideal but
-    # bio is full-text only. We pick the narrowest CSA-specific term.
     return {
         "firstname": ctx.first,
         "lastname": ctx.last,
         "isVeteran": "true",
-        "bio": "Confederate States America",
     }
 
 
@@ -348,7 +348,7 @@ STRATEGIES = [
     FunctionStrategy("B3-first-initial-fuzzy", b3_first_initial_fuzzy, alias="Fuzzy first name"),
     FunctionStrategy("B4-fuzzy-last",          b4_fuzzy_last,          alias="Fuzzy last name"),
     FunctionStrategy("B5-apostrophe",          b5_apostrophe_variants, alias="Apostrophe variant"),
-    FunctionStrategy("C1-cw-context",          c1_cw_context,          alias="Civil War context"),
+    FunctionStrategy("C1-cw-context",          c1_cw_context,          alias="Veteran filter"),
     FunctionStrategy("F1a-birthyear-exact",    with_birth_year,        alias="Birth year filter"),
     FunctionStrategy("F1b-deathyear",          with_death_year,        alias="Death year filter"),
     FunctionStrategy("F1c-year-sniper",        year_sniper,            alias="Year sniper"),

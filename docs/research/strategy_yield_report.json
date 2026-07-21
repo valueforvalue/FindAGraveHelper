@@ -19,7 +19,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 0,
-        "elapsed_s": 0.667
+        "elapsed_s": 0.643
       },
       {
         "name": "B2-middle-initial",
@@ -35,7 +35,7 @@
         "hit": true,
         "rank": 2,
         "unique_vs_b1": 2,
-        "elapsed_s": 0.662
+        "elapsed_s": 0.976
       },
       {
         "name": "B4-fuzzy-last",
@@ -46,7 +46,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.636
+        "elapsed_s": 0.717
       },
       {
         "name": "B5-apostrophe",
@@ -55,14 +55,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
-        "candidates": 1,
+        "candidates": 2,
         "total_fag": 0,
-        "hit": false,
-        "rank": null,
+        "hit": true,
+        "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.451
+        "elapsed_s": 0.807
       },
       {
         "name": "F1a-birthyear-exact",
@@ -78,7 +78,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.425
+        "elapsed_s": 0.474
       },
       {
         "name": "F1c-year-sniper",
@@ -94,7 +94,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.691
+        "elapsed_s": 0.731
       }
     ]
   },
@@ -118,7 +118,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 0,
-        "elapsed_s": 0.535
+        "elapsed_s": 0.53
       },
       {
         "name": "B2-middle-initial",
@@ -134,7 +134,7 @@
         "hit": false,
         "rank": null,
         "unique_vs_b1": 19,
-        "elapsed_s": 1.18
+        "elapsed_s": 1.057
       },
       {
         "name": "B4-fuzzy-last",
@@ -145,7 +145,7 @@
         "hit": false,
         "rank": null,
         "unique_vs_b1": 20,
-        "elapsed_s": 1.018
+        "elapsed_s": 1.014
       },
       {
         "name": "B5-apostrophe",
@@ -154,14 +154,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
         "candidates": 1,
         "total_fag": 0,
         "hit": false,
         "rank": null,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.483
+        "elapsed_s": 0.59
       },
       {
         "name": "F1a-birthyear-exact",
@@ -177,7 +177,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.46
+        "elapsed_s": 0.45
       },
       {
         "name": "F1c-year-sniper",
@@ -193,7 +193,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.643
+        "elapsed_s": 0.703
       }
     ]
   },
@@ -217,7 +217,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 0,
-        "elapsed_s": 0.603
+        "elapsed_s": 0.435
       },
       {
         "name": "B2-middle-initial",
@@ -233,7 +233,7 @@
         "hit": true,
         "rank": 2,
         "unique_vs_b1": 19,
-        "elapsed_s": 1.041
+        "elapsed_s": 1.077
       },
       {
         "name": "B4-fuzzy-last",
@@ -244,7 +244,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 1.055
+        "elapsed_s": 0.715
       },
       {
         "name": "B5-apostrophe",
@@ -253,14 +253,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
-        "candidates": 1,
+        "candidates": 2,
         "total_fag": 0,
-        "hit": false,
-        "rank": null,
+        "hit": true,
+        "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.446
+        "elapsed_s": 0.434
       },
       {
         "name": "F1a-birthyear-exact",
@@ -276,7 +276,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.893
+        "elapsed_s": 0.427
       },
       {
         "name": "F1c-year-sniper",
@@ -292,7 +292,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.684
+        "elapsed_s": 1.164
       }
     ]
   },
@@ -316,7 +316,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 0,
-        "elapsed_s": 0.596
+        "elapsed_s": 0.777
       },
       {
         "name": "B2-middle-initial",
@@ -332,7 +332,7 @@
         "hit": false,
         "rank": null,
         "unique_vs_b1": 19,
-        "elapsed_s": 1.208
+        "elapsed_s": 1.151
       },
       {
         "name": "B4-fuzzy-last",
@@ -343,7 +343,7 @@
         "hit": true,
         "rank": 3,
         "unique_vs_b1": 18,
-        "elapsed_s": 1.218
+        "elapsed_s": 1.214
       },
       {
         "name": "B5-apostrophe",
@@ -352,14 +352,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
-        "candidates": 1,
+        "candidates": 2,
         "total_fag": 0,
-        "hit": false,
-        "rank": null,
+        "hit": true,
+        "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.817
+        "elapsed_s": 0.52
       },
       {
         "name": "F1a-birthyear-exact",
@@ -375,7 +375,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.664
+        "elapsed_s": 0.523
       },
       {
         "name": "F1c-year-sniper",
@@ -391,7 +391,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.763
+        "elapsed_s": 0.853
       }
     ]
   },
@@ -415,7 +415,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 0,
-        "elapsed_s": 1.122
+        "elapsed_s": 0.544
       },
       {
         "name": "B2-middle-initial",
@@ -431,7 +431,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 19,
-        "elapsed_s": 0.868
+        "elapsed_s": 1.032
       },
       {
         "name": "B4-fuzzy-last",
@@ -442,7 +442,7 @@
         "hit": true,
         "rank": 2,
         "unique_vs_b1": 3,
-        "elapsed_s": 0.615
+        "elapsed_s": 0.697
       },
       {
         "name": "B5-apostrophe",
@@ -451,14 +451,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
         "candidates": 1,
         "total_fag": 0,
         "hit": false,
         "rank": null,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.461
+        "elapsed_s": 0.463
       },
       {
         "name": "F1a-birthyear-exact",
@@ -474,7 +474,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.487
+        "elapsed_s": 0.656
       },
       {
         "name": "F1c-year-sniper",
@@ -490,7 +490,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.744
+        "elapsed_s": 0.976
       }
     ]
   },
@@ -514,7 +514,7 @@
         "hit": true,
         "rank": 4,
         "unique_vs_b1": 0,
-        "elapsed_s": 0.898
+        "elapsed_s": 0.75
       },
       {
         "name": "B2-middle-initial",
@@ -530,7 +530,7 @@
         "hit": false,
         "rank": null,
         "unique_vs_b1": 18,
-        "elapsed_s": 1.67
+        "elapsed_s": 1.122
       },
       {
         "name": "B4-fuzzy-last",
@@ -541,7 +541,7 @@
         "hit": true,
         "rank": 4,
         "unique_vs_b1": 2,
-        "elapsed_s": 0.773
+        "elapsed_s": 0.753
       },
       {
         "name": "B5-apostrophe",
@@ -550,14 +550,14 @@
       },
       {
         "name": "C1-cw-context",
-        "alias": "Civil War context",
+        "alias": "Veteran filter",
         "status": "ran",
-        "candidates": 1,
+        "candidates": 8,
         "total_fag": 0,
-        "hit": false,
-        "rank": null,
-        "unique_vs_b1": 1,
-        "elapsed_s": 0.527
+        "hit": true,
+        "rank": 6,
+        "unique_vs_b1": 5,
+        "elapsed_s": 2.461
       },
       {
         "name": "F1a-birthyear-exact",
@@ -573,7 +573,7 @@
         "hit": true,
         "rank": 8,
         "unique_vs_b1": 7,
-        "elapsed_s": 0.703
+        "elapsed_s": 0.897
       },
       {
         "name": "F1c-year-sniper",
@@ -589,7 +589,7 @@
         "hit": true,
         "rank": 1,
         "unique_vs_b1": 1,
-        "elapsed_s": 0.777
+        "elapsed_s": 0.769
       }
     ]
   }
