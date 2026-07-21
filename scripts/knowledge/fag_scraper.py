@@ -48,9 +48,13 @@ class FaGScraperKS:
         browser_session: Any = None,  # BrowserSession
         gate: RequestGate | None = None,
         engine: Any = None,  # SearchEngine (FaGEngine default)
+        gate_min_interval: float = 2.5,
     ) -> None:
         self._session = browser_session
-        self._gate = gate or RequestGate.default_fag()
+        self._gate = gate or RequestGate(
+            provider="findagrave.com",
+            min_interval=gate_min_interval,
+        )
         # Lazy import: engine is optional; default to FaGEngine()
         # when present so the engine path is taken automatically.
         if engine is None:
@@ -220,10 +224,20 @@ class FaGScraperKS:
                 return [], "no_page"
 
             try:
+                # Issue #61 close: per-strategy throttle threaded
+                # through default_search_one so the engine path
+                # doesn't burst-fire 5-13 navigations inside the
+                # L1 floor. We use the gate's `wait()` (not a
+                # fresh `acquire()`) so the per-strategy waits
+                # stack with the per-pensioner outer acquire.
+                throttle_fn = (
+                    lambda: self._gate.wait("engine_strategy")
+                )
                 engine_result = default_search_one(
                     self._engine,
                     page=page,
                     ctx=ctx,
+                    throttle_fn=throttle_fn,
                 )
             except Exception as e:
                 log.warning(
@@ -239,7 +253,8 @@ class FaGScraperKS:
                 and engine_result.get("classification") not in ("captcha",)
             ):
                 engine_result = self._session._try_auto_relax_engine(
-                    self._engine, page, ctx, engine_result
+                    self._engine, page, ctx, engine_result,
+                    throttle_fn=throttle_fn,
                 )
 
             candidates = engine_result.get("candidates", []) or []

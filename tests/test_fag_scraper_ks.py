@@ -110,7 +110,7 @@ def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store, 
     gate = _RecordingGate()
     session = _RecordingSession()
 
-    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None, throttle_fn=None):
         # Mirrors scripts/search/engine.default_search_one contract.
         return {
             "candidates": [
@@ -187,7 +187,7 @@ def test_fag_scraper_persists_empty_search_status(store, monkeypatch):
     )
     session = _RecordingSession()
 
-    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None, throttle_fn=None):
         return {
             "candidates": [],
             "strategies_run": ["B1-exact"],

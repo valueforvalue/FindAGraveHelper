@@ -139,6 +139,12 @@ class UnifiedRunnerConfig:
     # through with a DeprecationWarning. Issue #61: operators opt
     # into low-throttle slicing by setting this to False.
     enforce_throttle_floor: bool = True
+    # RequestGate minimum interval (per-strategy throttle).
+    # Same value as the legacy BrowserSession.throttle. When set
+    # lower than 2.5s, the gate matches the lowered budget; the
+    # `enforce_throttle_floor` knob still applies to BrowserSession
+    # construction (L1 hard floor at 2.5s by default).
+    request_gate_min_interval: float = 2.5
 
 
 # ============================================================
@@ -1319,6 +1325,7 @@ def run_batch_scheduler(
             FaGScraperKS(
                 browser_session=browser_session,
                 engine=config.fag_engine,
+                gate_min_interval=config.request_gate_min_interval,
             )
         )
 
@@ -1814,6 +1821,9 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         cgr_path=Path(args.cgr) if args.cgr else None,
         blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
         enforce_throttle_floor=not getattr(args, "allow_low_throttle", False),
+        # The gate inherits the throttle value; with --allow-low-throttle
+        # the gate drops to the same 1.5s budget. Issue #61 close.
+        request_gate_min_interval=getattr(args, "throttle", 2.5),
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:

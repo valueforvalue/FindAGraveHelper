@@ -249,7 +249,7 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
         def page(self):
             return object()
 
-        def _try_auto_relax_engine(self, engine, page, ctx, ok_result):
+        def _try_auto_relax_engine(self, engine, page, ctx, ok_result, throttle_fn=None):
             return ok_result
 
     monkeypatch.setattr(browser_session_module, "BrowserSession", FakeBrowserSession)
@@ -264,7 +264,7 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
     )
 
     # Stub the engine flow so the test doesn't touch the real ladder.
-    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None, throttle_fn=None):
         calls.append(f"engine_search:{ctx.state}")
         return {
             "candidates": [

@@ -74,6 +74,20 @@ class RequestGate:
         until = time.monotonic() + min(seconds, self.max_cooldown)
         self._not_before = max(self._not_before, until)
 
+    def wait(self, kind: str = "search") -> None:
+        """Enforce min_interval without acquiring a context token.
+
+        Use this for per-strategy throttling inside a loop where
+        the caller already holds a higher-level `acquire()` (e.g.
+        FaGScraperKS acquires one outer token per pensioner and
+        calls `gate.wait()` before each engine-strategy
+        navigation). Records the acquire-time the same way
+        `acquire()` does so the min_interval is enforced across
+        every wait() call within the process.
+        """
+        self._wait_until_ready()
+        self._last_acquire = time.monotonic()
+
     def set_not_before_iso(self, until_iso: str) -> None:
         """Set provider cooldown from an ISO 8601 timestamp string.
 

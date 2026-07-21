@@ -338,6 +338,7 @@ class BrowserSession:
         page: Any,
         ctx: Any,
         ok_result: dict[str, Any],
+        throttle_fn: Any = None,
     ) -> dict[str, Any]:
         """Engine-flow counterpart of `_try_auto_relax`.
 
@@ -362,8 +363,19 @@ class BrowserSession:
                 state="US",
                 extras=dict(ctx.extras),
             )
-            self._throttle_wait()  # Per-strategy throttle (issue #61)
-            us_result = default_search_one(engine, page=page, ctx=us_ctx)
+            # Throttle discipline: honor the per-strategy gate
+            # if the caller passed one; otherwise fall back to
+            # the session's per-pensioner `_throttle_wait`.
+            if throttle_fn is not None:
+                try:
+                    throttle_fn()
+                except Exception:
+                    pass
+            else:
+                self._throttle_wait()
+            us_result = default_search_one(
+                engine, page=page, ctx=us_ctx, throttle_fn=throttle_fn
+            )
         except Exception as e:
             log.warning("Auto-relax engine US search failed: %s", e)
             return ok_result

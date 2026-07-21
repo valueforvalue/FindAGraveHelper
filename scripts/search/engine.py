@@ -50,11 +50,14 @@ Engine authors should:
 """
 from __future__ import annotations
 
+import logging
 from typing import Protocol, runtime_checkable
 
 from scripts.search.context import SearchContext
 from scripts.search.strategy import Strategy
 from scripts.search.ladder import run_ladder
+
+log = logging.getLogger("search.engine")
 
 
 # ============================================================
@@ -220,6 +223,7 @@ def default_search_one(
     ctx: SearchContext,
     *,
     strategy_name: str | None = None,
+    throttle_fn: Callable[[], None] | None = None,
 ) -> dict:
     """Default search_one implementation.
 
@@ -228,11 +232,23 @@ def default_search_one(
     classifies the response, parses if normal, scores
     candidates, and returns the merged best result.
 
+    Args:
+        throttle_fn: optional callable invoked BEFORE each
+            `page.goto()`. Used by the Blackboard scheduler
+            to thread a per-strategy throttle (e.g. a
+            `RequestGate.wait()`) through the engine flow
+            so a single default_search_one call can't
+            burst-fire multiple navigations inside the
+            L1 floor. Issue #61 close: was missing; engine
+            path was burning the throttle budget.
+
     Engines CAN override this for a fundamentally different
     flow (e.g. one API call instead of a strategy loop).
     The default is provided here so engine authors can
     inherit it and only override what differs.
     """
+    from typing import Callable
+
     # Build a working ladder (filtered by strategy_name if given)
     # Issue #55: use ordered_ladder() when engine supports it (ranker).
     if hasattr(engine, "ordered_ladder"):
@@ -265,6 +281,15 @@ def default_search_one(
         except Exception as e:
             error = f"build_url failed: {e}"
             continue
+        # Per-strategy throttle: callers MUST provide a
+        # throttle_fn that enforces min_interval between
+        # navigations; without it the engine fires in burst
+        # mode and Cloudflare flips to 1015. (Issue #61.)
+        if throttle_fn is not None:
+            try:
+                throttle_fn()
+            except Exception as e:
+                log.warning("throttle_fn raised: %s", e)
         # Navigate
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=20000)
