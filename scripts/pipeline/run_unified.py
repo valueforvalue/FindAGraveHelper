@@ -120,6 +120,26 @@ class UnifiedRunnerConfig:
     blackboard_db_path: Optional[Path] = None
     run_manifest: Any = None  # RunManifest, set at runtime
 
+    # Browser session config (issue #61: externalize from code).
+    # All previously-hardcoded BrowserSession knobs live here.
+    headless: bool = False  # Cloudflare blocks headless; default visible
+    browser_state_filter: str = "OK"  # FaG locationId scope at session level
+    browser_reset_every: int = 250  # Periodic reopen to bound RSS growth
+    max_consecutive_errors: int = 10  # Hard-stop after N in-a-row errors
+    auto_relax: bool = True  # OK -> US broadening when narrow is sparse
+    # SearchEngine instance for FaGScraperKS. When None, defaults
+    # to FaGEngine(). Per issue #61: the Blackboard path must use
+    # the engine's ladder, not the legacy fag.search one.
+    fag_engine: Any = None
+
+    # Override L1 throttle floor. L1 (CONTEXT.md) sets 2.5s as the
+    # safe floor; lowering below this re-introduces the Cloudflare
+    # 1015 rate-limit risk. When True, the floor is enforced; when
+    # False (default for slice runs), the configured value passes
+    # through with a DeprecationWarning. Issue #61: operators opt
+    # into low-throttle slicing by setting this to False.
+    enforce_throttle_floor: bool = True
+
 
 # ============================================================
 # view.html copy (J5-S2 + J9 embed)
@@ -1287,12 +1307,20 @@ def run_batch_scheduler(
 
         browser_session = BrowserSession(
             throttle=config.throttle_seconds,
-            reset_every=250,
-            headless=False,
-            state_filter="OK",
+            reset_every=config.browser_reset_every,
+            headless=config.headless,
+            state_filter=config.browser_state_filter,
+            auto_relax=config.auto_relax,
+            max_consecutive_errors=config.max_consecutive_errors,
+            enforce_throttle_floor=config.enforce_throttle_floor,
         )
         browser_session.start()
-        scheduler.register(FaGScraperKS(browser_session=browser_session))
+        scheduler.register(
+            FaGScraperKS(
+                browser_session=browser_session,
+                engine=config.fag_engine,
+            )
+        )
 
     scheduler.register(CandidateScorerKS())
     scheduler.register(DeepRefinerKS())
@@ -1498,6 +1526,11 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "raised from 1.5 after live monitoring showed "
                              "Cloudflare 1015 rate-limit hits at the "
                              "stricter cadence)")
+    parser.add_argument("--allow-low-throttle", action="store_true",
+                        help="Operator opt-in for throttle < 2.5s. "
+                             "Emits a DeprecationWarning (issue #61) "
+                             "since 1.5s re-introduces the L1 1015 risk. "
+                             "Use for slice runs only.")
     parser.add_argument(
         "--low-score-threshold", type=float,
         # Default lives in scoring_constants.LOW_SCORE_THRESHOLD so
@@ -1780,6 +1813,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
         blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
+        enforce_throttle_floor=not getattr(args, "allow_low_throttle", False),
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:

@@ -20,8 +20,19 @@ class _RecordingGate:
 
 
 class _RecordingSession:
+    """Mock for `BrowserSession` in the engine path (issue #61).
+
+    The Blackboard path routes through `engine.default_search_one`,
+    which uses `session.page` for navigation. The mock exposes
+    `page` as a sentinel object; the engine constructs URLs from
+    ctx but never navigates against the page in tests.
+    """
+
     def __init__(self) -> None:
         self.calls: list[tuple[dict, str | None]] = []
+        self.page = object()
+        self.auto_relax = False
+        self.state_filter = "OK"
 
     def search(
         self,
@@ -40,6 +51,33 @@ class _RecordingSession:
             }
         ], "auto_accept"
 
+    def _try_auto_relax_engine(self, engine, page, ctx, ok_result):
+        return ok_result
+
+
+class _FakeEngine:
+    """Mock SearchEngine for the engine path (issue #61).
+
+    The engine flow is wired in scripts/search/engine.py; this
+    fake records the SearchContext and returns canned candidates
+    so the test asserts behavior without touching the real engine.
+    """
+
+    name = "fake"
+    base_url = "https://example.com"
+
+    def __init__(self) -> None:
+        self.contexts_seen: list = []
+
+    def ordered_ladder(self, ctx):
+        return []  # Empty ladder => no strategies fire
+
+    def apply_filters(self, params, ctx):
+        return dict(params)
+
+    def build_url(self, params):
+        return "https://example.com/?x=1"
+
 
 @pytest.fixture
 def store(tmp_path):
@@ -49,7 +87,12 @@ def store(tmp_path):
     blackboard.close()
 
 
-def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store):
+def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store, monkeypatch):
+    """Engine path (issue #61): FaGScraperKS routes through the
+    SearchEngine's default_search_one with no strategy_name filter.
+    Test patches default_search_one to return canned candidates so
+    we can assert the persistence + scoping behavior end-to-end.
+    """
     plan = QueryPlan(
         plan_id="plan-1",
         pensioner_id=7,
@@ -67,28 +110,48 @@ def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store):
     gate = _RecordingGate()
     session = _RecordingSession()
 
-    observations = FaGScraperKS(browser_session=session, gate=gate).invoke(
-        item, store
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+        # Mirrors scripts/search/engine.default_search_one contract.
+        return {
+            "candidates": [
+                {
+                    "id": "50923719",
+                    "slug": "william-looney",
+                    "name": "William Looney",
+                    "score": 0.91,
+                    "evidence": {},
+                    "via_strategy": "B1-exact",
+                }
+            ],
+            "strategies_run": ["B1-exact"],
+            "status": "auto_accept",
+            "classification": "normal",
+            "error": None,
+        }
+
+    monkeypatch.setattr(
+        "scripts.knowledge.fag_scraper.default_search_one",
+        fake_default_search_one,
     )
 
+    observations = FaGScraperKS(
+        browser_session=session, gate=gate, engine=_FakeEngine()
+    ).invoke(item, store)
+
     assert gate.kinds == ["search"]
-    assert session.calls == [
-        (
-            {"first_name": "William", "last_name": "Looney", "id": 7},
-            "US",
-            "B1-exact",
-        )
-    ]
     assert len(observations) == 1
     assert observations[0].kind == Kind.FaGCandidateFetch
     assert observations[0].caused_by == "work-1"
     assert observations[0].payload == {
         "memorial_id": "50923719",
+        "id": "50923719",
         "slug": "william-looney",
         "name": "William Looney",
         "score": 0.91,
+        "url": "",
         "via_strategy": "B1-exact",
         "via_scope": "US",
+        "evidence": {},
     }
     persisted = store.read_observations_since(None)
     assert [obs.observation_id for obs in persisted] == [
@@ -101,7 +164,13 @@ def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store):
     assert score_work == ("CandidateScorerKS",)
 
 
-def test_fag_scraper_persists_empty_search_status(store):
+def test_fag_scraper_persists_empty_search_status(store, monkeypatch):
+    """Engine path: empty engine result persists an empty-search
+    status observation (issue #61). The payload shape changed
+    in the engine path: status is rendered in the empty marker
+    observation, and `via_strategy` reflects what the engine
+    tried (the plan's strategy as a hint).
+    """
     plan = QueryPlan(
         plan_id="plan-empty",
         pensioner_id=7,
@@ -117,10 +186,23 @@ def test_fag_scraper_persists_empty_search_status(store):
         plan_id=plan.plan_id,
     )
     session = _RecordingSession()
-    session.search = lambda *args, **kwargs: ([], "no_results")
+
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+        return {
+            "candidates": [],
+            "strategies_run": ["B1-exact"],
+            "status": "no_results",
+            "classification": "normal",
+            "error": None,
+        }
+
+    monkeypatch.setattr(
+        "scripts.knowledge.fag_scraper.default_search_one",
+        fake_default_search_one,
+    )
 
     observations = FaGScraperKS(
-        browser_session=session, gate=_RecordingGate()
+        browser_session=session, gate=_RecordingGate(), engine=_FakeEngine()
     ).invoke(item, store)
 
     assert len(observations) == 1

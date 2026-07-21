@@ -217,7 +217,13 @@ def test_scheduler_limit_bounds_ingestion_and_projection(tmp_path):
 
 
 def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch):
-    """Default scheduler path registers real FaG provider boundary."""
+    """Default scheduler path registers real FaG provider boundary.
+
+    Issue #61: the Blackboard scheduler now routes FaGScraperKS
+    through `engine.default_search_one`, not `session.search`.
+    This test mocks the engine's default_search_one so the
+    browser boundary can still be asserted end-to-end.
+    """
     from scripts.fag import browser_session as browser_session_module
     from scripts.fag.request_gate import RequestGate
 
@@ -230,6 +236,8 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
     class FakeBrowserSession:
         def __init__(self, **kwargs):
             calls.append(f"init:{kwargs['state_filter']}")
+            self.state_filter = kwargs.get("state_filter", "OK")
+            self.auto_relax = kwargs.get("auto_relax", False)
 
         def start(self):
             calls.append("start")
@@ -237,15 +245,12 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
         def close(self):
             calls.append("close")
 
-        def search(
-            self,
-            pensioner,
-            *,
-            state_filter=None,
-            strategy_name=None,
-        ):
-            calls.append(f"search:{state_filter}:{strategy_name}")
-            return [{"memorial_id": "1", "score": 0.5}], "ambiguous"
+        @property
+        def page(self):
+            return object()
+
+        def _try_auto_relax_engine(self, engine, page, ctx, ok_result):
+            return ok_result
 
     monkeypatch.setattr(browser_session_module, "BrowserSession", FakeBrowserSession)
     monkeypatch.setattr(
@@ -258,10 +263,28 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
         ),
     )
 
+    # Stub the engine flow so the test doesn't touch the real ladder.
+    def fake_default_search_one(engine, page, ctx, *, strategy_name=None):
+        calls.append(f"engine_search:{ctx.state}")
+        return {
+            "candidates": [
+                {"id": "1", "slug": "x", "name": "X", "score": 0.5, "evidence": {}}
+            ],
+            "strategies_run": ["B1-exact"],
+            "status": "ambiguous",
+            "classification": "normal",
+            "error": None,
+        }
+
+    import scripts.knowledge.fag_scraper as fag_scraper_module
+    monkeypatch.setattr(
+        fag_scraper_module, "default_search_one", fake_default_search_one
+    )
+
     run_batch_scheduler([_pensioner(1)], [], cfg)
 
     assert calls[0:2] == ["init:OK", "start"]
-    assert len([call for call in calls if call.startswith("search:")]) >= 2
+    assert len([call for call in calls if call.startswith("engine_search:")]) >= 2
     assert calls[-1] == "close"
     decision_rows = store.con.execute(
         "SELECT COUNT(*) FROM observations WHERE kind = 'DecisionObserved'"

@@ -45,9 +45,37 @@ class BrowserSession:
         auto_relax: bool = False,
         max_consecutive_errors: int = 10,
         user_agent: str | None = None,
+        enforce_throttle_floor: bool = True,
     ) -> None:
+        # L1 (CONTEXT.md) — throttle is the only thing between us
+        # and a 30-minute Cloudflare backoff. The 2.5s floor is the
+        # safe default; lowering below it re-introduces the 1015
+        # rate-limit risk (per 2026-07-16 live monitoring). For
+        # explicit operator opt-in (slice runs, low-volume A/B
+        # tests) the floor can be relaxed with a warning. Issue
+        # #61: this knob lets the operator run a 50-record slice
+        # at 1.5s without re-introducing the historical rate-limit.
         if throttle < 2.5:
-            raise ValueError("BrowserSession throttle must be at least 2.5 seconds")
+            if enforce_throttle_floor:
+                raise ValueError(
+                    f"BrowserSession throttle {throttle}s is below the 2.5s "
+                    f"L1 floor. Pass enforce_throttle_floor=False to relax "
+                    f"(emits a warning, see issue #61)."
+                )
+            import warnings
+            warnings.warn(
+                f"BrowserSession throttle {throttle}s is below the L1 floor "
+                f"of 2.5s. Sustained < 2.5s throttle re-introduces the "
+                f"Cloudflare 1015 risk that L1 was raised to fix "
+                f"(2026-07-16 live monitoring).",
+                DeprecationWarning,
+                stacklevel=2,
+            )
+            log.warning(
+                "BrowserSession throttle=%ss below L1 floor (2.5s); "
+                "issue #61 operator opt-in. Watch for 1015 backoff.",
+                throttle,
+            )
         self.throttle = throttle
         self.reset_every = max(reset_every, 1)  # prevent modulo-zero
         self.headless = headless
@@ -303,6 +331,52 @@ class BrowserSession:
         log.info("Auto-relax: US returned %d <= OK's %d; keeping OK.",
                  len(us_cands), len(ok_cands))
         return ok_record
+
+    def _try_auto_relax_engine(
+        self,
+        engine: Any,
+        page: Any,
+        ctx: Any,
+        ok_result: dict[str, Any],
+    ) -> dict[str, Any]:
+        """Engine-flow counterpart of `_try_auto_relax`.
+
+        Runs a second `default_search_one` call against the engine
+        with a fresh SearchContext whose state is forced to "US",
+        then keeps the result with more candidates. Mirrors the
+        OK→US broadening that the legacy `search_one_pensioner`
+        auto-relax does; issue #61 keeps the semantics in the
+        engine path so the Blackboard scheduler inherits the same
+        behavior as the legacy god-loop.
+        """
+        from scripts.search.context import SearchContext
+        from scripts.search.engine import default_search_one
+
+        try:
+            us_ctx = SearchContext(
+                first=ctx.first,
+                middle=ctx.middle,
+                last=ctx.last,
+                birth_year=ctx.birth_year,
+                death_year=ctx.death_year,
+                state="US",
+                extras=dict(ctx.extras),
+            )
+            self._throttle_wait()  # Per-strategy throttle (issue #61)
+            us_result = default_search_one(engine, page=page, ctx=us_ctx)
+        except Exception as e:
+            log.warning("Auto-relax engine US search failed: %s", e)
+            return ok_result
+
+        ok_n = len(ok_result.get("candidates", []) or [])
+        us_n = len(us_result.get("candidates", []) or [])
+        if us_n > ok_n:
+            log.info("Auto-relax engine: US returned %d > OK's %d; using US.",
+                     us_n, ok_n)
+            return us_result
+        log.info("Auto-relax engine: US returned %d <= OK's %d; keeping OK.",
+                 us_n, ok_n)
+        return ok_result
 
     @staticmethod
     def _is_target_closed(exc: BaseException) -> bool:

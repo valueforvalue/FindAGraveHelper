@@ -25,12 +25,21 @@ from scripts.blackboard.schema import (
 )
 from scripts.blackboard.store import BlackboardStore
 from scripts.fag.request_gate import RequestGate
+from scripts.search.engine import default_search_one  # noqa: F401 (re-exported for tests)
 
 log = logging.getLogger("fag_scraper")
 
 
 class FaGScraperKS:
-    """Executes one FaG QueryPlan and emits candidate observations."""
+    """Executes one FaG QueryPlan and emits candidate observations.
+
+    Issue #61: when an `engine` is supplied, the KS routes
+    through the engine's `default_search_one(ctx)` flow so
+    the full FaGEngine ladder (13 strategies, with PlanRanker
+    ordering) fires per pensioner. When the engine is None,
+    the legacy `BrowserSession.search(strategy_name=...)` path
+    is used (single strategy per plan, slow coverage).
+    """
 
     name: str = "FaGScraperKS"
 
@@ -38,9 +47,16 @@ class FaGScraperKS:
         self,
         browser_session: Any = None,  # BrowserSession
         gate: RequestGate | None = None,
+        engine: Any = None,  # SearchEngine (FaGEngine default)
     ) -> None:
         self._session = browser_session
         self._gate = gate or RequestGate.default_fag()
+        # Lazy import: engine is optional; default to FaGEngine()
+        # when present so the engine path is taken automatically.
+        if engine is None:
+            from scripts.search.fag_engine import FaGEngine
+            engine = FaGEngine()
+        self._engine = engine
 
     def eligible(self, item: WorkItem) -> bool:
         return item.knowledge_source == "FaGScraperKS"
@@ -171,12 +187,95 @@ class FaGScraperKS:
     ) -> tuple[list[dict[str, Any]], str]:
         """Run the actual FaG search for one QueryPlan.
 
-        Builds a full pensioner dict from plan params (which now
-        carry all pensioner fields from RegionalPlannerKS).
+        Two paths (issue #61):
+        - Engine path (default when `self._engine` is set): uses
+          the SearchEngine's `default_search_one(ctx)` flow with
+          no strategy_name filter, so the full ladder fires.
+          `plan.strategy` is recorded as the *preferred* strategy
+          for ordering, but every applicable ladder entry runs.
+        - Legacy path (fallback when no engine): delegates to
+          `BrowserSession.search(strategy_name=plan.strategy)`,
+          which interprets the plan strategy as a single filter
+          (only B1 / B4 / C1 fire in practice).
         """
         pensioner: dict[str, Any] = dict(plan.params)
         pensioner["id"] = plan.pensioner_id
 
+        if self._session is None:
+            return [], "not_run"
+
+        # ----- Engine path (issue #61) -----
+        if self._engine is not None:
+            from scripts.search.record import from_pensioner
+            # NOTE: `default_search_one` is imported at module top
+            # so test-time monkeypatching works. Don't re-import
+            # here — the local binding would shadow the patched
+            # one.
+
+            record = from_pensioner(pensioner)
+            ctx = record.to_context()
+
+            page = getattr(self._session, "page", None)
+            if page is None:
+                return [], "no_page"
+
+            try:
+                engine_result = default_search_one(
+                    self._engine,
+                    page=page,
+                    ctx=ctx,
+                )
+            except Exception as e:
+                log.warning(
+                    "FaGScraperKS engine search failed for %s: %s",
+                    plan.pensioner_id, e,
+                )
+                return [], "error"
+
+            # Auto-relax when configured (matches legacy semantics).
+            if (
+                self._session.auto_relax
+                and self._session.state_filter == "OK"
+                and engine_result.get("classification") not in ("captcha",)
+            ):
+                engine_result = self._session._try_auto_relax_engine(
+                    self._engine, page, ctx, engine_result
+                )
+
+            candidates = engine_result.get("candidates", []) or []
+            status = engine_result.get("status", "no_results") or "no_results"
+            rows = []
+            for c in candidates:
+                # Engine emits canonical {id, url, ...} via
+                # `to_common_candidate()` (issue #39). The projector
+                # reads `memorial_id` (legacy F1 shape) for
+                # back-compat; populate both. When the engine
+                # doesn't go through `to_common_candidate()`,
+                # fall back to the raw `memorial_id` it parsed.
+                common = c
+                if hasattr(self._engine, "to_common_candidate"):
+                    try:
+                        common = self._engine.to_common_candidate(c)
+                    except Exception:
+                        common = c
+                rows.append({
+                    "memorial_id": (
+                        common.get("id")
+                        or common.get("memorial_id")
+                        or c.get("memorial_id", "")
+                    ),
+                    "id": common.get("id", ""),
+                    "slug": common.get("slug", "") or c.get("slug", ""),
+                    "name": common.get("name", "") or c.get("name", ""),
+                    "score": c.get("score", 0.0),
+                    "url": common.get("url", ""),
+                    "via_strategy": c.get("via_strategy", plan.strategy),
+                    "via_scope": plan.scope.value,
+                    "evidence": c.get("score_evidence") or c.get("evidence", {}),
+                })
+            return rows, status
+
+        # ----- Legacy path (fallback) -----
         # Map PlanScope to state_filter value
         scope_to_filter: dict[str, str | None] = {
             "OK": "OK",
@@ -188,9 +287,6 @@ class FaGScraperKS:
             "Inferred": None,
         }
         sf = scope_to_filter.get(plan.scope.value if hasattr(plan.scope, 'value') else str(plan.scope))
-
-        if self._session is None:
-            return [], "not_run"
 
         candidates, status = self._session.search(
             pensioner,
