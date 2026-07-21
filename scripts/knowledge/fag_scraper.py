@@ -20,14 +20,50 @@ from typing import Any
 from scripts.blackboard.schema import (
     Kind,
     Observation,
+    PlanScope,
     QueryPlan,
     WorkItem,
 )
 from scripts.blackboard.store import BlackboardStore
 from scripts.fag.request_gate import RequestGate
 from scripts.search.engine import default_search_one  # noqa: F401 (re-exported for tests)
+from scripts.search.context import SearchContext
 
 log = logging.getLogger("fag_scraper")
+
+
+def _scope_to_state(scope: PlanScope, params: dict) -> str:
+    """Map a plan scope to the state filter value for apply_filters.
+
+    The RegionalPlanner encodes geographic intent in the plan scope
+    but does NOT inject fag_state_filter into plan.params (the
+    pensioner records come from the OK pensioner index without a
+    state field). The FaGScraperKS must bridge the gap.
+
+    Returns:
+        A state abbreviation string ("OK", "TX", etc.) that
+        apply_filters resolves to a FaG locationId, or "" for
+        US/country-level filtering.
+    """
+    if scope == PlanScope.OK:
+        return "OK"
+    if scope == PlanScope.Texas:
+        return "TX"
+    # For RegimentOrigin, the plan carries the inferred state in
+    # the reason field ("Regiment origin state: TX.") but NOT in
+    # params. We extract it here so the engine can scope by state.
+    if scope == PlanScope.RegimentOrigin:
+        # Try to find a 2-letter state code in the plan params
+        # (the regional planner may add _state_abbr or burial_state).
+        for key in ("_state_abbr", "burial_state", "death_state"):
+            val = params.get(key, "")
+            if val and len(val) == 2 and val.isalpha():
+                return val.upper()
+        return ""
+    if scope in (PlanScope.US, PlanScope.Global, PlanScope.MemorialDetail,
+                  PlanScope.Inferred):
+        return ""
+    return ""
 
 
 class FaGScraperKS:
@@ -218,6 +254,21 @@ class FaGScraperKS:
 
             record = from_pensioner(pensioner)
             ctx = record.to_context()
+
+            # Map plan scope to state filter. The engine's
+            # apply_filters() reads ctx.state to set the
+            # FaG locationId. Without this, ctx.state is empty
+            # (the raw pensioner records have no fag_state_filter
+            # field) so every search uses country_4 (US) instead
+            # of the state-specific filter. Issue #62 regression:
+            # "OK filtered searches aren't firing" was this bug.
+            scope_state = _scope_to_state(plan.scope, plan.params)
+            if scope_state:
+                ctx = SearchContext(
+                    first=ctx.first, middle=ctx.middle, last=ctx.last,
+                    birth_year=ctx.birth_year, death_year=ctx.death_year,
+                    state=scope_state, extras=dict(ctx.extras),
+                )
 
             page = getattr(self._session, "page", None)
             if page is None:

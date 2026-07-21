@@ -266,12 +266,14 @@ def default_search_one(
     strategies_run = []
     error = None
     classification = None
+    skipped_strategies = []
     for strat in ladder:
         try:
             params = strat.params(ctx)
         except Exception:
             params = None
         if params is None:
+            skipped_strategies.append(strat.name)
             continue
         # Engine-specific filtering
         params = engine.apply_filters(params, ctx)
@@ -280,6 +282,10 @@ def default_search_one(
             url = engine.build_url(params)
         except Exception as e:
             error = f"build_url failed: {e}"
+            log.info(
+                "  %-25s skip (build_url: %s)",
+                strat.name, e,
+            )
             continue
         # Per-strategy throttle: callers MUST provide a
         # throttle_fn that enforces min_interval between
@@ -295,23 +301,39 @@ def default_search_one(
             page.goto(url, wait_until="domcontentloaded", timeout=20000)
         except Exception as e:
             error = f"nav timeout: {e}"
+            log.info(
+                "  %-25s nav timeout: %s",
+                strat.name, e,
+            )
             continue
         # Classify
         try:
             classification = engine.classify_response(page)
         except Exception as e:
             error = f"classify failed: {e}"
+            log.info(
+                "  %-25s classify failed: %s",
+                strat.name, e,
+            )
             continue
         if classification.is_blocking:
             # Don't bail out; let other strategies try. The
             # throttle will catch up. Surface the classification
             # so the caller can decide.
+            log.info(
+                "  %-25s blocked (%s)",
+                strat.name, classification.value,
+            )
             continue
         # Parse
         try:
             cands = engine.parse_results_page(page, url)
         except Exception as e:
             error = f"parse failed: {e}"
+            log.info(
+                "  %-25s parse failed: %s",
+                strat.name, e,
+            )
             continue
         # Score + tag
         scored = []
@@ -329,8 +351,20 @@ def default_search_one(
                 c["score"] = 0.0
                 c["score_evidence"] = {"error": str(e)}
             scored.append(c)
+        log.info(
+            "  %-25s %3d candidates  state=%s",
+            strat.name, len(scored),
+            ctx.state or "US",
+        )
         all_candidates.append((strat.name, scored))
         strategies_run.append(strat.name)
+
+    log.info(
+        "  -> %d strategies ran, %d skipped, %d total unique candidates  state=%s",
+        len(strategies_run), len(skipped_strategies),
+        len({c.get("memorial_id") or c.get("id") for _, cands in all_candidates for c in cands}),
+        ctx.state or "US",
+    )
 
     # Merge by candidate id (highest score wins)
     merged = _merge_candidates(engine, all_candidates)
