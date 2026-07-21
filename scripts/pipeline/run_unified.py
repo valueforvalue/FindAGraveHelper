@@ -1261,16 +1261,13 @@ def run_batch_scheduler(
     # Copy view.html into out_dir so the reviewer has a per-run page
     # that works from file:// without a server. The legacy
     # run_batch() path does this; the scheduler path was missing
-    # the call (issue: scheduler runs shipped without a view file).
-    # Default source is scripts/view/v2.html (the canonical review
-    # UI since 2026-07-19). Honor explicit config override (e.g.
-    # legacy scripts/view.html for past-run compatibility).
+    # NOTE: view.html is copied at the END of the run, not here.
+    # The copy embeds results.jsonl at copy-time, so it must
+    # happen AFTER the data is written. We mark the source path
+    # and copy after the projection loop completes.
     view_html_source = config.view_html_source or Path("scripts/view/v2.html")
-    copy_view_html_if_missing(
-        view_html_source,
-        out_dir,
-        results_path=state_repo.path,
-    )
+
+    # Issue #62: pensioncard_pages sidecar (loaded below)
 
     # Load pensioncard_pages sidecar (issue #62). v2 view
     # builds IIIF URLs from page_ids; without the sidecar the
@@ -1417,6 +1414,17 @@ def run_batch_scheduler(
     finally:
         if browser_session is not None:
             browser_session.close()
+
+    # Copy view.html AFTER the data is written so the embedded
+    # results.jsonl is populated. Earlier we deferred this
+    # from the scheduler init; the embed-only-if-missing
+    # semantics means the copy at init always saw an empty
+    # results.jsonl, leaving v2 with no embedded data.
+    copy_view_html_if_missing(
+        view_html_source,
+        out_dir,
+        results_path=state_repo.path,
+    )
 
     # Issue #55: post-run label collection.
     _collect_labels_if_enabled(config, out_dir, log)
