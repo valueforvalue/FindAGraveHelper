@@ -25,7 +25,7 @@ from unittest import mock
 def _import_search_fag():
     """Lazy import so the test file can be loaded without Playwright."""
     sys.path.insert(0, str(Path(__file__).parent.parent))
-    import scripts.search_fag as sf  # noqa: E402
+    import scripts.fag.parser as sf  # noqa: E402
     return sf
 
 
@@ -108,7 +108,7 @@ class TestMemorySmoke(unittest.TestCase):
         before = _get_rss_kb()
         for _ in range(50):
             import importlib
-            import scripts.search_fag as sf  # cached after first
+            import scripts.fag.parser as sf  # cached after first
             importlib.reload(sf)
         gc.collect()
         after = _get_rss_kb()

@@ -22,7 +22,6 @@ def test_facade_no_eager_imports():
 
     forbidden = {
         "scripts.pipeline.run_unified",
-        "scripts.search_fag",
         "scripts.state_normalize",
         "scripts.state.report_generator",
     }

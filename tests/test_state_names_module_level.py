@@ -46,7 +46,7 @@ def test_extract_state_from_regiment_does_not_recreate_dict():
     checking gc stats.
     """
     import gc
-    from scripts.search_fag import extract_state_from_regiment
+    from scripts.fag.filters import extract_state_from_regiment
 
     base_dicts = len(gc.get_objects())
     for _ in range(1000):
@@ -73,7 +73,7 @@ def test_parse_results_page_does_not_recreate_dict():
     """
     import inspect
 
-    from scripts import search_fag
+    from scripts.fag import parser as search_fag
 
     src = inspect.getsource(search_fag.parse_results_page)
     # The lowercase block should NOT define its own dict literal.
@@ -136,7 +136,7 @@ class TestMemorialPathRegexIsCompiled:
 
     def test_uses_compiled_pattern(self):
         import inspect
-        from scripts import search_fag
+        from scripts.fag import parser as search_fag
         src = inspect.getsource(search_fag.parse_results_page)
         # The compiled pattern must be referenced.
         assert "_MEMORIAL_PATH_RE" in src, (
@@ -150,7 +150,7 @@ class TestWaitForSelectorDisposesHandle:
 
     def test_handle_is_disposed(self):
         import inspect
-        from scripts import search_fag
+        from scripts.fag import parser as search_fag
         src = inspect.getsource(search_fag.parse_results_page)
         # Must call .dispose() on the handle returned by wait_for_selector.
         # The phrase "dispose" should appear at least once.

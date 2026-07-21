@@ -53,7 +53,7 @@ def _ensure_searcher_run():
         GT_STATE.unlink()
     result = subprocess.run(
         [
-            "python", "scripts/search_fag.py",
+            "python", "scripts/run_unified.py",
             "--input-csv", str(GT_CSV),
             "--state", str(GT_STATE),
             "--ground-truth-csv", str(GT_CSV),

@@ -878,6 +878,12 @@ kbd {
         <div class="filter-row">
             <button class="button" type="button" id="collapseAll" @click="collapseAll">Collapse all</button>
             <button class="button" type="button" id="expandAll" @click="expandAll">Expand all</button>
+            <label>Search:
+                <input type="text" id="searchFilter" x-model="searchFilter"
+                       placeholder="name, regiment…"
+                       style="border:1px solid var(--line-strong); border-radius:var(--radius);
+                              padding:0.3rem 0.45rem; background:var(--paper); width:12rem;">
+            </label>
             <label>Engine:
                 <select id="engineFilter" x-model="engineFilter">
                     <option value="all">All engines</option>
@@ -1046,6 +1052,30 @@ kbd {
                                                 <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.year_window || 0) / 0.5) * 100) + '%'"></span>
                                             </span>
                                         </span>
+                                        <span class="evidence-meter" data-feature="veteran">
+                                            <span>vet</span>
+                                            <span class="evidence-track" role="progressbar" aria-label="veteran evidence"
+                                                  aria-valuemin="0" aria-valuemax="100"
+                                                  :aria-valuenow="Math.round(((candidate.evidence?.score_breakdown?.veteran || 0) / 0.8) * 100)">
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.veteran || 0) / 0.8) * 100) + '%'"></span>
+                                            </span>
+                                        </span>
+                                        <span class="evidence-meter" data-feature="ok_burial">
+                                            <span>OK</span>
+                                            <span class="evidence-track" role="progressbar" aria-label="OK burial evidence"
+                                                  aria-valuemin="0" aria-valuemax="100"
+                                                  :aria-valuenow="Math.round(((candidate.evidence?.score_breakdown?.ok_burial || 0) / 0.3) * 100)">
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.ok_burial || 0) / 0.3) * 100) + '%'"></span>
+                                            </span>
+                                        </span>
+                                        <span class="evidence-meter" data-feature="state">
+                                            <span>st</span>
+                                            <span class="evidence-track" role="progressbar" aria-label="state evidence"
+                                                  aria-valuemin="0" aria-valuemax="100"
+                                                  :aria-valuenow="Math.round(((candidate.evidence?.score_breakdown?.state || 0) / 0.1) * 100)">
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.state || 0) / 0.1) * 100) + '%'"></span>
+                                            </span>
+                                        </span>
                                     </div>
                                     <div class="candidate-action-line">
                                         <span class="candidate-links">
@@ -1145,6 +1175,7 @@ function reviewApp() {
         // ── Filters ──
         engineFilter: 'all',
         decisionFilter: 'all',
+        searchFilter: '',
 
         // ── Chunked rendering ──
         renderedCount: CHUNK_SIZE,
@@ -1188,10 +1219,20 @@ function reviewApp() {
         },
 
         get visibleRecords() {
+            const search = (this.searchFilter || '').toLowerCase();
             return this.records.filter(r => {
                 if (this.engineFilter !== 'all' && r.engine !== this.engineFilter) return false;
                 const label = this.decisionLabel(this.decisionFor(r.id));
                 if (this.decisionFilter !== 'all' && label !== this.decisionFilter) return false;
+                if (search) {
+                    const haystack = [
+                        r.title || '',
+                        r.attributes?.regiment || '',
+                        r.attributes?.company || '',
+                        r.attributes?.application_number || '',
+                    ].join(' ').toLowerCase();
+                    if (!haystack.includes(search)) return false;
+                }
                 return true;
             });
         },
@@ -1275,6 +1316,7 @@ function reviewApp() {
             this.scheduleRemainingChunks();
             this.$watch('engineFilter', () => { this.renderedCount = CHUNK_SIZE; this.focusedRecordIndex = -1; this.scheduleRemainingChunks(); });
             this.$watch('decisionFilter', () => { this.renderedCount = CHUNK_SIZE; this.focusedRecordIndex = -1; this.scheduleRemainingChunks(); });
+            this.$watch('searchFilter', () => { this.renderedCount = CHUNK_SIZE; this.focusedRecordIndex = -1; this.scheduleRemainingChunks(); });
             window.addEventListener('beforeunload', (event) => {
                 if (this.decisionsDirty) {
                     event.preventDefault();

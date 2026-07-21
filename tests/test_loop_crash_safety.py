@@ -19,7 +19,7 @@ sys.path.insert(0, str(ROOT))
 def test_loop_continues_after_pensioner_failure(tmp_path, monkeypatch):
     """Simulate: pensioner #2 crashes; #1 and #3 still get processed."""
     # Patch search_one_pensioner: succeed for #1 and #3, fail for #2
-    from scripts import search_fag
+    from scripts.fag import search as search_fag
 
     def fake_search(page, p_data):
         pid = p_data.get("id", -1)
@@ -77,7 +77,7 @@ def test_loop_continues_after_pensioner_failure(tmp_path, monkeypatch):
 
 def test_checkpoint_records_last_successful(tmp_path, monkeypatch):
     """Checkpoint records the LAST successful pensioner, not the failed one."""
-    from scripts import search_fag
+    from scripts.fag import search as search_fag
 
     def fake_search(page, p_data):
         pid = p_data.get("id", -1)

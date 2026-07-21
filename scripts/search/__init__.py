@@ -2,6 +2,6 @@
 
 This subpackage holds the strategy ladder + future search
 internals as private modules. The public surface stays in
-scripts/search_fag.py (the back-compat shim) and scripts/fag/
+scripts/run_unified.py (the back-compat shim) and scripts/fag/
 in a future T021 restructure.
 """

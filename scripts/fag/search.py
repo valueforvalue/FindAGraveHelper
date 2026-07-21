@@ -25,17 +25,17 @@ Prerequisites:
 
 Usage:
   # First time: from local file
-  python scripts/search_fag.py \\
+  python scripts/run_unified.py \\
       --input docs/research/digitalprairie/ok_pensioners.json \\
       --state out/search_state.jsonl
 
   # From raw GitHub
-  python scripts/search_fag.py \\
+  python scripts/run_unified.py \\
       --input-url https://raw.githubusercontent.com/valueforvalue/FindAGraveHelper/master/docs/research/digitalprairie/ok_pensioners.json \\
       --state out/search_state.jsonl
 
   # Test on a few records first
-  python scripts/search_fag.py \\
+  python scripts/run_unified.py \\
       --input docs/research/digitalprairie/ok_pensioners.json \\
       --state out/test_state.jsonl --limit 20
 

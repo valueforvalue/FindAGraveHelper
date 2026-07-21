@@ -79,8 +79,9 @@ def b1_exact(ctx):
     p = {"firstname": ctx.first, "lastname": ctx.last, "exactspelling": "true"}
     if ctx.middle:
         p["middlename"] = ctx.middle
-    if ctx.birth_year:
-        p["birthyear"] = ctx.birth_year
+    by = _year_str(ctx.birth_year)
+    if by:
+        p["birthyear"] = by
         p["birthyearfilter"] = "1"
     return p
 

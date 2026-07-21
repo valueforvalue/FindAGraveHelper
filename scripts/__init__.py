@@ -18,7 +18,7 @@ The flat `scripts/*.py` files at the root are canonical
 entrypoints (not back-compat shims):
 
   scripts.run_unified.py       - CLI entrypoint (Blackboard default)
-  scripts.search_fag.py        - legacy FaG search entry (importable)
+  scripts.fag.search.py        - legacy FaG search entry (importable)
   scripts.batch_config.py      - RunRecipe dataclass
   scripts.state_normalize.py   - normalize StateRecord for v2 view
   scripts.spouse_cross_ref.py  - prototype (see _archive/ARCHIVED.md)
@@ -31,7 +31,7 @@ Cross-package public facade re-exported here so existing callers
 that `import scripts.X` keep working without changes:
 
   scripts.run_unified.run_batch
-  scripts.search_fag.search_one_pensioner
+  scripts.fag.search.search_one_pensioner
   scripts.state_normalize.normalize_state_record
   scripts.state.report_generator.build_report
 
