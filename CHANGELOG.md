@@ -2,7 +2,72 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-20
+## [Unreleased] — 2026-07-21
+
+### Fix(search): remove auto-relax discarding OK-scoped results (#80)
+
+Removed `_try_auto_relax_engine` call from FaGScraperKS and
+`_try_auto_relax` from BrowserSession.search(). OK-scoped plans
+now preserve their result without being replaced by a US re-search.
+The 4-tier plan ladder (OK → regiment-origin → TX → US) carries
+broadening responsibility. Fault was: if US ladder returned more
+candidates than OK ladder, OK result was entirely discarded (#74).
+
+### Feature(pipeline): 3-tier staged refinements in DeepRefinerKS (#76)
+
+Replaced flat refinement logic with score-driven 3-tier staging:
+- auto_accept (≥ skip_refine_above): skip refinement
+- needs_review (0.40–0.85): strategy-replay + regiment-origin
+- low_score / no_candidates (<0.40): surrounding-states + US + spouse
+
+Added surrounding-state plans (AR, KS, MO, TX, CO, NM) to PlanScope.
+Cross-run strategy dedup via tried-combo tracking (#77).
+
+### Feature(pipeline): search aggressiveness modes (#78)
+
+Added SearchModeConfig to BatchConfig with three modes:
+Conservative (max_refinements=4, bail_on_auto_accept), Standard (6),
+Aggressive (8, no bail). `--mode` CLI flag. Mode controls refinement
+depth only; geography scope is invariant. Configurable per mode with
+fixed defaults.
+
+### Feature(pipeline): per-strategy audit log (#75)
+
+Wired RunAuditLog into FaGScraperKS to emit strategy_ran,
+strategy_skipped events per plan. Added pensioner_start/end events
+in run_unified. `default_search_one()` now returns strategies_skipped
+and strategy_results in the result dict. Changed audit log to append
+mode for safe re-runs.
+
+### Feature(analytics): cross-run strategy effectiveness (#79)
+
+New script `scripts/analysis/strategy_stats.py` reads run_audit.jsonl
+from all runs and computes per-strategy fires, avg_candidates, and
+success_rate. Outputs JSON report.
+
+### Fix(pipeline): pensioncard pages post-processing annotation (#81)
+
+Pensioncard pages sidecar is now applied post-hoc after the main loop
+completes, rewriting results.jsonl with `pensioncard_pages` before
+view.html generation. Sidecar is auto-detected in the output directory
+when `--pensioncard-pages` is not explicitly passed.
+
+### Feature(pipeline): idempotent pipeline runs
+
+Stale blackboard.db and WAL files are cleaned at startup. Already-
+completed pensioners are skipped on re-run (read from existing
+results.jsonl). `--reprocess` flag forces full re-processing.
+`--post-process-only` flag regenerates view.html without FaG calls.
+
+### Internal
+
+- Added AR/KS/MO/CO/NM to PlanScope enum in Blackboard schema.
+- `_scope_to_state` now handles arbitrary 2-letter state codes as
+  PlanScope values (surrounding-state fallthrough).
+- Test: `test_candidate_scorer_ks` updated for 3-tier refinement
+  expectations.
+
+## [Released] — 2026-07-20
 
 ### Feature(learning): self-learning feedback loop (#54)
 
