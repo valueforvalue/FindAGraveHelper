@@ -1108,6 +1108,27 @@ def run_batch_scheduler(
         except Exception as exc:
             log.warning("DD post-pass failed (non-fatal): %s", exc)
 
+    # Issue #88: spouse post-pass (opt-in via FAG_SCRAPE_SPOUSE=1).
+    # Requires live browser navigation to each memorial page.
+    if os.environ.get("FAG_SCRAPE_SPOUSE", "") in ("1", "true", "yes"):
+        try:
+            from scripts.cgr.spouse_compare import annotate_records_via_session
+
+            log.info("Spouse post-pass: starting (may take a while)...")
+            spouse_stats = annotate_records_via_session(
+                results_path=state_repo.path,
+                session=browser_session,
+                store=store,
+            )
+            log.info(
+                "Spouse post-pass: matched=%d, attempted=%d, errors=%d",
+                spouse_stats.get("matched", 0),
+                spouse_stats.get("total_attempted", 0),
+                spouse_stats.get("errors", 0),
+            )
+        except Exception as exc:
+            log.warning("Spouse post-pass failed (non-fatal): %s", exc)
+
     # Issue #85: enrich state rows with CGR + DD observations from store.
     # Reads all observations, finds CGR/DD annotations, and annotates
     # each state row in-place via JsonlStateRepository.replace_all().

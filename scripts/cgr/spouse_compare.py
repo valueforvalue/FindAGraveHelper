@@ -512,12 +512,16 @@ def annotate_records_via_session(
     results_path: Path,
     session: Any = None,  # BrowserSession
     top_n: int = 1,
+    store: Any = None,  # BlackboardStore for observation persistence (#88)
 ) -> dict:
     """Annotate records using BrowserSession + ResponseClassifier.
 
     Same logic as annotate_records() but routes navigation through
     the BrowserSession (with its embedded stealth, warmup, and
     RequestGate) and uses ResponseClassifier before reading HTML.
+
+    When *store* is provided, SpouseMatch observations are persisted
+    via PostPassObserver.write_to_store().
 
     Returns stats dict.
     """
@@ -597,4 +601,6 @@ def annotate_records_via_session(
             log.warning("Spouse scrape failed for memorial %s: %s", memorial_id, e)
             stats["errors"] += 1
 
+    if store is not None:
+        observer.write_to_store(store)
     return stats
