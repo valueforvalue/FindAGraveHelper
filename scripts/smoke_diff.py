@@ -118,54 +118,25 @@ def _run_scheduler(
 # ============================================================
 
 
-def _run_legacy(
+# ============================================================
+# Smoke runner (scheduler only — legacy removed #86)
+# ============================================================
+
+
+def run_smoke(
     input_path: Path, cgr_path: Path, out_dir: Path,
     limit: int | None, last_name_prefix: str | None,
     real_fag: bool,
-) -> list[dict]:
-    """Run legacy god-loop path and return sorted output rows."""
-    from scripts.pipeline.run_unified import run_batch, UnifiedRunnerConfig
-    from scripts.fag.fag_browser import make_fag_search_fn
-
-    pensioners = _load_input(input_path, limit, last_name_prefix)
-    cems = _load_cgr(cgr_path)
-
-    if out_dir.exists():
-        shutil.rmtree(out_dir)
-    out_dir.mkdir(parents=True, exist_ok=True)
-
-    throttle = 2.5 if real_fag else 0.0
-
-    if real_fag:
-        fag_fn = make_fag_search_fn(
-            throttle=throttle,
-            reset_browser_every=250,
-            state_filter="OK",
-        )
-    else:
-        fag_fn = None
-
-    cfg = UnifiedRunnerConfig(
-        out_dir=out_dir,
-        results_filename="results.jsonl",
-        throttle_seconds=throttle,
-        enable_fag=False,
-        fag_search_fn=fag_fn,
-    )
-
-    run_batch(pensioners, cems, cfg)
-    return _read_results(out_dir / "results.jsonl")
-
-
-# ============================================================
-# Diff
-# ============================================================
-
-
-def diff_outputs(
-    scheduler_rows: list[dict], legacy_rows: list[dict]
 ) -> dict:
-    """Compare outputs. Returns diff summary dict."""
+    """Run scheduler path and return summary."""
+    scheduler_rows = _run_scheduler(
+        input_path, cgr_path, out_dir, limit, last_name_prefix, real_fag,
+    )
+    return {
+        "rows": len(scheduler_rows),
+        "ids": [r["pensioner_id"] for r in scheduler_rows[:5]],
+        "statuses": {},
+    }
     s_ids = {r["pensioner_id"] for r in scheduler_rows}
     l_ids = {r["pensioner_id"] for r in legacy_rows}
 
@@ -259,58 +230,19 @@ def main() -> int:
         traceback.print_exc()
         return 1
 
-    # Run legacy path
-    legacy_out = args.out / "legacy"
-    print("[2/2] Running legacy path...")
-    try:
-        legacy_rows = _run_legacy(
-            args.input, args.cgr, legacy_out, limit, args.filter_last_name, args.real_fag
-        )
-        print(f"      {len(legacy_rows)} rows -> {legacy_out / 'results.jsonl'}")
-    except Exception as e:
-        print(f"      FAILED: {e}")
-        import traceback
-        traceback.print_exc()
-        return 1
-
-    # Diff
-    print("\n=== Diff ===")
-    summary = diff_outputs(scheduler_rows, legacy_rows)
+    # Smoke: run scheduler path and report.
+    print("\n=== Smoke complete ===")
+    summary = run_smoke(
+        args.input, args.cgr, args.out, limit, args.filter_last_name, args.real_fag,
+    )
     print(json.dumps(summary, indent=2, default=str))
 
-    (args.out / "diff_summary.json").write_text(
+    (args.out / "smoke_summary.json").write_text(
         json.dumps(summary, indent=2, default=str), encoding="utf-8"
     )
 
-    if not summary["ids_match"]:
-        print("\nFAIL: ID sets differ between paths.")
-        if summary["missing_from_scheduler"]:
-            print(f"  Missing from scheduler: {summary['missing_from_scheduler'][:5]}")
-        if summary["missing_from_legacy"]:
-            print(f"  Missing from legacy: {summary['missing_from_legacy'][:5]}")
-        return 1
-
-    if summary["status_diff_count"] > 0:
-        print(f"\nStatus diffs: {summary['status_diff_count']}")
-        for d in summary["status_diffs"][:10]:
-            print(f"  #{d['pensioner_id']} {d['pensioner_name']}: "
-                  f"{d['legacy_status']} -> {d['scheduler_status']}")
-
-    if summary["score_diff_count"] > 0:
-        print(f"\nScore diffs: {summary['score_diff_count']}")
-        for d in summary["score_diffs"][:10]:
-            print(f"  #{d['pensioner_id']} {d['pensioner_name']}: "
-                  f"{d['legacy_score']} -> {d['scheduler_score']}")
-
-    if summary["score_diff_count"] == 0 and summary["ids_match"]:
-        print("\nPASS: Both paths produced identical results.")
-        return 0
-    elif summary["ids_match"]:
-        print(f"\nPASS: Same IDs. {summary['status_diff_count']} status diffs, "
-              f"{summary['score_diff_count']} score diffs.")
-        return 0
-    else:
-        return 1
+    print(f"\nOK: {summary['rows']} rows processed by scheduler.")
+    return 0
 
 
 if __name__ == "__main__":

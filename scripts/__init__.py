@@ -30,7 +30,6 @@ entrypoints (not back-compat shims):
 Cross-package public facade re-exported here so existing callers
 that `import scripts.X` keep working without changes:
 
-  scripts.run_unified.run_batch
   scripts.fag.search.search_one_pensioner
   scripts.state_normalize.normalize_state_record
   scripts.state.report_generator.build_report

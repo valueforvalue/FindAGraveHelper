@@ -144,10 +144,6 @@ class DecisionConfig:
 class PostConfig:
     collect_labels: bool = True
     labels_path: str = "output/labels/labels_v1.jsonl"
-    evaluate: bool = False
-    dedup: bool = True
-    dd_match: bool = True
-    spouse_scrape: bool = False
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "PostConfig":
@@ -156,10 +152,6 @@ class PostConfig:
         return cls(
             collect_labels=bool(d.get("collect_labels", True)),
             labels_path=d.get("labels_path", "output/labels/labels_v1.jsonl"),
-            evaluate=bool(d.get("evaluate", False)),
-            dedup=bool(d.get("dedup", True)),
-            dd_match=bool(d.get("dd_match", True)),
-            spouse_scrape=bool(d.get("spouse_scrape", False)),
         )
 
     def to_dict(self) -> dict:
