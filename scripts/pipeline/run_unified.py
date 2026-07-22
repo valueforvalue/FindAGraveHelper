@@ -1384,14 +1384,17 @@ def run_batch_scheduler(
     analytics_aggregator = AnalyticsAggregator()
     store.register_observer(analytics_aggregator)  # type: ignore[attr-defined]
 
-    # CGR observations are run-level evidence and idempotent by veteran ID.
+    # CGR observations — one per veteran, keyed by veteran ID as
+    # pensioner_id so read_observations_for_pensioner() finds them.
     for cemetery in cemeteries:
         for veteran in cemetery.get("veterans", []):
             veteran_id = veteran.get("id", 0)
+            if not veteran_id:
+                continue
             store.append_observation(
                 Observation(
                     observation_id=f"obs-cgr-vet-{veteran_id}",
-                    pensioner_id=0,
+                    pensioner_id=int(veteran_id),
                     kind=Kind.CGRCorroboration,
                     source="run_unified",
                     source_version="1",
@@ -1446,6 +1449,15 @@ def run_batch_scheduler(
     scheduler.register(CandidateScorerKS())
     scheduler.register(DeepRefinerKS(**mode_cfg))
     builder = ProjectionBuilder()
+
+    # Issue #85: build CGR lookup from already-loaded cemetery data
+    # so ProjectionBuilder can annotate rows with CGR corroboration.
+    cgr_by_veteran_id: dict[int, dict[str, Any]] = {}
+    for cemetery in cemeteries:
+        for veteran in cemetery.get("veterans", []):
+            vid = veteran.get("id", 0)
+            if vid:
+                cgr_by_veteran_id[vid] = dict(veteran)
 
     try:
         for pensioner in remaining:
@@ -1502,10 +1514,29 @@ def run_batch_scheduler(
                 ) > current.get("score", 0.0):
                     candidates_by_id[memorial_id] = observation.payload
 
+            # Issue #85: enrich projection with CGR + DD evidence.
+            cgr_data: dict[str, Any] | None = None
+            cgr_entry = cgr_by_veteran_id.get(pensioner_id)
+            if cgr_entry:
+                cgr_data = {"match_found": True, "match_details": cgr_entry}
+
+            # DD evidence: read from store if available (written by
+            # PostPassObserver during batch post-pass in previous runs).
+            dd_data: dict[str, Any] | None = None
+            for obs in observations:
+                if obs.kind == Kind.DixieDataMatch:
+                    dd_data = {
+                        "match_found": obs.payload.get("match_found", False),
+                        "match_details": obs.payload.get("match_details", {}),
+                    }
+                    break
+
             row = builder.build_state_row(
                 pensioner_id=pensioner_id,
                 pensioner_data=dict(pensioner),
                 candidates=list(candidates_by_id.values()),
+                cgr_data=cgr_data,
+                dd_data=dd_data,
             )
             # Issue #62: populate pensioncard_pages from the
             # sidecar so v2 view's pension card preview works.
@@ -1526,6 +1557,52 @@ def run_batch_scheduler(
     finally:
         if browser_session is not None:
             browser_session.close()
+
+    # Issue #85: run DixieData post-pass and append observations to store.
+    # Done after all pensioners are processed so DD match can see full results.
+    if os.environ.get("DIXIEDATA_DB") or os.environ.get("DIXIEDATA_ZIP_BACKUP"):
+        try:
+            from scripts.cgr.dixiedata_match import (
+                _match_pensioner_to_dd,
+                load_dd_index,
+            )
+            from scripts.pipeline.post_pass_observer import PostPassObserver
+
+            dd_index = load_dd_index(
+                db_path=os.environ.get("DIXIEDATA_DB"),
+                zip_path=os.environ.get("DIXIEDATA_ZIP_BACKUP"),
+            )
+            if dd_index:
+                dd_observer = PostPassObserver(run_id=run_id)
+                dd_matched = 0
+                for record in state_repo.iter_all(strict=True):
+                    pid = record.get("pensioner_id")
+                    if pid is None:
+                        continue
+                    dd_result = _match_pensioner_to_dd(record, dd_index)
+                    if dd_result:
+                        dd_observer.observe_dixiedata_match(
+                            pensioner_id=int(pid),
+                            dd_match=dd_result,
+                            match_found=True,
+                        )
+                        dd_matched += 1
+                dd_observer.write_to_store(store)
+                log.info(
+                    "DD post-pass: %d matches, wrote observations.",
+                    dd_matched,
+                )
+        except Exception as exc:
+            log.warning("DD post-pass failed (non-fatal): %s", exc)
+
+    # Issue #85: enrich state rows with CGR + DD observations from store.
+    # Reads all observations, finds CGR/DD annotations, and annotates
+    # each state row in-place via JsonlStateRepository.replace_all().
+    _enrich_state_rows_with_observations(
+        state_repo,
+        store,
+        log,
+    )
 
     # Issue #81: annotate results.jsonl with pensioncard_pages
     # post-hoc, so the operator can fetch pages at any time and
@@ -1585,6 +1662,74 @@ def _clean_stale_blackboard(bb_path: Path, log: "logging.Logger | None" = None) 
             except OSError:
                 if log:
                     log.warning("Could not remove stale %s", p)
+
+
+def _enrich_state_rows_with_observations(
+    state_repo: Any,
+    store: Any,
+    log: "logging.Logger | None" = None,
+) -> None:
+    """Enrich state rows with CGR + DD evidence from Blackboard store.
+
+    Reads all CGRCorroboration and DixieDataMatch observations,
+    matches them to pensioner rows, and updates each row in-place.
+    Idempotent — safe to call on already-enriched rows.
+    """
+    if log is None:
+        log = __import__("logging").getLogger("run_unified")
+
+    from scripts.blackboard.schema import Kind as _Kind
+
+    all_obs = store.read_observations_since(None)
+
+    cgr_by_pid: dict[int, dict[str, Any]] = {}
+    dd_by_pid: dict[int, dict[str, Any]] = {}
+    spouse_by_pid: dict[int, dict[str, Any]] = {}
+
+    for obs in all_obs:
+        pid = obs.pensioner_id
+        if pid == 0:
+            continue  # run-level observations
+        if obs.kind == _Kind.CGRCorroboration:
+            cgr_by_pid[pid] = obs.payload
+        elif obs.kind == _Kind.DixieDataMatch:
+            dd_by_pid[pid] = obs.payload
+        elif obs.kind == _Kind.SpouseMatch:
+            spouse_by_pid[pid] = obs.payload
+
+    if not cgr_by_pid and not dd_by_pid and not spouse_by_pid:
+        return
+
+    enriched = 0
+    updated: list[dict[str, Any]] = []
+    for record in state_repo.iter_all(strict=True):
+        pid = record.get("pensioner_id")
+        if pid is None:
+            updated.append(record)
+            continue
+        pid_int = int(pid)
+        changed = False
+
+        if pid_int in cgr_by_pid and "cgr_match" not in record:
+            record["cgr_match"] = cgr_by_pid[pid_int]
+            changed = True
+        if pid_int in dd_by_pid and "dd_match" not in record:
+            record["dd_match"] = dd_by_pid[pid_int]
+            changed = True
+        if pid_int in spouse_by_pid and "spouse_match" not in record:
+            record["spouse_match"] = spouse_by_pid[pid_int]
+            changed = True
+
+        if changed:
+            enriched += 1
+        updated.append(record)
+
+    if enriched:
+        state_repo.replace_all(updated)
+        log.info(
+            "Enriched %d state rows with CGR/DD/spouse observations.",
+            enriched,
+        )
 
 
 def _annotate_pensioncard_pages(
