@@ -46,6 +46,59 @@ class RunAuditLog:
     def close(self) -> None:
         self._f.close()
 
+    # ── BlackboardObserver protocol ──
+
+    def on_observation_appended(self, obs: Any) -> None:
+        """Observer callback: record observation in audit log."""
+        self._emit(
+            "observation_appended",
+            observation_id=obs.observation_id,
+            pensioner_id=obs.pensioner_id,
+            kind=obs.kind.value if hasattr(obs.kind, "value") else str(obs.kind),
+            source=obs.source,
+        )
+
+    def on_work_claimed(self, item: Any, knowledge_source: str) -> None:
+        """Observer callback: record work claim in audit log."""
+        self._emit(
+            "work_claimed",
+            work_id=item.work_id,
+            pensioner_id=item.pensioner_id,
+            knowledge_source=knowledge_source,
+            attempt=item.attempt,
+        )
+
+    def on_work_completed(
+        self,
+        work_id: str,
+        pensioner_id: int,
+        knowledge_source: str,
+        old_state: str,
+        new_state: Any,
+        observation_ids: list[str] | None,
+    ) -> None:
+        """Observer callback: record work completion in audit log."""
+        new_state_str = (
+            new_state.value if hasattr(new_state, "value") else str(new_state)
+        )
+        self._emit(
+            "work_completed",
+            work_id=work_id,
+            pensioner_id=pensioner_id,
+            knowledge_source=knowledge_source,
+            old_state=old_state,
+            new_state=new_state_str,
+            observation_count=len(observation_ids) if observation_ids else 0,
+        )
+
+    def on_cooldown_set(self, provider: str, not_before: str) -> None:
+        """Observer callback: record cooldown in audit log."""
+        self._emit(
+            "cooldown_set",
+            provider=provider,
+            not_before=not_before,
+        )
+
     # ── per-pensioner ──
 
     def pensioner_start(self, pensioner_id: str, name: str, **fields: Any) -> None:

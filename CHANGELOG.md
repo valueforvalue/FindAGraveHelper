@@ -4,6 +4,25 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-21
 
+### Feature(analytics): Blackboard observer hooks + inline run analytics (#84)
+
+Added `BlackboardObserver` protocol to `SqliteBlackboardStore` with
+fire-and-forget callbacks for observation append, work claim, work
+completion, and cooldown events. Observers are post-commit so they
+never block the store.
+
+`RunAuditLog` now implements `BlackboardObserver` — work transitions
+and observations from every KS are automatically captured in the
+audit trail without per-KS wiring. New audit event types:
+`observation_appended`, `work_claimed`, `work_completed`, `cooldown_set`.
+
+New `AnalyticsAggregator` observer (`scripts/analysis/run_analytics.py`)
+tracks inline per-KS metrics during a run: observation throughput
+by kind, work-item state distribution, per-KS durations (avg/p95),
+success rates, and cooldown events. Writes `run_analytics.json` at
+run end. Also usable standalone via `--audit` flag for post-hoc
+reconstruction from audit logs.
+
 ### Fix(search): remove auto-relax discarding OK-scoped results (#80)
 
 Removed `_try_auto_relax_engine` call from FaGScraperKS and

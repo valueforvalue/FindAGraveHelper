@@ -1374,6 +1374,16 @@ def run_batch_scheduler(
     # Issue #75: open early so FaGScraperKS can emit per-strategy events.
     audit_log = RunAuditLog.open(out_dir / "run_audit.jsonl")
 
+    # Issue #84: register audit_log as Blackboard observer so
+    # all KSs and work transitions are automatically captured.
+    store.register_observer(audit_log)  # type: ignore[attr-defined]
+
+    # Issue #84: inline analytics aggregator.
+    from scripts.analysis.run_analytics import AnalyticsAggregator
+
+    analytics_aggregator = AnalyticsAggregator()
+    store.register_observer(analytics_aggregator)  # type: ignore[attr-defined]
+
     # CGR observations are run-level evidence and idempotent by veteran ID.
     for cemetery in cemeteries:
         for veteran in cemetery.get("veterans", []):
@@ -1542,6 +1552,8 @@ def run_batch_scheduler(
     audit_log.summary(
         total_pensioners=len(pensioners),
     )
+    # Issue #84: write inline analytics report.
+    analytics_aggregator.write_report(out_dir / "run_analytics.json")
     audit_log.close()
     log.info(
         "Scheduler batch complete: %d/%d pensioners projected to %s",

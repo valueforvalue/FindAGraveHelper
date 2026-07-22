@@ -26,7 +26,7 @@ import sqlite3
 import time
 import uuid
 from pathlib import Path
-from typing import Any, Iterator, Optional, Protocol
+from typing import Any, Callable, Iterator, Optional, Protocol
 
 from scripts.blackboard.schema import (
     Observation,
@@ -37,7 +37,50 @@ from scripts.blackboard.schema import (
 
 
 # ============================================================
-# Protocol
+# BlackboardObserver
+# ============================================================
+
+
+class BlackboardObserver(Protocol):
+    """Observer that receives notifications from the Blackboard store.
+
+    Register with SqliteBlackboardStore.register_observer().
+    Every callback is a fire-and-forget notification; the store
+    does not wait for the observer. Observers are called only
+    after the store operation succeeds (post-commit).
+    """
+
+    def on_observation_appended(self, obs: Observation) -> None:
+        """Called after an observation is durably written."""
+        ...
+
+    def on_work_claimed(
+        self, item: WorkItem, knowledge_source: str
+    ) -> None:
+        """Called after a work item is claimed (leased)."""
+        ...
+
+    def on_work_completed(
+        self,
+        work_id: str,
+        pensioner_id: int,
+        knowledge_source: str,
+        old_state: str,
+        new_state: WorkState,
+        observation_ids: list[str] | None,
+    ) -> None:
+        """Called after a work item transitions to a terminal state."""
+        ...
+
+    def on_cooldown_set(
+        self, provider: str, not_before: str
+    ) -> None:
+        """Called after a provider cooldown is set."""
+        ...
+
+
+# ============================================================
+# BlackboardStore Protocol
 # ============================================================
 
 
@@ -177,6 +220,7 @@ class SqliteBlackboardStore:
     def __init__(self, path: Path) -> None:
         self._path = Path(path)
         self._con: sqlite3.Connection | None = None
+        self._observers: list[BlackboardObserver] = []
 
     # ----------------------------------------------------------
     # Lifecycle
@@ -195,6 +239,23 @@ class SqliteBlackboardStore:
         if self._con is not None:
             self._con.close()
             self._con = None
+
+    # ----------------------------------------------------------
+    # Observers
+    # ----------------------------------------------------------
+
+    def register_observer(self, observer: BlackboardObserver) -> None:
+        """Register an observer to receive store notifications."""
+        self._observers.append(observer)
+
+    def unregister_observer(self, observer: BlackboardObserver) -> None:
+        """Remove a previously registered observer."""
+        try:
+            self._observers.remove(observer)
+        except ValueError:
+            pass
+
+    # ----------------------------------------------------------
 
     @property
     def con(self) -> sqlite3.Connection:
@@ -231,6 +292,12 @@ class SqliteBlackboardStore:
                 ),
             )
             self.con.commit()
+            # Notify observers post-commit.
+            for observer in self._observers:
+                try:
+                    observer.on_observation_appended(obs)
+                except Exception:
+                    pass  # observer failures never block the store
         except Exception:
             self.con.rollback()
             raise
@@ -354,6 +421,14 @@ class SqliteBlackboardStore:
         item.attempt += 1
         item.leased_by = f"proc-{os.getpid()}"
         item.attempts = new_attempts
+
+        # Notify observers.
+        for observer in self._observers:
+            try:
+                observer.on_work_claimed(item, knowledge_source)
+            except Exception:
+                pass
+
         return item
 
     def complete_work(
@@ -363,6 +438,15 @@ class SqliteBlackboardStore:
         observation_ids: list[str] | None = None,
     ) -> None:
         """Mark work item complete; optionally link observations."""
+        # Snapshot old state before update for observer notification.
+        old_row = self.con.execute(
+            "SELECT state, pensioner_id, knowledge_source FROM work_items WHERE work_id = ?",
+            (work_id,),
+        ).fetchone()
+        old_state = old_row[0] if old_row else "ready"
+        pensioner_id = old_row[1] if old_row else 0
+        knowledge_source = old_row[2] if old_row else ""
+
         now = _now_iso()
         self.con.execute("BEGIN IMMEDIATE")
         try:
@@ -380,6 +464,19 @@ class SqliteBlackboardStore:
                         (work_id, oid),
                     )
             self.con.commit()
+            # Notify observers.
+            for observer in self._observers:
+                try:
+                    observer.on_work_completed(
+                        work_id=work_id,
+                        pensioner_id=pensioner_id,
+                        knowledge_source=knowledge_source,
+                        old_state=old_state,
+                        new_state=status,
+                        observation_ids=observation_ids,
+                    )
+                except Exception:
+                    pass
         except Exception:
             self.con.rollback()
             raise
@@ -414,6 +511,12 @@ class SqliteBlackboardStore:
                 (provider, until),
             )
             self.con.commit()
+            # Notify observers.
+            for observer in self._observers:
+                try:
+                    observer.on_cooldown_set(provider, until)
+                except Exception:
+                    pass
         except Exception:
             self.con.rollback()
             raise
@@ -541,6 +644,12 @@ class JsonlBlackboardStore:
 
     def close(self) -> None:
         pass
+
+    def register_observer(self, observer: BlackboardObserver) -> None:
+        pass  # no-op in JSONL fallback
+
+    def unregister_observer(self, observer: BlackboardObserver) -> None:
+        pass  # no-op in JSONL fallback
 
 
 # ============================================================
