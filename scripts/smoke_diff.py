@@ -1,4 +1,4 @@
-"""Smoke test: run scheduler and legacy paths against same input, diff outputs.
+"""Smoke test: run scheduler path against sample input.
 
 Usage (no FaG — fast sanity check):
     python scripts/smoke_diff.py --input ok_pensioners.json --cgr ok_vets_enriched.jsonl --limit 10

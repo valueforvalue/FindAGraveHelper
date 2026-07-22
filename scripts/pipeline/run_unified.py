@@ -84,9 +84,9 @@ class UnifiedRunnerConfig:
     write_outliers_separately: bool = True
     write_heartbeat_every: int = 50  # every N pensioners
     # Issue #21: auto-checkpoint every N records (0 to disable).
-    # When > 0, run_batch writes a state.jsonl checkpoint snapshot
-    # at this cadence. Combined with --rollback-to, this bounds
-    # the worst-case data loss window to ~N records.
+    # The scheduler writes a state.jsonl checkpoint snapshot at this
+    # cadence. Combined with --rollback-to, this bounds the
+    # worst-case data loss window to ~N records.
     checkpoint_every: int = 0
     # Pensioncard pages sidecar (J6). Built by
     # scripts/ingest/fetch_pensioncard_pages.py. Maps
@@ -104,8 +104,7 @@ class UnifiedRunnerConfig:
     # Per-run isolation (J5-S2)
     # Filename for per-pensioner results within out_dir. Defaults to
     # "results.jsonl" (one Results file per run, named after the
-    # run). Legacy "state.jsonl" is still supported by passing it
-    # explicitly — ResumeTracker + run_batch are filename-agnostic.
+    # run). The scheduler is filename-agnostic.
     results_filename: str = "results.jsonl"
     # Path to the source view.html to copy into out_dir at run start.
     # The copy is skipped if out_dir/view.html already exists
@@ -386,7 +385,7 @@ def load_existing_ids(state_path: Path) -> set[int]:
 # Line writers
 # ============================================================
 # Issue #22: write_unified_line adapter removed. Callers use
-# JsonlStateRepository directly (see run_batch below).
+# JsonlStateRepository directly.
 
 
 def write_outliers_line(outliers_path: Path, record: dict) -> None:
@@ -836,8 +835,7 @@ def run_batch_scheduler(
     write_restart_script(out_dir)
 
     # Copy view.html into out_dir so the reviewer has a per-run page
-    # that works from file:// without a server. The legacy
-    # run_batch() path does this; the scheduler path was missing
+    # that works from file:// without a server.
     # NOTE: view.html is copied at the END of the run, not here.
     # The copy embeds results.jsonl at copy-time, so it must
     # happen AFTER the data is written. We mark the source path

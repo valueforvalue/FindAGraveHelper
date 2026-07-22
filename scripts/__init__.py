@@ -32,7 +32,6 @@ that `import scripts.X` keep working without changes:
 
   scripts.fag.search.search_one_pensioner
   scripts.state_normalize.normalize_state_record
-  scripts.state.report_generator.build_report
 
 State writes route through `scripts.state.repository.JsonlStateRepository`
 — never write to state.jsonl directly. The Repository enforces
