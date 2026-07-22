@@ -63,6 +63,12 @@ def _scope_to_state(scope: PlanScope, params: dict) -> str:
     if scope in (PlanScope.US, PlanScope.Global, PlanScope.MemorialDetail,
                   PlanScope.Inferred):
         return ""
+    # Issue #78: surrounding-state plans use state codes as scope
+    # values (e.g., PlanScope("AR")). Treat any 2-letter alpha
+    # scope value as a state abbreviation.
+    sv = scope.value if hasattr(scope, "value") else str(scope)
+    if len(sv) == 2 and sv.isalpha():
+        return sv.upper()
     return ""
 
 
@@ -85,12 +91,14 @@ class FaGScraperKS:
         gate: RequestGate | None = None,
         engine: Any = None,  # SearchEngine (FaGEngine default)
         gate_min_interval: float = 2.5,
+        audit_log: Any = None,  # RunAuditLog for per-strategy events
     ) -> None:
         self._session = browser_session
         self._gate = gate or RequestGate(
             provider="findagrave.com",
             min_interval=gate_min_interval,
         )
+        self._audit_log = audit_log
         # Lazy import: engine is optional; default to FaGEngine()
         # when present so the engine path is taken automatically.
         if engine is None:
@@ -307,16 +315,24 @@ class FaGScraperKS:
                 )
                 return [], "error"
 
-            # Auto-relax when configured (matches legacy semantics).
-            if (
-                self._session.auto_relax
-                and self._session.state_filter == "OK"
-                and engine_result.get("classification") not in ("captcha",)
-            ):
-                engine_result = self._session._try_auto_relax_engine(
-                    self._engine, page, ctx, engine_result,
-                    throttle_fn=throttle_fn,
-                )
+            # Issue #80: auto-relax removed. The 4-tier plan ladder
+            # (OK → regiment-origin → TX → US) carries broadening
+            # responsibility. OK-scoped plans preserve their result
+            # without being replaced by a US re-search.
+
+            # Issue #75: per-strategy audit events.
+            if self._audit_log is not None:
+                pid = str(plan.pensioner_id)
+                scope = ctx.state or "US"
+                for skipped in engine_result.get("strategies_skipped", []) or []:
+                    self._audit_log.strategy_skipped(pid, skipped)
+                for sr in engine_result.get("strategy_results", []) or []:
+                    self._audit_log.strategy_ran(
+                        pid,
+                        strategy=str(sr.get("strategy", "")),
+                        candidates=int(sr.get("candidates", 0)),
+                        state=str(sr.get("state", scope)),
+                    )
 
             # Hide progress overlay (issue #70)
             try:

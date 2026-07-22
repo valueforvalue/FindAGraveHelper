@@ -30,7 +30,9 @@ class RunAuditLog:
 
     def __init__(self, path: Path) -> None:
         self._path = Path(path)
-        self._f = open(str(self._path), "w", encoding="utf-8")
+        # Issue #??: append mode so repeated runs on the same
+        # output directory don't overwrite prior audit data.
+        self._f = open(str(self._path), "a", encoding="utf-8")
         self._started_at: float = time.time()
         self._stats: dict[str, int] = {}
         self._pensioner_start: dict[str, float] = {}

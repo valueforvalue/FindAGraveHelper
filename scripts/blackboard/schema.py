@@ -266,6 +266,12 @@ class PlanScope(str, Enum):
     RegimentOrigin = "RegimentOrigin"
     Texas = "Texas"
     Inferred = "Inferred"
+    # Issue #78: surrounding states for OK-located pensioners.
+    AR = "AR"
+    KS = "KS"
+    MO = "MO"
+    CO = "CO"
+    NM = "NM"
 
 
 @dataclass

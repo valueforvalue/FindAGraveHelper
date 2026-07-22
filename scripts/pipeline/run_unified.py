@@ -127,6 +127,10 @@ class UnifiedRunnerConfig:
     browser_reset_every: int = 250  # Periodic reopen to bound RSS growth
     max_consecutive_errors: int = 10  # Hard-stop after N in-a-row errors
     auto_relax: bool = True  # OK -> US broadening when narrow is sparse
+    # Issue #78: search aggressiveness mode.
+    search_mode: str = "standard"  # conservative | standard | aggressive
+    # Issue #??: re-process already-completed pensioners.
+    reprocess: bool = False
     # SearchEngine instance for FaGScraperKS. When None, defaults
     # to FaGEngine(). Per issue #61: the Blackboard path must use
     # the engine's ladder, not the legacy fag.search one.
@@ -1346,11 +1350,13 @@ def run_batch_scheduler(
             )
         except Exception as e:
             log.warning("pensioncard_pages cache load failed: %s", e)
-    completed_ids = {
-        int(record["pensioner_id"])
-        for record in state_repo.iter_all(strict=True)
-        if record.get("pensioner_id") is not None
-    }
+    completed_ids = set()
+    if not config.reprocess:
+        completed_ids = {
+            int(record["pensioner_id"])
+            for record in state_repo.iter_all(strict=True)
+            if record.get("pensioner_id") is not None
+        }
     bounded = pensioners[: config.limit] if config.limit else pensioners
     remaining = [
         pensioner
@@ -1364,7 +1370,9 @@ def run_batch_scheduler(
 
     # Issue #71: structured audit log
     from scripts.pipeline.audit_log import RunAuditLog
-    audit_log: Any = None
+
+    # Issue #75: open early so FaGScraperKS can emit per-strategy events.
+    audit_log = RunAuditLog.open(out_dir / "run_audit.jsonl")
 
     # CGR observations are run-level evidence and idempotent by veteran ID.
     for cemetery in cemeteries:
@@ -1407,17 +1415,29 @@ def run_batch_scheduler(
                 browser_session=browser_session,
                 engine=config.fag_engine,
                 gate_min_interval=config.request_gate_min_interval,
+                audit_log=audit_log,
             )
         )
 
+    # Issue #78: thread search mode into DeepRefinerKS.
+    mode_cfg = {
+        "max_refinements": 6,
+        "skip_refine_above": 0.85,
+        "bail_on_auto_accept": True,
+    }
+    if config.search_mode:
+        from scripts.batch_config import MODE_DEFAULTS
+        preset = MODE_DEFAULTS.get(
+            config.search_mode, MODE_DEFAULTS["standard"]
+        )
+        mode_cfg["max_refinements"] = preset["max_refinements"]
+        mode_cfg["bail_on_auto_accept"] = preset["bail_on_auto_accept"]
+
     scheduler.register(CandidateScorerKS())
-    scheduler.register(DeepRefinerKS())
+    scheduler.register(DeepRefinerKS(**mode_cfg))
     builder = ProjectionBuilder()
 
     try:
-        # Issue #71: open structured audit log
-        audit_log = RunAuditLog.open(out_dir / "run_audit.jsonl")
-
         for pensioner in remaining:
             pensioner_id = int(
                 pensioner.get("id")
@@ -1442,6 +1462,12 @@ def run_batch_scheduler(
                     pensioner_id=pensioner_id,
                     knowledge_source="RegionalPlannerKS",
                 )
+            )
+
+            # Issue #75: emit per-pensioner start for audit trail.
+            audit_log.pensioner_start(
+                str(pensioner_id),
+                name=str(pensioner.get("name_raw", "") or f"#{pensioner_id}"),
             )
 
             result.processed += scheduler.run()
@@ -1491,6 +1517,13 @@ def run_batch_scheduler(
         if browser_session is not None:
             browser_session.close()
 
+    # Issue #81: annotate results.jsonl with pensioncard_pages
+    # post-hoc, so the operator can fetch pages at any time and
+    # re-trigger view generation without re-running FaG.
+    _annotate_pensioncard_pages(
+        state_repo.path, config.pensioncard_pages_path, out_dir, log
+    )
+
     # Copy view.html AFTER the data is written so the embedded
     # results.jsonl is populated. Earlier we deferred this
     # from the scheduler init; the embed-only-if-missing
@@ -1506,11 +1539,10 @@ def run_batch_scheduler(
     _collect_labels_if_enabled(config, out_dir, log)
 
     result.finished_at = time.time()
-    if audit_log is not None:
-        audit_log.summary(
-            total_pensioners=len(pensioners),
-        )
-        audit_log.close()
+    audit_log.summary(
+        total_pensioners=len(pensioners),
+    )
+    audit_log.close()
     log.info(
         "Scheduler batch complete: %d/%d pensioners projected to %s",
         len(remaining),
@@ -1523,6 +1555,151 @@ def run_batch_scheduler(
 # ============================================================
 # Post-run label collection (issue #55)
 # ============================================================
+
+
+def _clean_stale_blackboard(bb_path: Path, log: "logging.Logger | None" = None) -> None:
+    """Remove stale blackboard database and WAL/journal files.
+
+    The blackboard is a per-run transient store. If it exists
+    from a prior run (aborted or completed), its WAL/journal
+    sidecars will lock sqlite3 on the next open. Delete them
+    so every run starts cleanly.
+    """
+    for suffix in ("", "-wal", "-shm"):
+        p = Path(str(bb_path) + suffix)
+        if p.exists():
+            try:
+                p.unlink()
+            except OSError:
+                if log:
+                    log.warning("Could not remove stale %s", p)
+
+
+def _annotate_pensioncard_pages(
+    results_path: Path,
+    pages_path: Path | None,
+    out_dir: Path,
+    log: "logging.Logger | None" = None,
+) -> None:
+    """Annotate results.jsonl with pensioncard_pages post-hoc (issue #81).
+
+    Reads the sidecar from *pages_path* (or auto-detects
+    ``pensioncard_pages.json`` in *out_dir*), then re-writes
+    *results_path* with ``pensioncard_pages`` populated on each
+    matching record.
+    """
+    import json as _json
+
+    # Resolve sidecar path: explicit arg first, then auto-detect.
+    sidecar: Path | None = None
+    if pages_path and pages_path.exists():
+        sidecar = pages_path
+    else:
+        candidate = out_dir / "pensioncard_pages.json"
+        if candidate.exists():
+            sidecar = candidate
+
+    if sidecar is None:
+        return
+
+    try:
+        cache: dict = _json.loads(sidecar.read_text(encoding="utf-8"))
+    except (_json.JSONDecodeError, OSError) as e:
+        if log:
+            log.warning("pensioncard_pages annotation load failed: %s", e)
+        return
+
+    if not cache:
+        return
+
+    annotated = 0
+    records: list[dict] = []
+    if results_path.exists():
+        with results_path.open(encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    rec = _json.loads(line)
+                except _json.JSONDecodeError:
+                    records.append({})
+                    continue
+                pid = str(rec.get("pensioner_id", ""))
+                pages = cache.get(pid)
+                if pages:
+                    rec["pensioncard_pages"] = pages
+                    annotated += 1
+                records.append(rec)
+
+    if not annotated:
+        return
+
+    # Rewrite the file with annotated records.
+    tmp = results_path.with_suffix(results_path.suffix + ".tmp")
+    with tmp.open("w", encoding="utf-8") as f:
+        for rec in records:
+            f.write(_json.dumps(rec, ensure_ascii=False) + "\n")
+    tmp.replace(results_path)
+
+    if log:
+        log.info(
+            "Annotated %d records with pensioncard_pages from %s",
+            annotated, sidecar,
+        )
+
+
+def _post_process_only(
+    config: "UnifiedRunnerConfig",
+    out_dir: Path,
+    log: "logging.Logger | None" = None,
+) -> None:
+    """Post-process-only mode: annotate existing results.jsonl
+    with pensioncard_pages and regenerate view.html.
+
+    Reads results.jsonl from *out_dir*, annotates with pension
+    card pages if the sidecar exists, then writes a fresh
+    view.html with embedded results. No FaG calls.
+    """
+    results_path = out_dir / config.results_filename
+    if not results_path.exists():
+        if log:
+            log.error(
+                "--post-process-only requires an existing %s in %s",
+                config.results_filename, out_dir,
+            )
+        return
+
+    # Count records for logging.
+    n = 0
+    if results_path.exists():
+        with results_path.open(encoding="utf-8") as f:
+            n = sum(1 for line in f if line.strip())
+    if log:
+        log.info("Post-process-only: %d records in %s", n, results_path)
+
+    # Annotate pensioncard_pages.
+    _annotate_pensioncard_pages(
+        results_path, config.pensioncard_pages_path, out_dir, log
+    )
+
+    # Remove stale view.html so copy_view_html_if_missing regenerates.
+    view_path = out_dir / "view.html"
+    if view_path.exists():
+        view_path.unlink()
+
+    # Regenerate view.html with embedded results.
+    copy_view_html_if_missing(
+        config.view_html_source,
+        out_dir,
+        results_path=results_path,
+    )
+
+    if log:
+        log.info(
+            "Post-process-only complete: view.html regenerated in %s",
+            out_dir,
+        )
 
 
 def _collect_labels_if_enabled(
@@ -1651,6 +1828,12 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "Emits a DeprecationWarning (issue #61) "
                              "since 1.5s re-introduces the L1 1015 risk. "
                              "Use for slice runs only.")
+    parser.add_argument("--mode", type=str, default=None,
+                        choices=["conservative", "standard", "aggressive"],
+                        help="Search aggressiveness mode (issue #78). "
+                             "Controls refinement depth and bail policy. "
+                             "Defaults to mode from config.json or "
+                             "'standard' when neither is set.")
     parser.add_argument(
         "--low-score-threshold", type=float,
         # Default lives in scoring_constants.LOW_SCORE_THRESHOLD so
@@ -1707,6 +1890,15 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                              "which records would change. NEVER makes a "
                              "FaG network request. Writes "
                              "<out>/dry_run_diff.jsonl.")
+    parser.add_argument("--post-process-only", action="store_true",
+                        help="Skip FaG search entirely; only annotate "
+                             "existing results.jsonl with pensioncard_pages "
+                             "and regenerate view.html. Use after fetching "
+                             "pension card pages or adjusting view config. "
+                             "Requires --config or --out + --pensioncard-pages.")
+    parser.add_argument("--reprocess", action="store_true",
+                        help="Re-process ALL pensioners, even those already "
+                             "in results.jsonl. Default: skip completed.")
     parser.add_argument("--state-replay", type=Path, default=None,
                         help="Read OLD state.jsonl from this path, "
                              "apply the non-FaG pipeline, write NEW "
@@ -1944,17 +2136,30 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # the gate drops to the same 1.5s budget. Issue #61 close.
         request_gate_min_interval=getattr(args, "throttle", 2.5),
         mock_fag_path=args.mock_fag if args.mock_fag else None,
+        search_mode=args.mode or "standard",
+        reprocess=getattr(args, "reprocess", False),
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:
         cfg._recipe = batch_cfg
 
+    # --post-process-only: annotate existing results.jsonl + regenerate
+    # view.html, then exit. No FaG, no blackboard, no browser.
+    if getattr(args, "post_process_only", False):
+        _post_process_only(cfg, out_dir, log)
+        return 0
+
     # Blackboard bootstrap
+    # The blackboard is a per-run transient store; any stale
+    # WAL/journal files from a prior aborted run will lock it.
+    # Delete the old db so every run starts with a clean slate.
+    # Durable data lives in results.jsonl + run_audit.jsonl.
     from scripts.blackboard.store import SqliteBlackboardStore
     from scripts.blackboard.schema import RunManifest
     from scripts.batch_config import build_manifest
 
     bb_path = cfg.blackboard_db_path
+    _clean_stale_blackboard(bb_path, log)
     log.info("Blackboard store: %s", bb_path)
     blackboard_store = SqliteBlackboardStore(bb_path)
     blackboard_store.open()

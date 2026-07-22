@@ -221,13 +221,9 @@ class BrowserSession:
                     raise
                 return [], "error"
 
-            # Auto-relax (env-controlled, OK→US broadening)
-            if (
-                self.auto_relax
-                and self.state_filter == "OK"
-                and record.get("status") != "auto_accept"
-            ):
-                record = self._try_auto_relax(pensioner, record)
+            # Issue #80: auto-relax removed. The plan ladder carries
+            # broadening responsibility; per-plan results are preserved
+            # without a US re-search.
 
             candidates = record.get("ranked_candidates", []) or []
             status = record.get("status", "no_results")

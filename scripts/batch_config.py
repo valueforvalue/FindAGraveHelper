@@ -167,6 +167,67 @@ class PostConfig:
 
 
 # ============================================================
+# Search mode config (issue #78)
+# ============================================================
+VALID_MODES = {"conservative", "standard", "aggressive"}
+
+#: Default per-mode parameters. The `mode` key in the config
+#: selects one of these presets; the operator can override
+#: individual fields inside the mode object.
+MODE_DEFAULTS: dict[str, dict] = {
+    "conservative": {
+        "max_refinements": 4,
+        "skip_refine_above": 0.85,
+        "bail_on_auto_accept": True,
+    },
+    "standard": {
+        "max_refinements": 6,
+        "skip_refine_above": 0.85,
+        "bail_on_auto_accept": True,
+    },
+    "aggressive": {
+        "max_refinements": 8,
+        "skip_refine_above": 0.85,
+        "bail_on_auto_accept": False,
+    },
+}
+
+
+@dataclass
+class SearchModeConfig:
+    """Search aggressiveness mode (issue #78).
+
+    Mode controls refinement depth only. Geography scope
+    (OK + origin + TX + US) is invariant across modes.
+    """
+    mode: str = "standard"
+    max_refinements: int = 6
+    skip_refine_above: float = 0.85
+    bail_on_auto_accept: bool = True
+
+    @classmethod
+    def from_dict(cls, d: dict | None) -> "SearchModeConfig":
+        if d is None:
+            return cls()
+        mode = d.get("mode", "standard")
+        if mode not in VALID_MODES:
+            raise ConfigError(
+                f"invalid search mode {mode!r}. Valid: {sorted(VALID_MODES)}"
+            )
+        # Merge operator overrides on top of mode defaults.
+        preset = MODE_DEFAULTS.get(mode, MODE_DEFAULTS["standard"])
+        return cls(
+            mode=mode,
+            max_refinements=int(d.get("max_refinements", preset["max_refinements"])),
+            skip_refine_above=float(d.get("skip_refine_above", preset["skip_refine_above"])),
+            bail_on_auto_accept=bool(d.get("bail_on_auto_accept", preset["bail_on_auto_accept"])),
+        )
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+
+# ============================================================
 # Pipeline config (modules list)
 # ============================================================
 DEFAULT_MODULES = ["regional_planner", "fag_scraper", "candidate_scorer", "deep_refiner"]
@@ -187,6 +248,7 @@ class PipelineConfig:
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     strategies: StrategyConfig = field(default_factory=StrategyConfig)
     decision: DecisionConfig = field(default_factory=DecisionConfig)
+    mode: SearchModeConfig = field(default_factory=SearchModeConfig)
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "PipelineConfig":
@@ -203,6 +265,7 @@ class PipelineConfig:
             scoring=ScoringConfig.from_dict(d.get("scoring")),
             strategies=StrategyConfig.from_dict(d.get("strategies")),
             decision=DecisionConfig.from_dict(d.get("decision")),
+            mode=SearchModeConfig.from_dict(d.get("mode")),
         )
 
     def to_dict(self) -> dict:
@@ -211,6 +274,7 @@ class PipelineConfig:
             "scoring": self.scoring.to_dict(),
             "strategies": self.strategies.to_dict(),
             "decision": self.decision.to_dict(),
+            "mode": self.mode.to_dict(),
         }
 
 
@@ -553,8 +617,9 @@ __all__ = [
     "PipelineConfig",
     "ScoringConfig",
     "StrategyConfig",
-    "DecisionConfig",
-    "PostConfig",
+    "SearchModeConfig",
+    "MODE_DEFAULTS",
+    "VALID_MODES",
     "ConfigError",
     "init_batch",
     "load_config",

@@ -263,10 +263,11 @@ def default_search_one(
     from scripts.search.ladder import run_ladder
 
     all_candidates = []  # (strategy_name, [candidates])
-    strategies_run = []
+    strategies_run: list[str] = []
+    strategy_results: list[dict] = []  # per-strategy detail for audit
     error = None
     classification = None
-    skipped_strategies = []
+    skipped_strategies: list[str] = []
     for strat in ladder:
         try:
             params = strat.params(ctx)
@@ -358,6 +359,11 @@ def default_search_one(
         )
         all_candidates.append((strat.name, scored))
         strategies_run.append(strat.name)
+        strategy_results.append({
+            "strategy": strat.name,
+            "candidates": len(scored),
+            "state": ctx.state or "US",
+        })
 
     log.info(
         "  -> %d strategies ran, %d skipped, %d total unique candidates  state=%s",
@@ -372,6 +378,8 @@ def default_search_one(
     best = max(merged, key=lambda c: c.get("score", 0.0)) if merged else None
     return {
         "strategies_run": strategies_run,
+        "strategies_skipped": skipped_strategies,
+        "strategy_results": strategy_results,
         "candidates": merged,
         "best": best,
         "error": error,
