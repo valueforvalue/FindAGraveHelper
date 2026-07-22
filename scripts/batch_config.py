@@ -76,13 +76,11 @@ class EngineConfig:
 # ============================================================
 @dataclass
 class ScoringConfig:
-    method: str = "weighted"      # weighted | fellegi_sunter | both
+    # Dead fields removed (#89). Weighted scoring is sole method.
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "ScoringConfig":
-        if d is None:
-            return cls()
-        return cls(method=d.get("method", "weighted"))
+        return cls()
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -93,17 +91,11 @@ class ScoringConfig:
 # ============================================================
 @dataclass
 class StrategyConfig:
-    order: str = "fixed"          # fixed | ranked
-    ranker_priors: str = "default"  # default | path/to/priors.json
+    # Dead fields removed (#89). Fixed-order strategy ladder is sole path.
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "StrategyConfig":
-        if d is None:
-            return cls()
-        return cls(
-            order=d.get("order", "fixed"),
-            ranker_priors=d.get("ranker_priors", "default"),
-        )
+        return cls()
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -116,8 +108,7 @@ class StrategyConfig:
 class DecisionConfig:
     threshold: str = "hardcoded"   # hardcoded | auto
     hardcoded_value: float = AUTO_ACCEPT_THRESHOLD
-    classifier_model: str | None = None   # null | path/to/classifier.json
-    target_precision: float = 0.95
+    # classifier_model / target_precision removed (#89). Not yet wired.
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "DecisionConfig":
@@ -126,15 +117,10 @@ class DecisionConfig:
         return cls(
             threshold=d.get("threshold", "hardcoded"),
             hardcoded_value=float(d.get("hardcoded_value", AUTO_ACCEPT_THRESHOLD)),
-            classifier_model=d.get("classifier_model", None),
-            target_precision=float(d.get("target_precision", 0.95)),
         )
 
     def to_dict(self) -> dict:
-        d = asdict(self)
-        if d["classifier_model"] is None:
-            d["classifier_model"] = None
-        return d
+        return asdict(self)
 
 
 # ============================================================
@@ -574,8 +560,6 @@ def build_manifest(
             "input_path": str(config.inputs.pensioners),
             "cgr_path": str(config.inputs.cgr),
             "fag_state_filter": config.engine.state_filter,
-            "scoring_method": config.pipeline.scoring.method,
-            "strategy_order": config.pipeline.strategies.order,
             "decision_threshold": config.pipeline.decision.threshold,
             "pipeline_modules": ",".join(config.pipeline.modules),
         }

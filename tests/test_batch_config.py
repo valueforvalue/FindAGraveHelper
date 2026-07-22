@@ -44,8 +44,9 @@ def test_init_batch_writes_config_template(tmp_path, monkeypatch):
     assert "cgr" in cfg["inputs"]
     assert cfg["engine"]["throttle"] == 2.5
     assert cfg["engine"]["state_filter"] == "OK"
-    assert cfg["pipeline"]["scoring"]["method"] == "weighted"
-    assert cfg["pipeline"]["strategies"]["order"] == "fixed"
+    # ScoringConfig, StrategyConfig trimmed to empty (#89).
+    assert isinstance(cfg["pipeline"]["scoring"], dict)
+    assert isinstance(cfg["pipeline"]["strategies"], dict)
     assert cfg["post"]["collect_labels"] is True
 
 

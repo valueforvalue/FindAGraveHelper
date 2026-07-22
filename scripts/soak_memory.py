@@ -29,11 +29,11 @@ if str(_SCRIPTS_DIR) not in sys.path:
 
 from playwright.sync_api import sync_playwright
 
-from scripts.fag.rss_watchdog import _get_rss_bytes
+import psutil  # type: ignore[import-untyped]
 
 
 def rss_mb() -> float:
-    b = _get_rss_bytes()
+    b = psutil.Process().memory_info().rss
     return b / (1024 * 1024) if b else 0.0
 
 

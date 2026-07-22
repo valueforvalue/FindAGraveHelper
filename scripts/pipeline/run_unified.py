@@ -65,10 +65,6 @@ from scripts.matching.outlier_classifier import (
     OutlierConfig,
     is_outlier,
 )
-from scripts.state.report_generator import (
-    build_report,
-    write_report,
-)
 
 
 # ============================================================
