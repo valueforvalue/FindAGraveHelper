@@ -2,7 +2,28 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-21
+## [Unreleased] — 2026-07-22
+
+### Feature(post-processing): wire CGR + DD evidence into Blackboard projection (#85)
+
+CGR and DixieData evidence now flows through Blackboard observations into
+ProjectionBuilder.build_state_row(). CGR observations keyed by veteran ID.
+DD post-pass runs after main loop via PostPassObserver → store → enrichment
+pass annotates state rows. No in-place mutation.
+
+### Feature(cleanup): remove legacy run_batch() god-loop (#86)
+
+Deleted the 483-line run_batch() function and all code only it reached:
+in-place post-processors (cgr_fag_dedup, dixiedata_match annotator, spouse
+subprocess), dead CLI flags (RSS watchdog, heartbeat, throttle overrides),
+PostConfig dead fields, and 4 legacy test files. smoke_diff.py simplified
+to scheduler-only runner.
+
+### Feature(cleanup): remove dead orphan modules and unwired KS code (#87)
+
+Deleted 15 files never reached by production: IngestionKS, ProjectionKS,
+CGRFetcherKS, match_evidence, spouse_extract, spouse_prototype, dd_marker,
+retry_errors, leftover_investigation, and their tests.
 
 ### Feature(analytics): Blackboard observer hooks + inline run analytics (#84)
 
