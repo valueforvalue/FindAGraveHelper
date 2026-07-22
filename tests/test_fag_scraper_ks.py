@@ -1,4 +1,4 @@
-"""Behavior tests for FaGScraperKS and CGRFetcherKS."""
+"""Behavior tests for FaGScraperKS."""
 
 from contextlib import contextmanager
 
@@ -6,7 +6,7 @@ import pytest
 
 from scripts.blackboard.schema import Kind, PlanScope, QueryPlan, WorkItem
 from scripts.blackboard.store import SqliteBlackboardStore
-from scripts.knowledge.fag_scraper import CGRFetcherKS, FaGScraperKS
+from scripts.knowledge.fag_scraper import FaGScraperKS
 
 
 class _RecordingGate:
@@ -230,19 +230,3 @@ def test_fag_scraper_without_plan_does_not_touch_provider(store):
     assert gate.kinds == []
     assert session.calls == []
     assert store.read_observations_since(None) == []
-
-
-def test_cgr_fetcher_persists_corroboration_observation(store):
-    item = WorkItem(
-        work_id="work-cgr",
-        pensioner_id=7,
-        knowledge_source="CGRFetcherKS",
-    )
-
-    observations = CGRFetcherKS().invoke(item, store)
-
-    assert len(observations) == 1
-    assert observations[0].kind == Kind.CGRCorroboration
-    assert observations[0].caused_by == "work-cgr"
-    assert observations[0].payload["status"] == "fetched"
-    assert len(store.read_observations_since(None)) == 1

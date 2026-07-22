@@ -402,33 +402,3 @@ class FaGScraperKS:
             }
             for c in candidates
         ], status
-
-
-class CGRFetcherKS:
-    """Fetches CGR search + vet details, posts CGRFetch observations."""
-
-    name: str = "CGRFetcherKS"
-
-    def eligible(self, item: WorkItem) -> bool:
-        return item.knowledge_source == "CGRFetcherKS"
-
-    def invoke(
-        self, item: WorkItem, store: BlackboardStore
-    ) -> list[Observation]:
-        """Fetch CGR data and emit observations."""
-        obs = Observation(
-            observation_id=f"obs-cgr-{uuid.uuid4().hex[:12]}",
-            pensioner_id=item.pensioner_id,
-            kind=Kind.CGRCorroboration,
-            source="CGRFetcherKS",
-            source_version="1",
-            run_id=item.pass_id,
-            pass_id="1",
-            caused_by=item.work_id,
-            payload={"status": "fetched", "work_id": item.work_id},
-        )
-        store.append_observation(obs)
-        return [obs]
-
-    def estimated_cost(self, item: WorkItem) -> int:
-        return 1
