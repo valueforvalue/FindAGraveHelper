@@ -17,10 +17,30 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
+import pytest
+
 from scripts.post_pass.pensioncard_pages import (
     PensioncardPagesConfig,
+    UPSTREAM_PENSIONCARD_PAGES_PATH,
     run,
 )
+
+
+@pytest.fixture(autouse=True)
+def _isolate_upstream_cache(monkeypatch, tmp_path):
+    """Pin the upstream cache path to a non-existent file for every
+    test by default. Tests that exercise the upstream-cache fallback
+    override this fixture by patching UPSTREAM_PENSIONCARD_PAGES_PATH
+    to a real file they create. This keeps the pre-#102 tests honest
+    (they exercise the auto-derive path, not the upstream cache).
+    """
+    fake = tmp_path / "no-upstream-cache.json"
+    monkeypatch.setattr(
+        "scripts.post_pass.pensioncard_pages.UPSTREAM_PENSIONCARD_PAGES_PATH",
+        fake,
+    )
+    yield
+
 
 
 # ============================================================
@@ -569,3 +589,133 @@ def test_run_fetch_failure_is_non_fatal(tmp_path, monkeypatch):
     assert rows[0]["pensioncard_pages"] == [1]
     # And a warning was logged.
     assert any("fetch" in w.lower() for w in warnings)
+
+
+# ============================================================
+# Upstream-cache fallback (issue #102)
+# ============================================================
+def test_run_falls_back_to_upstream_cache(tmp_path: Path, monkeypatch):
+    """When neither --pensioncard-pages nor out_dir/pensioncard_pages.json
+    exists, fall back to the upstream cache at
+    docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json.
+    This is the #102 promise: every subsequent run gets full
+    compound-page coverage for free, no flag required.
+    """
+    upstream = tmp_path / "upstream.json"
+    upstream.write_text(
+        json.dumps({"1": [96, 97], "2": [42]}), encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        "scripts.post_pass.pensioncard_pages.UPSTREAM_PENSIONCARD_PAGES_PATH",
+        upstream,
+    )
+    results = tmp_path / "state.jsonl"
+    _write_state_jsonl(results, [{"pensioner_id": 1}, {"pensioner_id": 2}])
+    stats = run(
+        results,
+        config=PensioncardPagesConfig(sidecar_path=None),
+        out_dir=tmp_path,
+        log=_NullLogger(),
+    )
+    assert stats.skipped is False
+    assert stats.matched == 2
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [96, 97]
+    assert rows[1]["pensioncard_pages"] == [42]
+
+
+def test_run_upstream_cache_does_not_shadow_out_dir_sidecar(
+    tmp_path: Path, monkeypatch
+):
+    """An explicit <out_dir>/pensioncard_pages.json wins over the
+    upstream cache. Per-run curation overrides the repo-wide cache.
+    """
+    upstream = tmp_path / "upstream.json"
+    upstream.write_text(
+        json.dumps({"1": [999]}), encoding="utf-8"
+    )
+    monkeypatch.setattr(
+        "scripts.post_pass.pensioncard_pages.UPSTREAM_PENSIONCARD_PAGES_PATH",
+        upstream,
+    )
+    out_dir_sidecar = tmp_path / "pensioncard_pages.json"
+    out_dir_sidecar.write_text(
+        json.dumps({"1": [42]}), encoding="utf-8"
+    )
+    results = tmp_path / "state.jsonl"
+    _write_state_jsonl(results, [{"pensioner_id": 1}])
+    run(
+        results,
+        config=PensioncardPagesConfig(sidecar_path=None),
+        out_dir=tmp_path,
+        log=_NullLogger(),
+    )
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [42]
+
+
+def test_run_explicit_sidecar_wins_over_upstream_cache(
+    tmp_path: Path, monkeypatch
+):
+    """Explicit --pensioncard-pages wins over both the upstream cache
+    and the out_dir sidecar. Operator-curated sidecar is the highest
+    precedence.
+    """
+    upstream = tmp_path / "upstream.json"
+    upstream.write_text(json.dumps({"1": [999]}), encoding="utf-8")
+    monkeypatch.setattr(
+        "scripts.post_pass.pensioncard_pages.UPSTREAM_PENSIONCARD_PAGES_PATH",
+        upstream,
+    )
+    out_dir_sidecar = tmp_path / "pensioncard_pages.json"
+    out_dir_sidecar.write_text(json.dumps({"1": [555]}), encoding="utf-8")
+    explicit = tmp_path / "explicit.json"
+    explicit.write_text(json.dumps({"1": [111]}), encoding="utf-8")
+    results = tmp_path / "state.jsonl"
+    _write_state_jsonl(results, [{"pensioner_id": 1}])
+    run(
+        results,
+        config=PensioncardPagesConfig(sidecar_path=explicit),
+        out_dir=tmp_path,
+        log=_NullLogger(),
+    )
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [111]
+
+
+def test_run_upstream_cache_logs_warning_when_compound_missing(
+    tmp_path: Path, monkeypatch
+):
+    """Operators who never run the ingest script still get a hint
+    that the upstream cache is missing. The warning names the
+    script so the operator knows what to run.
+    """
+    monkeypatch.setattr(
+        "scripts.post_pass.pensioncard_pages.UPSTREAM_PENSIONCARD_PAGES_PATH",
+        tmp_path / "does-not-exist.json",
+    )
+    # 101 rows => above the compound-warn threshold (100). The
+    # auto-derive path then logs the warning that names the
+    # fetch script.
+    rows = [
+        (i, f"https://digitalprairie.ok.gov/iiif/2/pensioncard:{i}/full/full/0/default.jpg")
+        for i in range(1, 102)
+    ]
+    results = tmp_path / "state.jsonl"
+    _write_state_with_iiif(results, rows)
+    warnings: list[str] = []
+
+    class _CaptureLogger:
+        def info(self, *a, **k): pass
+        def warning(self, msg, *a, **k):
+            warnings.append(msg % a if a else msg)
+        def error(self, *a, **k): pass
+        def debug(self, *a, **k): pass
+
+    run(
+        results,
+        config=PensioncardPagesConfig(sidecar_path=None),
+        out_dir=tmp_path,
+        log=_CaptureLogger(),
+    )
+    assert any("fetch_pensioncard_pages" in w for w in warnings)

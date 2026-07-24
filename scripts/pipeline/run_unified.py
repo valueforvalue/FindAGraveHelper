@@ -1140,22 +1140,28 @@ def _post_process_only(
         )
 
 
-def cli_main(argv: Optional[list[str]] = None) -> int:
-    """CLI entry point: parse args, init Playwright, run batch.
+def _optional_path(value: str) -> Path | None:
+    """argparse type for --pensioncard-pages: empty string -> None.
 
-    Usage:
-      # Ad-hoc (legacy flags)
-      python scripts/run_unified.py \\
-        --input docs/research/digitalprairie/ok_pensioners.json \\
-        --cgr docs/research/cgr/ok_vets_enriched.jsonl \\
-        --out data/results/run_2026_07_16/ \\
-        [--limit N] [--throttle 2.5] [--shuffle]
+    Issue #102: the default points at the upstream cache, but
+    operators can pass `--pensioncard-pages ""` to disable. Argparse's
+    built-in `type=Path` parses "" as Path(""), which `.exists()`
+    returns True for (resolves to "."). The downstream code can't
+    distinguish "no flag" from "explicit empty string" without a
+    custom type. Round-trip: "" -> None -> .exists() -> False.
+    """
+    if value == "":
+        return None
+    return Path(value)
 
-      # Batch config (preferred)
-      python scripts/run_unified.py --config output/<runname>/config.json
 
-      # Scaffold a new run
-      python scripts/run_unified.py init-batch <runname>
+def build_parser() -> argparse.ArgumentParser:
+    """Build the CLI argument parser.
+
+    Extracted from cli_main() so tests can exercise the default-value
+    contract (e.g. issue #102: --pensioncard-pages defaults to the
+    upstream cache path). The runtime side of cli_main still calls
+    this; the parser setup is shared.
     """
     import argparse
     parser = argparse.ArgumentParser(description="Unified runner CLI")
@@ -1182,11 +1188,19 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--config", type=Path, default=None,
                         help="Path to a batch config.json (output/<runname>/config.json). "
                              "When set, --input / --cgr / --out are derived from it.")
-    parser.add_argument("--pensioncard-pages", type=Path, default=None,
-                        help="Path to ok_pensioners.pensioncard_pages.json (the "
-                             "sidecar built by scripts/ingest/fetch_pensioncard_pages.py). "
-                             "When present, each results.jsonl record carries "
-                             "pensioncard_pages: [page_id, ...] so view.html can "
+    parser.add_argument(
+        "--pensioncard-pages",
+        type=_optional_path,
+        default=Path(
+            "docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json"
+        ),
+        help="Path to ok_pensioners.pensioncard_pages.json (the "
+             "sidecar built by scripts/ingest/fetch_pensioncard_pages.py). "
+             "Defaults to the upstream cache at "
+             "docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json "
+             "(issue #102). Pass an empty string to disable. "
+             "When present, each results.jsonl record carries "
+             "pensioncard_pages: [page_id, ...] so view.html can "
                              "embed the IIIF images directly. See issue #13.")
     parser.add_argument("--out", type=Path, default=None,
                         help="Output directory (will be created). "
@@ -1284,6 +1298,27 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                         help="Source view.html to copy into the run directory "
                              "(default: scripts/view/v2.html). "
                              "Use scripts/view.html for the legacy v1 layout.")
+    return parser
+
+
+def cli_main(argv: Optional[list[str]] = None) -> int:
+    """CLI entry point: parse args, init Playwright, run batch.
+
+    Usage:
+      # Ad-hoc (legacy flags)
+      python scripts/run_unified.py \\
+        --input docs/research/digitalprairie/ok_pensioners.json \\
+        --cgr docs/research/cgr/ok_vets_enriched.jsonl \\
+        --out data/results/run_2026_07_16/ \\
+        [--limit N] [--throttle 2.5] [--shuffle]
+
+      # Batch config (preferred)
+      python scripts/run_unified.py --config output/<runname>/config.json
+
+      # Scaffold a new run
+      python scripts/run_unified.py init-batch <runname>
+    """
+    parser = build_parser()
     args = parser.parse_args(argv)
 
     # Issue #28 follow-up: if the user didn't pass
@@ -1465,6 +1500,10 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         results_filename=getattr(args, "results_filename", "results.jsonl"),
         view_html_source=getattr(args, "view_html_source", None) or Path("scripts/view/v2.html"),
         # J6: pensioncard pages sidecar (view.html embeds IIIF images).
+        # Issue #102: defaults to the upstream cache at
+        # docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json.
+        # `_optional_path` returns None for empty string, so the
+        # downstream loader skips the cache entirely.
         pensioncard_pages_path=getattr(args, "pensioncard_pages", None),
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,

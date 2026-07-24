@@ -50,6 +50,16 @@ from scripts.post_pass.types import BasePassConfig, PostPassStats
 # and the G10 verification run are well under it.
 _COMPOUND_WARN_THRESHOLD = 100
 
+# Upstream cache path (issue #102). When the operator-built
+# sidecar AND the <out_dir>/pensioncard_pages.json are both
+# missing, fall back to this committed repo-wide cache. Built
+# once by `scripts/ingest/fetch_pensioncard_pages.py` and
+# checked in to the repo so every subsequent run gets full
+# compound-page coverage without any flag.
+UPSTREAM_PENSIONCARD_PAGES_PATH = Path(
+    "docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json"
+)
+
 # Regex for extracting the pensioncard_id from the IIIF URL.
 # Matches `/iiif/2/pensioncard:{id}/...` and captures {id}.
 _IIIF_ID_RE = re.compile(r"/pensioncard:(\d+)/")
@@ -231,6 +241,17 @@ def run(
             candidate = out_dir / "pensioncard_pages.json"
             if candidate.exists():
                 sidecar = candidate
+            elif UPSTREAM_PENSIONCARD_PAGES_PATH.exists():
+                # Issue #102: committed repo-wide cache. Built once
+                # by `scripts/ingest/fetch_pensioncard_pages.py` and
+                # checked in, so every subsequent run gets full
+                # compound-page coverage without any flag.
+                sidecar = UPSTREAM_PENSIONCARD_PAGES_PATH
+                log.info(
+                    "pensioncard_pages: using upstream cache at %s "
+                    "(issue #102)",
+                    sidecar,
+                )
 
     auto_derived = False
     if sidecar is None:

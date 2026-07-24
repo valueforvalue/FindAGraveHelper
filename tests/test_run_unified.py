@@ -152,6 +152,43 @@ def test_unified_runner_config_customizable():
 
 
 # ============================================================
+# CLI parser: --pensioncard-pages default (issue #102)
+# ============================================================
+def test_cli_pensioncard_pages_default_is_upstream_cache():
+    """Issue #102: --pensioncard-pages defaults to the upstream cache
+    so every subsequent run auto-wires the sidecar without the
+    operator remembering the flag.
+    """
+    from scripts.pipeline.run_unified import build_parser
+    parser = build_parser()
+    args = parser.parse_args([])
+    assert args.pensioncard_pages == Path(
+        "docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json"
+    )
+
+
+def test_cli_pensioncard_pages_empty_string_disables():
+    """Pass --pensioncard-pages "" to disable the default.
+    `_optional_path` returns None for the empty string so the
+    downstream loader skips the cache entirely ("" would resolve
+    to "." and look like a valid path).
+    """
+    from scripts.pipeline.run_unified import build_parser
+    parser = build_parser()
+    args = parser.parse_args(["--pensioncard-pages", ""])
+    assert args.pensioncard_pages is None
+
+
+def test_cli_pensioncard_pages_explicit_path_wins():
+    """Explicit --pensioncard-pages overrides the upstream default."""
+    from scripts.pipeline.run_unified import build_parser
+    parser = build_parser()
+    args = parser.parse_args(["--pensioncard-pages", "/tmp/custom.json"])
+    assert args.pensioncard_pages == Path("/tmp/custom.json")
+
+
+
+# ============================================================
 # heartbeat_logger
 # ============================================================
 def test_heartbeat_logs_progress():

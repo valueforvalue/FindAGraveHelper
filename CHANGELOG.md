@@ -84,6 +84,54 @@ Acceptance:
 
 Closes #102.
 
+### Fix(runner): auto-wire upstream pensioncard_pages cache (#102 follow-up)
+
+#102 shipped the upfront-cache script and committed the full
+sidecar, but the runner did NOT auto-wire it. The CLI flag
+`--pensioncard-pages` defaulted to `None`, so the operator had
+to remember the flag on every run. The whole #102 promise —
+"every subsequent run is zero-cost" — was conditional on the
+operator remembering the flag.
+
+Three changes:
+
+1. **CLI default** (`scripts/pipeline/run_unified.py`):
+   `--pensioncard-pages` now defaults to the upstream cache at
+   `docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json`.
+   A new custom type `_optional_path` translates `--pensioncard-pages ""`
+   to `None` so operators can disable. Extracted `build_parser()`
+   for testability.
+
+2. **Post-pass fallback** (`scripts/post_pass/pensioncard_pages.py`):
+   when neither the explicit `--pensioncard-pages` sidecar nor
+   `<out_dir>/pensioncard_pages.json` exists, fall back to the
+   upstream cache at `UPSTREAM_PENSIONCARD_PAGES_PATH`. Resolution
+   order: explicit > out_dir > upstream > auto-derive from IIIF URL
+   > skip. The compound-missing warning still fires when the upstream
+   cache is absent and the run is > 100 records.
+
+3. **Tests** (8 new total):
+   - 4 post-pass tests pin the upstream-cache fallback, the
+     precedence chain (explicit > out_dir > upstream > auto-derive),
+     and the compound-missing warning.
+   - 1 autouse fixture in `tests/test_post_pass_pensioncard_pages.py`
+     monkeypatches `UPSTREAM_PENSIONCARD_PAGES_PATH` to a non-existent
+     file so the pre-#102 auto-derive tests exercise the true
+     auto-derive path (not the upstream cache).
+   - 3 CLI tests pin the default, the empty-string disable, and
+     the explicit-path override.
+
+Post-pass `UPSTREAM_PENSIONCARD_PAGES_PATH` is the single source of
+truth for the upstream-cache path. The runner imports the same
+hardcoded path so the CLI default and the post-pass fallback stay
+in sync.
+
+`--pensioncard-pages ""` is documented as the disable path. The
+auto-derive fallback (#101) still runs when the upstream cache is
+missing, so the worst-case behavior is unchanged.
+
+Closes #102 follow-up.
+
 ### Test(refiner): pin 3-tier score-driven refinement logic (#76)
 
 The 3-tier score-driven refinements (issue #76) were already
