@@ -42,6 +42,48 @@ env var; the rest get the 73% auto-derive for free.
 Closes #81 (the auto-fetch half). The upfront-cache half
 remains filed as #102.
 
+### Feat(ingest): cache all pensioncard pages upfront so per-record fetch becomes free (#102)
+
+The upstream `fetch_pensioncard_pages.py` companion (#81) builds
+the sidecar on every operator run at 0.25s/record (~32 min for
+7,558 records). For a recipe change or annotation re-run, the
+fetch repeats even though the digitalprairie API returns the
+same data every time.
+
+The script already supports the upfront-cache pattern:
+- `--output` defaults to
+  `docs/research/digitalprairie/ok_pensioners.pensioncard_pages.json`
+  (committed to the repo).
+- Records already in the cache are skipped on rerun (resume).
+- `--refresh` forces re-fetch.
+- `--limit N` for partial smoke runs.
+- Periodic `.tmp` + atomic `replace` every 100 records so a
+  crash mid-run keeps the partial cache.
+
+The full sidecar for all 7,558 pensioner records was built
+once (Jul 17) and committed to the repo. Counters: 2,016
+compound (len>1), 5,542 single-page. Subsequent runs cost
+zero API calls. The opt-in auto-fetch path in #81 stays as
+the fallback for operators who forget the upfront cache.
+
+The 15 tests in `tests/test_fetch_pensioncard_pages.py` already
+pin the contract: extract_page_ids on compound + single-page +
+malformed payloads, load/save cache atomicity, fetch error
+handling, resume from cache, `--refresh` re-fetch, records
+without `pensioncard_id` skipped. All passing.
+
+Acceptance:
+- `python scripts/ingest/fetch_pensioncard_pages.py` → 0
+  records fetched (all cached), zero-cost rerun.
+- `python scripts/ingest/fetch_pensioncard_pages.py --limit 100`
+  → 100-record smoke.
+- `python scripts/ingest/fetch_pensioncard_pages.py --refresh`
+  → full re-fetch (~32 min).
+- Post-pass picks up the committed sidecar without any
+  env-var opt-in or `--pensioncard-pages` flag.
+
+Closes #102.
+
 ### Test(refiner): pin 3-tier score-driven refinement logic (#76)
 
 The 3-tier score-driven refinements (issue #76) were already
