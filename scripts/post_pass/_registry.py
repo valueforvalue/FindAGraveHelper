@@ -28,6 +28,7 @@ from scripts.post_pass import (
     state_schema,
     view_copy,
 )
+from scripts.exports import open_gravestones
 from scripts.post_pass.types import BasePassConfig, PostPassStats
 
 
@@ -158,6 +159,20 @@ POST_PASSES: list[tuple[str, PassCallable, PassFactory]] = [
                 ctx.config, results_path=ctx.state_repo.path
             ),
             {"log": ctx.log},
+        ),
+    ),
+    # 8. Open-burial-data JSON-LD export (issue #95). Emits
+    #    open_gravestones.ndjson with Schema.org/Cemetery + Dublin
+    #    Core + WikiTree + Wikidata + PROV-DM @context. Audit
+    #    trail for the civil-war genealogy ecosystem.
+    (
+        "open_gravestones",
+        open_gravestones.run,
+        lambda ctx: (
+            open_gravestones.config_from(
+                ctx.config, state_path=ctx.state_repo.path
+            ),
+            {"run_id": ctx.run_id, "log": ctx.log},
         ),
     ),
 ]

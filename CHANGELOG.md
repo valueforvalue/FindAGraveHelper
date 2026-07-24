@@ -4,6 +4,30 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Feat(export): open-burial-data JSON-LD export (#95)
+
+Added `scripts/exports/open_gravestones.py` — emits
+`open_gravestones.ndjson` next to `state.jsonl`, one JSON-LD
+record per pensioner. The `@context` bundles six open-data
+vocabularies for civil-war genealogy interop:
+- **Schema.org** — `Person` (the deceased), `sameAs` for
+  FaG + Wikidata links.
+- **Dublin Core terms** (dcterms) — `identifier`, `title`,
+  `source`, `date`, `created` for archival metadata.
+- **WikiTree** profile link (Trtnik-2 / WikiTree+ convention).
+- **Wikidata** Q-item links.
+- **W3C PROV-DM** provenance — `wasGeneratedBy` (the run)
+  + `wasAttributedTo` (the policy version) + `generatedAtTime`.
+
+Registered as the 8th post-pass; optional WikiTree lookup
+via CSV sidecar. No new CI deps (rdflib NOT pulled in; the
+JSON-LD structure is asserted directly). 12 new tests pin
+the @context, @type, sameAs handling, provenance, Dublin
+Core fields, WikiTree/Wikidata enrichment, error handling
+(corrupt lines, missing state file), and the audit-trail
+guarantee (no_candidates rows are still emitted). Full suite:
+1,375 passed. Audit backlog item #3: completed.
+
 ### Feat(projection): versioned materialization + state.schema.json (#98)
 
 Lower-risk slice (per the user's call: schema file + per-row

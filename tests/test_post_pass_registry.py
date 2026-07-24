@@ -37,11 +37,12 @@ def test_registry_contains_all_moved_passes():
         "view_copy",
         "labels",
         "state_schema",
+        "open_gravestones",
     }
 
 
 def test_registry_preserves_order():
-    """Order: dd → spouse → observation_enrichment → pensioncard_pages → view_copy → labels → state_schema."""
+    """Order: dd → spouse → observation_enrichment → pensioncard_pages → view_copy → labels → state_schema → open_gravestones."""
     names = [entry[0] for entry in POST_PASSES]
     assert names == [
         "dd",
@@ -51,6 +52,7 @@ def test_registry_preserves_order():
         "view_copy",
         "labels",
         "state_schema",
+        "open_gravestones",
     ]
 
 
@@ -89,7 +91,7 @@ def test_run_post_passes_returns_stats_in_order(monkeypatch, tmp_path):
         view_html_source=None,
     )
 
-    assert len(results) == 7
+    assert len(results) == 8
     assert [r.name for r in results] == [
         "dd",
         "spouse",
@@ -98,6 +100,7 @@ def test_run_post_passes_returns_stats_in_order(monkeypatch, tmp_path):
         "view_copy",
         "labels",
         "state_schema",
+        "open_gravestones",
     ]
     # All env/recipe-gated; most should report skipped=True.
     for r in results:
@@ -143,14 +146,14 @@ def test_run_post_passes_continues_after_pass_error(monkeypatch, tmp_path):
     finally:
         reg.POST_PASSES[4] = ("view_copy", original_fn, reg.POST_PASSES[4][2])
 
-    # 7 results returned; view_copy raised but is reported as a
+    # 8 results returned; view_copy raised but is reported as a
     # PostPassStats with errors=1 (driver records the failure and
     # continues). Subsequent passes ran.
-    assert len(results) == 7
+    assert len(results) == 8
     failed = [r for r in results if r.name == "view_copy"]
     assert len(failed) == 1
     assert failed[0].errors == 1
-    assert results[-1].name == "state_schema"
+    assert results[-1].name == "open_gravestones"
 
 
 def test_run_post_passes_logs_errors(monkeypatch, tmp_path):
