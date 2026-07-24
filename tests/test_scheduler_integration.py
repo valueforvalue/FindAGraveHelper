@@ -301,10 +301,14 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
     assert calls[0:2] == ["init:OK", "start"]
     assert len([call for call in calls if call.startswith("engine_search:")]) >= 2
     assert calls[-1] == "close"
+    # Issue #96: CalibratedDecisionKS emits DecisionObserved
+    # after each ScoreObserved. With no classifier loaded, the
+    # observation carries calibrated_probability=None — the
+    # legacy Fellegi-Sunter path runs unchanged.
     decision_rows = store.con.execute(
         "SELECT COUNT(*) FROM observations WHERE kind = 'DecisionObserved'"
     ).fetchone()[0]
-    assert decision_rows == 0
+    assert decision_rows >= 1
     score_rows = store.con.execute(
         "SELECT COUNT(*) FROM observations WHERE kind = 'ScoreObserved'"
     ).fetchone()[0]

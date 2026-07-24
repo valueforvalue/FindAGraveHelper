@@ -98,6 +98,12 @@ class Decision:
 
     Carries policy_version so replay can attribute decisions to a
     specific policy — even if thresholds change later.
+
+    `calibrated_probability` is set by `CalibratedDecisionKS` (issue
+    #96) when a CalibratedClassifier is loaded. None means the
+    legacy Fellegi-Sunter path produced the verdict (no calibration
+    available). When set, downstream consumers (ProjectionBuilder)
+    stamp it on the state.jsonl row.
     """
 
     status: str
@@ -109,6 +115,7 @@ class Decision:
     threshold_used: float = 0.0
     reason: str = ""
     evidence: dict[str, Any] = field(default_factory=dict)
+    calibrated_probability: float | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -120,6 +127,7 @@ class Decision:
             "gap": self.gap,
             "threshold_used": self.threshold_used,
             "reason": self.reason,
+            "calibrated_probability": self.calibrated_probability,
         }
 
 

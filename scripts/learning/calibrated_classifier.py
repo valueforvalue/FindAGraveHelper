@@ -74,8 +74,15 @@ class CalibratedClassifier:
         self._coeffs = [a, b]
 
     def predict_proba(self, features: dict[str, Any]) -> float:
-        """Calibrated probability the candidate is correct."""
-        score = float(features.get("best_score", 0.0))
+        """Calibrated probability the candidate is correct.
+
+        Accepts either a feature dict (`{"best_score": ...}`) or a
+        state.jsonl row (anything with a `best_score` key). The
+        feature-dict path is the canonical one used during training;
+        the state-row path is the convenience used by
+        `CalibratedDecisionKS` at projection time (issue #96).
+        """
+        score = float(features.get("best_score", 0.0) or 0.0)
         logit = self._coeffs[0] + self._coeffs[1] * score
         # Clamp to avoid overflow
         logit = max(-50.0, min(50.0, logit))

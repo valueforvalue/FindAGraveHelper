@@ -103,6 +103,20 @@ class CandidateScorerKS:
             )
         )
 
+        # Issue #96: queue a CalibratedDecisionKS work item so the
+        # scheduler invokes it next. When no classifier is loaded,
+        # the KS is a no-op (still emits a DecisionObserved with
+        # calibrated_probability=None so the projection path
+        # stays in sync).
+        store.enqueue_work(
+            WorkItem(
+                work_id=f"work-decide-{item.pensioner_id}",
+                pensioner_id=item.pensioner_id,
+                knowledge_source="CalibratedDecisionKS",
+                pass_id=item.pass_id,
+            )
+        )
+
         log.info(
             "CandidateScorerKS: pensioner %d -> %s (score=%.3f).",
             item.pensioner_id, decision.status, decision.top_score,

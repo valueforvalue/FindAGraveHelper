@@ -221,12 +221,30 @@ VALID_MODULES = {
 
 
 @dataclass
+class LearningConfig:
+    """Issue #96 — CalibratedDecisionKS wiring.
+
+    `classifier_path` is the path to a persisted CalibratedClassifier
+    JSON (saved via `CalibratedClassifier.save(path)`). When set,
+    the runner loads it and the KS emits DecisionObserved
+    carrying `calibrated_probability`. When None, the KS still
+    emits a DecisionObserved (so the projection path stays in
+    sync) but with the field left None — the legacy Fellegi-
+    Sunter path runs unchanged.
+    """
+
+    classifier_path: str | None = None
+
+
+@dataclass
 class PipelineConfig:
     modules: list[str] = field(default_factory=lambda: list(DEFAULT_MODULES))
     scoring: ScoringConfig = field(default_factory=ScoringConfig)
     strategies: StrategyConfig = field(default_factory=StrategyConfig)
     decision: DecisionConfig = field(default_factory=DecisionConfig)
     mode: SearchModeConfig = field(default_factory=SearchModeConfig)
+    # Issue #96: optional CalibratedClassifier wiring.
+    learning: LearningConfig = field(default_factory=LearningConfig)
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "PipelineConfig":
@@ -244,6 +262,7 @@ class PipelineConfig:
             strategies=StrategyConfig.from_dict(d.get("strategies")),
             decision=DecisionConfig.from_dict(d.get("decision")),
             mode=SearchModeConfig.from_dict(d.get("mode")),
+            learning=LearningConfig(**(d.get("learning") or {})),
         )
 
     def to_dict(self) -> dict:

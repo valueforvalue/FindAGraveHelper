@@ -4,6 +4,40 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Feat(scoring): wire CalibratedClassifier into Blackboard decision path (#96)
+
+Lower-risk slice (per user call: CalibratedClassifier only;
+PairwiseWeightLearner deferred to follow-up). Added:
+
+- `scripts/knowledge/calibrated_decision_ks.py` — a new
+  `CalibratedDecisionKS` that reads the existing `ScoreObserved`
+  and emits `DecisionObserved` carrying
+  `calibrated_probability`. Falls back to a no-op
+  (`calibrated_probability=None`) when no classifier is loaded,
+  so the legacy Fellegi-Sunter path runs unchanged.
+- `Decision.calibrated_probability: float | None = None` —
+  back-compat field; existing callers that don't set it see
+  `None`.
+- `CalibratedClassifier.predict_proba(state_row)` convenience
+  method that pulls `best_score` from a state row.
+- `LearningConfig.classifier_path` on the recipe's
+  `PipelineConfig`. When the path is set AND the file exists,
+  the runner loads the classifier and wires it into the KS.
+- `CandidateScorerKS.invoke()` enqueues a
+  `CalibratedDecisionKS` work item after each `ScoreObserved`,
+  so the new KS runs automatically on every pensioner.
+
+Ten new tests pin: predict_proba(state_row) returns [0, 1]
+and is monotonic in score, Decision carries the new field,
+the KS emits a DecisionObserved with calibrated_probability
+when a classifier is loaded, falls back to None when not, is
+a no-op when no ScoreObserved exists, eligible-filter
+correctness, and the JSON round-trip via `save`/`load`.
+
+Full suite: 1,397 passed. Audit backlog item #4 (first
+half): completed. PairwiseWeightLearner wiring filed as a
+follow-up (out of scope for this slice).
+
 ### Refactor(search): StrategyRegistry for cross-engine strategy reuse (#99)
 
 Added `scripts/search/strategy_registry.py` — singleton

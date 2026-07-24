@@ -857,6 +857,43 @@ def run_batch_scheduler(
 
     scheduler.register(CandidateScorerKS())
     scheduler.register(DeepRefinerKS(**mode_cfg))
+    # Issue #96: CalibratedDecisionKS reads the ScoreObserved
+    # from CandidateScorerKS and emits a DecisionObserved
+    # carrying calibrated_probability. The classifier is loaded
+    # from the recipe's `pipeline.learning.classifier_path` if
+    # set; when None, the KS still emits DecisionObserved (so
+    # the projection path stays in sync) but with the field left
+    # None — the legacy Fellegi-Sunter path runs unchanged.
+    from scripts.knowledge.calibrated_decision_ks import (
+        CalibratedDecisionKS,
+    )
+    from scripts.learning.calibrated_classifier import (
+        CalibratedClassifier,
+    )
+    _calibrated_clf = None
+    _recipe_obj = getattr(config, "_recipe", None)
+    if _recipe_obj is not None:
+        _pipeline_cfg = getattr(_recipe_obj, "pipeline", None)
+        if _pipeline_cfg is not None:
+            _learning_cfg = getattr(_pipeline_cfg, "learning", None)
+            if _learning_cfg is not None:
+                _clf_path = getattr(
+                    _learning_cfg, "classifier_path", None
+                )
+                if _clf_path is not None:
+                    from pathlib import Path as _Path
+                    _clf_file = _Path(_clf_path)
+                    if _clf_file.exists():
+                        _calibrated_clf = CalibratedClassifier.load(
+                            _clf_file
+                        )
+                        log.info(
+                            "CalibratedDecisionKS: loaded classifier from %s",
+                            _clf_file,
+                        )
+    scheduler.register(
+        CalibratedDecisionKS(classifier=_calibrated_clf)
+    )
     builder = ProjectionBuilder()
 
     # Issue #85: build CGR lookup from already-loaded cemetery data
