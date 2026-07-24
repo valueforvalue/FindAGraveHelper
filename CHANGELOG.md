@@ -4,6 +4,32 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Test(refiner): pin 3-tier score-driven refinement logic (#76)
+
+The 3-tier score-driven refinements (issue #76) were already
+implemented in `DeepRefinerKS._generate_refinements`. Tier
+selection is exactly per the spec:
+
+- **Tier 1** (top_score >= skip_refine_above, default 0.85):
+  no refinements emitted.
+- **Tier 2** (0.40 <= top_score < 0.85): strategy-replay
+  plans on the OK scope (B3-fuzzy, F3-nickname, regiment-
+  origin B1-exact, C1-spouse if spouse info available).
+- **Tier 3** (top_score < 0.40 OR status=no_candidates):
+  surrounding states (AR, KS, MO, TX, CO, NM) + US-fuzzy-last
+  + C1-spouse + F3-nickname.
+
+Plus: `max_refinements` cap is honored; dedup against
+`FaGSearchPlan` observations. Bail on auto_accept is implicit
+in the existing tier-1 logic — a refinement's next dispatch
+reads the latest ScoreObserved; if that's auto_accept, tier 1
+fires and returns []. No separate code path needed.
+
+Ten new tests pin the contract; G10 verification runs the
+refiner against the real blackboard.db (pensioner 327, score
+0.644 → tier 2 plans emitted, dedupped against what's already
+in the store). Closes #76.
+
 ### Feat(events): OCSF sidecar translation for SIEM ingestion (#100)
 
 Added `scripts/events/ocsf.py` — translator from the pipeline's
