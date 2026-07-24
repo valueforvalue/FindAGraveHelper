@@ -1,0 +1,52 @@
+# .dockerignore — keeps the image small and the build cache stable.
+# Mirrors .gitignore for the most part; runtime-only artefacts
+# (output/, data/, .pytest_cache/, __pycache__) are excluded so the
+# image is reproducible across branches.
+
+# VCS / metadata
+.git/
+.gitignore
+.gitattributes
+
+# Editor / OS junk
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Python bytecode / caches
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Virtualenvs
+.venv/
+venv/
+env/
+
+# Runtime artefacts (per-OS, per-run)
+output/
+data/results/
+data/cache/
+*.log
+*.jsonl
+*.sqlite
+*.sqlite3
+*.db
+
+# CI-specific
+.github/
+pytest-report.xml
+
+# Docker-specific (don't recurse)
+Dockerfile
+.dockerignore
+
+# Docs are not needed at runtime
+docs/
+
+# Tests are not needed for a production image — but our base is CI,
+# so DO include tests/. Override per-image if shipping a runtime
+# image (we don't; issue #93 is CI-only).

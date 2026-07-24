@@ -1,5 +1,7 @@
 # FindAGraveHelper
 
+[![tests](https://github.com/valueforvalue/FindAGraveHelper/actions/workflows/test.yml/badge.svg)](https://github.com/valueforvalue/FindAGraveHelper/actions/workflows/test.yml)
+
 A pair of Tampermonkey/Greasemonkey userscripts for working with
 [Find a Grave](https://www.findagrave.com) memorials, plus a
 research workspace documenting Civil War genealogy patterns that
@@ -329,6 +331,29 @@ python process_ledger.py memorials_archive.json
 Output:
 - `memorials.csv` — flat summary, one row per memorial
 - `memorials/` — directory of per-record Markdown files
+
+## CI + Docker
+
+The default pytest suite runs on every push via
+[`.github/workflows/test.yml`](./.github/workflows/test.yml)
+(matrix: Python 3.11 / 3.12 / 3.13). Integration tests are
+excluded from the default run (per `pytest.ini`); they require
+a live Playwright browser + FaG access, which is unsafe under
+default CI. See [`docs/learnings/2026-07-22-real-fag-memory-default-skip.md`](./docs/learnings/2026-07-22-real-fag-memory-default-skip.md).
+
+The [`Dockerfile`](./Dockerfile) bundles Playwright + Chromium
+with the Python deps so the e2e and diag variants can run in a
+sandboxed CI runner:
+
+```bash
+docker build -t findagravehelper .
+docker run --rm findagravehelper pytest
+docker run --rm findagravehelper pytest -m "diag or integration" -v
+```
+
+CI-only deps are pinned in [`requirements-ci.txt`](./requirements-ci.txt).
+The project has no top-level `pyproject.toml`; runtime deps are
+stdlib + the same pinned set.
 
 ## Ethical use
 

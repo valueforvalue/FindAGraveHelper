@@ -4,6 +4,20 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Infra(ci): GitHub Actions workflow + Docker image + CI badge (#93)
+
+Added `.github/workflows/test.yml` (matrix Python 3.11 / 3.12 /
+3.13; pip + Playwright Chromium caches; JUnit XML upload).
+Added `Dockerfile` (built on `mcr.microsoft.com/playwright/python:v1.61.0-jammy`
+so Chromium is pre-baked) and `.dockerignore`. Added
+`requirements-ci.txt` pinning the test deps (pytest, hypothesis,
+playwright, playwright-stealth, rapidfuzz, jellyfish, psutil,
+PyYAML). README updated with a CI badge + a "CI + Docker"
+section documenting the integration-skip policy and the sandbox
+commands.
+
+Closes #93. Suite still 1,358 passed, 4 skipped, 1 deselected.
+
 ### Docs(audit): competitive landscape across CW genealogy, stealth frameworks, and Blackboard architectures
 
 Surveyed 3-5 peers on each of three axes and produced a

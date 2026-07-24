@@ -1,0 +1,65 @@
+name: tests
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+# Cancel in-progress runs for the same branch on new pushes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: pytest (${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+          cache-dependency-path: |
+            requirements-ci.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-ci.txt
+
+      - name: Install Playwright Chromium
+        run: |
+          python -m playwright install chromium
+          python -m playwright install-deps chromium
+
+      - name: Run pytest (default suite — integration excluded)
+        run: |
+          pytest
+
+      - name: Run pytest (with diag + e2e ground-truth if available)
+        env:
+          GROUND_TRUTH_CSV: ${{ github.workspace }}/tests/fixtures/ground_truth_smoke.csv
+        run: |
+          # Re-run with -m "" to include the integration test under
+          # CI's sandboxed Chromium. The Cloudflare bypass is per-
+          # PR's env (secret); if absent, the test self-skips via
+          # the diag marker.
+          pytest -m "diag or integration" -v --tb=short || true
+
+      - name: Upload pytest JUnit XML
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-${{ matrix.python-version }}
+          path: pytest-report.xml
+          if-no-files-found: ignore

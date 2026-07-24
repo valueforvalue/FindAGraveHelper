@@ -1,0 +1,27 @@
+# CI-only requirements — kept separate from the runtime deps because
+# the project intentionally has no top-level pyproject.toml /
+# requirements.txt (imports are stdlib + a small, well-known set).
+# This file pins the deps that the default pytest suite + the diag
+# variant need to run. Update via the lock-step workflow described
+# in docs/learnings/ (per-CI-bump).
+#
+# Generated for issue #93 (CI/Docker). Pin upper bounds with `~=`
+# so security + bug-fix releases land automatically; major bumps
+# land via PR.
+
+# Test runner
+pytest>=8.0,<10
+hypothesis>=6.100,<7
+
+# Browser automation (L8 — Playwright + stealth only)
+playwright>=1.40,<2
+playwright-stealth>=2.0,<3
+
+# Phonetic / fuzzy matching (CONTEXT.md: Double Metaphone, Jaro-
+# Winkler, Damerau-Levenshtein via these libs)
+rapidfuzz>=3.0,<4
+jellyfish>=1.0,<2
+
+# Misc utilities
+psutil>=5.9,<6           # BrowserSession memory pressure probe
+PyYAML>=6.0,<7           # RunRecipe loader (scripts/batch_config.py)
