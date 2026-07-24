@@ -4,6 +4,29 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Test(audit-log): verify per-strategy audit trail wiring (#75)
+
+`RunAuditLog` was added for issue #71; the G10 verification
+run (issue #94) confirmed the wiring is correct end-to-end.
+This commit pins the contract via 9 new tests:
+
+- Direct API: `pensioner_start` + `pensioner_end` are paired
+  with consistent pensioner_id; `elapsed_s` is non-negative
+  and bounded; `strategy_skipped` carries the reason; the
+  observer protocol emits `observation_appended` with the
+  right shape.
+- G10 verification: 10 pensioner_start + 10 pensioner_end;
+  every strategy event has pensioner_id + strategy + ts; one
+  run_summary; work_claimed + work_completed are balanced
+  (no orphans, no double-completions); every
+  observation_appended has the contract fields.
+
+If a future PR breaks the audit log wiring (e.g. a
+strategy fires but no audit entry, or pensioner_start is
+skipped), these tests fail first.
+
+Closes #75 as already-implemented-and-verified.
+
 ### Test(search): pin named aggressiveness modes behavior (#78)
 
 `SearchModeConfig` + `MODE_DEFAULTS` + `VALID_MODES` were
