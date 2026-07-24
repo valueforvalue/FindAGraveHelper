@@ -1038,7 +1038,11 @@ def run_batch_scheduler(
     )
 
     # Issue #55: post-run label collection.
-    _collect_labels_if_enabled(config, out_dir, log)
+    from scripts.post_pass import labels as _lb
+    _lb.run(
+        config=_lb.config_from(config, out_dir=out_dir),
+        log=log,
+    )
 
     result.finished_at = time.time()
     audit_log.summary(
@@ -1135,69 +1139,6 @@ def _post_process_only(
         log.info(
             "Post-process-only complete: view.html regenerated in %s",
             out_dir,
-        )
-
-
-def _collect_labels_if_enabled(
-    config: "UnifiedRunnerConfig",
-    out_dir: Path,
-    log: "logging.Logger | None" = None,
-) -> None:
-    """Collect training labels from decisions sidecar after batch.
-
-    Reads the recipe's post config. When collect_labels is enabled,
-    extracts labels from the decisions sidecar JSON and appends to
-    the configured labels path.
-    """
-    recipe = getattr(config, "_recipe", None)
-    if recipe is None:
-        return
-    post_cfg = getattr(recipe, "post", None)
-    if post_cfg is None or not post_cfg.collect_labels:
-        return
-
-    from scripts.learning.label_extractor import LabelExtractor
-
-    # Find the most recent decisions_*.json in the output dir
-    sidecar_path = None
-    for p in sorted(out_dir.glob("decisions_*.json"), reverse=True):
-        sidecar_path = p
-        break
-    if sidecar_path is None:
-        if log:
-            log.info("No decisions sidecar found; skipping label collection.")
-        return
-
-    extractor = LabelExtractor()
-    try:
-        labels = extractor.from_decisions_file(sidecar_path)
-    except Exception as e:
-        if log:
-            log.warning("Label extraction failed: %s", e)
-        return
-
-    if not labels:
-        if log:
-            log.info("No labels extracted from %s", sidecar_path)
-        return
-
-    labels_path = Path(post_cfg.labels_path)
-    labels_path.parent.mkdir(parents=True, exist_ok=True)
-
-    import json as _json
-    with labels_path.open("a", encoding="utf-8") as f:
-        for label in labels:
-            f.write(_json.dumps({
-                "pensioner_id": label.pensioner_id,
-                "human_review_decision": label.human_review_decision,
-                "extracted_at": label.extracted_at,
-                "source_policy_version": label.source_policy_version,
-            }) + "\n")
-
-    if log:
-        log.info(
-            "Collected %d labels from %s → %s",
-            len(labels), sidecar_path.name, labels_path,
         )
 
 

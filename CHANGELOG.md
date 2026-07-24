@@ -4,6 +4,19 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): extract labels into scripts/post_pass/ (Slice 6)
+
+Moved the inline `_collect_labels_if_enabled` out of
+`scripts/pipeline/run_unified.py` into
+`scripts/post_pass/labels.py`. Reads the most recent
+`decisions_*.json` sidecar and appends LabelSnapshots to the
+configured labels path. Same recipe gate (`post.collect_labels`)
+preserved. Seven new tests pin behavior including recipe=None,
+collect_labels=False, missing sidecar, multi-sidecar selection,
+and non-fatal exception handling. Full suite: 1,334 passed.
+Slice 7 (POST_PASSES registry) follows.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): extract dd + spouse into scripts/post_pass/ (Slices 4 & 5)
 
 Moved the inline DixieData post-pass (~30 LOC) and the inline
