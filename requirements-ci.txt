@@ -13,8 +13,16 @@
 pytest>=8.0,<10
 hypothesis>=6.100,<7
 
-# Browser automation (L8 — Playwright + stealth only)
+# Browser automation (L8 — Playwright + stealth only).
+# Default is `patchright` (Vinyzu) — a sync-Playwright drop-in
+# with a binary-level fix for the Cloudflare Turnstile
+# Runtime.Enable check. `playwright-stealth` v2 is layered on
+# top via STEALTH_BACKEND=patchright (the default); the legacy
+# AtuboDad / Mattwmaster58 path is available via
+# STEALTH_BACKEND=playwright_stealth for back-compat. See
+# issue #94.
 playwright>=1.40,<2
+patchright>=1.61,<2
 playwright-stealth>=2.0,<3
 
 # Phonetic / fuzzy matching (CONTEXT.md: Double Metaphone, Jaro-

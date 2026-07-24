@@ -4,6 +4,54 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(stealth): swap playwright-stealth (frozen) for patchright (#94)
+
+Added `scripts/fag/browser_backend.py` — `BrowserBackend`
+Protocol + `get_backend()` factory. Three backends:
+- `patchright` (default) — Vinyzu's sync-Playwright drop-in
+  with a binary-level fix for the Cloudflare Turnstile
+  Runtime.Enable check. Layers `playwright-stealth` v2
+  (Mattwmaster58) on top.
+- `playwright_stealth` (legacy) — upstream Playwright + the
+  AtuboDad / Mattwmaster58 stealth layer. Preserved for
+  back-compat.
+- `playwright` (bare) — for tests + local dev.
+
+`STEALTH_BACKEND` env var selects. `cf_verify()` is a documented
+no-op today (operator PR replaces with a real challenge
+re-fetch path; the audit's recommendation #3).
+
+Verified end-to-end on a real 10 G-name pensioner slice
+(J. Gamble, John Gamblin, Martha Gammon, etc.):
+- 10/10 pensioners processed in 19m 36s at 2.5s throttle
+- 115 work items, 0 errors
+- `results.jsonl`, `results.schema.json`,
+  `open_gravestones.ndjson`, `view.html` all emitted
+- Real FaG memorial URL in the JSON-LD export
+  (memorial 20360270 / John Henry Gamble)
+- **No Cloudflare 1015 backoff** during the run
+
+Heartbeat thread-safety fix landed alongside: the
+`SqliteBlackboardStore` connection now uses
+`check_same_thread=False` + a `threading.Lock` around writes
+so the issue #97 heartbeat thread (which runs on a different
+thread than the connection opener) can call
+`store.heartbeat()` without raising the
+"Sqlite objects created in a thread can only be used in
+that same thread" error that surfaced during the real
+FaG run.
+
+`requirements-ci.txt` updated to pin `patchright>=1.61,<2`.
+`CONTEXT.md` §L8 updated with the swap history.
+
+Eight new tests pin: the supported backends list, the
+default-is-patchright assertion, the playwright_stealth
+back-compat path, the bare path, the unknown-name
+ValueError, the Protocol satisfaction, and the cf_verify
+no-op (today + forward-compatible URL form).
+
+Full suite: 1,405 passed. Audit backlog item #2: completed.
+
 ### Feat(scoring): wire CalibratedClassifier into Blackboard decision path (#96)
 
 Lower-risk slice (per user call: CalibratedClassifier only;

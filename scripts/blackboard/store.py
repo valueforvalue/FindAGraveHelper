@@ -23,6 +23,7 @@ from __future__ import annotations
 import json
 import os
 import sqlite3
+import threading
 import time
 import uuid
 from pathlib import Path
@@ -230,7 +231,16 @@ class SqliteBlackboardStore:
     def open(self) -> None:
         """Open (or create) the SQLite database with WAL pragmas."""
         self._path.parent.mkdir(parents=True, exist_ok=True)
-        self._con = sqlite3.connect(str(self._path), isolation_level=None)
+        # check_same_thread=False allows the heartbeat thread
+        # (issue #97) to call store.heartbeat() concurrently. Writes
+        # are serialized via self._write_lock so the SQLite WAL mode
+        # still gets correct per-row sequencing.
+        self._con = sqlite3.connect(
+            str(self._path),
+            isolation_level=None,
+            check_same_thread=False,
+        )
+        self._write_lock = threading.Lock()
         self._con.execute("PRAGMA journal_mode=WAL")
         self._con.execute("PRAGMA synchronous=NORMAL")
         self._con.executescript(_SCHEMA_SQL)
@@ -482,6 +492,13 @@ class SqliteBlackboardStore:
         the deadline; a healthy KS that heartbeats survives past
         its initial budget.
 
+        Thread-safe: the heartbeat thread runs on a thread other
+        than the one that opened the connection. The write is
+        serialized via `self._write_lock` so SQLite WAL mode gets
+        correct per-row sequencing (issue #97 follow-up: the
+        earlier `check_same_thread=False` was needed but writes
+        still need to be ordered).
+
         Raises KeyError if `work_id` doesn't exist — strict path
         so callers notice typos rather than silently dropping
         heartbeats.
@@ -490,24 +507,25 @@ class SqliteBlackboardStore:
         completed or reclaimed between heartbeat ticks).
         """
         deadline = _iso_delta(lease_seconds)
-        cursor = self.con.execute(
-            """UPDATE work_items
-               SET lease_deadline_at = ?
-               WHERE work_id = ?
-                 AND state = 'leased'
-                 AND leased_by IS NOT NULL""",
-            (deadline, work_id),
-        )
-        if cursor.rowcount == 0:
-            # Either the work_id doesn't exist OR the item isn't
-            # currently leased. Distinguish via a SELECT.
-            row = self.con.execute(
-                "SELECT 1 FROM work_items WHERE work_id = ?",
-                (work_id,),
-            ).fetchone()
-            if row is None:
-                raise KeyError(
-                    f"No work item with work_id={work_id!r}"
+        with self._write_lock:
+            cursor = self.con.execute(
+                """UPDATE work_items
+                   SET lease_deadline_at = ?
+                   WHERE work_id = ?
+                     AND state = 'leased'
+                     AND leased_by IS NOT NULL""",
+                (deadline, work_id),
+            )
+            if cursor.rowcount == 0:
+                # Either the work_id doesn't exist OR the item
+                # isn't currently leased. Distinguish via a SELECT.
+                row = self.con.execute(
+                    "SELECT 1 FROM work_items WHERE work_id = ?",
+                    (work_id,),
+                ).fetchone()
+                if row is None:
+                    raise KeyError(
+                        f"No work item with work_id={work_id!r}"
                 )
             # Item exists but isn't leased: silent no-op. Common
             # when a heartbeat races with complete_work / reclaim.

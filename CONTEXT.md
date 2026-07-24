@@ -410,12 +410,26 @@ re-discovering the contract each session is wasted effort.
 
 Plain `requests.get()` returns 200 OK but the body is the
 Cloudflare Turnstile challenge page. The script thinks the
-search succeeded. Use Playwright + `playwright-stealth` with
-`headless=False` and the warmup dance.
+search succeeded. Use Playwright with a stealth layer
+(`STEALTH_BACKEND=patchright` by default; `playwright_stealth`
+for the legacy path) plus `headless=False` and the warmup dance.
+
+**Issue #94 (2026-07-22):** swapped the default backend from
+`playwright_stealth` (AtuboDad, frozen Sep 2023) to
+`patchright` (Vinyzu, 1.4k+ stars, actively maintained). The
+binary-level fix for Cloudflare Turnstile's Runtime.Enable
+check is what the JS-patch surface cannot reach. `playwright-
+stealth` v2 (Mattwmaster58) is layered on top for JS evasions.
+The legacy path is preserved for back-compat
+(`STEALTH_BACKEND=playwright_stealth`). Verified end-to-end
+on 10 G-name pensioners via real FaG (2026-07-24 run,
+results.jsonl + open_gravestones.ndjson emitted; Cloudflare
+1015 backoff did not trigger).
 
 **Earned by:** Phase 1 research, 2026-07-08. Cited again in
 Run #1 when a one-off `requests` test for "speed" got blocked
-in 5 seconds.
+in 5 seconds. **2026-07-24 swap earned by:** issue #94
+completion + live verification.
 
 ### L9. Canonical scoring constants, not local copies
 
