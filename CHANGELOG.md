@@ -4,6 +4,44 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Feat(post-pass): opt-in auto-fetch of compound pensioncard pages (#81)
+
+The auto-derive path (#101) covers the 73% single-page
+pensioncard case from the IIIF URL alone. The remaining
+27% are compound (2+ sides), where the page list differs
+from the pensioncard_id and the sidecar must be built from
+the digitalprairie API.
+
+This commit adds the **opt-in auto-fetch** path: when
+`FETCH_PENSIONCARD_PAGES=1` is set in the environment, the
+`pensioncard_pages` post-pass invokes
+`scripts/ingest/fetch_pensioncard_pages.py` (which already
+exists and is the canonical compound-item builder) before
+the sidecar-detection chain. The result is a real sidecar
+that the rest of the post-pass consumes normally.
+
+The post-pass accepts a `fetch_command(input_path, output_path,
+throttle_seconds)` callback so tests can inject a fake
+fetcher without doing real HTTP. The runner wires
+`scripts.ingest.fetch_pensioncard_pages.run` as the real
+fetcher.
+
+Three new tests pin:
+- `FETCH_PENSIONCARD_PAGES=1` + a `fetch_command` → the
+  command is called with the right paths; the resulting
+  sidecar stamps the rows with the real page list.
+- Env var unset → no fetch, even when a command is
+  supplied; auto-derive still runs.
+- Fetch raises → warning logged, auto-derive still runs;
+  the pass never aborts the run.
+
+The compound-item case (the 27% that's still wrong today)
+becomes opt-in. Operators who want full coverage set the
+env var; the rest get the 73% auto-derive for free.
+
+Closes #81 (the auto-fetch half). The upfront-cache half
+remains filed as #102.
+
 ### Test(refiner): pin 3-tier score-driven refinement logic (#76)
 
 The 3-tier score-driven refinements (issue #76) were already

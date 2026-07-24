@@ -47,8 +47,9 @@ docs/research/dixiedata/enrich_report.json
 # Exception: data/results/run_2026_07_24_g10_stealth_swap_verification/
 # is committed as evidence for the issue #94 stealth swap. See
 # data/results/run_2026_07_24_g10_stealth_swap_verification/README.md.
-data/results/
+data/results/*
 !data/results/run_2026_07_24_g10_stealth_swap_verification/
+!data/results/run_2026_07_24_g10_stealth_swap_verification/**
 # J5+ per-run output dirs (output/<runname>/). Same resume-safety as
 # data/results/ — these are regenerable from the pipeline + config.
 output/
