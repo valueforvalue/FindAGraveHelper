@@ -16,12 +16,13 @@ per record observed before this round.
 """
 from __future__ import annotations
 
-import ctypes
 import gc
 import sys
 from pathlib import Path
 
 import pytest
+
+from mem_probe import rss_mb as _rss_mb
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -31,40 +32,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 # or:
 #   pytest tests/test_real_fag_memory.py --no-header -v
 pytestmark = pytest.mark.integration
-
-
-
-def _rss_mb():
-    """Total RSS for THIS process (Win32 binding)."""
-    try:
-        psapi = ctypes.windll.psapi
-        psapi.GetProcessMemoryInfo.argtypes = [
-            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_ulong
-        ]
-        psapi.GetProcessMemoryInfo.restype = ctypes.c_int
-
-        class PMC(ctypes.Structure):
-            _fields_ = [
-                ("cb", ctypes.c_ulong),
-                ("PageFaultCount", ctypes.c_ulong),
-                ("PeakWorkingSetSize", ctypes.c_size_t),
-                ("WorkingSetSize", ctypes.c_size_t),
-                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-                ("PagefileUsage", ctypes.c_size_t),
-                ("PeakPagefileUsage", ctypes.c_size_t),
-            ]
-        ct = PMC()
-        ct.cb = ctypes.sizeof(ct)
-        ok = psapi.GetProcessMemoryInfo(
-            ctypes.windll.kernel32.GetCurrentProcess(),
-            ctypes.byref(ct), ctypes.sizeof(ct),
-        )
-        return ct.WorkingSetSize / (1024 * 1024) if ok else 0.0
-    except Exception:
-        return 0.0
 
 
 WARMUP_PENSIONERS = [

@@ -4,6 +4,24 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(tests): make RSS sampler cross-platform so CI can run the CGR index-reuse test
+
+`tests/test_cgr_index_reuse.py` (in the default suite) and the
+real-FaG integration/diag suites all used a Windows-only RSS
+sampler (`ctypes.windll.psapi`). On Linux CI runners the sampler
+silently returned 0.0 and the index-reuse test failed with
+`AssertionError: RSS sampler broken on this platform`.
+
+Extract the sampler into `tests/mem_probe.py` with a four-step
+fallback chain — psutil → Linux `/proc/self/statm` →
+POSIX `resource.getrusage` → Win32 psapi — so it works on
+Windows, Linux, and macOS. The index-reuse test now skips
+gracefully when no sampler path is available (instead of
+failing) and passes on Linux CI.
+
+`pytest.ini` gains `pythonpath = tests` so test modules can
+import shared helpers (e.g. `mem_probe`).
+
 ### Feat(post-pass): opt-in auto-fetch of compound pensioncard pages (#81)
 
 The auto-derive path (#101) covers the 73% single-page

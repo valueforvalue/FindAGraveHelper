@@ -26,50 +26,15 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from mem_probe import rss_mb  # noqa: E402
+
 # Diag marker — already declared in pytest.ini.
 pytestmark = pytest.mark.diag
 
 
 def _rss_mb_diag() -> float:
-    """Win32 RSS sampler (same implementation as the integration
-    test, factored for the diag path). Returns 0.0 on non-Win32
-    hosts so the diag test gracefully skips on Linux/macOS.
-    """
-    if sys.platform != "win32":
-        return 0.0
-    try:
-        import ctypes
-
-        psapi = ctypes.windll.psapi
-        psapi.GetProcessMemoryInfo.argtypes = [
-            ctypes.c_void_p, ctypes.c_void_p, ctypes.c_ulong
-        ]
-        psapi.GetProcessMemoryInfo.restype = ctypes.c_int
-
-        class PMC(ctypes.Structure):
-            _fields_ = [
-                ("cb", ctypes.c_ulong),
-                ("PageFaultCount", ctypes.c_ulong),
-                ("PeakWorkingSetSize", ctypes.c_size_t),
-                ("WorkingSetSize", ctypes.c_size_t),
-                ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
-                ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
-                ("PagefileUsage", ctypes.c_size_t),
-                ("PeakPagefileUsage", ctypes.c_size_t),
-            ]
-
-        ct = PMC()
-        ct.cb = ctypes.sizeof(ct)
-        ok = psapi.GetProcessMemoryInfo(
-            ctypes.windll.kernel32.GetCurrentProcess(),
-            ctypes.byref(ct),
-            ctypes.sizeof(ct),
-        )
-        return ct.WorkingSetSize / (1024 * 1024) if ok else 0.0
-    except Exception:
-        return 0.0
+    """Diag-path alias for the cross-platform RSS sampler."""
+    return rss_mb()
 
 
 def _fake_search(pensioner, cfg):
