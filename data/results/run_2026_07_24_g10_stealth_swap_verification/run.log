@@ -1,0 +1,20 @@
+2026-07-24 12:54:34,027 INFO Run starting at 2026-07-24T17:54:34Z
+2026-07-24 12:54:34,027 INFO Output dir: C:\Users\jmorris\AppData\Local\Temp\fag_g10
+2026-07-24 12:54:34,027 INFO Args: {'subcommand': None, 'input': WindowsPath('docs/research/digitalprairie/ok_pensioners_g10.json'), 'input_csv': None, 'cgr': WindowsPath('docs/research/cgr/ok_vets_enriched.jsonl'), 'config': None, 'pensioncard_pages': None, 'out': WindowsPath('C:/Users/jmorris/AppData/Local/Temp/fag_g10'), 'limit': 10, 'throttle': 2.5, 'mode': None, 'low_score_threshold': 0.4, 'shuffle': False, 'start_from': 0, 'no_fag': False, 'mock_fag': None, 'fag_state_filter': None, 'dry_run': False, 'post_process_only': False, 'reprocess': False, 'state_replay': None, 'rollback_to': None, 'checkpoint_every': 1000, 'checkpoint_label': None, 'write_checkpoint': False, 'list_checkpoints': False, 'blackboard_db': None, 'view_html_source': None, 'batch_cfg': None}
+2026-07-24 12:54:34,078 INFO Loaded 10 pensioners from input
+2026-07-24 12:54:34,103 INFO Loaded CGR data: 768 cemeteries, 2593 total vets
+2026-07-24 12:54:34,115 INFO Blackboard store: C:\Users\jmorris\AppData\Local\Temp\fag_g10\blackboard.db
+2026-07-24 13:14:10,382 INFO Wrote projection schema (v2) to C:\Users\jmorris\AppData\Local\Temp\fag_g10\results.schema.json
+2026-07-24 13:14:10,419 INFO Wrote 10 JSON-LD records to C:\Users\jmorris\AppData\Local\Temp\fag_g10\open_gravestones.ndjson (errors=0)
+2026-07-24 13:14:10,421 INFO Scheduler batch complete: 10/10 pensioners projected to C:\Users\jmorris\AppData\Local\Temp\fag_g10\results.jsonl
+2026-07-24 13:14:10,423 INFO Run finished: {
+  "total": 10,
+  "processed": 115,
+  "outliers_count": 0,
+  "auto_accepts": 0,
+  "errors": 0,
+  "both_match_total": 0,
+  "both_match_direct": 0,
+  "both_match_corroborated": 0,
+  "elapsed_seconds": 1176.3
+}

@@ -1,0 +1,118 @@
+{
+  "started_at": 1784915674.1608934,
+  "finished_at": 1784916850.4206052,
+  "elapsed_s": 1176.3,
+  "total_observations": 5496,
+  "observations_by_kind": {
+    "CGRCorroboration": 2593,
+    "PensionerImported": 10,
+    "FaGSearchPlan": 65,
+    "FaGCandidateFetch": 2798,
+    "ScoreObserved": 20,
+    "DecisionObserved": 10
+  },
+  "total_work_items": 115,
+  "work_by_state": {
+    "succeeded": 115
+  },
+  "knowledge_sources": {
+    "run_unified": {
+      "name": "run_unified",
+      "work_claimed": 0,
+      "work_succeeded": 0,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 0,
+      "success_rate": 0.0,
+      "total_observations_emitted": 2603,
+      "observation_kinds": {
+        "CGRCorroboration": 2593,
+        "PensionerImported": 10
+      },
+      "avg_duration_s": 0.0,
+      "p95_duration_s": 0.0
+    },
+    "RegionalPlannerKS": {
+      "name": "RegionalPlannerKS",
+      "work_claimed": 10,
+      "work_succeeded": 10,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 10,
+      "success_rate": 1.0,
+      "total_observations_emitted": 30,
+      "observation_kinds": {
+        "FaGSearchPlan": 30
+      },
+      "avg_duration_s": 0.0515,
+      "p95_duration_s": 0.0657
+    },
+    "FaGScraperKS": {
+      "name": "FaGScraperKS",
+      "work_claimed": 65,
+      "work_succeeded": 65,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 65,
+      "success_rate": 1.0,
+      "total_observations_emitted": 2798,
+      "observation_kinds": {
+        "FaGCandidateFetch": 2798
+      },
+      "avg_duration_s": 17.9359,
+      "p95_duration_s": 23.1342
+    },
+    "CandidateScorerKS": {
+      "name": "CandidateScorerKS",
+      "work_claimed": 20,
+      "work_succeeded": 20,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 20,
+      "success_rate": 1.0,
+      "total_observations_emitted": 20,
+      "observation_kinds": {
+        "ScoreObserved": 20
+      },
+      "avg_duration_s": 0.0546,
+      "p95_duration_s": 0.0883
+    },
+    "DeepRefinerKS": {
+      "name": "DeepRefinerKS",
+      "work_claimed": 10,
+      "work_succeeded": 10,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 10,
+      "success_rate": 1.0,
+      "total_observations_emitted": 35,
+      "observation_kinds": {
+        "FaGSearchPlan": 35
+      },
+      "avg_duration_s": 0.1144,
+      "p95_duration_s": 0.2133
+    },
+    "CalibratedDecisionKS": {
+      "name": "CalibratedDecisionKS",
+      "work_claimed": 10,
+      "work_succeeded": 10,
+      "work_retryable": 0,
+      "work_blocked": 0,
+      "work_terminal": 0,
+      "total_work_completed": 10,
+      "success_rate": 1.0,
+      "total_observations_emitted": 10,
+      "observation_kinds": {
+        "DecisionObserved": 10
+      },
+      "avg_duration_s": 0.0508,
+      "p95_duration_s": 0.0657
+    }
+  },
+  "cooldown_events": 0
+}

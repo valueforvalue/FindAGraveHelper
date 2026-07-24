@@ -1,0 +1,176 @@
+{
+  "schema_version": 2,
+  "row_format": "newline-delimited JSON (L5)",
+  "fields": [
+    {
+      "name": "pensioner_id",
+      "type": "int",
+      "required": true,
+      "description": "Stable pensioner identifier (issue #14)."
+    },
+    {
+      "name": "pensioner_name",
+      "type": "str",
+      "required": true,
+      "description": "'last, first' name format. v2 view derives display name from this."
+    },
+    {
+      "name": "status",
+      "type": "str",
+      "required": true,
+      "description": "Decision status: auto_accept, needs_review, low_score, no_candidates, ambiguous, error. Canonical values in scripts.pipeline.scoring_constants."
+    },
+    {
+      "name": "best_score",
+      "type": "float",
+      "required": true,
+      "description": "Top score across ranked_candidates in [0, 1]."
+    },
+    {
+      "name": "ranked_candidates",
+      "type": "list[dict]",
+      "required": true,
+      "description": "Engine-specific scored candidates (FaG or Newspapers). See `common.candidates` for the engine-agnostic projection."
+    },
+    {
+      "name": "fag_records",
+      "type": "list[dict]",
+      "required": true,
+      "description": "FaG-shaped duplicate of ranked_candidates (back-compat with v1 view consumers)."
+    },
+    {
+      "name": "_policy_version",
+      "type": "str",
+      "required": true,
+      "description": "DecisionPolicy version that produced the status field. Versioned per CONTEXT.md so a replay can recover the exact rule."
+    },
+    {
+      "name": "_schema_version",
+      "type": "int",
+      "required": true,
+      "description": "Projection schema version (this file's source of truth). v2+; absent means v1 (legacy)."
+    },
+    {
+      "name": "badges",
+      "type": "list[str]",
+      "required": true,
+      "description": "Corroboration badges: cgr_match, spouse_match, dd_match. Computed by ProjectionBuilder from observations."
+    },
+    {
+      "name": "common",
+      "type": "dict",
+      "required": true,
+      "description": "Engine-agnostic projection (issue #39). Carries id, title, engine, status, best_score, candidates, corroboration."
+    },
+    {
+      "name": "pensioner_first",
+      "type": "str",
+      "required": false,
+      "description": "First name. v1 names: pensioner_-prefixed; the row may also carry the un-prefixed first_name."
+    },
+    {
+      "name": "pensioner_middle",
+      "type": "str",
+      "required": false,
+      "description": "Middle name or initial."
+    },
+    {
+      "name": "pensioner_last",
+      "type": "str",
+      "required": false,
+      "description": "Last name."
+    },
+    {
+      "name": "pensioner_app_number",
+      "type": "str",
+      "required": false,
+      "description": "Application number from the OK pensioners record."
+    },
+    {
+      "name": "pensioner_birth_year",
+      "type": "int",
+      "required": false,
+      "description": "Birth year if known."
+    },
+    {
+      "name": "pensioner_death_year",
+      "type": "int",
+      "required": false,
+      "description": "Death year if known."
+    },
+    {
+      "name": "regiment",
+      "type": "str",
+      "required": false,
+      "description": "CW regiment from the pensioner record."
+    },
+    {
+      "name": "company",
+      "type": "str",
+      "required": false,
+      "description": "CW company letter."
+    },
+    {
+      "name": "pensioncard_backlink",
+      "type": "str",
+      "required": false,
+      "description": "URL back to the digitalprairie.ok.gov pension card."
+    },
+    {
+      "name": "pensioncard_iiif_url",
+      "type": "str",
+      "required": false,
+      "description": "IIIF image URL for the pension card."
+    },
+    {
+      "name": "pensioncard_pages",
+      "type": "list[str]",
+      "required": false,
+      "description": "IIIF page IDs (issue #62). v2 view builds IIIF URLs from these."
+    },
+    {
+      "name": "pensioner_spouse_first",
+      "type": "str",
+      "required": false,
+      "description": "Spouse first name (widow cross-reference)."
+    },
+    {
+      "name": "pensioner_spouse_middle",
+      "type": "str",
+      "required": false,
+      "description": "Spouse middle name."
+    },
+    {
+      "name": "pensioner_spouse_last",
+      "type": "str",
+      "required": false,
+      "description": "Spouse last name."
+    },
+    {
+      "name": "backlink",
+      "type": "str",
+      "required": false,
+      "description": "URL back to the pensioner record itself (not the candidate)."
+    },
+    {
+      "name": "cgr_match",
+      "type": "dict",
+      "required": false,
+      "description": "CGR corroboration evidence. Populated by the observation_enrichment post-pass."
+    },
+    {
+      "name": "dd_match",
+      "type": "dict",
+      "required": false,
+      "description": "DixieData match evidence. Populated by the observation_enrichment post-pass."
+    },
+    {
+      "name": "spouse_match",
+      "type": "dict",
+      "required": false,
+      "description": "Spouse cross-reference evidence. Populated by the observation_enrichment post-pass."
+    }
+  ],
+  "policy_version_field": "_policy_version",
+  "schema_version_field": "_schema_version"
+}
