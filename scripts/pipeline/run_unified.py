@@ -159,115 +159,19 @@ class UnifiedRunnerConfig:
 # file:// (where fetch() of sibling files is blocked by the
 # browser) or from a simple http server. The view.html JS
 # reads from the embedded block first, then falls back to fetch.
-EMBEDDED_DATA_PLACEHOLDER = "<!--EMBEDDED_RESULTS_JSONL-->"
-EMBEDDED_DD_MATCH_PLACEHOLDER = "<!--EMBEDDED_DD_MATCH_JSON-->"
-EMBEDDED_SPOUSE_MATCH_PLACEHOLDER = "<!--EMBEDDED_SPOUSE_MATCH_JSON-->"
-EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER = "<!--EMBEDDED_SPOUSE_FOLLOWUPS_JSON-->"
-
-
-def copy_view_html_if_missing(
-    source: Optional[Path],
-    dest_dir: Path,
-    dest_filename: str = "view.html",
-    results_path: Optional[Path] = None,
-    dd_match_path: Optional[Path] = None,
-) -> bool:
-    """Copy source -> dest_dir/dest_filename iff dest doesn't exist.
-
-    If `results_path` is provided AND the source view.html contains
-    the EMBEDDED_DATA_PLACEHOLDER, the matching JSONL content is
-    injected as a <script type="application/json"> block so the
-    page works from file:// without needing a server.
-
-    If `dd_match_path` is provided AND the source contains the
-    EMBEDDED_DD_MATCH_PLACEHOLDER, the matching JSON sidecar is
-    similarly embedded (J14).
-
-    Returns True if a copy happened, False otherwise (skipped because
-    dest exists, or source missing, or source/dest identical path).
-    Never raises on missing source — the run proceeds without a
-    per-run view.html.
-    """
-    if source is None:
-        return False
-    source = Path(source)
-    dest_dir = Path(dest_dir)
-    dest = dest_dir / dest_filename
-    if dest.exists():
-        return False
-    if not source.exists():
-        return False
-    dest_dir.mkdir(parents=True, exist_ok=True)
-
-    text = source.read_text(encoding="utf-8")
-    # Embed the results.jsonl as a JSON script block (J9).
-    if results_path is not None and EMBEDDED_DATA_PLACEHOLDER in text:
-        if results_path.exists():
-            embedded = results_path.read_text(encoding="utf-8")
-            # Escape </script> inside the JSON to keep the script
-            # block well-formed (the JSON itself shouldn't contain
-            # it, but defense in depth).
-            safe = embedded.replace("</script>", "<\\/script>")
-            block = (
-                f'<script type="application/json" id="embedded-results-jsonl">\n'
-                f'{safe}\n'
-                f'</script>\n'
-            )
-            text = text.replace(EMBEDDED_DATA_PLACEHOLDER, block)
-        else:
-            # No results yet; drop the placeholder so the page
-            # still loads (the user can pick a file manually).
-            text = text.replace(EMBEDDED_DATA_PLACEHOLDER, "")
-
-    # J14: same embed pattern for the dd_match sidecar.
-    if dd_match_path is not None and EMBEDDED_DD_MATCH_PLACEHOLDER in text:
-        if dd_match_path.exists():
-            sidecar = dd_match_path.read_text(encoding="utf-8")
-            safe = sidecar.replace("</script>", "<\\/script>")
-            block = (
-                f'<script type="application/json" id="embedded-dd-match">\n'
-                f'{safe}\n'
-                f'</script>\n'
-            )
-            text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, block)
-        else:
-            # No DD sidecar yet (e.g. no DD source configured).
-            text = text.replace(EMBEDDED_DD_MATCH_PLACEHOLDER, "")
-
-    # J15-S2: spouse_match sidecar (gold 'Spouse match' badge data).
-    spouse_match_path = dest_dir / "spouse_match.json"
-    if spouse_match_path is not None and EMBEDDED_SPOUSE_MATCH_PLACEHOLDER in text:
-        if spouse_match_path.exists():
-            sidecar = spouse_match_path.read_text(encoding="utf-8")
-            safe = sidecar.replace("</script>", "<\\/script>")
-            block = (
-                f'<script type="application/json" id="embedded-spouse-match">\n'
-                f'{safe}\n'
-                f'</script>\n'
-            )
-            text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, block)
-        else:
-            text = text.replace(EMBEDDED_SPOUSE_MATCH_PLACEHOLDER, "")
-
-    # J16: spouse_followups sidecar (deceased husbands; not
-    # pensioners). JSONL (one record per line), so we read it
-    # as text and embed as a single <script> block.
-    spouse_followups_path = dest_dir / "spouse_followups.jsonl"
-    if EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER in text:
-        if spouse_followups_path.exists():
-            sidecar = spouse_followups_path.read_text(encoding="utf-8")
-            safe = sidecar.replace("</script>", "<\\/script>")
-            block = (
-                f'<script type="application/json" id="embedded-spouse-followups">\n'
-                f'{safe}\n'
-                f'</script>\n'
-            )
-            text = text.replace(EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER, block)
-        else:
-            text = text.replace(EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER, "")
-
-    dest.write_text(text, encoding="utf-8")
-    return True
+#
+# Slice 3 (post-pass extraction): the implementation + the four
+# placeholder constants now live in `scripts/post_pass/view_copy.py`.
+# These shims keep the symbols importable from
+# `scripts.pipeline.run_unified` for back-compat with existing tests
+# (test_view_ux_j9, test_unified_config_externalization).
+from scripts.post_pass.view_copy import (
+    EMBEDDED_DATA_PLACEHOLDER,
+    EMBEDDED_DD_MATCH_PLACEHOLDER,
+    EMBEDDED_SPOUSE_FOLLOWUPS_PLACEHOLDER,
+    EMBEDDED_SPOUSE_MATCH_PLACEHOLDER,
+    copy_view_html_if_missing,
+)
 
 
 # ============================================================
@@ -1155,10 +1059,15 @@ def run_batch_scheduler(
     # from the scheduler init; the embed-only-if-missing
     # semantics means the copy at init always saw an empty
     # results.jsonl, leaving v2 with no embedded data.
-    copy_view_html_if_missing(
-        view_html_source,
-        out_dir,
-        results_path=state_repo.path,
+    from scripts.post_pass import view_copy as _vc
+    _vc.run(
+        config=_vc.config_from(
+            config,
+            dest_dir=out_dir,
+            results_path=state_repo.path,
+            source=view_html_source,
+        ),
+        log=log,
     )
 
     # Issue #55: post-run label collection.
@@ -1247,10 +1156,12 @@ def _post_process_only(
         view_path.unlink()
 
     # Regenerate view.html with embedded results.
-    copy_view_html_if_missing(
-        config.view_html_source,
-        out_dir,
-        results_path=results_path,
+    from scripts.post_pass import view_copy as _vc2
+    _vc2.run(
+        config=_vc2.config_from(
+            config, dest_dir=out_dir, results_path=results_path
+        ),
+        log=log,
     )
 
     if log:

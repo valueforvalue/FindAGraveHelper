@@ -4,6 +4,20 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): extract view_copy into scripts/post_pass/ (Slice 3)
+
+Moved `copy_view_html_if_missing` and the four `EMBEDDED_*_PLACEHOLDER`
+constants out of `scripts/pipeline/run_unified.py` into
+`scripts/post_pass/view_copy.py`. Thin re-export shims in
+`run_unified.py` keep the symbols importable for back-compat
+(test_view_ux_j9, test_unified_config_externalization both green).
+Both call sites (main loop and `_post_process_only` mode) updated.
+The dest filename is always `"view.html"` (separate concern from
+`results_filename`). Six new tests pin behavior including back-compat
+imports. Full suite: 1,317 passed. Slice 7 (POST_PASSES registry)
+follows.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): extract pensioncard_pages into scripts/post_pass/ (Slice 2)
 
 Moved the inline `_annotate_pensioncard_pages` helper out of
