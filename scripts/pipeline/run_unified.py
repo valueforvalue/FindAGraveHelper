@@ -820,7 +820,12 @@ def run_batch_scheduler(
             )
 
     scheduler = BlackboardScheduler(store)
-    scheduler.register(RegionalPlannerKS(enable_search=config.enable_fag))
+    scheduler.register(
+        RegionalPlannerKS(
+            enable_search=config.enable_fag,
+            dedup_fn=store.plan_already_completed,
+        )
+    )
 
     browser_session = None
     if config.enable_fag:

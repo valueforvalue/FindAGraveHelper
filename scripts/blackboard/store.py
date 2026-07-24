@@ -141,6 +141,28 @@ class BlackboardStore(Protocol):
         """Store a query plan for later execution."""
         ...
 
+    def plan_already_completed(
+        self,
+        pensioner_id: int,
+        strategy: str,
+        scope: str,
+    ) -> bool:
+        """True iff a (pensioner_id, strategy, scope) plan is
+        already in a terminal work state (succeeded, blocked,
+        terminal) — meaning a prior run already attempted it.
+
+        Used by RegionalPlannerKS + DeepRefinerKS to skip
+        duplicate FaG requests across re-runs (issue #77).
+        No schema changes; reads work_items + plans via the
+        existing tables.
+
+        The match is exact on (pensioner_id, strategy, scope).
+        A work item is "completed" if state is in
+        {SUCCEEDED, BLOCKED, TERMINAL} (anything that
+        terminated the run for this plan).
+        """
+        ...
+
     def close(self) -> None:
         """Close the store cleanly."""
         ...
@@ -679,6 +701,41 @@ class SqliteBlackboardStore:
         except Exception:
             self.con.rollback()
             raise
+
+    def plan_already_completed(
+        self,
+        pensioner_id: int,
+        strategy: str,
+        scope: str,
+    ) -> bool:
+        """SQLite impl: a plan matches when there's a terminal
+        work_item for that (pensioner_id, knowledge_source='FaGScraperKS')
+        tied to a plan with the same (strategy, scope). The
+        match is exact: different strategy or different scope
+        on the same pensioner does NOT match.
+
+        The join is `work_id = 'work-fag-' || plan_id` (the
+        convention RegionalPlannerKS uses when enqueuing
+        FaGScraperKS work items). See
+        `scripts/knowledge/regional_planner.py:109` and
+        `scripts/knowledge/candidate_scorer.py:221`.
+
+        See Protocol docstring for semantics.
+        """
+        row = self.con.execute(
+            """SELECT 1 FROM work_items w
+               JOIN query_plans p
+                 ON w.work_id = 'work-fag-' || p.plan_id
+               WHERE w.pensioner_id = ?
+                 AND w.knowledge_source = 'FaGScraperKS'
+                 AND w.state IN ('succeeded', 'blocked', 'terminal')
+                 AND p.pensioner_id = ?
+                 AND p.strategy = ?
+                 AND p.scope = ?
+               LIMIT 1""",
+            (pensioner_id, pensioner_id, strategy, scope),
+        ).fetchone()
+        return row is not None
 
 
 # ============================================================

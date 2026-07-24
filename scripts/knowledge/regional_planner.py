@@ -64,8 +64,19 @@ class RegionalPlannerKS:
     # Texas migration indicators
     _TEXAS_HINTS = ("texas", "tx", "reconstruction", "migrated to texas")
 
-    def __init__(self, *, enable_search: bool = True) -> None:
+    def __init__(
+        self,
+        *,
+        enable_search: bool = True,
+        dedup_fn: Any = None,
+    ) -> None:
         self.enable_search = enable_search
+        # Issue #77: dedup_fn(pensioner_id, strategy, scope) -> bool.
+        # When True, the (strategy, scope) combo already completed
+        # in a prior run and the new plan is skipped. Default None
+        # = no dedup (unit tests + first-run behavior). The runner
+        # injects store.plan_already_completed at registration.
+        self._dedup_fn = dedup_fn
 
     def eligible(self, item: WorkItem) -> bool:
         return item.knowledge_source == "RegionalPlannerKS"
@@ -133,7 +144,9 @@ class RegionalPlannerKS:
         """Generate ordered QueryPlans for a pensioner.
 
         Returns plans in priority order. Caller may truncate based
-        on request budget.
+        on request budget. Plans whose (strategy, scope) combo
+        already completed in a prior run are filtered out via
+        the BlackboardStore dedup helper (issue #77).
         """
         plans: list[QueryPlan] = []
 
@@ -159,25 +172,45 @@ class RegionalPlannerKS:
         if not last:
             return plans  # can't search without at least a last name
 
+        # Plan dedup against the BlackboardStore (issue #77).
+        # The store's plan_already_completed() returns True for
+        # (pensioner_id, strategy, scope) combos that already ran
+        # in a terminal state. This is the cross-run dedup
+        # mechanism — re-running the pipeline skips plans that
+        # are already done.
+        #
+        # The store is injected via _dedup_fn in __init__; default
+        # to a no-op so unit tests without a store still pass.
+        def _dedup(s: str, sc: str) -> bool:
+            if self._dedup_fn is None:
+                return False
+            try:
+                return self._dedup_fn(pensioner_id, s, sc)
+            except Exception:
+                return False
+
         # 1. Oklahoma (always first for this project)
-        plans.append(
-            QueryPlan(
-                plan_id=(
-                f"plan-ok-{pensioner_id}-"
-                f"{_stable_id(str(pensioner_id), 'OK', 'B1-exact')}"
-            ),
-                pensioner_id=pensioner_id,
-                strategy="B1-exact",
-                params=dict(base_params),
-                scope=PlanScope.OK,
-                reason="Project default: Oklahoma-first search.",
-                estimated_requests=1,
+        if not _dedup("B1-exact", "OK"):
+            plans.append(
+                QueryPlan(
+                    plan_id=(
+                    f"plan-ok-{pensioner_id}-"
+                    f"{_stable_id(str(pensioner_id), 'OK', 'B1-exact')}"
+                ),
+                    pensioner_id=pensioner_id,
+                    strategy="B1-exact",
+                    params=dict(base_params),
+                    scope=PlanScope.OK,
+                    reason="Project default: Oklahoma-first search.",
+                    estimated_requests=1,
+                )
             )
-        )
 
         # 2. Regiment-origin state
         origin_state = self._infer_origin_state(regiment)
-        if origin_state and origin_state != "OK":
+        if origin_state and origin_state != "OK" and not _dedup(
+            "B1-exact", origin_state
+        ):
             plans.append(
                 QueryPlan(
                     plan_id=(
@@ -196,7 +229,9 @@ class RegionalPlannerKS:
             )
 
         # 3. Texas (if migration evidence)
-        if self._has_texas_evidence(pensioner):
+        if self._has_texas_evidence(pensioner) and not _dedup(
+            "B1-exact", "TX"
+        ):
             plans.append(
                 QueryPlan(
                     plan_id=(
@@ -213,20 +248,21 @@ class RegionalPlannerKS:
             )
 
         # 4. US-wide fallback
-        plans.append(
-            QueryPlan(
-                plan_id=(
-                    f"plan-us-{pensioner_id}-"
-                    f"{_stable_id(str(pensioner_id), 'US', 'B4-fuzzy-last')}"
-                ),
-                pensioner_id=pensioner_id,
-                strategy="B4-fuzzy-last",
-                params=dict(base_params),
-                scope=PlanScope.US,
-                reason="US-wide fallback after narrow scopes.",
-                estimated_requests=1,
+        if not _dedup("B4-fuzzy-last", "US"):
+            plans.append(
+                QueryPlan(
+                    plan_id=(
+                        f"plan-us-{pensioner_id}-"
+                        f"{_stable_id(str(pensioner_id), 'US', 'B4-fuzzy-last')}"
+                    ),
+                    pensioner_id=pensioner_id,
+                    strategy="B4-fuzzy-last",
+                    params=dict(base_params),
+                    scope=PlanScope.US,
+                    reason="US-wide fallback after narrow scopes.",
+                    estimated_requests=1,
+                )
             )
-        )
 
         return plans
 
