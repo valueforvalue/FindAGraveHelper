@@ -18,7 +18,8 @@ from enum import Enum
 from typing import Any, Optional
 
 # Bump when the shape of any schema class changes.
-schema_version: int = 1
+# v2: added WorkItem.lease_deadline_at (issue #97 heartbeat leases).
+schema_version: int = 2
 
 
 # ============================================================
@@ -199,6 +200,13 @@ class WorkItem:
 
     Each Knowledge Source action creates a WorkItem so the scheduler
     can claim, lease, and complete work units atomically.
+
+    `lease_deadline_at` is the heartbeat-driven deadline (issue
+    #97). Set on claim; refreshed by `store.heartbeat(work_id)`
+    while `invoke()` runs. The reclaim logic reads this field
+    instead of computing from `attempts[-1].leased_at + budget`,
+    which lets long-running `invoke()` calls survive past their
+    initial budget.
     """
 
     work_id: str
@@ -211,6 +219,7 @@ class WorkItem:
     attempt: int = 0
     not_before: str | None = None  # ISO 8601 — enforces cooldowns
     leased_by: str | None = None
+    lease_deadline_at: str | None = None  # ISO 8601 — heartbeat-driven
     completed_at: str | None = None
     attempts: list[dict[str, Any]] = field(default_factory=list)
 
@@ -227,6 +236,7 @@ class WorkItem:
             "attempt": self.attempt,
             "not_before": self.not_before,
             "leased_by": self.leased_by,
+            "lease_deadline_at": self.lease_deadline_at,
             "completed_at": self.completed_at,
             "attempts": list(self.attempts),
         }
@@ -246,6 +256,7 @@ class WorkItem:
             attempt=d.get("attempt", 0),
             not_before=d.get("not_before"),
             leased_by=d.get("leased_by"),
+            lease_deadline_at=d.get("lease_deadline_at"),
             completed_at=d.get("completed_at"),
             attempts=d.get("attempts", []),
         )

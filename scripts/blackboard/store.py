@@ -175,6 +175,7 @@ CREATE TABLE IF NOT EXISTS work_items (
     attempt INTEGER NOT NULL DEFAULT 0,
     not_before TEXT,
     leased_by TEXT,
+    lease_deadline_at TEXT,
     completed_at TEXT,
     attempts TEXT NOT NULL DEFAULT '[]'
 );
@@ -233,12 +234,36 @@ class SqliteBlackboardStore:
         self._con.execute("PRAGMA journal_mode=WAL")
         self._con.execute("PRAGMA synchronous=NORMAL")
         self._con.executescript(_SCHEMA_SQL)
+        self._migrate_work_items_schema()
 
     def close(self) -> None:
         """Close the database cleanly."""
         if self._con is not None:
             self._con.close()
             self._con = None
+
+    # ----------------------------------------------------------
+    # Schema migration (issue #97 heartbeat leases)
+    # ----------------------------------------------------------
+
+    def _migrate_work_items_schema(self) -> None:
+        """Add `lease_deadline_at` column to existing work_items
+        tables that predate issue #97. Idempotent: skips if the
+        column already exists.
+
+        SQLite has no `ADD COLUMN IF NOT EXISTS`, so check
+        pragma_table_info first. The column is nullable with no
+        default, matching the WorkItem.lease_deadline_at field
+        (None until a claim sets it).
+        """
+        rows = self.con.execute(
+            "PRAGMA table_info(work_items)"
+        ).fetchall()
+        column_names = {row[1] for row in rows}
+        if "lease_deadline_at" not in column_names:
+            self.con.execute(
+                "ALTER TABLE work_items ADD COLUMN lease_deadline_at TEXT"
+            )
 
     # ----------------------------------------------------------
     # Observers
@@ -356,11 +381,18 @@ class SqliteBlackboardStore:
         knowledge_source: str,
         lease_seconds: int = 30,
     ) -> WorkItem | None:
-        """Claim next ready work item, honoring not_before and stale leases."""
-        now = _now_iso()
-        stale_deadline = _iso_delta(-lease_seconds * 2)
+        """Claim next ready work item, honoring not_before and stale leases.
 
-        # Reclaim stale leases first
+        Issue #97: the claim writes `lease_deadline_at = now + lease_seconds`.
+        The reclaim branch below reads this column (not attempts[-1].leased_at)
+        so a long-running `invoke()` survives past its initial budget via
+        heartbeats.
+        """
+        now = _now_iso()
+        # Legacy fallback: when lease_deadline_at is NULL (older rows
+        # migrated before this field existed), fall back to the old
+        # heuristic of `attempts[-1].leased_at + 2 * lease_seconds`.
+        # New claims always populate the column.
         self.con.execute(
             """UPDATE work_items
                SET state = 'ready', leased_by = NULL, attempt = attempt
@@ -369,10 +401,16 @@ class SqliteBlackboardStore:
                  AND completed_at IS NULL
                  AND leased_by IS NOT NULL
                  AND (
-                     SELECT MAX(json_extract(value, '$.leased_at'))
-                     FROM json_each(attempts)
-                 ) < ?""",
-            (knowledge_source, stale_deadline),
+                     (lease_deadline_at IS NOT NULL AND lease_deadline_at < ?)
+                     OR (
+                         lease_deadline_at IS NULL
+                         AND (
+                             SELECT MAX(json_extract(value, '$.leased_at'))
+                             FROM json_each(attempts)
+                         ) < ?
+                     )
+                 )""",
+            (knowledge_source, now, _iso_delta(-lease_seconds * 2)),
         )
 
         # Claim next ready item
@@ -391,6 +429,7 @@ class SqliteBlackboardStore:
 
         item = _row_to_workitem(row)
         lease_at = now
+        lease_deadline_at = _iso_delta(lease_seconds)
         new_attempts = list(item.attempts)
         new_attempts.append({
             "attempt": item.attempt + 1,
@@ -403,11 +442,13 @@ class SqliteBlackboardStore:
             self.con.execute(
                 """UPDATE work_items
                    SET state = 'leased', attempt = ?,
-                       leased_by = ?, attempts = ?
+                       leased_by = ?, lease_deadline_at = ?,
+                       attempts = ?
                    WHERE work_id = ? AND state = 'ready'""",
                 (
                     item.attempt + 1,
                     f"proc-{os.getpid()}",
+                    lease_deadline_at,
                     json.dumps(new_attempts, ensure_ascii=False),
                     item.work_id,
                 ),
@@ -420,6 +461,7 @@ class SqliteBlackboardStore:
         item.state = WorkState.LEASED
         item.attempt += 1
         item.leased_by = f"proc-{os.getpid()}"
+        item.lease_deadline_at = lease_deadline_at
         item.attempts = new_attempts
 
         # Notify observers.
@@ -430,6 +472,45 @@ class SqliteBlackboardStore:
                 pass
 
         return item
+
+    def heartbeat(self, work_id: str, lease_seconds: int = 30) -> None:
+        """Extend a leased work item's `lease_deadline_at` by `lease_seconds`.
+
+        Issue #97 heartbeat leases: the Scheduler calls this on a
+        background thread while a KnowledgeSource's `invoke()` runs.
+        A crashed KS that stops heartbeating will be reclaimed at
+        the deadline; a healthy KS that heartbeats survives past
+        its initial budget.
+
+        Raises KeyError if `work_id` doesn't exist — strict path
+        so callers notice typos rather than silently dropping
+        heartbeats.
+
+        No-op if the work item is no longer leased (e.g. it was
+        completed or reclaimed between heartbeat ticks).
+        """
+        deadline = _iso_delta(lease_seconds)
+        cursor = self.con.execute(
+            """UPDATE work_items
+               SET lease_deadline_at = ?
+               WHERE work_id = ?
+                 AND state = 'leased'
+                 AND leased_by IS NOT NULL""",
+            (deadline, work_id),
+        )
+        if cursor.rowcount == 0:
+            # Either the work_id doesn't exist OR the item isn't
+            # currently leased. Distinguish via a SELECT.
+            row = self.con.execute(
+                "SELECT 1 FROM work_items WHERE work_id = ?",
+                (work_id,),
+            ).fetchone()
+            if row is None:
+                raise KeyError(
+                    f"No work item with work_id={work_id!r}"
+                )
+            # Item exists but isn't leased: silent no-op. Common
+            # when a heartbeat races with complete_work / reclaim.
 
     def complete_work(
         self,
@@ -686,7 +767,15 @@ def _row_to_observation(row: tuple) -> Observation:
 
 
 def _row_to_workitem(row: tuple) -> WorkItem:
-    """Convert a SQLite row to a WorkItem."""
+    """Convert a SQLite row to a WorkItem.
+
+    Index map (matches CREATE TABLE order in _SCHEMA_SQL after
+    issue #97 added lease_deadline_at):
+        0 work_id, 1 pensioner_id, 2 knowledge_source, 3 plan_id,
+        4 pass_id, 5 input_revision, 6 state, 7 attempt,
+        8 not_before, 9 leased_by, 10 lease_deadline_at,
+        11 completed_at, 12 attempts.
+    """
     return WorkItem(
         work_id=row[0],
         pensioner_id=row[1],
@@ -698,6 +787,7 @@ def _row_to_workitem(row: tuple) -> WorkItem:
         attempt=row[7],
         not_before=row[8],
         leased_by=row[9],
-        completed_at=row[10],
-        attempts=json.loads(row[11]) if row[11] else [],
+        lease_deadline_at=row[10],
+        completed_at=row[11],
+        attempts=json.loads(row[12]) if row[12] else [],
     )

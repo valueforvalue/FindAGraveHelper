@@ -5,6 +5,13 @@ invokes eligible Knowledge Sources, and atomically posts outputs
 and completion. Replaces the central god-loop with event-guided
 dispatch.
 
+Issue #97: heartbeat leases. While a KnowledgeSource's invoke()
+runs, the Scheduler spawns a background thread that calls
+`store.heartbeat(work_id)` every `lease_seconds / 2` seconds,
+extending the lease deadline. A healthy KS survives past its
+initial budget; a crashed KS stops heartbeating and is reclaimed
+at the deadline.
+
 Usage:
     store = SqliteBlackboardStore(db_path)
     store.open()
@@ -16,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import logging
+import threading
 import time
 from typing import Protocol, runtime_checkable
 
@@ -66,12 +74,42 @@ class KnowledgeSource(Protocol):
 # ============================================================
 
 
+def _heartbeat_loop(
+    store: BlackboardStore,
+    work_id: str,
+    lease_seconds: int,
+    stop_event: threading.Event,
+) -> None:
+    """Heartbeat driver (issue #97). Runs on a daemon thread.
+
+    Calls `store.heartbeat(work_id, lease_seconds)` every
+    `lease_seconds / 2` seconds until `stop_event` is set (by
+    the scheduler after invoke() returns or raises). A crashed
+    KS leaves this thread to die with the process; a healthy
+    one stops it cleanly via the event.
+    """
+    interval = max(1.0, lease_seconds / 2.0)
+    while not stop_event.wait(interval):
+        try:
+            store.heartbeat(work_id, lease_seconds=lease_seconds)
+        except KeyError:
+            # Work item was deleted/renamed under us; stop the loop.
+            return
+        except Exception as exc:
+            log.warning(
+                "Heartbeat for work %s failed (continuing): %s",
+                work_id,
+                exc,
+            )
+
+
 class BlackboardScheduler:
     """Dispatches Knowledge Sources from durable work.
 
     Loop: claim ready work → find eligible KS → invoke → persist
     observations → complete work. Honors not_before and stale
-    lease reclamation.
+    lease reclamation. Issue #97: heartbeat thread per claim
+    extends the lease deadline while invoke() runs.
     """
 
     def __init__(
@@ -116,6 +154,9 @@ class BlackboardScheduler:
 
         Tries each registered KS in order until one claims work
         and produces output.
+
+        Issue #97: spawns a heartbeat thread per claim so a long-
+        running invoke() survives past its initial lease budget.
         """
         for ks in self._knowledge_sources:
             item = self.store.claim_work(ks.name, self.lease_seconds)
@@ -129,9 +170,28 @@ class BlackboardScheduler:
                 )
                 continue
 
+            # Heartbeat thread: refresh lease_deadline_at every
+            # lease_seconds / 2 while invoke() runs. The thread is
+            # a daemon so a crashed KS can't leave it orphaned.
+            stop_event = threading.Event()
+            heartbeat_thread = threading.Thread(
+                target=_heartbeat_loop,
+                args=(
+                    self.store,
+                    item.work_id,
+                    self.lease_seconds,
+                    stop_event,
+                ),
+                daemon=True,
+                name=f"heartbeat-{item.work_id}",
+            )
+            heartbeat_thread.start()
+
             try:
                 observations = ks.invoke(item, self.store)
             except Exception as exc:
+                stop_event.set()
+                heartbeat_thread.join(timeout=2.0)
                 log.error(
                     "KnowledgeSource %s failed on work %s: %s",
                     ks.name, item.work_id, exc,
@@ -152,6 +212,9 @@ class BlackboardScheduler:
                         ),
                     )
                 return True
+
+            stop_event.set()
+            heartbeat_thread.join(timeout=2.0)
 
             observation_ids = [o.observation_id for o in observations]
             self.store.complete_work(

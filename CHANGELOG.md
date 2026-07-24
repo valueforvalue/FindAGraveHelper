@@ -4,6 +4,25 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Feat(scheduler): heartbeat leases (Temporal-style, no broker) (#97)
+
+Added `WorkItem.lease_deadline_at` (ISO 8601) and a
+`BlackboardStore.heartbeat(work_id, lease_seconds)` method
+that refreshes the deadline. The Scheduler spawns a daemon
+heartbeat thread per claim (one per `invoke()` call) that
+calls `store.heartbeat(...)` every `lease_seconds / 2`,
+extending the deadline while the KS runs. A crashed KS
+stops heartbeating and is reclaimed at the deadline; a
+healthy slow KS survives past its initial budget. SQLite
+schema bumped to v2 with an idempotent `ALTER TABLE`
+migration in `open()` that adds the nullable
+`lease_deadline_at` column. Reclaim SQL now reads
+`lease_deadline_at` (with a fallback to the legacy
+`attempts[-1].leased_at` heuristic for pre-v2 rows).
+Eight new tests pin behavior; CONTEXT.md §L12 updated
+with the heartbeat contract. Full suite: 1,366 passed.
+Audit backlog item #5: completed.
+
 ### Infra(ci): GitHub Actions workflow + Docker image + CI badge (#93)
 
 Added `.github/workflows/test.yml` (matrix Python 3.11 / 3.12 /

@@ -459,7 +459,7 @@ the dedup; calling code SHOULD NOT pre-assign IDs.
 deterministic IDs, a resume re-emitted the same FaG search
 observation and doubled the work-item count.
 
-### L12. Lease TTL on dispatched work (Scheduler)
+### L12. Lease TTL on dispatched work (Scheduler, with heartbeat)
 
 Every WorkItem leased to a Knowledge Source MUST carry a
 TTL (default 60s). The Scheduler reclaims leases past the
@@ -469,7 +469,20 @@ Cancelled leases bump an `attempts` counter; after 3 failed
 attempts the WorkItem transitions to `BLOCKED` (operator
 review) instead of looping.
 
+**Heartbeat (issue #97):** the deadline is a
+`lease_deadline_at` ISO 8601 timestamp on the WorkItem. While
+`invoke()` runs, the Scheduler spawns a daemon thread that
+calls `store.heartbeat(work_id)` every `lease_seconds / 2`,
+extending the deadline. A healthy long-running KS survives
+past its initial budget; a crashed KS stops heartbeating and
+is reclaimed at the deadline. Claim populates the column;
+`heartbeat(work_id, lease_seconds)` refreshes it.
+
 **Earned by:** Scheduler Phase 5 smoke runs. The first
 scheduler run wedged when FaGScraperKS hit a Cloudflare
 challenge mid-invoke; without TTL, the lease survived
-forever and no other pensioner got processed.
+forever and no other pensioner got processed. **Heartbeat
+addition earned by:** issue #97, July 2026 — slow
+`BrowserSession.search()` invocations during the 7,558-record
+batch occasionally exceeded the 60s initial lease and were
+falsely reclaimed.
