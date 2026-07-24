@@ -824,17 +824,11 @@ def run_batch_scheduler(
 
     browser_session = None
     if config.enable_fag:
+        from scripts.fag.browser_config import BrowserConfig
         from scripts.fag.browser_session import BrowserSession
 
-        browser_session = BrowserSession(
-            throttle=config.throttle_seconds,
-            reset_every=config.browser_reset_every,
-            headless=config.headless,
-            state_filter=config.browser_state_filter,
-            auto_relax=config.auto_relax,
-            max_consecutive_errors=config.max_consecutive_errors,
-            enforce_throttle_floor=config.enforce_throttle_floor,
-        )
+        browser_config = BrowserConfig.from_unified(config)
+        browser_session = BrowserSession.from_config(browser_config)
         browser_session.start()
         if config.mock_fag_path:
             browser_session.enable_mock_fag(str(config.mock_fag_path))

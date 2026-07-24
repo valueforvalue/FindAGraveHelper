@@ -252,6 +252,21 @@ def test_scheduler_browser_mode_starts_and_closes_session(tmp_path, monkeypatch)
         def _try_auto_relax_engine(self, engine, page, ctx, ok_result, throttle_fn=None):
             return ok_result
 
+        @classmethod
+        def from_config(cls, config, **overrides):
+            kwargs = {
+                "throttle": config.throttle,
+                "reset_every": config.reset_every,
+                "headless": config.headless,
+                "state_filter": config.state_filter,
+                "auto_relax": config.auto_relax,
+                "max_consecutive_errors": config.max_consecutive_errors,
+                "user_agent": config.user_agent,
+                "enforce_throttle_floor": config.enforce_throttle_floor,
+            }
+            kwargs.update(overrides)
+            return cls(**kwargs)
+
     monkeypatch.setattr(browser_session_module, "BrowserSession", FakeBrowserSession)
     monkeypatch.setattr(
         RequestGate,

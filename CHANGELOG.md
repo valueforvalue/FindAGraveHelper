@@ -4,6 +4,21 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(runner): BrowserConfig dataclass for BrowserSession knobs (Slice 9)
+
+Added `scripts/fag/browser_config.py` with a frozen
+`BrowserConfig` dataclass holding the eight BrowserSession
+knobs (`throttle`, `reset_every`, `headless`, `state_filter`,
+`auto_relax`, `max_consecutive_errors`, `user_agent`,
+`enforce_throttle_floor`). Added `BrowserSession.from_config(...)`
+classmethod for the new path; the existing kwargs API stays
+intact (5 callers, including test doubles). `run_unified.py`
+now constructs the session via `BrowserConfig.from_unified()` +
+`BrowserSession.from_config()`. Seven new tests pin defaults,
+frozen-ness, `from_unified` field reading, and `from_config`
+override behavior. Full suite: 1,347 passed.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): build POST_PASSES registry (Slice 7)
 
 Added `scripts/post_pass/_registry.py` with a flat

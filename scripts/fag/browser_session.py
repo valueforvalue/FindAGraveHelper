@@ -113,6 +113,36 @@ class BrowserSession:
         session.start()
         return session
 
+    @classmethod
+    def from_config(
+        cls, config: Any, **overrides: Any
+    ) -> "BrowserSession":
+        """Factory: build a session from a BrowserConfig (Slice 9).
+
+        Reads all BrowserSession.__init__ kwargs from the
+        BrowserConfig dataclass. Per-kwarg `overrides` win over
+        the config values (useful for tests).
+        """
+        from scripts.fag.browser_config import BrowserConfig
+
+        if not isinstance(config, BrowserConfig):
+            raise TypeError(
+                f"from_config requires BrowserConfig, got {type(config).__name__}"
+            )
+        kwargs = {
+            "throttle": config.throttle,
+            "reset_every": config.reset_every,
+            "headless": config.headless,
+            "state_filter": config.state_filter,
+            "auto_relax": config.auto_relax,
+            "max_consecutive_errors": config.max_consecutive_errors,
+            "user_agent": config.user_agent,
+            "enforce_throttle_floor": config.enforce_throttle_floor,
+        }
+        kwargs.update(overrides)
+        session = cls(**kwargs)
+        return session
+
     def __enter__(self) -> "BrowserSession":
         self.start()
         return self
