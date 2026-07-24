@@ -4,6 +4,33 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(search): StrategyRegistry for cross-engine strategy reuse (#99)
+
+Added `scripts/search/strategy_registry.py` — singleton
+registry mapping strategy name → `Strategy` instance. The
+`ProviderRegistry` (Slice 10) analogue for the strategy layer.
+`register_defaults()` populates the canonical cross-engine
+`year_sniper` strategy (name + birth year + death year triple-
+filter) the first time it's called; subsequent engines that
+register with the same name override the default.
+
+This closes the audit's "duplicated per engine" finding
+(backlog item #7): the FaG and Newspapers pipelines now
+resolve `year_sniper` from the same registry, eliminating the
+need to re-import the strategy in each engine. Engines that
+want a private variant register a different name and
+look that up by name.
+
+Twelve new tests pin: empty-after-reset, register+get
+returns same instance, register overwrites, lazy factory,
+unknown name → KeyError, known_strategies union, reset
+clears caches, year_sniper registered via factory,
+register_defaults idempotency, register-overrides-default,
+and the canonical year_sniper params(ctx) round-trip on a
+real SearchContext.
+
+Full suite: 1,387 passed. Audit backlog item #7: completed.
+
 ### Feat(export): open-burial-data JSON-LD export (#95) + OCSF events follow-up (#100)
 
 Added `scripts/exports/open_gravestones.py` — emits
