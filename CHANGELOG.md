@@ -4,6 +4,18 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): extract dd + spouse into scripts/post_pass/ (Slices 4 & 5)
+
+Moved the inline DixieData post-pass (~30 LOC) and the inline
+spouse post-pass (~17 LOC, opt-in via FAG_SCRAPE_SPOUSE) out of
+`scripts/pipeline/run_unified.py` into
+`scripts/post_pass/dd.py` and `scripts/post_pass/spouse.py`.
+Behavior preserved byte-for-byte including the env-var gate,
+non-fatal exception handling, and the same log messages. Ten new
+tests pin behavior across both passes. Full suite: 1,327 passed.
+Slice 6 (labels) + Slice 7 (POST_PASSES registry) follow.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): extract view_copy into scripts/post_pass/ (Slice 3)
 
 Moved `copy_view_html_if_missing` and the four `EMBEDDED_*_PLACEHOLDER`

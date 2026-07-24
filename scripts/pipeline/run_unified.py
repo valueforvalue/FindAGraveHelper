@@ -975,61 +975,28 @@ def run_batch_scheduler(
 
     # Issue #85: run DixieData post-pass and append observations to store.
     # Done after all pensioners are processed so DD match can see full results.
-    if os.environ.get("DIXIEDATA_DB") or os.environ.get("DIXIEDATA_ZIP_BACKUP"):
-        try:
-            from scripts.cgr.dixiedata_match import (
-                _match_pensioner_to_dd,
-                load_dd_index,
-            )
-            from scripts.pipeline.post_pass_observer import PostPassObserver
-
-            dd_index = load_dd_index(
-                db_path=os.environ.get("DIXIEDATA_DB"),
-                zip_path=os.environ.get("DIXIEDATA_ZIP_BACKUP"),
-            )
-            if dd_index:
-                dd_observer = PostPassObserver(run_id=run_id)
-                dd_matched = 0
-                for record in state_repo.iter_all(strict=True):
-                    pid = record.get("pensioner_id")
-                    if pid is None:
-                        continue
-                    dd_result = _match_pensioner_to_dd(record, dd_index)
-                    if dd_result:
-                        dd_observer.observe_dixiedata_match(
-                            pensioner_id=int(pid),
-                            dd_match=dd_result,
-                            match_found=True,
-                        )
-                        dd_matched += 1
-                dd_observer.write_to_store(store)
-                log.info(
-                    "DD post-pass: %d matches, wrote observations.",
-                    dd_matched,
-                )
-        except Exception as exc:
-            log.warning("DD post-pass failed (non-fatal): %s", exc)
+    from scripts.post_pass import dd as _dd
+    _dd.run(
+        state_repo,
+        store,
+        config=_dd.config_from(config),
+        run_id=run_id,
+        log=log,
+    )
 
     # Issue #88: spouse post-pass (opt-in via FAG_SCRAPE_SPOUSE=1).
     # Requires live browser navigation to each memorial page.
-    if os.environ.get("FAG_SCRAPE_SPOUSE", "") in ("1", "true", "yes"):
-        try:
-            from scripts.cgr.spouse_compare import annotate_records_via_session
-
-            log.info("Spouse post-pass: starting (may take a while)...")
-            spouse_stats = annotate_records_via_session(
-                results_path=state_repo.path,
-                session=browser_session,
-                store=store,
-            )
-            log.info(
-                "Spouse post-pass: matched=%d, attempted=%d, errors=%d",
-                spouse_stats.get("matched", 0),
-                spouse_stats.get("total_attempted", 0),
-                spouse_stats.get("errors", 0),
-            )
-        except Exception as exc:
-            log.warning("Spouse post-pass failed (non-fatal): %s", exc)
+    from scripts.post_pass import spouse as _sp
+    _sp.run(
+        store,
+        config=_sp.config_from(
+            config,
+            browser_session=browser_session,
+            results_path=state_repo.path,
+        ),
+        run_id=run_id,
+        log=log,
+    )
 
     # Issue #85: enrich state rows with CGR + DD observations from store.
     # Reads all observations, finds CGR/DD annotations, and annotates
