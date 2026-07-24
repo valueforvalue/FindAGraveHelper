@@ -25,6 +25,7 @@ from scripts.post_pass import (
     observation_enrichment,
     pensioncard_pages,
     spouse,
+    state_schema,
     view_copy,
 )
 from scripts.post_pass.types import BasePassConfig, PostPassStats
@@ -144,6 +145,18 @@ POST_PASSES: list[tuple[str, PassCallable, PassFactory]] = [
         labels.run,
         lambda ctx: (
             labels.config_from(ctx.config, out_dir=ctx.out_dir),
+            {"log": ctx.log},
+        ),
+    ),
+    # 7. Projection schema (issue #98). Writes state.schema.json
+    #    next to state.jsonl so view.html can detect shape drift.
+    (
+        "state_schema",
+        state_schema.run,
+        lambda ctx: (
+            state_schema.config_from(
+                ctx.config, results_path=ctx.state_repo.path
+            ),
             {"log": ctx.log},
         ),
     ),

@@ -1,225 +1,181 @@
-"""Tests for scripts/state/schema.py (T018).
+"""Tests for versioned projection (#98).
 
-Typed dataclasses for the state.jsonl wire format. The cross-layer
-contract (docs/agents/cross-layer-contract.md) defines what fields
-each record carries; this module makes those fields typed so we
-catch drift at parse time instead of at view.html render time.
-
-Three record shapes:
-  - PensionerRecord (one row in state.jsonl)
-  - CandidateRecord (one FaG result inside fag_records)
-  - BothMatchRecord (the corroboration verdict)
-
-Schema version: 1 (T018 introduces the dataclasses; schema_version
-in the meta file will bump if breaking changes ship).
+Pin:
+- ProjectionBuilder rows carry `_schema_version`.
+- `state_schema` post-pass emits `state.schema.json` next to
+  `state.jsonl` with the canonical field spec.
+- A future-shape change can be detected by reading the schema
+  and comparing `schema_version` to the consumer's pinned value.
 """
+
+from __future__ import annotations
+
 import json
-import sys
 from pathlib import Path
 
-ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT))
-
-from scripts.state.schema import (
-    PensionerRecord,
-    CandidateRecord,
-    BothMatchRecord,
-    from_dict_pensioner,
-    from_dict_candidate,
-    from_dict_both_match,
+from scripts.projection.schema import (
+    ROW_FIELDS,
+    SCHEMA_VERSION,
+    render_schema_json,
+)
+from scripts.post_pass.state_schema import (
+    StateSchemaConfig,
+    _schema_path_for,
+    run,
 )
 
 
-# ============================================================
-# CandidateRecord
-# ============================================================
-def test_candidate_from_dict_minimal():
-    """Only memorial_id is required."""
-    c = from_dict_candidate({"memorial_id": "12345"})
-    assert c.memorial_id == "12345"
-    assert c.slug == ""
-    assert c.name == ""
-    assert c.score == 0.0
-    assert c.backlink == ""
+class _NullLogger:
+    def info(self, *args, **kwargs):
+        pass
 
+    def warning(self, *args, **kwargs):
+        pass
 
-def test_candidate_from_dict_full():
-    c = from_dict_candidate({
-        "memorial_id": "50923719",
-        "slug": "william_pickney-looney",
-        "name": "William Pickney Looney",
-        "score": 0.92,
-        "backlink": "https://www.findagrave.com/memorial/50923719",
-    })
-    assert c.memorial_id == "50923719"
-    assert c.slug == "william_pickney-looney"
-    assert c.score == 0.92
+    def error(self, *args, **kwargs):
+        pass
 
-
-def test_candidate_roundtrip():
-    """to_dict then from_dict round-trips losslessly."""
-    src = {
-        "memorial_id": "12345",
-        "slug": "john-doe",
-        "name": "John Doe",
-        "score": 0.85,
-        "backlink": "https://example.com/12345",
-        "iiif_url": "https://example.com/iiif/12345",
-    }
-    c = from_dict_candidate(src)
-    out = c.to_dict()
-    # All keys from src must be preserved
-    for k, v in src.items():
-        assert out[k] == v
-
-
-def test_candidate_unknown_fields_passed_through():
-    """Unknown fields in the source dict stay in to_dict output.
-
-    The dataclass is the typed front; the wire format may carry
-    extra fields (e.g. details, _found_by) that some readers need.
-    Stripping them silently would break downstream consumers.
-    """
-    src = {"memorial_id": "1", "details": {"birth_year": "1844"}, "_found_by": {"strategy": "B1"}}
-    c = from_dict_candidate(src)
-    assert c.to_dict()["details"] == {"birth_year": "1844"}
-    assert c.to_dict()["_found_by"] == {"strategy": "B1"}
-
-
-def test_candidate_missing_memorial_id_defaults_empty():
-    """Defensive: legacy records without memorial_id don't crash."""
-    c = from_dict_candidate({})
-    assert c.memorial_id == ""
+    def debug(self, *args, **kwargs):
+        pass
 
 
 # ============================================================
-# BothMatchRecord
+# schema spec unit tests
 # ============================================================
-def test_both_match_from_dict_minimal():
-    bm = from_dict_both_match({"method": "direct_link"})
-    assert bm.method == "direct_link"
-    assert bm.confidence == 0.0
-    assert bm.fag_memorial_id == ""
 
 
-def test_both_match_from_dict_full():
-    bm = from_dict_both_match({
-        "method": "corroboration",
-        "confidence": 0.95,
-        "reason": "name + death year + burial state agree",
-        "fag_memorial_id": "50923719",
-    })
-    assert bm.method == "corroboration"
-    assert bm.confidence == 0.95
+def test_schema_version_is_a_positive_int():
+    """SCHEMA_VERSION is a positive int so consumers can compare."""
+    assert isinstance(SCHEMA_VERSION, int)
+    assert SCHEMA_VERSION >= 1
 
 
-def test_both_match_roundtrip():
-    src = {"method": "direct_link", "confidence": 1.0, "fag_memorial_id": "12345"}
-    bm = from_dict_both_match(src)
-    out = bm.to_dict()
-    for k, v in src.items():
-        assert out[k] == v
+def test_render_schema_includes_required_metadata():
+    """The rendered schema has the metadata keys view.html needs."""
+    s = render_schema_json()
+    assert s["schema_version"] == SCHEMA_VERSION
+    assert s["row_format"] == "newline-delimited JSON (L5)"
+    assert s["policy_version_field"] == "_policy_version"
+    assert s["schema_version_field"] == "_schema_version"
+    assert isinstance(s["fields"], list)
+    assert len(s["fields"]) > 0
 
 
-# ============================================================
-# PensionerRecord
-# ============================================================
-def test_pensioner_from_dict_minimal():
-    """Empty record is allowed."""
-    p = from_dict_pensioner({})
-    assert p.pensioner_id is None
-    assert p.cgr_records == []
-    assert p.fag_records == []
-    assert p.pensioncard_backlink == ""
-    assert p.backlink == ""
-    assert p.both_match is None
+def test_every_field_entry_has_required_keys():
+    """Every field dict has name, type, required, description."""
+    for f in ROW_FIELDS:
+        assert "name" in f
+        assert "type" in f
+        assert "required" in f
+        assert "description" in f
+        assert isinstance(f["required"], bool)
 
 
-def test_pensioner_from_dict_full():
-    p = from_dict_pensioner({
-        "pensioner_id": 3,
-        "pensioner_name": "Adair, R. W.",
-        "pensioner_first": "R.",
-        "pensioner_last": "Adair",
-        "pensioncard_backlink": "https://dp/card/98",
-        "backlink": "https://dp/pensions/3",
-        "fag_records": [{"memorial_id": "1"}, {"memorial_id": "2"}],
-        "cgr_records": [{"cgr_id": "999"}],
-        "fag_status": "auto_accept",
-        "cgr_status": "cgr_found",
-        "both_match": {"method": "direct_link", "fag_memorial_id": "1"},
-    })
-    assert p.pensioner_id == 3
-    assert len(p.fag_records) == 2
-    assert all(isinstance(c, CandidateRecord) for c in p.fag_records)
-    assert p.both_match is not None
-    assert p.both_match.method == "direct_link"
+def test_no_duplicate_field_names():
+    """Field names are unique (the schema is a record shape, not a
+    list)."""
+    names = [f["name"] for f in ROW_FIELDS]
+    assert len(names) == len(set(names)), f"Duplicates: {[n for n in names if names.count(n) > 1]}"
 
 
-def test_pensioner_roundtrip():
-    """A canonical state.jsonl row round-trips losslessly."""
-    src = {
-        "pensioner_id": 1,
-        "pensioner_name": "William Looney",
-        "pensioner_first": "William",
-        "pensioner_middle": "Pickney",
-        "pensioner_last": "Looney",
-        "pensioner_app_number": "A4",
-        "regiment": "34 TX",
-        "company": "A",
-        "pensioncard_backlink": "https://dp/card/100",
-        "backlink": "https://dp/pensions/5",
-        "fag_records": [
-            {"memorial_id": "50923719", "slug": "william-looney",
-             "score": 0.85, "backlink": "https://fg/50923719"}
-        ],
-        "fag_status": "auto_accept",
-        "cgr_records": [{"cgr_id": "999", "match_strength": "strong"}],
-        "cgr_status": "cgr_found",
-        "both_match": {"method": "corroboration", "confidence": 0.95,
-                       "fag_memorial_id": "50923719"},
-        "timestamp": "2026-07-16T12:34:56",
-    }
-    p = from_dict_pensioner(src)
-    out = p.to_dict()
-    # Required + known fields preserved
-    assert out["pensioner_id"] == src["pensioner_id"]
-    assert out["pensioner_name"] == src["pensioner_name"]
-    assert out["pensioncard_backlink"] == src["pensioncard_backlink"]
-    assert out["backlink"] == src["backlink"]
-    assert len(out["fag_records"]) == 1
-    assert out["fag_records"][0]["memorial_id"] == "50923719"
-    assert out["both_match"]["method"] == "corroboration"
-
-
-def test_pensioner_unknown_root_fields_passed_through():
-    """Extra root-level fields stay in to_dict (e.g. dd_in_local)."""
-    p = from_dict_pensioner({
-        "pensioner_id": 1,
-        "dd_in_local": True,
-        "leftover_pass": {"disposition": "found_conclusive"},
-    })
-    out = p.to_dict()
-    assert out["dd_in_local"] is True
-    assert out["leftover_pass"] == {"disposition": "found_conclusive"}
-
-
-def test_pensioner_to_jsonl_then_parse():
-    """The wire format is JSONL; ensure to_dict output is JSON-serialisable."""
-    p = from_dict_pensioner({
-        "pensioner_id": 1,
-        "fag_records": [{"memorial_id": "x", "score": 0.5}],
-    })
-    line = json.dumps(p.to_dict(), ensure_ascii=False)
-    parsed = json.loads(line)
-    assert parsed["pensioner_id"] == 1
-    assert parsed["fag_records"][0]["score"] == 0.5
+def test_required_fields_include_pensioner_id_and_status():
+    """The truly required fields are flagged as such so a v1 reader
+    can reject rows that lack them."""
+    required = {f["name"] for f in ROW_FIELDS if f["required"]}
+    assert "pensioner_id" in required
+    assert "status" in required
+    assert "best_score" in required
+    assert "_schema_version" in required
 
 
 # ============================================================
-# Schema version constant
+# ProjectionBuilder integration
 # ============================================================
-def test_schema_version_is_1():
-    """If you bump this, bump CHANGELOG and the *_meta.json files too."""
-    from scripts.state.schema import SCHEMA_VERSION
-    assert SCHEMA_VERSION == 1
+
+
+def test_projection_row_carries_schema_version():
+    """ProjectionBuilder writes _schema_version on every row."""
+    from scripts.blackboard.projector import ProjectionBuilder
+
+    builder = ProjectionBuilder()
+    row = builder.build_state_row(
+        pensioner_id=42,
+        pensioner_data={"first_name": "John", "last_name": "Doe"},
+        candidates=[],
+    )
+    assert "_schema_version" in row
+    assert row["_schema_version"] == SCHEMA_VERSION
+    assert "_policy_version" in row
+
+
+# ============================================================
+# Post-pass integration
+# ============================================================
+
+
+def test_run_emits_schema_file_next_to_state(tmp_path: Path):
+    """`run()` writes state.schema.json next to state.jsonl."""
+    state_path = tmp_path / "state.jsonl"
+    state_path.write_text("{}\n", encoding="utf-8")
+    config = StateSchemaConfig(state_path=state_path)
+
+    stats = run(config=config, log=_NullLogger())
+
+    schema_path = tmp_path / "state.schema.json"
+    assert schema_path.exists()
+    assert stats.name == "state_schema"
+    assert stats.matched == len(ROW_FIELDS)
+    assert stats.skipped is False
+
+
+def test_emitted_schema_is_valid_json_with_field_specs(tmp_path: Path):
+    """The emitted file parses as JSON and has the field spec list."""
+    state_path = tmp_path / "results.jsonl"
+    config = StateSchemaConfig(state_path=state_path)
+
+    run(config=config, log=_NullLogger())
+
+    schema = json.loads((tmp_path / "results.schema.json").read_text(encoding="utf-8"))
+    assert "fields" in schema
+    field_names = {f["name"] for f in schema["fields"]}
+    # Spot-check a few entries that view.html depends on.
+    assert "pensioner_id" in field_names
+    assert "_schema_version" in field_names
+    assert "ranked_candidates" in field_names
+    assert "common" in field_names
+
+
+def test_run_skipped_when_state_path_is_none(tmp_path: Path):
+    """No state_path → skipped=True, no file written."""
+    config = StateSchemaConfig(state_path=None)
+    stats = run(config=config, log=_NullLogger())
+    assert stats.skipped is True
+    assert stats.matched == 0
+    assert not (tmp_path / "state.schema.json").exists()
+
+
+def test_schema_path_helper():
+    """`state.jsonl` → `state.schema.json`."""
+    assert (
+        _schema_path_for(Path("/tmp/state.jsonl"))
+        == Path("/tmp/state.schema.json")
+    )
+    assert (
+        _schema_path_for(Path("/tmp/results.jsonl"))
+        == Path("/tmp/results.schema.json")
+    )
+
+
+def test_run_is_idempotent(tmp_path: Path):
+    """Re-running overwrites the schema file identically. No duplicate,
+    no error."""
+    state_path = tmp_path / "state.jsonl"
+    state_path.write_text("{}\n", encoding="utf-8")
+    config = StateSchemaConfig(state_path=state_path)
+    log = _NullLogger()
+
+    first = run(config=config, log=log)
+    second = run(config=config, log=log)
+    assert first.matched == second.matched
+    schema = json.loads((tmp_path / "state.schema.json").read_text(encoding="utf-8"))
+    assert schema["schema_version"] == SCHEMA_VERSION

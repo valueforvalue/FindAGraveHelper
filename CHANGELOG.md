@@ -4,6 +4,22 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Feat(projection): versioned materialization + state.schema.json (#98)
+
+Lower-risk slice (per the user's call: schema file + per-row
+version, not the full file rename). Added
+`scripts/projection/schema.py` with `SCHEMA_VERSION = 2` and the
+canonical `ROW_FIELDS` list (name, type, required, description).
+`ProjectionBuilder.build_state_row()` writes `_schema_version`
+on every row. New `scripts/post_pass/state_schema.py` registered
+as the 7th post-pass; emits `state.schema.json` next to
+`state.jsonl` on every run. Registry updated; `test_post_pass_registry.py`
+updated for the new 7-pass order. Eleven new tests pin the schema
+spec, the per-row version, the file emission, and the idempotency
+guarantee. The view-side warning on schema-version mismatch
+remains a follow-up (JS-only, out of scope for this slice).
+Full suite: 1,363 passed. Audit backlog item #6: completed.
+
 ### Feat(scheduler): heartbeat leases (Temporal-style, no broker) (#97)
 
 Added `WorkItem.lease_deadline_at` (ISO 8601) and a

@@ -17,6 +17,7 @@ from scripts.blackboard.decision_policy import (
     DecisionContext,
     classify,
 )
+from scripts.projection.schema import SCHEMA_VERSION as _SCHEMA_VERSION
 
 
 class ProjectionBuilder:
@@ -78,6 +79,10 @@ class ProjectionBuilder:
             "ranked_candidates": [_normalize_candidate(c) for c in candidates],
             "fag_records": [_normalize_candidate(c) for c in candidates],
             "_policy_version": self.policy_version,
+            # Issue #98: per-row schema version so view.html (or any
+            # downstream consumer) can detect shape drift. The
+            # canonical value lives in `scripts.projection.schema`.
+            "_schema_version": _SCHEMA_VERSION,
         }
 
         # Merge base pensioner fields. v2 (the canonical review
