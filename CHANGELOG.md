@@ -4,6 +4,46 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(post-pass): pensioncard_pages auto-derive from IIIF URL when sidecar missing (#101)
+
+Companion to the open issue #81 (the broader "no re-run needed
+for thumbnails" framing). The pensioncard_pages post-pass
+gained an **auto-derive path**: when no sidecar is present, the
+pass derives a minimal sidecar from each row's
+`pensioncard_iiif_url` field. The IIIF URL pattern
+`/iiif/2/pensioncard:{id}/...` has the pensioncard_id baked in;
+for single-page items (73% of pensioncards per the
+fetch_pensioncard_pages.py docstring), the page_id IS the
+pensioncard_id. Auto-derive covers those without operator
+action.
+
+Resolution order (highest priority first):
+1. `config.sidecar_path` (CLI `--pensioncard-pages`) — operator's
+   curated sidecar wins.
+2. `<out_dir>/pensioncard_pages.json` — auto-detected.
+3. **Auto-derive** from `pensioncard_iiif_url` — new fallback.
+4. None of the above → pass skips.
+
+When auto-derive fires, the derived sidecar is written to
+`<out_dir>/pensioncard_pages.json` so subsequent re-runs see
+the populated fields without re-deriving. A warning fires when
+the run is > 100 records (compound items may have been missed).
+
+Verified on the G10 verification run (issue #94): 0/10 rows
+had `pensioncard_pages` populated after the live run; after
+the fix, 10/10 rows are populated. The same `pensioncard_pages.json`
+sidecar now in the verification dir is the auto-derived one.
+
+Eight new tests pin: auto-derive from IIIF URL, operator
+sidecar wins, explicit sidecar_path wins, no-IIIF-URL no-op,
+partial match (some rows have IIIF, some don't), malformed
+IIIF URL silently skipped, large-run compound warning fires,
+small-run compound warning doesn't fire.
+
+Full suite: 1,413 passed. Closes the headline bug from #81
+(the auto-derive half; the broader "no re-run for thumbnails"
+follow-up remains open).
+
 ### Fix(stealth): swap playwright-stealth (frozen) for patchright (#94)
 
 Added `scripts/fag/browser_backend.py` — `BrowserBackend`

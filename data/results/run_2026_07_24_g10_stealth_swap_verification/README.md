@@ -37,9 +37,10 @@ Gentry, Nannie Gentry, Morris Gilbert.)
 
 | File | What it proves |
 |---|---|
-| `results.jsonl` (3.6 MB) | 10 state rows with real FaG candidate URLs + per-record decisions. The row for pensioner 327 (J. Gamble) has `best_score: 0.644` and a real `https://www.findagrave.com/memorial/20360270/john-henry-gamble` link in `ranked_candidates`. |
+| `results.jsonl` (3.6 MB) | 10 state rows with real FaG candidate URLs + per-record decisions. The row for pensioner 327 (J. Gamble) has `best_score: 0.644` and a real `https://www.findagrave.com/memorial/20360270/john-henry-gamble` link in `ranked_candidates`. **10/10 rows have `pensioncard_pages` populated** (auto-derived from the `pensioncard_iiif_url` field by the issue #101 fix; see `pensioncard_pages.json` sidecar below). |
 | `open_gravestones.ndjson` (10 KB) | JSON-LD export with `@context` bundling Schema.org + Dublin Core + WikiTree + Wikidata + PROV-DM (issue #95). Same Gamble record emitted as a JSON-LD Person with the FaG memorial URL in `sameAs`. |
 | `results.schema.json` (5.2 KB) | 28-field schema spec, `schema_version: 2` (issue #98). Proves the projection layer stamps the per-row `_schema_version` field. |
+| `pensioncard_pages.json` (370 B) | Auto-derived sidecar (issue #101): `{pensioner_id_str: [pensioncard_id]}` mapping. Built from the `pensioncard_iiif_url` field in results.jsonl on first annotation. Single-page items (73% of pensioncards) get `[pensioncard_id]`; compound items would need `scripts/ingest/fetch_pensioncard_pages.py` to populate. |
 | `view.html` (3.6 MB) | Self-contained review UI; opens in any browser without a server. Embedded results + sidecar JSON. |
 | `run.log` (1.9 KB) | Per-pensioner log lines, including the scheduler batches and the `BrowserSession closed` shutdown. |
 | `run_audit.jsonl` (1.2 MB) | Per-strategy audit events (RunAuditLog + observer). Includes `observation_appended`, `work_claimed`, `work_completed`, `cooldown_set`. |
