@@ -4,6 +4,31 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Test(state): pin idempotent pipeline runs contract (#83)
+
+Idempotent re-runs are already supported:
+- `state_repo.iter_all()` reads existing pensioner_ids at
+  startup.
+- `run_unified.py` builds `completed_ids` and filters out
+  pensioners already in the state file.
+- `JsonlStateRepository.append()` opens the file in append
+  mode (with flush + fsync per L3) so new rows are appended,
+  not truncated.
+- Post-passes (view_copy, state_schema, etc.) regenerate from
+  the current state.
+
+This commit pins the contract via 6 new tests:
+- `JsonlStateRepository.append()` is append-mode; existing
+  records survive a re-open + append cycle.
+- `iter_all()` yields records in file order.
+- Blank lines (from partial writes) are skipped, not raised.
+- The `completed_ids` extraction pattern from `run_unified.py`
+  produces the expected set on a representative state file.
+- Full cycle: write, re-open, append, iter proves the
+  idempotency contract end-to-end.
+
+Closes #83 as already-implemented-and-verified.
+
 ### Test(audit-log): verify per-strategy audit trail wiring (#75)
 
 `RunAuditLog` was added for issue #71; the G10 verification
