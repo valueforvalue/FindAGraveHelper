@@ -4,6 +4,20 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): extract pensioncard_pages into scripts/post_pass/ (Slice 2)
+
+Moved the inline `_annotate_pensioncard_pages` helper out of
+`scripts/pipeline/run_unified.py` into
+`scripts/post_pass/pensioncard_pages.py`. Both call sites (main
+loop and `_post_process_only` mode) now call the new module.
+Six new tests pin behavior: matching-row annotation, idempotency,
+no-sidecar skip, empty-sidecar skip, auto-detect from out_dir,
+and PostPassStats shape. Pre-loop "load pensioncard_pages cache"
+in `run_unified.py` stays inline (consumed during per-pensioner
+row building, not a post-pass). Full suite: 1,311 passed.
+Slice 3 (view_copy) follows.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): extract observation_enrichment into scripts/post_pass/ (Slice 1)
 
 Moved the inline `_enrich_state_rows_with_observations` helper out of

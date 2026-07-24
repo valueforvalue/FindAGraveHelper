@@ -1142,8 +1142,12 @@ def run_batch_scheduler(
     # Issue #81: annotate results.jsonl with pensioncard_pages
     # post-hoc, so the operator can fetch pages at any time and
     # re-trigger view generation without re-running FaG.
-    _annotate_pensioncard_pages(
-        state_repo.path, config.pensioncard_pages_path, out_dir, log
+    from scripts.post_pass import pensioncard_pages as _pcp
+    _pcp.run(
+        state_repo.path,
+        config=_pcp.config_from(config),
+        out_dir=out_dir,
+        log=log,
     )
 
     # Copy view.html AFTER the data is written so the embedded
@@ -1199,80 +1203,6 @@ def _clean_stale_blackboard(bb_path: Path, log: "logging.Logger | None" = None) 
                     log.warning("Could not remove stale %s", p)
 
 
-def _annotate_pensioncard_pages(
-    results_path: Path,
-    pages_path: Path | None,
-    out_dir: Path,
-    log: "logging.Logger | None" = None,
-) -> None:
-    """Annotate results.jsonl with pensioncard_pages post-hoc (issue #81).
-
-    Reads the sidecar from *pages_path* (or auto-detects
-    ``pensioncard_pages.json`` in *out_dir*), then re-writes
-    *results_path* with ``pensioncard_pages`` populated on each
-    matching record.
-    """
-    import json as _json
-
-    # Resolve sidecar path: explicit arg first, then auto-detect.
-    sidecar: Path | None = None
-    if pages_path and pages_path.exists():
-        sidecar = pages_path
-    else:
-        candidate = out_dir / "pensioncard_pages.json"
-        if candidate.exists():
-            sidecar = candidate
-
-    if sidecar is None:
-        return
-
-    try:
-        cache: dict = _json.loads(sidecar.read_text(encoding="utf-8"))
-    except (_json.JSONDecodeError, OSError) as e:
-        if log:
-            log.warning("pensioncard_pages annotation load failed: %s", e)
-        return
-
-    if not cache:
-        return
-
-    annotated = 0
-    records: list[dict] = []
-    if results_path.exists():
-        with results_path.open(encoding="utf-8") as f:
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    rec = _json.loads(line)
-                except _json.JSONDecodeError:
-                    records.append({})
-                    continue
-                pid = str(rec.get("pensioner_id", ""))
-                pages = cache.get(pid)
-                if pages:
-                    rec["pensioncard_pages"] = pages
-                    annotated += 1
-                records.append(rec)
-
-    if not annotated:
-        return
-
-    # Rewrite the file with annotated records.
-    tmp = results_path.with_suffix(results_path.suffix + ".tmp")
-    with tmp.open("w", encoding="utf-8") as f:
-        for rec in records:
-            f.write(_json.dumps(rec, ensure_ascii=False) + "\n")
-    tmp.replace(results_path)
-
-    if log:
-        log.info(
-            "Annotated %d records with pensioncard_pages from %s",
-            annotated, sidecar,
-        )
-
-
 def _post_process_only(
     config: "UnifiedRunnerConfig",
     out_dir: Path,
@@ -1303,8 +1233,12 @@ def _post_process_only(
         log.info("Post-process-only: %d records in %s", n, results_path)
 
     # Annotate pensioncard_pages.
-    _annotate_pensioncard_pages(
-        results_path, config.pensioncard_pages_path, out_dir, log
+    from scripts.post_pass import pensioncard_pages as _pcp
+    _pcp.run(
+        results_path,
+        config=_pcp.config_from(config),
+        out_dir=out_dir,
+        log=log,
     )
 
     # Remove stale view.html so copy_view_html_if_missing regenerates.
