@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import re
 import time
 from dataclasses import dataclass
@@ -122,9 +123,18 @@ class PensioncardPagesConfig(BasePassConfig):
 
     `sidecar_path` is the explicit path to the sidecar JSON. When
     None, the pass auto-detects `<out_dir>/pensioncard_pages.json`.
+
+    `fetch_command` (issue #81): an optional callable with the
+    signature `(input_path, output_path, throttle_seconds) -> None`
+    that builds a real sidecar (including compound items, where
+    the auto-derive path produces wrong page lists). The pass
+    invokes it when `FETCH_PENSIONCARD_PAGES=1` is set; the
+    env var gates the call (opt-in — the auto-derive path
+    covers the 73% single-page case by default).
     """
 
     sidecar_path: Path | None = None
+    fetch_command: Any | None = None
 
 
 class _LoggerLike(Protocol):
@@ -175,13 +185,52 @@ def run(
     """
     started = time.monotonic()
 
+    # Issue #81: opt-in auto-fetch of compound pensioncard pages.
+    # When FETCH_PENSIONCARD_PAGES=1 is set AND a fetch_command
+    # is supplied, run it before the sidecar-detection chain.
+    # Failure is non-fatal: log a warning, fall through to the
+    # auto-detect / auto-derive chain.
+    if (
+        config.fetch_command is not None
+        and os.environ.get("FETCH_PENSIONCARD_PAGES", "").strip().lower()
+        in ("1", "true", "yes")
+    ):
+        derived_path = out_dir / "pensioncard_pages.json"
+        try:
+            log.info(
+                "pensioncard_pages: FETCH_PENSIONCARD_PAGES=1; "
+                "invoking fetch command → %s",
+                derived_path,
+            )
+            config.fetch_command(
+                results_path, derived_path, 0.25
+            )
+            if derived_path.exists():
+                sidecar = derived_path
+                log.info(
+                    "pensioncard_pages: fetch produced sidecar at %s",
+                    derived_path,
+                )
+            else:
+                log.warning(
+                    "pensioncard_pages: fetch did not produce a sidecar; "
+                    "falling through to auto-detect / auto-derive."
+                )
+        except Exception as exc:
+            log.warning(
+                "pensioncard_pages: fetch failed (%s); "
+                "falling through to auto-detect / auto-derive.",
+                exc,
+            )
+
     sidecar: Path | None = None
-    if config.sidecar_path and config.sidecar_path.exists():
-        sidecar = config.sidecar_path
-    else:
-        candidate = out_dir / "pensioncard_pages.json"
-        if candidate.exists():
-            sidecar = candidate
+    if sidecar is None:
+        if config.sidecar_path and config.sidecar_path.exists():
+            sidecar = config.sidecar_path
+        else:
+            candidate = out_dir / "pensioncard_pages.json"
+            if candidate.exists():
+                sidecar = candidate
 
     auto_derived = False
     if sidecar is None:

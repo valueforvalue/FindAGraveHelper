@@ -1108,9 +1108,13 @@ def _post_process_only(
     # run_post_passes() — the full registry expects state_repo and
     # store populated, which post-process-only does not have.
     from scripts.post_pass import pensioncard_pages as _pcp
+    from scripts.ingest import fetch_pensioncard_pages as _fetch_mod
     _pcp.run(
         results_path,
-        config=_pcp.config_from(config),
+        config=_pcp.PensioncardPagesConfig(
+            sidecar_path=config.pensioncard_pages_path,
+            fetch_command=_fetch_mod.run,  # type: ignore[arg-type]
+        ),
         out_dir=out_dir,
         log=log,
     )

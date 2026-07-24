@@ -218,5 +218,27 @@ def main(argv: list[str] | None = None) -> int:
     return 0
 
 
+def run(
+    input_path: Path,
+    output_path: Path,
+    throttle_seconds: float = THROTTLE_SECONDS,
+) -> None:
+    """Module-level entry point used by the post-pass (#81).
+
+    Wraps `main()` with the standard argv shape:
+    `--input <input_path> --output <output_path> --throttle <sec>`.
+    Raises if the underlying script returns non-zero.
+    """
+    rc = main([
+        "--input", str(input_path),
+        "--output", str(output_path),
+        "--throttle", str(throttle_seconds),
+    ])
+    if rc != 0:
+        raise RuntimeError(
+            f"fetch_pensioncard_pages.py exited with rc={rc}"
+        )
+
+
 if __name__ == "__main__":
     raise SystemExit(main())

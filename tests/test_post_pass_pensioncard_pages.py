@@ -448,3 +448,124 @@ def test_run_auto_derive_no_compound_warning_for_small_runs(tmp_path):
 
     run(results, config=config, out_dir=tmp_path, log=_CaptureLogger())
     assert not any("compound" in w.lower() for w in warnings)
+
+# ============================================================
+# Issue #81: opt-in auto-fetch of compound pensioncard pages
+# ============================================================
+#
+# When FETCH_PENSIONCARD_PAGES=1 is set, the post-pass invokes
+# `scripts/ingest/fetch_pensioncard_pages.py` to build a real
+# sidecar (including compound items, where the auto-derive
+# path produces a wrong page list). When the env var is unset,
+# the post-pass skips the fetch and relies on the auto-derive
+# path (which still covers the 73% single-page case).
+#
+# The fetch itself is a real HTTP call to digitalprairie.ok.gov
+# — too slow for unit tests. We test the dispatch + the env-var
+# gate via an injected `fetch_command` callable.
+
+
+def test_run_invokes_fetch_script_when_env_var_set(tmp_path, monkeypatch):
+    """FETCH_PENSIONCARD_PAGES=1 + a fetch_command callable →
+    the post-pass calls the fetch command with the input and
+    output paths."""
+    results = tmp_path / "state.jsonl"
+    _write_state_with_iiif(
+        results,
+        [
+            (1, "https://digitalprairie.ok.gov/iiif/2/pensioncard:1/full/full/0/default.jpg"),
+        ],
+    )
+
+    calls: list[list[str]] = []
+
+    def _fake_fetch(input_path, output_path, throttle):
+        calls.append([str(input_path), str(output_path), str(throttle)])
+        # Simulate the script writing the sidecar.
+        import json
+        output_path.write_text(
+            json.dumps({"1": [1, 2]}), encoding="utf-8"
+        )
+
+    monkeypatch.setenv("FETCH_PENSIONCARD_PAGES", "1")
+    config = PensioncardPagesConfig(
+        sidecar_path=None,
+        fetch_command=_fake_fetch,
+    )
+
+    run(results, config=config, out_dir=tmp_path, log=_NullLogger())
+
+    # The fetch command was called.
+    assert len(calls) == 1
+    assert calls[0][0] == str(results)
+    # And the sidecar was written + read → row got the page list.
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [1, 2]
+
+
+def test_run_skips_fetch_when_env_var_unset(tmp_path, monkeypatch):
+    """No FETCH_PENSIONCARD_PAGES env var → no fetch, even when
+    fetch_command is supplied. The auto-derive path still runs."""
+    results = tmp_path / "state.jsonl"
+    _write_state_with_iiif(
+        results,
+        [
+            (1, "https://digitalprairie.ok.gov/iiif/2/pensioncard:1/full/full/0/default.jpg"),
+        ],
+    )
+
+    calls: list[list[str]] = []
+
+    def _fake_fetch(input_path, output_path, throttle):
+        calls.append([str(input_path), str(output_path), str(throttle)])
+
+    monkeypatch.delenv("FETCH_PENSIONCARD_PAGES", raising=False)
+    config = PensioncardPagesConfig(
+        sidecar_path=None,
+        fetch_command=_fake_fetch,
+    )
+
+    run(results, config=config, out_dir=tmp_path, log=_NullLogger())
+
+    # No fetch. Auto-derive still ran (single-page).
+    assert calls == []
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [1]
+
+
+def test_run_fetch_failure_is_non_fatal(tmp_path, monkeypatch):
+    """When the fetch raises, the pass logs a warning + still
+    runs auto-derive. The pass never aborts the run."""
+    results = tmp_path / "state.jsonl"
+    _write_state_with_iiif(
+        results,
+        [
+            (1, "https://digitalprairie.ok.gov/iiif/2/pensioncard:1/full/full/0/default.jpg"),
+        ],
+    )
+
+    def _broken_fetch(input_path, output_path, throttle):
+        raise RuntimeError("digitalprairie returned 503")
+
+    warnings: list[str] = []
+
+    class _CaptureLogger:
+        def info(self, *a, **k): pass
+        def warning(self, msg, *a, **k):
+            warnings.append(msg % a if a else msg)
+        def error(self, *a, **k): pass
+        def debug(self, *a, **k): pass
+
+    monkeypatch.setenv("FETCH_PENSIONCARD_PAGES", "1")
+    config = PensioncardPagesConfig(
+        sidecar_path=None,
+        fetch_command=_broken_fetch,
+    )
+
+    run(results, config=config, out_dir=tmp_path, log=_CaptureLogger())
+
+    # Auto-derive still ran.
+    rows = _read_state_jsonl(results)
+    assert rows[0]["pensioncard_pages"] == [1]
+    # And a warning was logged.
+    assert any("fetch" in w.lower() for w in warnings)
