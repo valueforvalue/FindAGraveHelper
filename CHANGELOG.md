@@ -4,6 +4,48 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): extract observation_enrichment into scripts/post_pass/ (Slice 1)
+
+Moved the inline `_enrich_state_rows_with_observations` helper out of
+`scripts/pipeline/run_unified.py` into
+`scripts/post_pass/observation_enrichment.py` with a flat
+`run(state_repo, store, *, config, run_id, log) -> PostPassStats`
+signature. Added `scripts/post_pass/types.py` (PostPassStats,
+BasePassConfig) and `scripts/post_pass/_ids.py` (L11 deterministic
+ID helper). Replaced `uuid.uuid4()` in PostPassObserver with
+`sha256(kind|pid|source|version|run_id|pass_id)[:12]` so observation
+IDs are now deterministic across runs. Wired `run_unified.py` to
+call the new module. Six new tests pin behavior (enrichment,
+idempotency, no-op, post-pass stats shape) and ID determinism.
+Full suite: 1,305 passed. Slice 2 (pensioncard_pages) follows.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
+### Docs(design): plan to extract post-pass observers from run_unified.py
+
+Post-pass enrichment (DD, spouse, observation enrichment, pensioncard
+pages, view.html copy, label collection) currently lives inline in
+`scripts/pipeline/run_unified.py` (~400 LOC). Design proposes moving
+each into `scripts/post_pass/<name>.py` with a flat
+`POST_PASSES` registry; tracer-bullet slice is
+`observation_enrichment.py`. Slice 9 (BrowserConfig dataclass) and
+Slice 10 (ProviderRegistry) from the runner audit are scoped here
+as deferred. Three open questions for critique: L11 ID determinism
+(Q1), per-pass config shape (Q2), view.html placement (Q3).
+Full slice plan + decisions + consequences:
+[`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
+### Docs(audit): runner layer audit — keep in-house, no external orchestrator
+
+Surveyed 13 Python job/task runners (APScheduler, Celery, RQ, Dramatiq,
+Prefect, Airflow, TaskTiger, Invoke, Huey, Procrastinate, arq, Taskiq,
+stdlib primitives) against L1–L12 hard constraints. Verdict: keep the
+in-house runner. Per-URL throttle floor (L1), lease-TTL recovery (L12),
+and deterministic observation IDs (L11) are domain-specific needs that
+no external runner satisfies without an adapter. Stdlib `time.sleep` +
+existing `RequestGate` already enforce the 2.5 s floor. Huey is the
+only candidate worth a future spike. Full scoring matrix + rationale:
+[`docs/research/runner-audit.md`](docs/research/runner-audit.md).
+
 ### Feature(post-processing): wire CGR + DD evidence into Blackboard projection (#85)
 
 CGR and DixieData evidence now flows through Blackboard observations into

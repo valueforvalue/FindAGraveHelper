@@ -6,14 +6,17 @@ under Blackboard.
 
 This module provides drop-in wrappers that emit observations to the
 Blackboard store instead of mutating results.jsonl in place.
+
+Slice 1 (post-pass extraction): observation IDs are deterministic per
+L11. See `scripts/post_pass/_ids.py` for the derivation.
 """
 from __future__ import annotations
 
 import logging
-import uuid
 from typing import Any
 
 from scripts.blackboard.schema import Kind, Observation
+from scripts.post_pass._ids import deterministic_observation_id
 
 log = logging.getLogger("post_pass_observer")
 
@@ -38,7 +41,14 @@ class PostPassObserver:
     ) -> Observation:
         """Record CGR corroboration evidence without mutating state."""
         obs = Observation(
-            observation_id=f"obs-cgr-{uuid.uuid4().hex[:12]}",
+            observation_id=deterministic_observation_id(
+                kind=Kind.CGRCorroboration.value,
+                pensioner_id=pensioner_id,
+                source="cgr_fag_dedup",
+                source_version="1",
+                run_id=self.run_id,
+                pass_id="post",
+            ),
             pensioner_id=pensioner_id,
             kind=Kind.CGRCorroboration,
             source="cgr_fag_dedup",
@@ -61,7 +71,14 @@ class PostPassObserver:
     ) -> Observation:
         """Record DixieData match evidence without mutating state."""
         obs = Observation(
-            observation_id=f"obs-dd-{uuid.uuid4().hex[:12]}",
+            observation_id=deterministic_observation_id(
+                kind=Kind.DixieDataMatch.value,
+                pensioner_id=pensioner_id,
+                source="dixiedata_match",
+                source_version="1",
+                run_id=self.run_id,
+                pass_id="post",
+            ),
             pensioner_id=pensioner_id,
             kind=Kind.DixieDataMatch,
             source="dixiedata_match",
@@ -84,7 +101,14 @@ class PostPassObserver:
     ) -> Observation:
         """Record spouse match evidence without mutating state."""
         obs = Observation(
-            observation_id=f"obs-spouse-{uuid.uuid4().hex[:12]}",
+            observation_id=deterministic_observation_id(
+                kind=Kind.SpouseMatch.value,
+                pensioner_id=pensioner_id,
+                source="spouse_compare",
+                source_version="1",
+                run_id=self.run_id,
+                pass_id="post",
+            ),
             pensioner_id=pensioner_id,
             kind=Kind.SpouseMatch,
             source="spouse_compare",

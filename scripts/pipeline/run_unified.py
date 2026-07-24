@@ -1130,10 +1130,13 @@ def run_batch_scheduler(
     # Issue #85: enrich state rows with CGR + DD observations from store.
     # Reads all observations, finds CGR/DD annotations, and annotates
     # each state row in-place via JsonlStateRepository.replace_all().
-    _enrich_state_rows_with_observations(
+    from scripts.post_pass import observation_enrichment as _oe
+    _oe.run(
         state_repo,
         store,
-        log,
+        config=_oe.config_from(config),
+        run_id=run_id,
+        log=log,
     )
 
     # Issue #81: annotate results.jsonl with pensioncard_pages
@@ -1194,74 +1197,6 @@ def _clean_stale_blackboard(bb_path: Path, log: "logging.Logger | None" = None) 
             except OSError:
                 if log:
                     log.warning("Could not remove stale %s", p)
-
-
-def _enrich_state_rows_with_observations(
-    state_repo: Any,
-    store: Any,
-    log: "logging.Logger | None" = None,
-) -> None:
-    """Enrich state rows with CGR + DD evidence from Blackboard store.
-
-    Reads all CGRCorroboration and DixieDataMatch observations,
-    matches them to pensioner rows, and updates each row in-place.
-    Idempotent — safe to call on already-enriched rows.
-    """
-    if log is None:
-        log = __import__("logging").getLogger("run_unified")
-
-    from scripts.blackboard.schema import Kind as _Kind
-
-    all_obs = store.read_observations_since(None)
-
-    cgr_by_pid: dict[int, dict[str, Any]] = {}
-    dd_by_pid: dict[int, dict[str, Any]] = {}
-    spouse_by_pid: dict[int, dict[str, Any]] = {}
-
-    for obs in all_obs:
-        pid = obs.pensioner_id
-        if pid == 0:
-            continue  # run-level observations
-        if obs.kind == _Kind.CGRCorroboration:
-            cgr_by_pid[pid] = obs.payload
-        elif obs.kind == _Kind.DixieDataMatch:
-            dd_by_pid[pid] = obs.payload
-        elif obs.kind == _Kind.SpouseMatch:
-            spouse_by_pid[pid] = obs.payload
-
-    if not cgr_by_pid and not dd_by_pid and not spouse_by_pid:
-        return
-
-    enriched = 0
-    updated: list[dict[str, Any]] = []
-    for record in state_repo.iter_all(strict=True):
-        pid = record.get("pensioner_id")
-        if pid is None:
-            updated.append(record)
-            continue
-        pid_int = int(pid)
-        changed = False
-
-        if pid_int in cgr_by_pid and "cgr_match" not in record:
-            record["cgr_match"] = cgr_by_pid[pid_int]
-            changed = True
-        if pid_int in dd_by_pid and "dd_match" not in record:
-            record["dd_match"] = dd_by_pid[pid_int]
-            changed = True
-        if pid_int in spouse_by_pid and "spouse_match" not in record:
-            record["spouse_match"] = spouse_by_pid[pid_int]
-            changed = True
-
-        if changed:
-            enriched += 1
-        updated.append(record)
-
-    if enriched:
-        state_repo.replace_all(updated)
-        log.info(
-            "Enriched %d state rows with CGR/DD/spouse observations.",
-            enriched,
-        )
 
 
 def _annotate_pensioncard_pages(
