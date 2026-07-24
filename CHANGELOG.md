@@ -4,6 +4,40 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(browser-session): remove dead engine-flow auto-relax methods (#74, #80)
+
+Deleted `BrowserSession._try_auto_relax` and
+`BrowserSession._try_auto_relax_engine` — both methods were
+uncalled dead code (verified by `grep`). The engine-flow
+auto-relax swap (issue #74) and the broader proposal to drop
+auto-relax entirely (issue #80) are both closed by the same
+change.
+
+The 4-tier plan ladder (`RegionalPlannerKS`: OK → regiment-
+origin → TX → US) already handles broadening per the design
+in #80. OK-scoped plans preserve their result without being
+replaced by a US re-search.
+
+The `auto_relax` config field on `BrowserSession` stays
+(informational; test doubles + recipe serialization rely on
+it). The legacy opt-in path in `scripts/fag/fag_browser.py`
+(gated by `FAG_AUTO_RELAX=1`) is unaffected — that's the
+pre-Blackboard code path and is env-gated for operator opt-in.
+
+Five new tests pin:
+- The methods are GONE from `BrowserSession`.
+- `scripts/knowledge/fag_scraper.py` does NOT reference them.
+- The legacy `FAG_AUTO_RELAX=1` opt-in path in
+  `fag_browser.py` is unchanged.
+- The `auto_relax` config field still exists for back-compat.
+
+Also closed #82 (`--post-process-only` flag) as already
+implemented; the flag has been wired since the early
+Blackboard refactor and was verified during the issue #94
+G10 run.
+
+Full suite: 1,418 passed. Closes #74, #80, #82.
+
 ### Fix(post-pass): pensioncard_pages auto-derive from IIIF URL when sidecar missing (#101)
 
 Companion to the open issue #81 (the broader "no re-run needed

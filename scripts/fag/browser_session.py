@@ -377,90 +377,15 @@ class BrowserSession:
             except Exception as e:
                 log.error("Periodic reset failed: %s", e)
 
-    def _try_auto_relax(
-        self, pensioner: dict[str, Any], ok_record: dict[str, Any]
-    ) -> dict[str, Any]:
-        """Attempt US-wide search and return broader if better."""
-        from scripts.fag.search import search_one_pensioner
-
-        log.info("Auto-relax: broadening #%d to US.", pensioner.get("id"))
-        try:
-            broader = search_one_pensioner(
-                self._page, pensioner,
-                throttle_seconds=self.throttle,
-                state_filter="US",
-            )
-        except Exception as e:
-            log.warning("Auto-relax US search failed for #%d: %s", pensioner.get("id"), e)
-            return ok_record
-
-        ok_cands = ok_record.get("ranked_candidates", []) or []
-        us_cands = broader.get("ranked_candidates", []) or []
-        if len(us_cands) > len(ok_cands):
-            log.info("Auto-relax: US returned %d > OK's %d; using US.",
-                     len(us_cands), len(ok_cands))
-            return broader
-        log.info("Auto-relax: US returned %d <= OK's %d; keeping OK.",
-                 len(us_cands), len(ok_cands))
-        return ok_record
-
-    def _try_auto_relax_engine(
-        self,
-        engine: Any,
-        page: Any,
-        ctx: Any,
-        ok_result: dict[str, Any],
-        throttle_fn: Any = None,
-    ) -> dict[str, Any]:
-        """Engine-flow counterpart of `_try_auto_relax`.
-
-        Runs a second `default_search_one` call against the engine
-        with a fresh SearchContext whose state is forced to "US",
-        then keeps the result with more candidates. Mirrors the
-        OK→US broadening that the legacy `search_one_pensioner`
-        auto-relax does; issue #61 keeps the semantics in the
-        engine path so the Blackboard scheduler inherits the same
-        behavior as the legacy god-loop.
-        """
-        from scripts.search.context import SearchContext
-        from scripts.search.engine import default_search_one
-
-        try:
-            us_ctx = SearchContext(
-                first=ctx.first,
-                middle=ctx.middle,
-                last=ctx.last,
-                birth_year=ctx.birth_year,
-                death_year=ctx.death_year,
-                state="US",
-                extras=dict(ctx.extras),
-            )
-            # Throttle discipline: honor the per-strategy gate
-            # if the caller passed one; otherwise fall back to
-            # the session's per-pensioner `_throttle_wait`.
-            if throttle_fn is not None:
-                try:
-                    throttle_fn()
-                except Exception:
-                    pass
-            else:
-                self._throttle_wait()
-            us_result = default_search_one(
-                engine, page=page, ctx=us_ctx, throttle_fn=throttle_fn
-            )
-        except Exception as e:
-            log.warning("Auto-relax engine US search failed: %s", e)
-            return ok_result
-
-        ok_n = len(ok_result.get("candidates", []) or [])
-        us_n = len(us_result.get("candidates", []) or [])
-        if us_n > ok_n:
-            log.info("Auto-relax engine: US returned %d > OK's %d; using US.",
-                     us_n, ok_n)
-            return us_result
-        log.info("Auto-relax engine: US returned %d <= OK's %d; keeping OK.",
-                 us_n, ok_n)
-        return ok_result
+    # Note: the engine-flow auto-relax methods `_try_auto_relax` and
+    # `_try_auto_relax_engine` were REMOVED in #74/#80. The 4-tier
+    # plan ladder (RegionalPlannerKS: OK → regiment-origin → TX →
+    # US) carries broadening responsibility; OK-scoped plans preserve
+    # their result without being replaced by a US re-search. The
+    # `auto_relax` config field stays for back-compat (test doubles,
+    # recipe serialization) but no method acts on it. The legacy
+    # opt-in path in scripts/fag/fag_browser.py (gated by
+    # FAG_AUTO_RELAX=1) is unaffected.
 
     @staticmethod
     def _is_target_closed(exc: BaseException) -> bool:
