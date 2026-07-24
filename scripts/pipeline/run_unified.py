@@ -973,75 +973,21 @@ def run_batch_scheduler(
         if browser_session is not None:
             browser_session.close()
 
-    # Issue #85: run DixieData post-pass and append observations to store.
-    # Done after all pensioners are processed so DD match can see full results.
-    from scripts.post_pass import dd as _dd
-    _dd.run(
-        state_repo,
-        store,
-        config=_dd.config_from(config),
+    # Issue #85/88: run all post-passes via the registry. Each pass
+    # self-skips when its gate is unmet (env var unset, recipe flag
+    # off, sidecar missing). Failures are non-fatal and reported via
+    # PostPassStats.
+    from scripts.post_pass import run_post_passes
+
+    run_post_passes(
+        config=config,
         run_id=run_id,
         log=log,
-    )
-
-    # Issue #88: spouse post-pass (opt-in via FAG_SCRAPE_SPOUSE=1).
-    # Requires live browser navigation to each memorial page.
-    from scripts.post_pass import spouse as _sp
-    _sp.run(
-        store,
-        config=_sp.config_from(
-            config,
-            browser_session=browser_session,
-            results_path=state_repo.path,
-        ),
-        run_id=run_id,
-        log=log,
-    )
-
-    # Issue #85: enrich state rows with CGR + DD observations from store.
-    # Reads all observations, finds CGR/DD annotations, and annotates
-    # each state row in-place via JsonlStateRepository.replace_all().
-    from scripts.post_pass import observation_enrichment as _oe
-    _oe.run(
-        state_repo,
-        store,
-        config=_oe.config_from(config),
-        run_id=run_id,
-        log=log,
-    )
-
-    # Issue #81: annotate results.jsonl with pensioncard_pages
-    # post-hoc, so the operator can fetch pages at any time and
-    # re-trigger view generation without re-running FaG.
-    from scripts.post_pass import pensioncard_pages as _pcp
-    _pcp.run(
-        state_repo.path,
-        config=_pcp.config_from(config),
         out_dir=out_dir,
-        log=log,
-    )
-
-    # Copy view.html AFTER the data is written so the embedded
-    # results.jsonl is populated. Earlier we deferred this
-    # from the scheduler init; the embed-only-if-missing
-    # semantics means the copy at init always saw an empty
-    # results.jsonl, leaving v2 with no embedded data.
-    from scripts.post_pass import view_copy as _vc
-    _vc.run(
-        config=_vc.config_from(
-            config,
-            dest_dir=out_dir,
-            results_path=state_repo.path,
-            source=view_html_source,
-        ),
-        log=log,
-    )
-
-    # Issue #55: post-run label collection.
-    from scripts.post_pass import labels as _lb
-    _lb.run(
-        config=_lb.config_from(config, out_dir=out_dir),
-        log=log,
+        state_repo=state_repo,
+        store=store,
+        browser_session=browser_session,
+        view_html_source=view_html_source,
     )
 
     result.finished_at = time.time()
@@ -1112,7 +1058,10 @@ def _post_process_only(
     if log:
         log.info("Post-process-only: %d records in %s", n, results_path)
 
-    # Annotate pensioncard_pages.
+    # Annotate pensioncard_pages. Post-process-only deliberately
+    # calls the two relevant passes directly rather than going through
+    # run_post_passes() — the full registry expects state_repo and
+    # store populated, which post-process-only does not have.
     from scripts.post_pass import pensioncard_pages as _pcp
     _pcp.run(
         results_path,
@@ -1121,7 +1070,7 @@ def _post_process_only(
         log=log,
     )
 
-    # Remove stale view.html so copy_view_html_if_missing regenerates.
+    # Remove stale view.html so the copy helper regenerates.
     view_path = out_dir / "view.html"
     if view_path.exists():
         view_path.unlink()

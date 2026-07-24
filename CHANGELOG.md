@@ -4,6 +4,24 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(post-pass): build POST_PASSES registry (Slice 7)
+
+Added `scripts/post_pass/_registry.py` with a flat
+`POST_PASSES` list of `(name, callable, factory)` tuples —
+one entry per Slice 1–6 pass. Added `run_post_passes()`
+driver that builds a run-context, threads it through each
+factory, runs each pass in order, and continues past
+exceptions (each recorded as a PostPassStats with errors=1).
+Replaced the six inline post-pass call sites in
+`run_unified.py` with one `run_post_passes(...)` call
+(saves 51 lines net). Six new tests pin the registry shape,
+order, per-failure continuation, and error logging.
+`_post_process_only` mode keeps direct calls to its two
+relevant passes (the full registry expects state_repo +
+store, which that mode does not populate). Full suite:
+1,340 passed. The post-pass extraction is complete.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(post-pass): extract labels into scripts/post_pass/ (Slice 6)
 
 Moved the inline `_collect_labels_if_enabled` out of
