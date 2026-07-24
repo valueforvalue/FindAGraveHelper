@@ -32,14 +32,20 @@ GT_CSV = Path("C:/tmp/ground_truth.csv")
 GT_OUT_DIR = Path("C:/tmp/fag_gt_e2e")
 GT_STATE = GT_OUT_DIR / "results.jsonl"  # current CLI writes results.jsonl
 
-# These tests require manual ground-truth data + a real FaG session.
-# Skip the entire module when the data file is absent so collection
-# doesn't error on the missing fixture.
-if not GT_CSV.exists():
-    pytest.skip(
-        f"{GT_CSV} not present; download ground-truth data first",
-        allow_module_level=True,
-    )
+# Per-test skipif: the e2e tests need (a) the operator-downloaded
+# ground-truth CSV at C:/tmp/ground_truth.csv and (b) a real FaG
+# session. The smoke test in this module uses a tiny fixture CSV
+# (tests/fixtures/ground_truth_smoke.csv) and runs no live searcher.
+# Issue #91.
+REQUIRES_OPERATOR_GT = pytest.mark.skipif(
+    not GT_CSV.exists(),
+    reason=(
+        f"{GT_CSV} not present. Download the operator ground-truth "
+        f"CSV (see issue #91 and "
+        f"docs/learnings/2026-07-22-e2e-gt-skip.md) to enable the "
+        f"live e2e tests in this module."
+    ),
+)
 
 
 def _load_ground_truth():
@@ -110,6 +116,7 @@ def state_records():
     return _load_state()
 
 
+@REQUIRES_OPERATOR_GT
 def test_e2e_searcher_evaluates_with_confusion_matrix(state_records):
     """End-to-end: run the searcher, evaluate precision/recall/F1."""
     pairs = _build_pairs(state_records)
@@ -125,6 +132,7 @@ def test_e2e_searcher_evaluates_with_confusion_matrix(state_records):
     assert result.f1 > 0.5
 
 
+@REQUIRES_OPERATOR_GT
 def test_e2e_rank1_hit_rate(state_records):
     """Of the 50 ground-truth records, how many have the right
     answer at rank 1?"""
@@ -133,6 +141,7 @@ def test_e2e_rank1_hit_rate(state_records):
     assert hit1 >= 35
 
 
+@REQUIRES_OPERATOR_GT
 def test_e2e_auto_accept_precision(state_records):
     """Of the auto-accepts, how many are correct?"""
     auto = [r for r in state_records if r["status"] == "auto_accept"]
@@ -144,6 +153,7 @@ def test_e2e_auto_accept_precision(state_records):
     assert precision >= 0.7
 
 
+@REQUIRES_OPERATOR_GT
 def test_e2e_in_top_5(state_records):
     """What fraction of correct answers are in top 5?"""
     top5 = sum(
@@ -152,3 +162,43 @@ def test_e2e_in_top_5(state_records):
     )
     print(f"\nTop-5 hits: {top5}/50 = {top5/50*100:.1f}%")
     assert top5 >= 35
+
+
+# ------------------------------------------------------------
+# Smoke test: exercise the evaluation helpers with the bundled
+# fixture CSV. Runs with no operator data and no live FaG, so
+# it always collects and passes. Pin for the evaluation plumbing
+# only — do NOT assert precision/recall thresholds here.
+# (Issue #91.)
+# ------------------------------------------------------------
+
+SMOKE_FIXTURE_CSV = (
+    Path(__file__).parent / "fixtures" / "ground_truth_smoke.csv"
+)
+
+
+def test_e2e_smoke_evaluation_helpers_with_fixture():
+    """Bundled 3-row fixture exercises compute_confusion_matrix
+    and best_threshold. No live FaG required; the operator
+    ground-truth CSV is not needed for this case."""
+    rows = list(csv.DictReader(open(SMOKE_FIXTURE_CSV, encoding="utf-8")))
+    assert len(rows) == 3
+    assert all("memorial_id" in r for r in rows)
+
+    # Synthesize (actual, score) pairs from the fixture rows.
+    pairs = [
+        (True, 0.95),   # rank-1 match
+        (False, 0.30),  # wrong match
+        (True, 0.10),   # miss
+    ]
+    cm = compute_confusion_matrix(pairs, threshold=0.5)
+    assert cm.tp == 1
+    assert cm.fp == 0
+    assert cm.fn == 1
+    assert cm.tn == 1
+
+    result = best_threshold(pairs, metric="f1")
+    assert 0.0 <= result.threshold <= 1.0
+    assert 0.0 <= result.precision <= 1.0
+    assert 0.0 <= result.recall <= 1.0
+    assert 0.0 <= result.f1 <= 1.0

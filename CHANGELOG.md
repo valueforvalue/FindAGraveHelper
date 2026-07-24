@@ -4,6 +4,34 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(tests): per-test skipif + diag variant for default-suite gaps (#91, #92)
+
+Two follow-ups to the post-pass extraction:
+
+- **#91 ground-truth skip:** Replaced the module-level
+  `pytest.skip(allow_module_level=True)` in
+  `tests/test_e2e_ground_truth.py` with per-test
+  `@REQUIRES_OPERATOR_GT` skipifs. Added a smoke test that
+  exercises `compute_confusion_matrix` and `best_threshold`
+  with a bundled 3-row fixture CSV at
+  `tests/fixtures/ground_truth_smoke.csv`. The four live e2e
+  tests still need the operator-downloaded ground-truth CSV at
+  `C:/tmp/ground_truth.csv`; the smoke test runs always.
+
+- **#92 real-FaG deselect:** Documented the by-design exclusion
+  of `tests/test_real_fag_memory.py` under L1/L2/L8 constraints
+  in `docs/learnings/2026-07-22-real-fag-memory-default-skip.md`.
+  Added `tests/test_real_fag_memory_diag.py` (pytestmark `diag`,
+  not excluded by default) that exercises the same RSS-measurement
+  plumbing with a fake search function. Asserts shape, not
+  absolute MB thresholds.
+
+Suite: 1,358 passed (+3 vs. 1,355), 4 skipped (per-test instead
+of one module-level skip), 1 deselected (unchanged: the
+integration test stays excluded by design).
+Learnings: [`docs/learnings/2026-07-22-e2e-gt-skip.md`](docs/learnings/2026-07-22-e2e-gt-skip.md),
+[`docs/learnings/2026-07-22-real-fag-memory-default-skip.md`](docs/learnings/2026-07-22-real-fag-memory-default-skip.md).
+
 ### Refactor(runner): ProviderRegistry for per-provider throttle lookup (Slice 10)
 
 Added `scripts/network/gates.py` with a `ProviderRegistry`
