@@ -4,6 +4,19 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Test(search): pin named aggressiveness modes behavior (#78)
+
+`SearchModeConfig` + `MODE_DEFAULTS` + `VALID_MODES` were
+already implemented in `scripts/batch_config.py` (the runner
+consumes them via `config.search_mode`). This commit
+adds 9 tests that pin the behavior: valid modes set, presets
+cover all modes, conservative is more cautious than
+aggressive, from_dict defaults to standard, operator
+overrides win on top of the preset, unknown mode names
+raise ConfigError, and to_dict/from_dict round-trips.
+
+Closes #78 as already-implemented.
+
 ### Fix(browser-session): remove dead engine-flow auto-relax methods (#74, #80)
 
 Deleted `BrowserSession._try_auto_relax` and
