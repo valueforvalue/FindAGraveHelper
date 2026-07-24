@@ -4,6 +4,37 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Test(analytics): pin cross-run strategy stats contract (#79)
+
+`scripts/analysis/strategy_stats.py` was already implemented
+and does what issue #79 asks for: reads `run_audit.jsonl` from
+all `output/*/`, computes per-strategy fires / skipped / errors
+/ total_candidates / avg_candidates / success_rate, and emits
+a JSON report. The CLI is `python -m scripts.analysis.strategy_stats
+--root <output_dir> --out <report.json>`.
+
+This commit pins the contract via 10 new tests:
+- `collect_audit_files` discovers every run dir's audit log;
+  empty root returns `[]` (no crash).
+- `parse_audit` correctly counts fires + skipped + total
+  candidates per strategy; computes `success_rate` (fraction
+  of pensioners touched by a strategy that ended auto_accept);
+  bumps `errors` for `strategy_error` events; robust to
+  blank lines + corrupt JSON.
+- `aggregate_across_runs` sums per-strategy counts across
+  multiple runs; emits per-run summary block; handles an
+  empty root (degenerate report, no crash).
+- Real G10 verification: aggregating the G10 audit log
+  produces the expected structure (1+ strategy with fires > 0,
+  success_rate in [0, 1], avg_candidates > 0).
+
+The G10 report shows 13 strategies, 422 fires, 423 skipped,
+0 errors — the analytics surface already surfaces the
+"which strategies are pulling weight" question the issue
+asks about.
+
+Closes #79 as already-implemented-and-verified.
+
 ### Test(state): pin idempotent pipeline runs contract (#83)
 
 Idempotent re-runs are already supported:
