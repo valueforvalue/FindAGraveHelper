@@ -1028,6 +1028,15 @@ def run_batch_scheduler(
     # Issue #84: write inline analytics report.
     analytics_aggregator.write_report(out_dir / "run_analytics.json")
     audit_log.close()
+    # Issue #100: emit OCSF-formatted sidecar for SIEM
+    # ingestion. The native run_audit.jsonl is the source of
+    # truth; the OCSF file is a translation. Silent no-op on
+    # missing native file (defensive: should never happen).
+    try:
+        from scripts.events.ocsf import translate_audit_file
+        translate_audit_file(out_dir / "run_audit.jsonl")
+    except Exception as exc:
+        log.warning("OCSF sidecar generation failed (non-fatal): %s", exc)
     log.info(
         "Scheduler batch complete: %d/%d pensioners projected to %s",
         len(remaining),
