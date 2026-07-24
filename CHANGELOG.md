@@ -4,6 +4,21 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Docs(audit): competitive landscape across CW genealogy, stealth frameworks, and Blackboard architectures
+
+Surveyed 3-5 peers on each of three axes and produced a
+prioritized 7-item improvement backlog. Verdict: architecturally
+distinctive — Blackboard + Scheduler + KS + engine-agnostic
+ladder + Cloudflare-aware throttle composition is unmatched.
+Top weaknesses: stealth layer is the only long-frozen
+dependency (`playwright-stealth` AtuboDad dormant since Sep 2023;
+camoufox/nodriver patch at the browser layer); no CI badge / no
+Docker image; no open-burial-data export (Schema.org/Cemetery +
+WikiTree interop); heartbeat-free leases.
+Full scoring matrices + per-axis verdicts + backlog with
+effort/impact estimates:
+[`docs/research/competitive-audit.md`](docs/research/competitive-audit.md).
+
 ### Fix(tests): per-test skipif + diag variant for default-suite gaps (#91, #92)
 
 Two follow-ups to the post-pass extraction:
