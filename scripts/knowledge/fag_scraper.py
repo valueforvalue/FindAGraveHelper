@@ -26,6 +26,7 @@ from scripts.blackboard.schema import (
 )
 from scripts.blackboard.store import BlackboardStore
 from scripts.fag.request_gate import RequestGate
+from scripts.network.gates import ProviderRegistry
 from scripts.search.engine import default_search_one  # noqa: F401 (re-exported for tests)
 from scripts.search.context import SearchContext
 
@@ -94,10 +95,7 @@ class FaGScraperKS:
         audit_log: Any = None,  # RunAuditLog for per-strategy events
     ) -> None:
         self._session = browser_session
-        self._gate = gate or RequestGate(
-            provider="findagrave.com",
-            min_interval=gate_min_interval,
-        )
+        self._gate = gate or self._resolve_gate(gate_min_interval)
         self._audit_log = audit_log
         # Lazy import: engine is optional; default to FaGEngine()
         # when present so the engine path is taken automatically.
@@ -105,6 +103,26 @@ class FaGScraperKS:
             from scripts.search.fag_engine import FaGEngine
             engine = FaGEngine()
         self._engine = engine
+
+    @staticmethod
+    def _resolve_gate(min_interval: float) -> RequestGate:
+        """Return a FaG gate with the requested min_interval.
+
+        Uses the ProviderRegistry; if the requested interval is the
+        L1 default (2.5s) we return the shared default gate; for
+        operator opt-in intervals (slice runs) we build and register
+        a dedicated gate so the override doesn't leak across KSes.
+        """
+        if min_interval == 2.5:
+            return ProviderRegistry.get("findagrave.com")
+        custom = RequestGate(
+            provider="findagrave.com",
+            min_interval=min_interval,
+        )
+        # Cache under a per-interval key so two KSes with the same
+        # override share a gate; different overrides get separate gates.
+        ProviderRegistry.register(f"findagrave.com@{min_interval}s", custom)
+        return custom
 
     def eligible(self, item: WorkItem) -> bool:
         return item.knowledge_source == "FaGScraperKS"

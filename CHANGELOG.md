@@ -4,6 +4,22 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Refactor(runner): ProviderRegistry for per-provider throttle lookup (Slice 10)
+
+Added `scripts/network/gates.py` with a `ProviderRegistry`
+singleton mapping provider name → `RequestGate`. FaG is
+pre-registered via a lazy factory (the L1 2.5s floor).
+`FaGScraperKS` now resolves its gate via
+`ProviderRegistry.get("findagrave.com")` for the default
+path; per-interval overrides build a dedicated gate
+registered under a per-interval key. `RequestGate.default_fag()`
+factory stays for back-compat. Sync-only; async engines
+deferred per the Slice 10 design's "when to revisit" section.
+Eight new tests pin defaults, singleton-per-provider,
+KeyError on unknown, register overrides factory, lazy factory
+build, and reset. Full suite: 1,355 passed.
+Design: [`docs/designs/post-pass-extraction.md`](docs/designs/post-pass-extraction.md).
+
 ### Refactor(runner): BrowserConfig dataclass for BrowserSession knobs (Slice 9)
 
 Added `scripts/fag/browser_config.py` with a frozen
