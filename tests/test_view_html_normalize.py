@@ -129,6 +129,8 @@ def test_fag_record_normalizes_to_engine_agnostic_shape(normalization_page):
                 "title": "Rev Hugh H Akers",
                 "url": "https://www.findagrave.com/memorial/26716384/hugh-h-akers",
                 "score": 0.644,
+                "search_url": "",
+                "search_urls": [],
                 "attributes": {
                     "birth_year": "1846",
                     "death_year": "1924",

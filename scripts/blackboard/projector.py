@@ -300,6 +300,8 @@ def _convert_fag_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
             "score_breakdown": common_bd,
             "raw": c,
         },
+        "search_url": c.get("search_url", ""),
+        "search_urls": c.get("search_urls", []),
     }
 
 
