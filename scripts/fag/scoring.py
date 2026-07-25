@@ -220,6 +220,22 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
             if ACW_DEATH_YEAR_MIN <= dy_i <= WIDOW_DEATH_YEAR_MAX:
                 death_score = 0.3
 
+    # Issue #127: regiment-based era bonus for veterans without
+    # death_year on record. When the pensioner has a regiment
+    # (confirming CW service) and the candidate's death year
+    # falls in the ACW veteran window, give a "right era" signal.
+    # Weaker than exact death_year match (0.2 vs 0.5) but enough
+    # to push era-appropriate candidates above modern namesakes.
+    if not local_dy and not is_widow and death_score == 0.0:
+        reg = str(local.get("regiment", "")).strip()
+        if reg and cand_dy_i is not None:
+            from scripts.fag.filters import (
+                ACW_DEATH_YEAR_MIN,
+                ACW_DEATH_YEAR_MAX,
+            )
+            if ACW_DEATH_YEAR_MIN <= cand_dy_i <= ACW_DEATH_YEAR_MAX:
+                death_score = 0.2
+
     # Issue #108: maiden-name pattern for widow candidates.
     # When a widow's FaG memorial includes her maiden name
     # (e.g. "Lucy Ann Ham Gwinn" where Ham is maiden, Gwinn is
