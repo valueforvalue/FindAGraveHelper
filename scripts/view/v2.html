@@ -1155,9 +1155,11 @@ kbd {
                                             @click="toggleRemove(record.id, candidate.id)"
                                             :aria-label="'Remove ' + (candidate.title || 'candidate')">×</button>
                                 </div>
-                                <div class="candidate-search-url" x-show="candidate.search_url">
-                                    <a :href="candidate.search_url" target="_blank" rel="noopener"
-                                       style="font-size:0.68rem;color:var(--muted);">🔍 search</a>
+                                <div class="candidate-search-url" x-show="candidate.search_urls && candidate.search_urls.length">
+                                    <template x-for="(url, uidx) in candidate.search_urls" :key="uidx">
+                                        <a :href="url" target="_blank" rel="noopener"
+                                           style="font-size:0.68rem;color:var(--muted);margin-right:8px;">🔍 search</a>
+                                    </template>
                                 </div>
                             </article>
                         </template>
@@ -1168,7 +1170,7 @@ kbd {
                                 @click="showAllCandidates(record.id)">Show all candidates</button>
                     </div>
                 </section>
-                <template x-if="engineDetails(record)">
+                <template x-if="false">
                     <details class="engine-disclosure">
                         <summary x-text="record.engine + ' details'"></summary>
                         <div class="disclosure-body" x-html="engineDetails(record)"></div>

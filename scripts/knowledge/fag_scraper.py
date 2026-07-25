@@ -514,6 +514,7 @@ class FaGScraperKS:
                     "is_caption_noise": False,
                     "_spouse_linked": _spouse_linked,
                     "search_url": c.get("search_url", ""),
+                    "search_urls": c.get("search_urls", []),
                 })
             return rows, status
 

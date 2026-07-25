@@ -167,6 +167,7 @@ def test_fag_scraper_invokes_session_through_gate_and_persists_candidate(store, 
         "is_caption_noise": False,
         "_spouse_linked": False,
         "search_url": "",
+        "search_urls": [],
     }
     persisted = store.read_observations_since(None)
     assert [obs.observation_id for obs in persisted] == [

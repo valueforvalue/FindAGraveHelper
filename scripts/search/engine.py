@@ -413,6 +413,7 @@ def _merge_candidates(
                 tag["found_by"] = strat_name
                 tag["found_by_strategies"] = [strat_name]
                 tag["convergence_count"] = 1
+                tag["search_urls"] = [c.get("search_url", "")] if c.get("search_url") else []
                 by_id[cid] = tag
             else:
                 existing = by_id[cid]
@@ -421,15 +422,17 @@ def _merge_candidates(
                     existing["convergence_count"] = len(
                         existing["found_by_strategies"]
                     )
+                if c.get("search_url") and c["search_url"] not in (existing.get("search_urls") or []):
+                    existing.setdefault("search_urls", []).append(c["search_url"])
                 if c.get("score", 0.0) > existing.get("score", 0.0):
-                    # Replace with the higher-scored candidate's fields
-                    # but preserve the accumulated found_by_strategies.
                     saved_strategies = existing["found_by_strategies"]
+                    saved_urls = existing.get("search_urls", [])
                     existing.clear()
                     existing.update(c)
                     existing["found_by_strategies"] = saved_strategies
                     existing["convergence_count"] = len(saved_strategies)
                     existing["found_by"] = strat_name
+                    existing["search_urls"] = saved_urls
 
     # Apply convergence bonus post-merge.
     for c in by_id.values():
@@ -441,6 +444,18 @@ def _merge_candidates(
                 ev["_convergence_count"] = c["convergence_count"]
                 ev["_convergence_bonus"] = round(bonus, 3)
             c["score_evidence"] = ev
+
+    # Collect search URLs from all strategies that found each candidate
+    for c in by_id.values():
+        urls = []
+        for strat_name, cands in strategy_runs:
+            for cand in cands:
+                cid2 = str(cand.get("id") or cand.get("memorial_id") or cand.get("record_id") or "")
+                if cid2 == c.get("id") or cid2 == c.get("memorial_id"):
+                    url = cand.get("search_url", "")
+                    if url and url not in urls:
+                        urls.append(url)
+        c["search_urls"] = urls
 
     return list(by_id.values())
 
