@@ -350,9 +350,7 @@ h1 {
 .decision-pill,
 .picked-badge,
 .best-badge,
-.widow-badge,
-.maiden-badge,
-.convergence-badge {
+.spouse-match-badge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -449,19 +447,9 @@ h1 {
     color: var(--success);
 }
 
-.widow-badge {
+.spouse-match-badge {
     background: #fef3c7;
     color: #92400e;
-    padding: 1px 8px;
-}
-.maiden-badge {
-    background: #ede9fe;
-    color: #5b21b6;
-    padding: 1px 8px;
-}
-.convergence-badge {
-    background: #dbeafe;
-    color: #1e40af;
     padding: 1px 8px;
 }
 
@@ -1044,9 +1032,7 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
-                                        <span class="widow-badge" x-show="(candidate.evidence?.score_breakdown?.widow_pension || 0) > 0">👰 widow</span>
-                                        <span class="maiden-badge" x-show="(candidate.evidence?.score_breakdown?.maiden_name || 0) > 0">💍 maiden</span>
-                                        <span class="convergence-badge" x-show="(candidate.evidence?.score_breakdown?._convergence_count || 0) >= 2" x-text="'⟳' + candidate.evidence.score_breakdown._convergence_count"></span>
+                                        <span class="spouse-match-badge" x-show="isSpouseMatch(candidate)">💍 spouse match</span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1459,6 +1445,14 @@ function reviewApp() {
                 'F1d-year-window': 'Year window',
             };
             return aliases[name] || name;
+        },
+
+        isSpouseMatch(candidate) {
+            const sb = candidate.evidence?.score_breakdown || {};
+            return (sb.widow_pension || 0) > 0
+                && (sb.maiden_name || 0) > 0
+                && (sb._convergence_count || 0) >= 2
+                && (candidate.score || 0) >= 0.65;
         },
 
         strategyBadgeClass(candidate) {
