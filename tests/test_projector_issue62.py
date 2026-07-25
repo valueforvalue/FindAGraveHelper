@@ -221,3 +221,28 @@ def test_projector_output_has_all_fields_v2_normalize_needs():
     # them as empty strings (would force v2 to render blanks).
     assert row["pensioner_first"] == "Nancy"
     assert row["pensioncard_pages"] == [11484, 11485]
+
+def test_projector_sorts_ranked_candidates_by_score_descending():
+    """Issue #104: ranked_candidates was emitted in observation
+    insertion order, surfacing caption-noise (score 0.0) above
+    real matches. Projector must sort descending by score so
+    the top of the list is the engine's best match.
+    """
+    pensioner = _sample_pensioner()
+    candidates = [
+        {"memorial_id": "a", "name": "Caption 1", "score": 0.0,
+         "url": "https://example.com/a", "backlink": "https://example.com/a"},
+        {"memorial_id": "b", "name": "Real match", "score": 0.445,
+         "url": "https://example.com/b", "backlink": "https://example.com/b"},
+        {"memorial_id": "c", "name": "Caption 2", "score": 0.0,
+         "url": "https://example.com/c", "backlink": "https://example.com/c"},
+        {"memorial_id": "d", "name": "Weak match", "score": 0.256,
+         "url": "https://example.com/d", "backlink": "https://example.com/d"},
+    ]
+    builder = ProjectionBuilder()
+    row = builder.build_state_row(
+        pensioner_id=272, pensioner_data=pensioner, candidates=candidates
+    )
+    scores = [c.get("score") for c in row["ranked_candidates"]]
+    assert scores == [0.445, 0.256, 0.0, 0.0]
+    assert row["ranked_candidates"][0]["memorial_id"] == "b"

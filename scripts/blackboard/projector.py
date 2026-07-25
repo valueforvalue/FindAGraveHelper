@@ -63,6 +63,18 @@ class ProjectionBuilder:
         )
         decision = classify(ctx)
 
+        # Issue #104: ranked_candidates was previously emitted in
+        # observation insertion order, which surfaced photo-caption
+        # noise (score 0.0) above real matches when they happened
+        # to fire first. Sort descending by score so the top of the
+        # list is always the engine's best match. Stable sort so
+        # equal-score entries keep observation order.
+        sorted_candidates = sorted(
+            candidates,
+            key=lambda c: c.get("score", 0.0),
+            reverse=True,
+        )
+
         row: dict[str, Any] = {
             "pensioner_id": pensioner_id,
             "pensioner_name": (
@@ -76,8 +88,8 @@ class ProjectionBuilder:
             # `iiif_url`. Normalize here so downstream consumers
             # (state.jsonl, v2 normalizeRecord, v2 normalizeRecordV2)
             # see both keys.
-            "ranked_candidates": [_normalize_candidate(c) for c in candidates],
-            "fag_records": [_normalize_candidate(c) for c in candidates],
+            "ranked_candidates": [_normalize_candidate(c) for c in sorted_candidates],
+            "fag_records": [_normalize_candidate(c) for c in sorted_candidates],
             "_policy_version": self.policy_version,
             # Issue #98: per-row schema version so view.html (or any
             # downstream consumer) can detect shape drift. The

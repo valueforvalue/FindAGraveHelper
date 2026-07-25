@@ -33,6 +33,62 @@ from scripts.search.context import SearchContext
 log = logging.getLogger("fag_scraper")
 
 
+# Issue #104: caption-noise detection + name-string date fallback.
+# FaG search results include photo-caption entries ("HONORING ...",
+# "IN MEMORY OF ...") and decade-spanning memorial markers that have
+# score 0 from the parser and would otherwise rank above real matches
+# with weak name signals. Drop them at the scraper boundary so they
+# never reach the projection layer.
+import re as _re
+
+_CAPTION_NOISE_PREFIXES = (
+    "honoring ",
+    "in memory of ",
+    "in loving memory of ",
+    "in honor of ",
+    "rest in peace ",
+)
+
+
+def _is_caption_noise(name: str) -> bool:
+    """Return True if `name` looks like a photo-caption entry
+    rather than a person's memorial name. These entries score 0
+    in the parser and were ranking above real candidates.
+    """
+    if not name:
+        return False
+    lowered = name.strip().lower()
+    return any(lowered.startswith(p) for p in _CAPTION_NOISE_PREFIXES)
+
+
+_DATE_RANGE_RE = _re.compile(
+    r"\b(\d{4})\s*[-–—]\s*(\d{4})\b"
+)
+# Looser pattern when the year is preceded by a day-month fragment
+# (e.g. "13 Nov 1853 - 20 Sep 1936"): any non-year tokens are
+# allowed between the year and the dash.
+_DATE_RANGE_LOOSE_RE = _re.compile(
+    r"(?:\b\d{1,2}\s+\w+\s+)?(\d{4})\s*[-–—]\s*"
+    r"(?:\d{1,2}\s+\w+\s+)?(\d{4})\b"
+)
+
+
+def _extract_dates_from_name(name: str) -> tuple[str | None, str | None]:
+    """Extract (birth_year, death_year) from a name string like
+    "William H Glover 13 Nov 1853 - 20 Sep 1936" when the parser
+    did not capture them into `details`. Returns (None, None)
+    when no year-range is present.
+    """
+    if not name:
+        return None, None
+    # Try the loose pattern first (handles "13 Nov 1853 - 20 Sep 1936"),
+    # fall back to strict ("1853 - 1936").
+    m = _DATE_RANGE_LOOSE_RE.search(name) or _DATE_RANGE_RE.search(name)
+    if not m:
+        return None, None
+    return m.group(1), m.group(2)
+
+
 def _scope_to_state(scope: PlanScope, params: dict) -> str:
     """Map a plan scope to the state filter value for apply_filters.
 
@@ -374,6 +430,38 @@ class FaGScraperKS:
                         common = self._engine.to_common_candidate(c)
                     except Exception:
                         common = c
+                # Issue #104: pipe `details` through so the date /
+                # state / veteran signals the engine already scored
+                # against survive into the projection row. Without
+                # this, downstream re-scorers and the review UI were
+                # blind to every feature except name components,
+                # capping best_score at ~0.5.
+                details = (
+                    common.get("attributes")
+                    or c.get("details")
+                    or {}
+                )
+                # The view layer reads `attributes.*` (engine-agnostic
+                # common shape from to_common_candidate). Mirror the
+                # extracted birth/death/state into `attributes` even
+                # when we fell back from `c.details`, so view.html keeps
+                # rendering dates regardless of which path produced
+                # them.
+                attributes = dict(details) if details else {}
+                candidate_name = common.get("name", "") or c.get("name", "")
+                birth_year, death_year = _extract_dates_from_name(
+                    candidate_name
+                )
+                birth_year = details.get("birth_year") or birth_year
+                death_year = details.get("death_year") or death_year
+                is_caption_noise = _is_caption_noise(candidate_name)
+                # Caption-noise candidates (e.g. "HONORING Permelia
+                # Malcom BIRTH 1845 DEATH 1935") get score 0 from the
+                # parser and rank above real matches because nothing
+                # else fires. Drop them at the row boundary so the
+                # projection never sees them.
+                if is_caption_noise:
+                    continue
                 rows.append({
                     "memorial_id": (
                         common.get("id")
@@ -382,12 +470,24 @@ class FaGScraperKS:
                     ),
                     "id": common.get("id", ""),
                     "slug": common.get("slug", "") or c.get("slug", ""),
-                    "name": common.get("name", "") or c.get("name", ""),
+                    "name": candidate_name,
                     "score": c.get("score", 0.0),
                     "url": common.get("url", ""),
                     "via_strategy": c.get("via_strategy", plan.strategy),
                     "via_scope": plan.scope.value,
                     "evidence": c.get("score_evidence") or c.get("evidence", {}),
+                    "attributes": attributes,
+                    "details": dict(details) if details else {},
+                    "birth_year": birth_year or None,
+                    "death_year": death_year or None,
+                    "cemetery_name": details.get("cemetery_name") or None,
+                    "candidate_state": details.get("state") or None,
+                    "is_veteran": bool(details.get("is_veteran", False)),
+                    "backlink": c.get("backlink", "") or common.get("url", ""),
+                    "iiif_url": c.get("iiif_url", "") or (
+                        common.get("media", {}).get("image_url", "")
+                    ),
+                    "is_caption_noise": False,
                 })
             return rows, status
 

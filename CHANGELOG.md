@@ -4,6 +4,69 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(scoring): pipe candidate details through projection rows, sort by score, drop caption noise (#104)
+
+The FaGScraperKS dropped the engine-supplied `details`
+dict when constructing projection rows, leaving the
+projection, view, and any downstream re-scorer blind to
+`birth_year`, `death_year`, `cemetery_name`, `state`,
+and `is_veteran`. Combined with the projector emitting
+`ranked_candidates` in observation insertion order (not
+sorted by score), this let photo-caption entries
+("HONORING Permelia Malcom BIRTH 1845 DEATH 1935",
+"IN MEMORY OF Otto Wiese ...") — which the parser
+scores 0 — rank above real matches. Three of ten pensioners
+in the g-slice-10 sample had `ranked_candidates[0].score
+== 0.0` despite valid ACW-window matches existing in the
+same candidate pool.
+
+Three coordinated changes in `scripts/knowledge/fag_scraper.py`,
+`scripts/blackboard/projector.py`, and three new tests:
+
+1. **Pipe `details` through.** The row payload now carries
+   `attributes` (engine-agnostic birth/death/state),
+   `details` (raw engine output), plus top-level
+   `birth_year`, `death_year`, `cemetery_name`,
+   `candidate_state`, `is_veteran`, `backlink`, `iiif_url`
+   for callers that prefer flat fields.
+2. **Name-string date fallback.** When the parser misses
+   `details.death_year` but the candidate `name` contains
+   a year range ("William H Glover 13 Nov 1853 - 20 Sep
+   1936"), regex extraction populates `birth_year` and
+   `death_year` so the scoring features can fire.
+3. **Caption-noise filter.** Candidates whose names start
+   with "HONORING ", "IN MEMORY OF ", "IN LOVING MEMORY
+   OF ", "IN HONOR OF ", or "REST IN PEACE " are dropped at
+   the scraper boundary.
+4. **Sort `ranked_candidates` descending by score** in
+   `ProjectionBuilder.build_state_row` (stable sort).
+
+Measured on the same 10 G-surname slice (Gwinn, Gooding,
+Glover, Garvin, Gardenhire, Gabbert, Gray, Godfrey, Gray,
+Gilbert):
+
+- 300 caption-noise candidates removed (1379 → 1079).
+- Gwinn's top-1 went from "HONORING Permelia Malcom" (0.0)
+  to "Lucy Ann Ham Gwinn 20 Oct 1846 - 16 Jul 1930" (0.445).
+- Gray Virginia's top-1 went from 0.0 caption to "Virginia
+  J Melvin Gray 1843 - 1904" (0.5).
+- Glover's top-1 went from "William H Glover 13 Nov 1853
+  - 20 Sep 1936" (0.445, sorted 3rd) to "William Harrison
+  Glover V VETERAN 20 Oct 1836 - 25 Dec 1906" (0.644).
+- 8 of 10 pensioners now have a top-1 with full dates and
+  a `V VETERAN` marker visible in the name string.
+
+Tests: 4 new in `tests/test_fag_scraper_ks.py`
+(`_pipes_details_through_to_row`,
+`_falls_back_to_name_date_extraction`,
+`_filters_caption_noise_candidates`, plus the existing
+test updated to assert the new fields), 1 new in
+`tests/test_projector_issue62.py`
+(`_sorts_ranked_candidates_by_score_descending`).
+Full suite: 1503 passing.
+
+### Fix(tests): make RSS sampler cross-platform so CI can run the CGR index-reuse test
+
 ### Fix(tests): make RSS sampler cross-platform so CI can run the CGR index-reuse test
 
 `tests/test_cgr_index_reuse.py` (in the default suite) and the
