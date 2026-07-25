@@ -62,8 +62,8 @@ def test_pension_card_href_uses_iiif_full_full_size():
     matches = _iiif_link_strings()
     assert matches, "v2.html has no pensioncard IIIF link"
     for href in matches:
-        # Skip the thumb URL (uses /full/300,/)
-        if "/full/300," in href:
+        # Skip the thumb URL (uses /full/600,/)
+        if "/full/600," in href:
             continue
         # Full-size must use /full/full/0/default.jpg
         assert "/full/full/0/default.jpg" in href, (
@@ -77,26 +77,26 @@ def test_pension_card_href_uses_iiif_full_full_size():
         )
 
 
-def test_pension_card_thumb_uses_iiif_300_width():
-    """The thumb URL must use the 300px-wide IIIF size segment."""
+def test_pension_card_thumb_uses_iiif_600_width():
+    """The thumb URL must use the 600px-wide IIIF size segment."""
     matches = _iiif_link_strings()
     assert matches
-    thumb = [h for h in matches if "/full/300" in h]
-    assert thumb, "v2.html has no /full/300,/0 thumb link"
+    thumb = [h for h in matches if "/full/600" in h]
+    assert thumb, "v2.html has no /full/600,/0 thumb link"
     for href in thumb:
-        assert "/full/300,/0/default.jpg" in href, (
+        assert "/full/600,/0/default.jpg" in href, (
             f"v2 pension card thumb href malformed: {href!r}"
         )
 
 
 def test_pension_card_thumb_and_full_are_distinct_size_segments():
-    """Thumb (300px) and full (max) URLs must differ in the
+    """Thumb (600px) and full (max) URLs must differ in the
     size segment only.
     """
     matches = _iiif_link_strings()
     assert matches
     full = next((h for h in matches if "/full/full/0" in h), None)
-    thumb = next((h for h in matches if "/full/300,/0" in h), None)
+    thumb = next((h for h in matches if "/full/600,/0" in h), None)
     assert full is not None, "no full-size href found"
     assert thumb is not None, "no thumb href found"
     assert full != thumb, "full and thumb hrefs are identical"

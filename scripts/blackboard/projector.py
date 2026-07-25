@@ -279,6 +279,7 @@ def _convert_fag_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
         "widow_pension": bd.get("widow_pension", 0),
         "maiden_name": bd.get("maiden_name", 0),
         "_convergence_count": bd.get("_convergence_count", 0),
+        "_spouse_linked": bool(c.get("_spouse_linked", False)),
     }
     return {
         "id": str(c.get("memorial_id", "")),

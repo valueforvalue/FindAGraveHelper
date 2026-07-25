@@ -477,6 +477,14 @@ class FaGScraperKS:
                 # projection never sees them.
                 if is_caption_noise:
                     continue
+                # Issue #118: tag candidates from spouse-linked searches.
+                # When the plan carries spouse names, FaG's linkedToName
+                # filter ensures returned candidates are family-tree-linked
+                # to the spouse. This is ground-truth spouse evidence.
+                _spouse_linked = bool(
+                    plan.params.get("pensioner_spouse_first")
+                    and plan.params.get("pensioner_spouse_last")
+                )
                 rows.append({
                     "memorial_id": (
                         common.get("id")
@@ -503,6 +511,7 @@ class FaGScraperKS:
                         common.get("media", {}).get("image_url", "")
                     ),
                     "is_caption_noise": False,
+                    "_spouse_linked": _spouse_linked,
                 })
             return rows, status
 

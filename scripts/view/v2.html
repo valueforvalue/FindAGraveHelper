@@ -15,23 +15,23 @@
 <style>
 :root {
     color-scheme: light;
-    --ink: #18212b;
-    --muted: #647181;
-    --line: #d9e0e7;
-    --line-strong: #b8c3ce;
+    --ink: #1e293b;
+    --muted: #94a3b8;
+    --line: #e2e8f0;
+    --line-strong: #cbd5e1;
     --paper: #ffffff;
-    --canvas: #edf1f4;
-    --accent: #155f85;
-    --accent-dark: #0d4866;
-    --accent-soft: #e7f2f7;
-    --success: #1f6d42;
-    --success-soft: #e5f4eb;
-    --warning: #7a5600;
-    --warning-soft: #fff3cf;
-    --danger: #982f32;
-    --danger-soft: #fae7e8;
+    --canvas: #f8fafc;
+    --accent: #2563a8;
+    --accent-dark: #1d4ed8;
+    --accent-soft: #eff6ff;
+    --success: #16a34a;
+    --success-soft: #f0fdf4;
+    --warning: #ca8a04;
+    --warning-soft: #fefce8;
+    --danger: #dc2626;
+    --danger-soft: #fef2f2;
     --radius: 0.35rem;
-    --shadow: 0 0.1rem 0.35rem rgb(26 42 56 / 10%);
+    --shadow: 0 1px 3px rgb(0 0 0 / 8%), 0 1px 2px rgb(0 0 0 / 6%);
 }
 
 * {
@@ -349,7 +349,8 @@ h1 {
 .status-pill,
 .decision-pill,
 .picked-badge,
-.best-badge {
+.best-badge,
+.spouse-match-badge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -444,6 +445,12 @@ h1 {
 .picked-badge {
     background: var(--success-soft);
     color: var(--success);
+}
+
+.spouse-match-badge {
+    background: var(--warning-soft);
+    color: var(--warning);
+    padding: 1px 8px;
 }
 
 .status-pill.ambiguous,
@@ -840,6 +847,38 @@ kbd {
     font-weight: 700;
     line-height: 1.35;
 }
+
+/* Issue #121: inline image lightbox */
+.lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgb(0 0 0 / 85%);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.lightbox-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 2rem;
+    cursor: pointer;
+    z-index: 10001;
+    line-height: 1;
+}
+.lightbox-close:hover { color: #ccc; }
+.lightbox-img {
+    max-width: 95vw;
+    max-height: 95vh;
+    object-fit: contain;
+    cursor: default;
+    background: #fff;
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </head>
@@ -966,11 +1005,11 @@ kbd {
                                 </template>
                             </div>
                             <template x-for="(pageId, i) in (record.attributes?.pensioncard_pages || [])" :key="pageId">
-                                <a :href="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg'" target="_blank" title="Click for full size">
-                                    <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/300,/0/default.jpg'"
+                                <a href="#" @click.prevent="openLightbox('https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg', (record.title || 'pensioner') + ' card ' + (i + 1))" title="Click for full size">
+                                    <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/600,/0/default.jpg'"
                                          :alt="(record.title || 'pensioner') + ' pension card ' + (i + 1)"
                                          loading="lazy"
-                                         style="max-width:240px; max-height:160px; margin:4px 6px 0 0;
+                                         style="max-width:480px; max-height:360px; margin:4px 6px 0 0;
                                                 border:1px solid #ccc; border-radius:3px;
                                                 vertical-align:top; background:#fafafa;">
                                 </a>
@@ -1025,6 +1064,7 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
+                                        <span class="spouse-match-badge" x-show="candidate.evidence?.score_breakdown?._spouse_linked">💍 spouse match</span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1171,6 +1211,11 @@ function reviewApp() {
         undoStack: [],
         redoStack: [],
         focusedRecordIndex: -1,
+
+        // ── Lightbox ──
+        lightboxOpen: false,
+        lightboxSrc: '',
+        lightboxAlt: '',
 
         // ── Filters ──
         engineFilter: 'all',
@@ -1715,6 +1760,11 @@ function reviewApp() {
                     }
                     break;
             }
+            // Issue #121: ESC closes lightbox
+            if (event.key === 'Escape' && this.lightboxOpen) {
+                event.preventDefault();
+                this.closeLightbox();
+            }
         },
 
         isTextInputFocused() {
@@ -1728,6 +1778,18 @@ function reviewApp() {
         focusCard(card) {
             card.scrollIntoView({ behavior: 'smooth', block: 'center' });
             card.querySelector('h2')?.focus({ preventScroll: true });
+        },
+
+        openLightbox(src, alt) {
+            this.lightboxSrc = src;
+            this.lightboxAlt = alt || '';
+            this.lightboxOpen = true;
+        },
+
+        closeLightbox() {
+            this.lightboxOpen = false;
+            this.lightboxSrc = '';
+            this.lightboxAlt = '';
         },
 
         // ── Drag-drop ──
@@ -2297,5 +2359,11 @@ function reviewApp() {
     };
 }
 </script>
+<!-- Lightbox overlay for pension card images -->
+<div class="lightbox-overlay" x-show="lightboxOpen" x-cloak
+     @click.self="closeLightbox()">
+    <button class="lightbox-close" @click="closeLightbox()" aria-label="Close">&times;</button>
+    <img :src="lightboxSrc" :alt="lightboxAlt" class="lightbox-img">
+</div>
 </body>
 </html>
