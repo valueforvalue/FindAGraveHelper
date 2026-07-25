@@ -1149,6 +1149,10 @@ kbd {
                                             @click="toggleRemove(record.id, candidate.id)"
                                             :aria-label="'Remove ' + (candidate.title || 'candidate')">×</button>
                                 </div>
+                                <div class="candidate-search-url" x-show="candidate.search_url">
+                                    <a :href="candidate.search_url" target="_blank" rel="noopener"
+                                       style="font-size:0.68rem;color:var(--muted);">🔍 search</a>
+                                </div>
                             </article>
                         </template>
                     </div>

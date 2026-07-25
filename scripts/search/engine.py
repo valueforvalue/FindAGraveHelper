@@ -351,6 +351,7 @@ def default_search_one(
                 c = dict(c)
                 c["score"] = 0.0
                 c["score_evidence"] = {"error": str(e)}
+            c["search_url"] = url  # issue #122 follow-up: FaG search URL
             scored.append(c)
         log.info(
             "  %-25s %3d candidates  state=%s",
