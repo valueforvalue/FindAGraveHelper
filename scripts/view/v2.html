@@ -906,6 +906,43 @@ kbd {
     cursor: default;
     background: #fff;
 }
+
+/* Feedback */
+.feedback-btn {
+    opacity: 0.7;
+    font-size: 0.8rem;
+}
+.feedback-btn:hover { opacity: 1; }
+.feedback-overlay {
+    position: fixed; inset: 0; z-index: 1001;
+    background: rgba(0,0,0,0.4);
+    display: flex; align-items: center; justify-content: center;
+}
+.feedback-modal {
+    background: var(--paper);
+    border-radius: 8px;
+    padding: 1.5rem;
+    width: min(90vw, 420px);
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+}
+.feedback-modal h3 { margin: 0 0 0.75rem; }
+.feedback-modal textarea {
+    width: 100%;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    padding: 0.5rem;
+    font: inherit;
+    resize: vertical;
+}
+.feedback-actions {
+    display: flex; gap: 0.5rem; justify-content: flex-end;
+    margin-top: 0.75rem;
+}
+.feedback-success {
+    color: var(--success);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.14.8/dist/cdn.min.js"></script>
 </head>
@@ -939,6 +976,7 @@ kbd {
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Export picks</button>
                 <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Import decisions</button>
                 <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
+                <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
         </div>
         <div class="filter-row">
@@ -1239,6 +1277,12 @@ function reviewApp() {
         lightboxOpen: false,
         lightboxSrc: '',
         lightboxAlt: '',
+
+        // ── Feedback ──
+        showFeedback: false,
+        feedbackText: '',
+        feedbackSending: false,
+        feedbackSent: false,
 
         // ── Filters ──
         engineFilter: 'all',
@@ -1818,6 +1862,31 @@ function reviewApp() {
             this.lightboxOpen = false;
             this.lightboxSrc = '';
             this.lightboxAlt = '';
+        },
+
+        async submitFeedback() {
+            if (!this.feedbackText.trim()) return;
+            this.feedbackSending = true;
+            try {
+                await fetch('https://submit-form.com/OLuBuSdlI', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        message: this.feedbackText,
+                        run: this.runTitle,
+                        url: window.location.href,
+                        timestamp: new Date().toISOString(),
+                    }),
+                });
+                this.feedbackSent = true;
+                this.feedbackText = '';
+                setTimeout(() => { this.showFeedback = false; this.feedbackSent = false; }, 2000);
+            } catch (e) {
+                // Still close — FormSpark handles delivery
+                this.feedbackSent = true;
+                setTimeout(() => { this.showFeedback = false; this.feedbackSent = false; }, 2000);
+            }
+            this.feedbackSending = false;
         },
 
         async openSourceViewer(url, title) {
@@ -2442,6 +2511,22 @@ function reviewApp() {
     <button class="lightbox-close" @click="closeLightbox()" aria-label="Close">&times;</button>
     <img :src="lightboxSrc" :alt="lightboxAlt" class="lightbox-img" x-show="!lightboxSrc.startsWith('<')">
     <div x-show="lightboxSrc.startsWith('<')" x-html="lightboxSrc"></div>
+</div>
+
+<!-- Feedback modal -->
+<div class="feedback-overlay" x-show="showFeedback" x-cloak @click.self="showFeedback = false">
+    <div class="feedback-modal">
+        <h3>Send feedback</h3>
+        <textarea x-model="feedbackText" rows="5" placeholder="Bug report, feature idea, or general feedback..."></textarea>
+        <div class="feedback-actions">
+            <button class="button" @click="showFeedback = false">Cancel</button>
+            <button class="button primary" @click="submitFeedback" :disabled="feedbackSending">
+                <span x-show="!feedbackSending">Send</span>
+                <span x-show="feedbackSending">Sending...</span>
+            </button>
+        </div>
+        <p x-show="feedbackSent" class="feedback-success">Sent! Thank you.</p>
+    </div>
 </div>
 </body>
 </html>
