@@ -345,11 +345,26 @@ class FaGScraperKS:
             # of the state-specific filter. Issue #62 regression:
             # "OK filtered searches aren't firing" was this bug.
             scope_state = _scope_to_state(plan.scope, plan.params)
+            # Inject plan-level flags into extras so the engine's
+            # strategy ladder can skip inapplicable strategies.
+            # Issue #105: _is_widow flag from the regional planner
+            # tells the ladder to skip regiment-bio for widows.
+            _extras = dict(ctx.extras)
+            if plan.params.get("_is_widow"):
+                _extras["_is_widow"] = True
             if scope_state:
                 ctx = SearchContext(
                     first=ctx.first, middle=ctx.middle, last=ctx.last,
                     birth_year=ctx.birth_year, death_year=ctx.death_year,
-                    state=scope_state, extras=dict(ctx.extras),
+                    state=scope_state, extras=_extras,
+                )
+            elif _extras:
+                # No scope state, but we have plan-level flags:
+                # rebuild ctx with the augmented extras.
+                ctx = SearchContext(
+                    first=ctx.first, middle=ctx.middle, last=ctx.last,
+                    birth_year=ctx.birth_year, death_year=ctx.death_year,
+                    state=ctx.state, extras=_extras,
                 )
 
             page = getattr(self._session, "page", None)

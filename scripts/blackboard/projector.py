@@ -19,6 +19,13 @@ from scripts.blackboard.decision_policy import (
 )
 from scripts.projection.schema import SCHEMA_VERSION as _SCHEMA_VERSION
 
+# Cap per pensioner so projection rows don't carry 100+
+# zero-score candidates that view.html never renders and that
+# bloat state.jsonl and run_audit.jsonl (issue #104 follow-up).
+# The engine path (default_search_one → Blackboard → projector)
+# doesn't have a cap; the legacy path used 20 in search.py.
+MAX_CANDIDATES_PER_PENSIONER = 20
+
 
 class ProjectionBuilder:
     """Deterministic projector from observations to review output.
@@ -74,6 +81,9 @@ class ProjectionBuilder:
             key=lambda c: c.get("score", 0.0),
             reverse=True,
         )
+        # Cap to top N so state.jsonl + view.html don't carry
+        # scores of zero-score tail entries from the engine.
+        capped_candidates = sorted_candidates[:MAX_CANDIDATES_PER_PENSIONER]
 
         row: dict[str, Any] = {
             "pensioner_id": pensioner_id,
@@ -88,8 +98,8 @@ class ProjectionBuilder:
             # `iiif_url`. Normalize here so downstream consumers
             # (state.jsonl, v2 normalizeRecord, v2 normalizeRecordV2)
             # see both keys.
-            "ranked_candidates": [_normalize_candidate(c) for c in sorted_candidates],
-            "fag_records": [_normalize_candidate(c) for c in sorted_candidates],
+            "ranked_candidates": [_normalize_candidate(c) for c in capped_candidates],
+            "fag_records": [_normalize_candidate(c) for c in capped_candidates],
             "_policy_version": self.policy_version,
             # Issue #98: per-row schema version so view.html (or any
             # downstream consumer) can detect shape drift. The
@@ -187,14 +197,14 @@ class ProjectionBuilder:
         # `url` and `backlink` keys (issue #62).
         if engine == "newspapers_com":
             common_candidates = [
-                _convert_np_candidate_for_projection(c) for c in candidates
+                _convert_np_candidate_for_projection(c) for c in capped_candidates
             ]
         else:
             common_candidates = [
                 _convert_fag_candidate_for_projection(
                     _normalize_candidate(c)
                 )
-                for c in candidates
+                for c in capped_candidates
             ]
         row["common"] = {
             "id": pensioner_id,

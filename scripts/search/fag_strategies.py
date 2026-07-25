@@ -29,8 +29,11 @@ def f2_regiment_bio(ctx: SearchContext):
 
     Reads `regiment` from ctx.extras. Falls back to "" when
     absent (which makes the underlying strategy_regiment_bio
-    return None).
+    return None). Skipped for widow pensioners — the regiment
+    belongs to the deceased husband, not the pensioner (#105).
     """
+    if ctx.extra("_is_widow", False):
+        return None
     return strategy_regiment_bio(
         ctx.first, ctx.middle, ctx.last,
         ctx.extra("regiment", ""),

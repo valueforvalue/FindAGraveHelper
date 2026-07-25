@@ -246,3 +246,33 @@ def test_projector_sorts_ranked_candidates_by_score_descending():
     scores = [c.get("score") for c in row["ranked_candidates"]]
     assert scores == [0.445, 0.256, 0.0, 0.0]
     assert row["ranked_candidates"][0]["memorial_id"] == "b"
+
+
+def test_projector_caps_ranked_candidates_to_max():
+    """Issue #104 follow-up: ranked_candidates is capped at
+    MAX_CANDIDATES_PER_PENSIONER=20 so state.jsonl doesn't
+    carry 50-100 zero-score tail entries per pensioner.
+    Only the top N by score survive.
+    """
+    from scripts.blackboard.projector import MAX_CANDIDATES_PER_PENSIONER
+
+    pensioner = _sample_pensioner()
+    # Build 25 candidates with descending scores
+    candidates = []
+    for i in range(25):
+        candidates.append({
+            "memorial_id": str(i),
+            "name": f"Candidate {i}",
+            "score": (25 - i) / 25.0,  # 1.0, 0.96, ..., 0.04
+            "url": f"https://example.com/{i}",
+            "backlink": f"https://example.com/{i}",
+        })
+    builder = ProjectionBuilder()
+    row = builder.build_state_row(
+        pensioner_id=272, pensioner_data=pensioner, candidates=candidates
+    )
+    ranked = row["ranked_candidates"]
+    assert len(ranked) == min(25, MAX_CANDIDATES_PER_PENSIONER)
+    # Verify top-1 has highest score
+    assert ranked[0]["score"] == 1.0
+    assert ranked[-1]["score"] >= (25 - MAX_CANDIDATES_PER_PENSIONER + 1) / 25.0

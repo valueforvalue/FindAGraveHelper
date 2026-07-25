@@ -154,6 +154,12 @@ class RegionalPlannerKS:
         last = str(pensioner.get("last_name") or pensioner.get("last") or "")
         regiment = str(pensioner.get("regiment") or "").lower()
         birth_year = str(pensioner.get("birth_year") or "")
+        # Issue #105: widows carry the deceased husband's regiment
+        # on their pension record. Regiment-scoped searches (F2,
+        # RegimentOrigin) find the veteran, not the widow. Detect
+        # widow status from spouse_name_raw so we can skip those.
+        spouse_raw = str(pensioner.get("spouse_name_raw") or "").strip()
+        is_widow = bool(spouse_raw)
 
         base_params: dict[str, Any] = {}
         # Pass through all pensioner fields so FaGScraperKS has full context
@@ -168,6 +174,10 @@ class RegionalPlannerKS:
             base_params["firstname"] = first
         if last:
             base_params["lastname"] = last
+        # Thread widow status through so the engine can skip
+        # regiment-based strategies for widow searches (#105).
+        if is_widow:
+            base_params["_is_widow"] = True
 
         if not last:
             return plans  # can't search without at least a last name
@@ -206,10 +216,15 @@ class RegionalPlannerKS:
                 )
             )
 
-        # 2. Regiment-origin state
+        # 2. Regiment-origin state (skipped for widows — the
+        #    regiment belongs to the deceased husband, not the
+        #    pensioner; issue #105).
         origin_state = self._infer_origin_state(regiment)
-        if origin_state and origin_state != "OK" and not _dedup(
-            "B1-exact", origin_state
+        if (
+            origin_state
+            and origin_state != "OK"
+            and not _dedup("B1-exact", origin_state)
+            and not is_widow
         ):
             plans.append(
                 QueryPlan(

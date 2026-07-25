@@ -160,10 +160,18 @@ def test_pensioner_id_lookup_filter_works():
             "state": "OK",
         },
     }
-    score, _ = score_candidate(local, cand_modern)
-    assert score == 0.0, (
+    score, breakdown = score_candidate(local, cand_modern)
+    # Issue #104: soft date gate — candidate still gets name-match
+    # score reduced by 0.3 penalty factor (was hard 0.0 in J13).
+    assert score > 0.0, (
         f"modern (by=1949, dy=2020) candidate scored {score:.3f}; "
-        f"expected 0.0 (impossible for ACW Confederate pensioner)"
+        f"expected >0.0 (soft gate preserves name signal)"
+    )
+    assert score < 0.3, (
+        f"modern candidate scored {score:.3f}; expected <0.3 (heavy penalty)"
+    )
+    assert breakdown.get("_date_penalty") == 1.0, (
+        f"expected _date_penalty flag, got {breakdown}"
     )
 
 
@@ -188,10 +196,16 @@ def test_scoring_zeroes_pre_acw_match():
             "state": "OK",
         },
     }
-    score, _ = score_candidate(local, cand_pre)
-    assert score == 0.0, (
-        f"pre-CW (dy=1850) candidate scored {score:.3f}; expected 0.0"
+    score, breakdown = score_candidate(local, cand_pre)
+    # Issue #104: soft date gate — pre-CW candidate gets name-match
+    # score reduced by penalty factor (was hard 0.0 in J13).
+    assert score > 0.0, (
+        f"pre-CW (dy=1850) candidate scored {score:.3f}; expected >0.0 (soft gate)"
     )
+    assert score < 0.3, (
+        f"pre-CW candidate scored {score:.3f}; expected <0.3 (heavy penalty)"
+    )
+    assert breakdown.get("_date_penalty") == 1.0
 
 
 def test_scoring_keeps_plausible_match():

@@ -108,24 +108,22 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     cand_dy = candidate.get("details", {}).get("death_year", "")
     cand_by = candidate.get("details", {}).get("birth_year", "")
 
-    # J13: impossible-date gate.
+    # J13 / issue #104: impossible-date soft gate.
     # A candidate whose dates are outside the ACW window (born after
-    # 1870 or died after 1950) is overwhelmingly a same-surname modern
-    # person. Score ZERO regardless of name/veteran signals — even
-    # with a perfect name match, a person who died in 2020 cannot be
-    # an ACW Confederate pensioner. Without this gate, the test
-    # batch saw 71% of candidates scoring 0.3-0.5 against pensioners
-    # with no local dates to anchor the death-year component.
+    # 1880 or died after 1955) is overwhelmingly a same-surname modern
+    # person. Instead of hard-scoring 0.0 (which crowded real
+    # low-signal matches), apply a heavy penalty to the name-match
+    # score so the candidate still sorts meaningfully below in-window
+    # entries but above true parser noise (caption entries, unrelated
+    # surnames). The `_date_penalty: 1.0` sentinel in evidence lets
+    # review tools highlight the penalized entry.
     from scripts.fag.filters import _in_acw_window, _parse_int
     cand_by_i = _parse_int(cand_by)
     cand_dy_i = _parse_int(cand_dy)
+    date_penalty = 0.0
     if not _in_acw_window(cand_by_i, cand_dy_i):
-        return 0.0, {
-            "last": 0.0, "first": 0.0, "middle": 0.0,
-            "ok_burial": 0.0, "state": 0.0,
-            "veteran": 0.0, "death": 0.0,
-            "_impossible_date": 1.0,  # sentinel: the score gate fired
-        }
+        date_penalty = 1.0
+
     if local_dy and cand_dy:
         try:
             d_local = int(local_dy)
@@ -161,6 +159,15 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         0.22 * death_score
     )
 
+    # Issue #104: soft date gate. When candidate dates are outside
+    # the ACW window, multiply the score by a heavy penalty instead
+    # of returning 0.0, so the candidate still appears in order
+    # below real matches but above parser noise (caption entries
+    # with score 0).
+    _DATE_PENALTY_FACTOR = 0.3
+    if date_penalty:
+        score *= _DATE_PENALTY_FACTOR
+
     breakdown = {
         "last": round(last_score, 2),
         "first": round(first_score, 2),
@@ -170,6 +177,8 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         "veteran": round(veteran_score, 2),
         "death": round(death_score, 2),
     }
+    if date_penalty:
+        breakdown["_date_penalty"] = 1.0  # sentinel: score reduced by soft gate
     return score, breakdown
 
 
