@@ -480,11 +480,11 @@ _STATE_NAMES_LOWER = {k.lower(): v for k, v in _STATE_NAMES_UPPER.items()}
 # spouse_name_raw pensioners (ok_pensioners.json, 2026-07).
 _MALE_VETERAN_FIRST_NAMES: set[str] = {
     "abraham", "albert", "alexander", "alfred", "andrew", "arthur",
-    "benjamin", "charles", "daniel", "david", "edward", "frank",
+    "benjamin", "boone", "charles", "daniel", "david", "edward", "frank",
     "frederick", "george", "henry", "isaac", "jacob", "james",
     "jeff", "jesse", "john", "joseph", "lewis", "martin",
-    "nathan", "patrick", "peter", "richard", "robert", "samuel",
-    "stephen", "thomas", "walter", "wiley", "william",
+    "nathan", "patrick", "paul", "peter", "richard", "robert", "samuel",
+    "stephen", "thomas", "victor", "walter", "wiley", "william",
 }
 
 

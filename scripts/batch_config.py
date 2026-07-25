@@ -154,12 +154,12 @@ VALID_MODES = {"conservative", "standard", "aggressive"}
 #: individual fields inside the mode object.
 MODE_DEFAULTS: dict[str, dict] = {
     "conservative": {
-        "max_refinements": 4,
+        "max_refinements": 2,
         "skip_refine_above": 0.85,
         "bail_on_auto_accept": True,
     },
     "standard": {
-        "max_refinements": 6,
+        "max_refinements": 4,
         "skip_refine_above": 0.85,
         "bail_on_auto_accept": True,
     },
@@ -179,7 +179,7 @@ class SearchModeConfig:
     (OK + origin + TX + US) is invariant across modes.
     """
     mode: str = "standard"
-    max_refinements: int = 6
+    max_refinements: int = 4
     skip_refine_above: float = 0.85
     bail_on_auto_accept: bool = True
 

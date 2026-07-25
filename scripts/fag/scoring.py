@@ -75,6 +75,7 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     local_middle = local.get("middle_name", "")
     local_last = local.get("last_name", "")
     local_state = (local.get("_state_abbr") or "").upper()
+    is_widow = bool(local.get("_is_widow", False))
 
     slug_parts = parse_slug(candidate.get("slug", ""))
 
@@ -105,6 +106,13 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         first_score = 1.0
     elif first_initial_match:
         first_score = 0.6
+        # Issue: initial match V↔Virginia or B↔Mary is too
+        # generous when candidate is clearly male and pensioner
+        # is a widow (female). Halve first_score for cross-gender
+        # initial matches.
+        from scripts.fag.filters import _MALE_VETERAN_FIRST_NAMES
+        if is_widow and slug_first_n in _MALE_VETERAN_FIRST_NAMES:
+            first_score = 0.3
     elif first_phon:
         first_score = 0.4
     else:
@@ -148,7 +156,6 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     # itself. Give a moderate bonus that the candidate belongs to a CW
     # pensioner family, lower than veteran because the candidate IS the
     # widow, not the vet (issue #105).
-    is_widow = bool(local.get("_is_widow", False))
     widow_pension_score = 0.0
     if is_widow:
         # Scale by first-name confidence — a widow candidate
