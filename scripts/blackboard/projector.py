@@ -215,8 +215,8 @@ class ProjectionBuilder:
             "candidates": common_candidates,
             "corroboration": {
                 "cgr": cgr_data or {},
-                "dd_match": dd_data or {},
-                "spouse_match": spouse_data or {},
+                "dd_match": dd_data or None,
+                "spouse_match": spouse_data or None,
             },
         }
 

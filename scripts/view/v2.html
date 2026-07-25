@@ -989,7 +989,7 @@ kbd {
                     <span x-text="'TOP 1: ' + (record.candidates[0] ? (Number(record.candidates[0].score || 0).toFixed(2) + '  ' + record.candidates[0].title + (record.candidates[0].attributes?.birth_year ? ' · ' + record.candidates[0].attributes.birth_year + '–' + (record.candidates[0].attributes.death_year || '?') : '') + (record.candidates[0].attributes?.state ? ' · ' + record.candidates[0].attributes.state : '')) : 'no candidates')"></span>
                     <div class="corroboration-line">
                         <span x-text="'CGR ' + (record.corroboration?.cgr?.length || 0) + ' match' + ((record.corroboration?.cgr?.length || 0) === 1 ? '' : 'es')"></span>
-                        · DD tracked <span x-text="record.corroboration?.dd_match ? '✓' : '✗'"></span>
+                        · DD tracked <span x-text="(record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id) ? '✓ #' + record.corroboration.dd_match.dd_memorial_id : '✗'"></span>
                         · Spouse known <span x-text="(record.attributes?.spouse?.first && record.attributes?.spouse?.last) ? '✓' : '✗'"></span>
                     </div>
                 </div>
@@ -1048,7 +1048,7 @@ kbd {
                     </div>
                     <div class="corroboration-summary">
                         <span x-text="'CGR ' + plural(record.corroboration?.cgr?.length || 0, 'match')"></span>
-                        <span x-text="'DD tracked ' + (record.corroboration?.dd_match ? '✓' : '✗')"></span>
+                        <span x-text="'DD tracked ' + ((record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id) ? '✓' : '✗')"></span>
                         <span x-text="'Spouse known ' + ((record.attributes?.spouse?.first && record.attributes?.spouse?.last) ? '✓' : '✗')"></span>
                     </div>
                 </section>
