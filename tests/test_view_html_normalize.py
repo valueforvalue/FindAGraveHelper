@@ -43,6 +43,9 @@ def test_fag_evidence_maps_to_common_feature_names(normalization_page):
         "state": 0.1,
         "ok_burial": 0.3,
         "veteran": 0.8,
+        "widow_pension": 0,
+        "maiden_name": 0,
+        "_convergence_count": 0,
     }
 
 
@@ -143,6 +146,9 @@ def test_fag_record_normalizes_to_engine_agnostic_shape(normalization_page):
                         "state": 0,
                         "ok_burial": 0,
                         "veteran": 0,
+                        "widow_pension": 0,
+                        "maiden_name": 0,
+                        "_convergence_count": 0,
                     },
                     "raw": record["fag_records"][0],
                 },

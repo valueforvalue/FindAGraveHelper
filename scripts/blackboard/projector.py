@@ -257,19 +257,29 @@ class ProjectionBuilder:
 def _convert_fag_candidate_for_projection(c: dict[str, Any]) -> dict[str, Any]:
     """Convert a raw FaG candidate to common shape."""
     details = c.get("details") or {}
-    evidence = c.get("score_evidence") or {}
-    score_breakdown = evidence.get("score_breakdown", {})
-    common_bd = {}
-    if score_breakdown:
-        common_bd = {
-            "last_name": score_breakdown.get("last", 0),
-            "first_name": score_breakdown.get("first", 0),
-            "middle_name": score_breakdown.get("middle", 0),
-            "year_window": score_breakdown.get("death", 0),
-            "state": score_breakdown.get("state", 0),
-            "ok_burial": score_breakdown.get("ok_burial", 0),
-            "veteran": score_breakdown.get("veteran", 0),
-        }
+    # The scraper row stores the flat evidence dict under "evidence"
+    # (not "score_evidence"). Map it to the view's score_breakdown shape.
+    flat_evidence = c.get("evidence") or c.get("score_evidence") or {}
+    score_breakdown = flat_evidence.get("score_breakdown", None)
+    if score_breakdown is not None and isinstance(score_breakdown, dict) and score_breakdown:
+        # Nested score_breakdown (engine path, engine-agnostic wrap)
+        bd = dict(score_breakdown)
+    else:
+        # Flat evidence dict from the scraper row
+        bd = flat_evidence
+    common_bd = {
+        "last_name": bd.get("last", 0),
+        "first_name": bd.get("first", 0),
+        "middle_name": bd.get("middle", 0),
+        "year_window": bd.get("death", 0),
+        "state": bd.get("state", 0),
+        "ok_burial": bd.get("ok_burial", 0),
+        "veteran": bd.get("veteran", 0),
+        # Issue #110: widow/maiden/convergence badges in view.
+        "widow_pension": bd.get("widow_pension", 0),
+        "maiden_name": bd.get("maiden_name", 0),
+        "_convergence_count": bd.get("_convergence_count", 0),
+    }
     return {
         "id": str(c.get("memorial_id", "")),
         "title": c.get("name", ""),

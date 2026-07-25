@@ -1044,9 +1044,9 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
-                                        <span class="widow-badge" x-show="candidate.evidence?.widow_pension > 0">👰 widow</span>
-                                        <span class="maiden-badge" x-show="candidate.evidence?.maiden_name > 0">💍 maiden</span>
-                                        <span class="convergence-badge" x-show="(candidate.evidence?._convergence_count || 0) >= 2" x-text="'⟳' + candidate.evidence._convergence_count"></span>
+                                        <span class="widow-badge" x-show="(candidate.evidence?.score_breakdown?.widow_pension || 0) > 0">👰 widow</span>
+                                        <span class="maiden-badge" x-show="(candidate.evidence?.score_breakdown?.maiden_name || 0) > 0">💍 maiden</span>
+                                        <span class="convergence-badge" x-show="(candidate.evidence?.score_breakdown?._convergence_count || 0) >= 2" x-text="'⟳' + candidate.evidence.score_breakdown._convergence_count"></span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1924,6 +1924,9 @@ function reviewApp() {
                 state: bd.state || 0,
                 ok_burial: bd.ok_burial || 0,
                 veteran: bd.veteran || 0,
+                widow_pension: bd.widow_pension || 0,
+                maiden_name: bd.maiden_name || 0,
+                _convergence_count: bd._convergence_count || 0,
             };
         },
 
