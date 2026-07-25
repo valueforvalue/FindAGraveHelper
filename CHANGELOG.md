@@ -2,7 +2,55 @@
 
 All notable changes to this project.
 
-## [Unreleased] — 2026-07-22
+## [Unreleased] — 2026-07-25
+
+### Session: scoring + view hardening (2026-07-25)
+
+Full-day session hardening widow/vet scoring, reducing false
+positives, tightening early-stop, and improving v2 review UI.
+
+**Scoring fixes:**
+- Cross-gender first-initial penalty: Victor↔Virginia, Boone↔Mary
+  now penalized to first=0.3 instead of 0.6 (#105 follow-up)
+- Widow_pension scaled by first_score: poor first-name matches
+  get proportionally less pension-family credit
+- Maiden_name gated on first_score >= 0.6 — blocks single-char
+  and wrong-gender name patterns from inflating scores
+- Expanded male-first-name list (victor, boone, paul added)
+
+**Strategy budget:**
+- Conservative max_refinements: 6→2 (49→28 strategies for Glover)
+- Standard max_refinements: 6→4
+- Early-stop threshold: 0.68→0.65, min convergence 2→1
+- Cross-plan observation counting (was per-plan conv=0 invisible)
+  Gray Virginia now early-stops correctly
+
+**View improvements:**
+- Inline JSON source viewer with digitalprairie fields array + thumbnail
+- Evidence bars color-coded (green last, blue first, amber year,
+  red vet, purple OK) with numeric values
+- Pension card thumbnails enlarged (300→600px IIIF, 240→480px max)
+- Lightbox image viewer with ESC close
+- Lighter CSS color scheme (Tailwind-inspired variables)
+- Engine badge floated right, fixed width
+- Pension cards anchored left outside identity-main grid
+- Spouse name in record meta line
+- findagrave details collapsible removed
+- 🔍 search URL links per candidate with multiple URLs
+- DD tracked shows memorial ID when present
+- Evidence bars: dropped always-zero state meter, kept OK burial
+
+**Infrastructure:**
+- search_url/search_urls piped through merge engine → scraper →
+  projector → normalizeRecord → view
+- _spouse_linked flag on top candidate with widow_pension/veteran signal
+- Mode persistence to config.json with full preset values
+- Root logger configured so module loggers propagate to run.log
+
+**Issues closed:** #104, #105, #107, #108, #109, #110, #112,
+  #118, #119, #120, #121
+**Issues filed:** #122 (memorial detail spouse verify),
+  #123 (parser state extraction), #124 (memorial page scraping strategy)
 
 ### Fix(scoring): widow-aware scoring with widened ACW window (#105)
 
