@@ -196,6 +196,42 @@ class DeepRefinerKS:
         if top_score >= self.skip_refine_above:
             return []
 
+        # Issue #109: early-stop on strong signal match.
+        # When the top candidate has a clear signal (widow_pension /
+        # veteran) AND convergence from multiple strategies AND a
+        # score near auto_accept territory, further refinement is
+        # very unlikely to find a better match. Skip to save FaG
+        # requests and throttle time.
+        _EARLY_STOP_SCORE = 0.68
+        _EARLY_STOP_MIN_CONVERGENCE = 2
+        if top_score >= _EARLY_STOP_SCORE:
+            top_candidate_obs = [
+                o for o in observations
+                if o.pensioner_id == item.pensioner_id
+                and o.kind == Kind.FaGCandidateFetch
+                and o.payload.get("memorial_id")
+            ]
+            best_cand = max(
+                top_candidate_obs,
+                key=lambda o: o.payload.get("score", 0.0),
+                default=None,
+            )
+            if best_cand is not None:
+                evidence = (
+                    best_cand.payload.get("score_evidence")
+                    or best_cand.payload.get("evidence")
+                    or {}
+                )
+                has_signal = evidence.get("widow_pension", 0) > 0 or evidence.get("veteran", 0) > 0
+                conv = evidence.get("_convergence_count", 0)
+                if has_signal and conv >= _EARLY_STOP_MIN_CONVERGENCE:
+                    log.info(
+                        "DeepRefinerKS: pensioner %d (score=%.3f) -> early-stop "
+                        "(strong signal + convergence=%d). Skipping refinement.",
+                        item.pensioner_id, top_score, conv,
+                    )
+                    return []
+
         pensioner_obs = [
             o
             for o in observations
