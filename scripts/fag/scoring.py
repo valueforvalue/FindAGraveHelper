@@ -19,6 +19,52 @@ from scripts.fag.filters import (
     ACW_DEATH_YEAR_MAX,
 )
 
+# Issue #108: detect maiden-name inclusion in candidate name.
+# A widow candidate like "Lucy Ann Ham Gwinn" has 3+ name tokens
+# (first Ann Ham + last Gwinn). The extra token (Ham) is the
+# maiden name - strong evidence of a widow match.
+_DATE_PATTERN_RE = re.compile(r'\b\d{4}\b')
+# Month names and ordinal days that appear in FaG name strings.
+_MONTH_NAMES = frozenset([
+    'jan', 'feb', 'mar', 'apr', 'may', 'jun',
+    'jul', 'aug', 'sep', 'oct', 'nov', 'dec',
+])
+_NOISE_TOKENS = frozenset([
+    'no', 'grave', 'photo', 'honoring', 'memory',
+    'v', 'veteran', 'sgt', 'pvt', 'cpl', 'capt', 'sr', 'jr',
+])
+
+
+def _count_name_tokens(name: str) -> int:
+    """Count significant name tokens in a candidate name string.
+
+    Strips date runs, VETERAN markers, rank prefixes, month/day
+    words, and photo-caption noise before counting. A widow with
+    a maiden name like "Lucy Ann Ham Gwinn" should have >= 3
+    tokens (Lucy + Ham + Gwinn, with Ann as middle that may or
+    may not count).
+    """
+    if not name:
+        return 0
+    lower = name.lower()
+    # Remove four-digit years
+    cleaned = _DATE_PATTERN_RE.sub(' ', lower)
+    # Remove standalone 1-2 digit day numbers (but not initials)
+    cleaned = re.sub(r'\b\d{1,2}\b', ' ', cleaned)
+    # Remove special chars
+    cleaned = cleaned.replace('-', ' ').replace(chr(0x2013), ' ')
+    cleaned = cleaned.replace('.', ' ')
+    # Tokenize
+    tokens = cleaned.split()
+    # Filter noise
+    name_tokens = [
+        t for t in tokens
+        if len(t) > 1
+        and t not in _MONTH_NAMES
+        and t not in _NOISE_TOKENS
+    ]
+    return len(name_tokens)
+
 
 def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     """Score how likely a FaG candidate matches the local record.
@@ -164,6 +210,20 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
             if ACW_DEATH_YEAR_MIN <= dy_i <= WIDOW_DEATH_YEAR_MAX:
                 death_score = 0.3
 
+    # Issue #108: maiden-name pattern for widow candidates.
+    # When a widow's FaG memorial includes her maiden name
+    # (e.g. "Lucy Ann Ham Gwinn" where Ham is maiden, Gwinn is
+    # married), the candidate has 3+ name tokens and the last
+    # name matches the pensioner's married name. This is strong
+    # evidence of a correct widow match — the widow kept her
+    # married name on her headstone and the memorial includes
+    # her birth family name.
+    maiden_name_score = 0.0
+    if is_widow and last_score > 0:
+        name_tokens = _count_name_tokens(candidate.get("name", ""))
+        if name_tokens >= 3:
+            maiden_name_score = 1.0  # binary: name structure suggests maiden name
+
     # Weights (rebalanced for "OK-connected, burial-agnostic" search):
     # - last/first/middle: name match dominates (0.62 max)
     # - death year: confirms correct person (0.5 max) — bumped up
@@ -185,7 +245,8 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         0.05 * state_score +
         0.18 * (veteran_score if not is_widow else 0.0) +
         0.18 * widow_pension_score +
-        0.22 * death_score
+        0.22 * death_score +
+        0.12 * maiden_name_score
     )
 
     # Issue #104: soft date gate. When candidate dates are outside
@@ -208,6 +269,8 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     }
     if is_widow:
         breakdown["widow_pension"] = round(widow_pension_score, 2)
+    if maiden_name_score:
+        breakdown["maiden_name"] = 1.0
     if date_penalty:
         breakdown["_date_penalty"] = 1.0  # sentinel: score reduced by soft gate
     return score, breakdown

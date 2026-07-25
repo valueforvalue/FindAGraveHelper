@@ -472,3 +472,54 @@ def test_veteran_scoring_unchanged_by_widow_changes():
     assert score > 0.55, f"vet candidate should score well, got {score:.3f}"
     assert breakdown["veteran"] == 0.8
     assert "widow_pension" not in breakdown
+
+
+def test_widow_maiden_name_pattern_boosts_score():
+    """Issue #108: a widow candidate with 3+ name tokens (maiden
+    name included) should score higher than one with only 2 tokens.
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Lucy",
+        "middle_name": "A.",
+        "last_name": "Gwinn",
+        "_is_widow": True,
+    }
+    cand_maiden = {
+        "name": "Lucy Ann Ham Gwinn 1846 - 1930",
+        "slug": "lucy-ann-ham-gwinn",
+        "details": {"birth_year": "1846", "death_year": "1930", "state": None, "is_veteran": False},
+    }
+    cand_no_maiden = {
+        "name": "Lucy Gwinn 1846 - 1930",
+        "slug": "lucy-gwinn",
+        "details": {"birth_year": "1846", "death_year": "1930", "state": None, "is_veteran": False},
+    }
+    s1, bd1 = score_candidate(local, cand_maiden)
+    s2, bd2 = score_candidate(local, cand_no_maiden)
+    assert s1 > s2, f"maiden-name candidate ({s1:.3f}) should outscore plain ({s2:.3f})"
+    assert bd1.get("maiden_name") == 1.0
+    assert bd2.get("maiden_name") is None
+
+
+def test_maiden_name_does_not_fire_for_veteran():
+    """Issue #108: veteran candidates (is_widow=False) should
+    never get the maiden_name boost, even with 3+ tokens.
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Henry",
+        "middle_name": "L.",
+        "last_name": "Gooding",
+        "_is_widow": False,
+    }
+    cand = {
+        "name": "Henry Clay Gooding V VETERAN 1838 - 1913",
+        "slug": "henry-clay-gooding",
+        "details": {"birth_year": "1838", "death_year": "1913", "state": "OK", "is_veteran": True},
+    }
+    score, bd = score_candidate(local, cand)
+    assert "maiden_name" not in bd
+    assert bd["veteran"] == 0.8
