@@ -349,8 +349,7 @@ h1 {
 .status-pill,
 .decision-pill,
 .picked-badge,
-.best-badge,
-.spouse-match-badge {
+.best-badge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -445,12 +444,6 @@ h1 {
 .picked-badge {
     background: var(--success-soft);
     color: var(--success);
-}
-
-.spouse-match-badge {
-    background: #fef3c7;
-    color: #92400e;
-    padding: 1px 8px;
 }
 
 .status-pill.ambiguous,
@@ -1032,7 +1025,6 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
-                                        <span class="spouse-match-badge" x-show="isSpouseMatch(candidate)">💍 spouse match</span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1445,14 +1437,6 @@ function reviewApp() {
                 'F1d-year-window': 'Year window',
             };
             return aliases[name] || name;
-        },
-
-        isSpouseMatch(candidate) {
-            const sb = candidate.evidence?.score_breakdown || {};
-            return (sb.widow_pension || 0) > 0
-                && (sb.maiden_name || 0) > 0
-                && (sb._convergence_count || 0) >= 2
-                && (candidate.score || 0) >= 0.65;
         },
 
         strategyBadgeClass(candidate) {
