@@ -340,7 +340,7 @@ h1 {
 
 .identity-main {
     display: grid;
-    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-columns: auto 1fr;
     gap: 0.65rem;
     align-items: start;
 }
@@ -361,10 +361,10 @@ h1 {
 }
 
 .engine-badge {
+    float: right;
     width: 6.5rem;
     text-align: center;
     justify-content: center;
-    margin-left: auto;
     border: 1px solid var(--accent);
     padding: 0.28rem 0.5rem;
     background: var(--accent-soft);
@@ -1008,8 +1008,8 @@ kbd {
                                 @click="toggleCollapse(record.id)"
                                 aria-expanded="true"
                                 :aria-label="'Collapse ' + (record.title || 'unnamed record')">⌃</button>
-                        <span class="engine-badge" :class="record.engine" x-text="record.engine"></span>
                         <div class="identity-title">
+                            <span class="engine-badge" :class="record.engine" x-text="record.engine"></span>
                             <h2 :id="'record-' + hashId(record.id) + '-heading'" x-text="record.title || 'Unnamed record'"></h2>
                             <div class="record-meta">
                                 <template x-for="item in recordMeta(record)">
