@@ -599,37 +599,32 @@ h1 {
 
 .evidence-meter {
     display: inline-grid;
-    grid-template-columns: auto 6rem;
-    gap: 0.3rem;
+    grid-template-columns: auto 3.5rem;
+    gap: 0.25rem;
     align-items: center;
-    color: var(--ink);
-    font-size: 0.72rem;
-    font-weight: 500;
+    color: var(--muted);
+    font-size: 0.68rem;
 }
 
 .evidence-track {
-    height: 0.85rem;
+    height: 0.38rem;
     overflow: hidden;
     border-radius: 999px;
-    background: #e5e7eb;
+    background: #dce3e8;
     position: relative;
 }
 
 .evidence-fill {
     height: 100%;
     border-radius: 999px;
-    min-width: 0;
     position: absolute;
     left: 0;
     top: 0;
 }
 
 .evidence-val {
-    font-size: 0.65rem;
-    color: var(--ink);
-    text-align: right;
-    min-width: 2.2rem;
-    line-height: 0.85rem;
+    font-size: 0.62rem;
+    color: var(--muted);
 }
 
 .candidate-action-line {
@@ -1085,35 +1080,35 @@ kbd {
                                         <span class="evidence-meter" data-feature="last_name">
                                             <span>last</span>
                                             <span class="evidence-track" role="progressbar" aria-label="last evidence">
-                                                <span class="evidence-fill" style="background:#22c55e" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.last_name || 0) / 1) * 100) + '%'"></span>
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.last_name || 0) / 1) * 100) + '%;background:#22c55e'"></span>
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.last_name || 0).toFixed(2)"></span>
                                         </span>
                                         <span class="evidence-meter" data-feature="first_name">
                                             <span>first</span>
                                             <span class="evidence-track" role="progressbar">
-                                                <span class="evidence-fill" style="background:#3b82f6" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.first_name || 0) / 1) * 100) + '%'"></span>
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.first_name || 0) / 1) * 100) + '%;background:#3b82f6'"></span>
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.first_name || 0).toFixed(2)"></span>
                                         </span>
                                         <span class="evidence-meter" data-feature="year_window">
                                             <span>year</span>
                                             <span class="evidence-track" role="progressbar">
-                                                <span class="evidence-fill" style="background:#f59e0b" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.year_window || 0) / 0.5) * 100) + '%'"></span>
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.year_window || 0) / 0.5) * 100) + '%;background:#f59e0b'"></span>
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.year_window || 0).toFixed(2)"></span>
                                         </span>
                                         <span class="evidence-meter" data-feature="veteran">
                                             <span>vet</span>
                                             <span class="evidence-track" role="progressbar">
-                                                <span class="evidence-fill" style="background:#ef4444" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.veteran || 0) / 0.8) * 100) + '%'"></span>
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.veteran || 0) / 0.8) * 100) + '%;background:#ef4444'"></span>
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.veteran || 0).toFixed(2)"></span>
                                         </span>
                                         <span class="evidence-meter" data-feature="ok_burial">
                                             <span>OK</span>
                                             <span class="evidence-track" role="progressbar">
-                                                <span class="evidence-fill" style="background:#8b5cf6" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.ok_burial || 0) / 0.3) * 100) + '%'"></span>
+                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.ok_burial || 0) / 0.3) * 100) + '%;background:#8b5cf6'"></span>
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.ok_burial || 0).toFixed(2)"></span>
                                         </span>
