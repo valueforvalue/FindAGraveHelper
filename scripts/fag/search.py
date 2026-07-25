@@ -281,6 +281,8 @@ def search_one_pensioner(page: Page, pensioner: dict,
         "_state_abbr": state_abbr,
         "_death_year": pensioner.get("death_year", ""),
         "_birth_year": pensioner.get("birth_year", ""),
+        # Issue #105: widow flag for scoring.
+        "_is_widow": bool(pensioner.get("spouse_name_raw", "").strip()),
     }
 
     strategy_runs = []  # (strategy_name, [candidates])

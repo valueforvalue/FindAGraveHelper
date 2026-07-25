@@ -8,6 +8,7 @@ Public surface:
   - tag_candidates_with_found_by(candidates) -> None (in-place)
 """
 import re
+from typing import Any
 from scripts.fag.filters import (
     parse_slug,
     normalise,
@@ -97,10 +98,18 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         state_score = 0.1  # smaller bonus; was 0.2
 
     # Veteran flag (CW pensioners were veterans — strong signal!)
-    is_veteran = candidate.get("details", {}).get("is_veteran", False)
-    # When veteran flag fires AND we have CW context, this is very
-    # strong evidence. Higher score than "any random vet" would get.
-    veteran_score = 0.8 if is_veteran else 0.0
+    # Widows: the veteran connection is implicit in the pension record
+    # itself. Give a moderate bonus that the candidate belongs to a CW
+    # pensioner family, lower than veteran because the candidate IS the
+    # widow, not the vet (issue #105).
+    is_widow = bool(local.get("_is_widow", False))
+    widow_pension_score = 0.0
+    if is_widow:
+        widow_pension_score = 0.5
+        veteran_score = 0.0  # widow's memorial won't have veteran flag
+    else:
+        is_vet = candidate.get("details", {}).get("is_veteran", False)
+        veteran_score = 0.8 if is_vet else 0.0
 
     # Death-year match (strong signal when local death_year is known)
     death_score = 0.0
@@ -108,20 +117,21 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     cand_dy = candidate.get("details", {}).get("death_year", "")
     cand_by = candidate.get("details", {}).get("birth_year", "")
 
-    # J13 / issue #104: impossible-date soft gate.
+    # J13 / issue #104 / issue #105: impossible-date soft gate.
     # A candidate whose dates are outside the ACW window (born after
     # 1880 or died after 1955) is overwhelmingly a same-surname modern
     # person. Instead of hard-scoring 0.0 (which crowded real
     # low-signal matches), apply a heavy penalty to the name-match
     # score so the candidate still sorts meaningfully below in-window
-    # entries but above true parser noise (caption entries, unrelated
-    # surnames). The `_date_penalty: 1.0` sentinel in evidence lets
-    # review tools highlight the penalized entry.
+    # entries but above true parser noise.
+    # Issue #105: for widows, the window widens (birth up to 1920,
+    # death up to 1980) because the candidate IS the widow, not the
+    # veteran.
     from scripts.fag.filters import _in_acw_window, _parse_int
     cand_by_i = _parse_int(cand_by)
     cand_dy_i = _parse_int(cand_dy)
     date_penalty = 0.0
-    if not _in_acw_window(cand_by_i, cand_dy_i):
+    if not _in_acw_window(cand_by_i, cand_dy_i, is_widow=is_widow):
         date_penalty = 1.0
 
     if local_dy and cand_dy:
@@ -137,25 +147,44 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
                 death_score = 0.2
         except (ValueError, TypeError):
             pass
+    elif is_widow and cand_dy:
+        # Issue #105: widow pensioner has no death_year on
+        # record (alive when she applied), but the candidate
+        # does. If the candidate's death_year falls in the
+        # CW-widow era, give a moderate "plausible era" signal.
+        # This is NOT as strong as an exact death_year match;
+        # it just says "this person lived in the right timeframe
+        # to be a Confederate veteran's widow."
+        dy_i = _parse_int(cand_dy)
+        if dy_i is not None:
+            from scripts.fag.filters import (
+                ACW_DEATH_YEAR_MIN,
+                WIDOW_DEATH_YEAR_MAX,
+            )
+            if ACW_DEATH_YEAR_MIN <= dy_i <= WIDOW_DEATH_YEAR_MAX:
+                death_score = 0.3
 
     # Weights (rebalanced for "OK-connected, burial-agnostic" search):
     # - last/first/middle: name match dominates (0.62 max)
     # - death year: confirms correct person (0.5 max) — bumped up
     # - veteran: strong tiebreaker (0.4 max)
+    # - widow_pension: moderate pension-family signal (0.25 max, issue #105)
     # - OK burial: smaller bonus (0.3 max, was 0.5)
     # - state match: minor (0.1 max, was 0.2)
     #
     # A perfect name+veteran+death match = 1.00 (the right person)
     # Without death year (some records lack it): 0.62 name + 0.4 vet = 1.02 → 0.78
     # Without veteran flag: name + death = 0.92 → still strong
-    # With OK burial bonus: +0.06, helps break ties among same-name people
+    # Widow with name+death(pension-era)+widow_pension = 0.77 → strong widow match
+    # With OK burial bonus: +0.10, helps break ties among same-name people
     score = (
         0.22 * last_score +
         0.17 * first_score +
         0.11 * middle_score +
         0.10 * ok_burial_score +
         0.05 * state_score +
-        0.18 * veteran_score +
+        0.18 * (veteran_score if not is_widow else 0.0) +
+        0.18 * widow_pension_score +
         0.22 * death_score
     )
 
@@ -168,7 +197,7 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     if date_penalty:
         score *= _DATE_PENALTY_FACTOR
 
-    breakdown = {
+    breakdown: dict[str, Any] = {
         "last": round(last_score, 2),
         "first": round(first_score, 2),
         "middle": round(middle_score, 2),
@@ -177,6 +206,8 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         "veteran": round(veteran_score, 2),
         "death": round(death_score, 2),
     }
+    if is_widow:
+        breakdown["widow_pension"] = round(widow_pension_score, 2)
     if date_penalty:
         breakdown["_date_penalty"] = 1.0  # sentinel: score reduced by soft gate
     return score, breakdown

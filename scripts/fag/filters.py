@@ -225,6 +225,14 @@ ACW_BIRTH_YEAR_MIN = 1810
 ACW_BIRTH_YEAR_MAX = 1880
 ACW_DEATH_YEAR_MIN = 1861
 ACW_DEATH_YEAR_MAX = 1955
+# Widows are not the veteran — they're the surviving spouse.
+# A widow born as late as 1920 could still be a CW vet's widow
+# (the vet could have been born 1845, fought at 20, married a
+# younger second wife in 1900 when she was 20 and he was 55).
+# Death may extend well past the vet's window; a widow born
+# 1890 could live to 1980.
+WIDOW_BIRTH_YEAR_MAX = 1920
+WIDOW_DEATH_YEAR_MAX = 1980
 
 
 def _parse_int(s: object) -> int | None:
@@ -247,23 +255,35 @@ def _parse_int(s: object) -> int | None:
         return None
 
 
-def _in_acw_window(birth_year: int | None, death_year: int | None) -> bool:
+def _in_acw_window(
+    birth_year: int | None,
+    death_year: int | None,
+    *,
+    is_widow: bool = False,
+) -> bool:
     """Returns True if the given dates are compatible with an
-    ACW-era veteran OR if BOTH are missing (we don't know
-    enough to reject).
+    ACW-era veteran OR widow of one.
 
     Conservative: if only ONE date is available, use it. If
     BOTH are available, use both (intersection).
+
+    When is_widow=True, the birth/death windows widen:
+    widows could be much younger than the vet and live decades
+    longer. See WIDOW_BIRTH_YEAR_MAX / WIDOW_DEATH_YEAR_MAX.
     """
     if birth_year is None and death_year is None:
         return True  # no data, can't reject
-    # If we have a birth_year, it must be in [1820, 1870]
+
+    by_max = WIDOW_BIRTH_YEAR_MAX if is_widow else ACW_BIRTH_YEAR_MAX
+    dy_max = WIDOW_DEATH_YEAR_MAX if is_widow else ACW_DEATH_YEAR_MAX
+
+    # If we have a birth_year, it must be in [ACW_BIRTH_YEAR_MIN, by_max]
     if birth_year is not None:
-        if not (ACW_BIRTH_YEAR_MIN <= birth_year <= ACW_BIRTH_YEAR_MAX):
+        if not (ACW_BIRTH_YEAR_MIN <= birth_year <= by_max):
             return False
-    # If we have a death_year, it must be in [1861, 1950]
+    # If we have a death_year, it must be in [ACW_DEATH_YEAR_MIN, dy_max]
     if death_year is not None:
-        if not (ACW_DEATH_YEAR_MIN <= death_year <= ACW_DEATH_YEAR_MAX):
+        if not (ACW_DEATH_YEAR_MIN <= death_year <= dy_max):
             return False
     return True
 

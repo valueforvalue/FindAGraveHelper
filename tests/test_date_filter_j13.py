@@ -346,3 +346,129 @@ def test_view_html_meta_row_handles_missing_dates():
     assert 'class="life-dates missing"' in VIEW, (
         "view.html must surface missing dates with a 'missing' CSS class"
     )
+
+
+# ------------------------------------------------------------
+# Issue #105: widow-aware scoring
+# ------------------------------------------------------------
+
+def test_widow_candidate_scores_higher_than_vet_path():
+    """A widow pensioner matched to a same-last-name candidate
+    with CW-era dates should score higher than the old name-only
+    path, because the widow_pension and death-era features fire.
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Lucy",
+        "middle_name": "A.",
+        "last_name": "Gwinn",
+        "_state_abbr": "OK",
+        "_is_widow": True,
+    }
+    cand = {
+        "name": "Lucy Ann Ham Gwinn",
+        "slug": "lucy-ann-ham-gwinn",
+        "details": {
+            "birth_year": "1846",
+            "death_year": "1930",
+            "state": None,
+            "is_veteran": False,
+        },
+    }
+    score, breakdown = score_candidate(local, cand)
+    # Old name-only score was 0.445; widow path should be >= 0.55
+    assert score >= 0.55, f"expected >=0.55, got {score:.3f}"
+    assert breakdown["widow_pension"] == 0.5
+    assert breakdown["death"] == 0.3
+    assert breakdown.get("veteran") == 0.0
+
+
+def test_widow_candidate_with_late_birth_passes_window():
+    """A widow candidate born in 1897 (too late for a vet) should
+    still pass the widow ACW window and get a non-penalized score,
+    as long as the death year is in the widow era (1861-1980).
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Lucy",
+        "middle_name": "",
+        "last_name": "Gwinn",
+        "_is_widow": True,
+    }
+    cand = {
+        "name": "Leone L Watkins Gwinn",
+        "slug": "leone-l-watkins-gwinn",
+        "details": {
+            "birth_year": "1897",
+            "death_year": "1925",
+            "state": None,
+            "is_veteran": False,
+        },
+    }
+    score, breakdown = score_candidate(local, cand)
+    # Should NOT have _date_penalty (born 1897 is okay for a widow)
+    assert breakdown.get("_date_penalty") is None
+    # Should get widow_pension + death-era bonus
+    assert breakdown["widow_pension"] == 0.5
+    assert breakdown["death"] == 0.3
+    assert score > 0.4, f"expected >0.4, got {score:.3f}"
+
+
+def test_widow_modern_candidate_still_penalized():
+    """A candidate born in 1980 should still get the date penalty
+    even when is_widow=True — no one born 1980 is a CW widow.
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Lucy",
+        "last_name": "Gwinn",
+        "_is_widow": True,
+    }
+    cand = {
+        "name": "Lucy Gwinn Modern",
+        "slug": "lucy-gwinn-modern",
+        "details": {
+            "birth_year": "1980",
+            "death_year": "2020",
+            "state": "OK",
+            "is_veteran": False,
+        },
+    }
+    score, breakdown = score_candidate(local, cand)
+    assert breakdown.get("_date_penalty") == 1.0
+    assert score < 0.3, f"modern widow candidate should be penalized, got {score:.3f}"
+
+
+def test_veteran_scoring_unchanged_by_widow_changes():
+    """Non-widow (veteran) pensioners must get the same scores as
+    before the widow changes — no regression on the veteran path.
+    """
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Henry",
+        "middle_name": "L.",
+        "last_name": "Gooding",
+        "_state_abbr": "OK",
+        "_is_widow": False,
+    }
+    cand = {
+        "name": "Henry Clay Gooding",
+        "slug": "henry-clay-gooding",
+        "details": {
+            "birth_year": "1838",
+            "death_year": "1913",
+            "state": "OK",
+            "is_veteran": True,
+        },
+    }
+    score, breakdown = score_candidate(local, cand)
+    # Veteran scoring: last=1.0, first=1.0, ok_burial=0.3, state=0.1, veteran=0.8
+    # 0.22*1.0 + 0.17*1.0 + 0.11*0.5 + 0.10*0.3 + 0.05*0.1 + 0.18*0.8 + 0.22*0.0
+    # = 0.22 + 0.17 + 0.055 + 0.03 + 0.005 + 0.144 = 0.624
+    assert score > 0.55, f"vet candidate should score well, got {score:.3f}"
+    assert breakdown["veteran"] == 0.8
+    assert "widow_pension" not in breakdown

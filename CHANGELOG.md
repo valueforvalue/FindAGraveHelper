@@ -4,6 +4,53 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-22
 
+### Fix(scoring): widow-aware scoring with widened ACW window (#105)
+
+49% of OK pensioners are widows (3793/7709). The
+score_candidate function had no widow-aware logic:
+the ACW date window rejected legitimate widow candidates
+born 1880-1900; death_year was never scored because
+the pensioner record has no death_year; and the veteran
+flag never fired for widows.
+
+Three changes:
+
+1. `_in_acw_window(birth_year, death_year, is_widow=False)`:
+   widows get a wider window (birth ≤1920, death ≤1980) so
+   candidates like "Leone L Watkins Gwinn 1897-1925" pass
+   the date gate instead of being soft-penalized.
+2. `score_candidate` now reads `_is_widow` from the local
+   dict. For widows:
+   - `widow_pension_score = 0.5` fires (the pension itself
+     ties the candidate to a CW veteran family).
+   - `death_score = 0.3` fires when the candidate's death_year
+     falls in the widow era (1861-1980), even though the
+     pensioner record lacks a death_year.
+   - Veteran scoring (0.8 for is_veteran=True) is unchanged
+     for non-widow pensioners.
+3. `_is_widow` is threaded from the regional planner
+   (`plan.params`) → `SearchContext.extras` → `score_candidate`
+   local dict.
+
+Measured on Lucy Ann Ham Gwinn (perfect widow match):
+- Old: 0.445 (name only; death/veteran features dead)
+- New: 0.601 (name 0.445 + death-era 0.066 + widow_pension 0.09)
+
+Four new tests in test_date_filter_j13.py for widow scoring;
+full suite 1508 passing.
+
+### Fix(search): skip regiment-scoped strategies and plans for widows (#105)
+
+Widow pensioner records carry the deceased husband's regiment.
+Searching for "Lucy Gwinn" + "Marmaduke's Guards" on FaG finds
+veterans from that unit, not the widow's memorial.
+
+The regional planner now skips the RegimentOrigin scope plan
+when `spouse_name_raw` is populated. The F2-regiment-bio
+strategy returns None when `ctx.extra("_is_widow")` is True.
+The `_is_widow` flag flows: planner → plan.params →
+SearchContext.extras → strategy guard.
+
 ### Fix(scoring): pipe candidate details through projection rows, sort by score, drop caption noise (#104)
 
 The FaGScraperKS dropped the engine-supplied `details`

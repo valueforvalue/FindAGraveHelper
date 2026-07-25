@@ -154,6 +154,8 @@ class FaGEngine:
             "_state_abbr": ctx.state,
             "_death_year": ctx.death_year,
             "_birth_year": ctx.birth_year,
+            # Issue #105: widow flag from plan.params → ctx.extras.
+            "_is_widow": ctx.extra("_is_widow", False),
         }
         return score_candidate(local, candidate)
 
