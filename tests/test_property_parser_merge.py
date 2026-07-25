@@ -158,10 +158,13 @@ def test_merge_keeps_highest_score(seed: int):
     ]
     merged = _merge_candidates(engine, runs)
     assert len(merged) == 1
-    assert merged[0]["score"] == 0.95, (
-        f"Expected highest score 0.95, got {merged[0]['score']}"
+    # Convergence bonus: 3 strategies → +10%, 0.95*1.10=1.045, cap 1.0
+    assert merged[0]["score"] == 1.0, (
+        f"Expected 1.0 (0.95 + convergence bonus capped), got {merged[0]['score']}"
     )
     assert merged[0]["name"] == "high"
     assert merged[0].get("found_by") == "s2", (
         f"found_by should be s2 (highest score), got {merged[0].get('found_by')}"
     )
+    assert merged[0]["convergence_count"] == 3
+    assert len(merged[0]["found_by_strategies"]) == 3

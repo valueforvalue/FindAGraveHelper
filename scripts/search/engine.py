@@ -392,18 +392,55 @@ def _merge_candidates(
     strategy_runs: list[tuple[str, list[dict]]],
 ) -> list[dict]:
     """Merge candidates across strategies. Same id → keep
-    highest score; keep the strategy that surfaced it as
-    'found_by'."""
+    highest score; track which strategies surfaced it.
+
+    Issue #105: apply a convergence bonus when the same
+    candidate appears from multiple independent strategies
+    (e.g. B1-exact + B4-fuzzy-last + F3-nickname). Each
+    extra strategy adds +5% to the score, capped at 1.0.
+    """
+    _CONVERGENCE_FACTOR = 0.05  # +5% bonus per extra strategy
+
     by_id: dict[str, dict] = {}
     for strat_name, cands in strategy_runs:
         for c in cands:
             cid = str(c.get("id") or c.get("memorial_id") or c.get("record_id") or "")
             if not cid:
                 continue
-            if cid not in by_id or c.get("score", 0.0) > by_id[cid].get("score", 0.0):
+            if cid not in by_id:
                 tag = dict(c)
                 tag["found_by"] = strat_name
+                tag["found_by_strategies"] = [strat_name]
+                tag["convergence_count"] = 1
                 by_id[cid] = tag
+            else:
+                existing = by_id[cid]
+                if strat_name not in existing["found_by_strategies"]:
+                    existing["found_by_strategies"].append(strat_name)
+                    existing["convergence_count"] = len(
+                        existing["found_by_strategies"]
+                    )
+                if c.get("score", 0.0) > existing.get("score", 0.0):
+                    # Replace with the higher-scored candidate's fields
+                    # but preserve the accumulated found_by_strategies.
+                    saved_strategies = existing["found_by_strategies"]
+                    existing.clear()
+                    existing.update(c)
+                    existing["found_by_strategies"] = saved_strategies
+                    existing["convergence_count"] = len(saved_strategies)
+                    existing["found_by"] = strat_name
+
+    # Apply convergence bonus post-merge.
+    for c in by_id.values():
+        if c["convergence_count"] > 1:
+            bonus = _CONVERGENCE_FACTOR * (c["convergence_count"] - 1)
+            c["score"] = min(1.0, c["score"] * (1.0 + bonus))
+            ev = c.get("score_evidence") or {}
+            if isinstance(ev, dict):
+                ev["_convergence_count"] = c["convergence_count"]
+                ev["_convergence_bonus"] = round(bonus, 3)
+            c["score_evidence"] = ev
+
     return list(by_id.values())
 
 
