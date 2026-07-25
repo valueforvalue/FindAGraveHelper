@@ -1136,12 +1136,28 @@ def run_batch_scheduler(
                 first = str(c.get("name", "")).split()[0] if c.get("name") else ""
                 key = f"{last}|{first}".lower()
                 count = name_counts.get(key, 1)
-                if count >= 2:
+                # Only penalize unverified candidates — spouse-verified
+                # or memorial-signal-confirmed candidates keep full score.
+                if count >= 2 and not c.get("_spouse_verified") and not c.get("_memorial_signals"):
                     # Mild penalty for common names: 0.03 per doubling
                     factor = 1.0 / (1.0 + 0.03 * math.log2(count))
                     old = c.get("score", 0)
                     c["score"] = round(old * factor, 4)
                     c["_uniqueness_factor"] = round(factor, 4)
+
+            # Verified tiebreak: when top-2 are both spouse-verified,
+            # boost the stronger match to create classification gap.
+            if spouse_data and len(candidates_list) >= 2:
+                sorted_cands = sorted(candidates_list, key=lambda c: -c.get("score", 0))
+                top2 = [c for c in sorted_cands[:2] if c.get("_spouse_verified")]
+                if len(top2) == 2:
+                    s1 = top2[0].get("spouse_match", {}).get("match_strength", "")
+                    s2 = top2[1].get("spouse_match", {}).get("match_strength", "")
+                    if s1 == "strong" and s2 != "strong":
+                        # Boost #1, penalize #2 to create gap
+                        top2[0]["score"] = min(top2[0]["score"] + 0.05, 1.0)
+                        top2[1]["score"] = max(top2[1]["score"] - 0.05, 0.0)
+                        top2[0]["_verified_tiebreak"] = True
 
             row = builder.build_state_row(
                 pensioner_id=pensioner_id,
