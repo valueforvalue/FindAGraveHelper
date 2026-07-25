@@ -1816,25 +1816,39 @@ function reviewApp() {
             try {
                 const resp = await fetch(url);
                 const data = await resp.json();
-                // Build a readable HTML table from the JSON
                 let html = '<div style="max-width:700px;max-height:85vh;overflow:auto;background:#fff;padding:1.5rem;border-radius:6px;text-align:left;cursor:default;">';
                 html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;">' + this.escapeHtml(title || 'Source') + '</h3>';
+                // Digitalprairie API: show thumbnail + parse fields array
+                if (data.imageUri) {
+                    const imgUrl = data.imageUri.startsWith('http') ? data.imageUri
+                        : 'https://digitalprairie.ok.gov' + data.imageUri;
+                    html += '<img src="' + imgUrl + '" style="max-width:300px;max-height:200px;margin-bottom:0.75rem;border:1px solid #ccc;border-radius:3px;"><br>';
+                }
                 html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
-                for (const [k, v] of Object.entries(data)) {
-                    if (k === 'all_fields' || k === 'pensioncard_all_fields') continue;
-                    let val = v;
-                    if (typeof v === 'object' && v !== null) {
-                        val = JSON.stringify(v).slice(0, 200);
+                // If API has 'fields' array (digitalprairie format), show those
+                const rows = Array.isArray(data.fields) ? data.fields : Object.entries(data);
+                for (const row of rows) {
+                    let key, val;
+                    if (Array.isArray(row)) {
+                        [key, val] = row;
+                    } else {
+                        key = row.label || row.key || '';
+                        val = row.value ?? '';
                     }
-                    html += '<tr><td style="padding:3px 8px;border-bottom:1px solid #eee;color:#647181;white-space:nowrap;vertical-align:top;">' + this.escapeHtml(k) + '</td>';
-                    html += '<td style="padding:3px 8px;border-bottom:1px solid #eee;word-break:break-word;">' + this.escapeHtml(String(val ?? '')) + '</td></tr>';
+                    if (!key && !val) continue;
+                    if (key === 'all_fields' || key === 'pensioncard_all_fields') continue;
+                    let display = val;
+                    if (typeof val === 'object' && val !== null) {
+                        display = JSON.stringify(val).slice(0, 200);
+                    }
+                    html += '<tr><td style="padding:3px 8px;border-bottom:1px solid #eee;color:#647181;white-space:nowrap;vertical-align:top;">' + this.escapeHtml(String(key)) + '</td>';
+                    html += '<td style="padding:3px 8px;border-bottom:1px solid #eee;word-break:break-word;">' + this.escapeHtml(String(display ?? '')) + '</td></tr>';
                 }
                 html += '</table></div>';
-                this.lightboxSrc = html;  // overload lightbox to show HTML
+                this.lightboxSrc = html;
                 this.lightboxAlt = title || '';
                 this.lightboxOpen = true;
             } catch (e) {
-                // Fallback: open in new tab
                 window.open(url, '_blank');
             }
         },
