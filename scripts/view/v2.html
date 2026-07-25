@@ -349,7 +349,10 @@ h1 {
 .status-pill,
 .decision-pill,
 .picked-badge,
-.best-badge {
+.best-badge,
+.widow-badge,
+.maiden-badge,
+.convergence-badge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -444,6 +447,22 @@ h1 {
 .picked-badge {
     background: var(--success-soft);
     color: var(--success);
+}
+
+.widow-badge {
+    background: #fef3c7;
+    color: #92400e;
+    padding: 1px 8px;
+}
+.maiden-badge {
+    background: #ede9fe;
+    color: #5b21b6;
+    padding: 1px 8px;
+}
+.convergence-badge {
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 1px 8px;
 }
 
 .status-pill.ambiguous,
@@ -1025,6 +1044,9 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
+                                        <span class="widow-badge" x-show="candidate.evidence?.widow_pension > 0">👰 widow</span>
+                                        <span class="maiden-badge" x-show="candidate.evidence?.maiden_name > 0">💍 maiden</span>
+                                        <span class="convergence-badge" x-show="(candidate.evidence?._convergence_count || 0) >= 2" x-text="'⟳' + candidate.evidence._convergence_count"></span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
