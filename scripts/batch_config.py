@@ -272,6 +272,7 @@ class PipelineConfig:
             "strategies": self.strategies.to_dict(),
             "decision": self.decision.to_dict(),
             "mode": self.mode.to_dict(),
+            "learning": {"classifier_path": self.learning.classifier_path},
         }
 
 

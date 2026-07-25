@@ -867,6 +867,7 @@ def run_batch_scheduler(
             config.search_mode, MODE_DEFAULTS["standard"]
         )
         mode_cfg["max_refinements"] = preset["max_refinements"]
+        mode_cfg["skip_refine_above"] = preset.get("skip_refine_above", 0.85)
         mode_cfg["bail_on_auto_accept"] = preset["bail_on_auto_accept"]
 
     scheduler.register(CandidateScorerKS())
@@ -1330,14 +1331,6 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     parser = build_parser()
     args = parser.parse_args(argv)
 
-    # Issue #28 follow-up: if the user didn't pass
-    # --low-score-threshold, default to the canonical constant.
-    # argparse default=0.40 was a literal; we now read it from
-    # scoring_constants to keep CLI in sync with dry-run.
-    from scripts.pipeline.scoring_constants import LOW_SCORE_THRESHOLD
-    if args.low_score_threshold is None:
-        args.low_score_threshold = LOW_SCORE_THRESHOLD
-
     # ============================================================
     # Subcommand dispatch: init-batch
     # ============================================================
@@ -1396,11 +1389,25 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
                 args.limit = size
         # Issue #112: persist --mode into RunRecipe so
         # config.json captures the search mode for resume.sh.
+        # When CLI provides --mode, write it into the recipe.
+        # When loading from config without CLI override, read
+        # the recipe's mode back into args.
         if args.mode is not None:
             batch_cfg.pipeline.mode.mode = args.mode
+        else:
+            args.mode = batch_cfg.pipeline.mode.mode
         args.batch_cfg = batch_cfg
     else:
         args.batch_cfg = None
+
+    # Fallback defaults for args not set by CLI or config.
+    from scripts.pipeline.scoring_constants import LOW_SCORE_THRESHOLD
+    if args.low_score_threshold is None:
+        args.low_score_threshold = LOW_SCORE_THRESHOLD
+    if args.mode is None:
+        args.mode = "standard"
+    if args.fag_state_filter is None:
+        args.fag_state_filter = "OK"
 
     # --cgr is required when --config is not used
     if args.config is None and args.cgr is None:
@@ -1526,6 +1533,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         mock_fag_path=args.mock_fag if args.mock_fag else None,
         search_mode=args.mode or "standard",
         reprocess=getattr(args, "reprocess", False),
+        browser_state_filter=args.fag_state_filter or "OK",
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:
