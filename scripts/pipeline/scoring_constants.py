@@ -8,7 +8,7 @@ needs human review, or marked low-score. Used by:
   - scripts/pipeline/core.py (follow-up phase eligibility)
   - scripts/pipeline/run_unified.py (CLI default for
     --low-score-threshold)
-  - scripts/matching/outlier_classifier.py (default threshold)
+  - Default threshold for outlier classification
 
 Plus the canonical status string values used by every layer
 that emits a PensionerRecord. Kept here so the dry-run

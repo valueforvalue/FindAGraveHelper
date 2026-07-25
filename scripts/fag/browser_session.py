@@ -1,6 +1,6 @@
 """BrowserSession: single owner for Playwright browser lifecycle.
 
-Consolidates the browser lifecycle from fag_browser.py (closure-based
+Consolidates the browser lifecycle (formerly closure-based in
 state dict) and pw_session.py (PlaywrightSession class) into one deep
 module that owns:
 
@@ -384,7 +384,7 @@ class BrowserSession:
     # their result without being replaced by a US re-search. The
     # `auto_relax` config field stays for back-compat (test doubles,
     # recipe serialization) but no method acts on it. The legacy
-    # opt-in path in scripts/fag/fag_browser.py (gated by
+    # opt-in path formerly in the legacy fag_browser (gated by
     # FAG_AUTO_RELAX=1) is unaffected.
 
     @staticmethod

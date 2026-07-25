@@ -227,7 +227,7 @@ def search_one_pensioner(page: Page, pensioner: dict,
 
     throttle_seconds: if provided, sleep this long between
     strategy navigations as well as between pensioners. The
-    fag_browser wrapper already throttles between pensioners, but
+    browser wrapper already throttles between pensioners, but
     each pensioner runs ~10 strategies back-to-back. Without an
     intra-pensioner pause, popular-name records slam FaG with
     10+ requests in 5-10 seconds flat, hitting Cloudflare's

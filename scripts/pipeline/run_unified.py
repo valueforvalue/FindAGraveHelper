@@ -61,11 +61,6 @@ from scripts.pipeline.core import (
     lookup_cgr_for_pensioner,
     annotate_cgr_matches,
 )
-from scripts.matching.outlier_classifier import (
-    OutlierConfig,
-    is_outlier,
-)
-
 
 # ============================================================
 # Configuration

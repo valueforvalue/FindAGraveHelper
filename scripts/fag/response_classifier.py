@@ -1,7 +1,7 @@
 """ResponseClassifier: identify FaG challenge/rate-limit/normal pages.
 
 Pure classifier — no sleeps, no network, no Playwright dependency.
-Used by fag_browser and search to route responses through the
+Used by the browser session and search to route responses through the
 RequestGate for cooldown management.
 
 Public surface:

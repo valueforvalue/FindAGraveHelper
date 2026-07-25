@@ -89,11 +89,14 @@ def test_cli_config_loads_and_runs(tmp_path, monkeypatch):
     cfg["inputs"]["end_row"] = 3
     cfg_path.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
 
-    # Run with --config and --no-fag (no Playwright)
-    with patch("scripts.fag.fag_browser.make_fag_search_fn") as mfsf:
+    # Run with --config and --no-fag (no Playwright).
+    # Scheduler path doesn't use legacy fag_search_fn; patch
+    # FaGEngine to catch any accidental FaG access.
+    with patch("scripts.search.fag_engine.FaGEngine") as mock_engine:
         rc = cli_main(["--config", str(cfg_path), "--no-fag"])
     assert rc == 0
-    assert mfsf.call_count == 0
+    # FaGEngine should not be instantiated with --no-fag
+    assert mock_engine.call_count == 0
     state = tmp_path / "output" / "beta" / "results.jsonl"
     assert state.exists()
     rows = [

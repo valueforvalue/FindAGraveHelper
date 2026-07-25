@@ -49,7 +49,7 @@ def test_observation_roundtrip():
         observation_id="obs-2",
         pensioner_id=99,
         kind=Kind.BotWallObserved,
-        source="fag_browser.py",
+        source="fag_scraper.py",
         source_version="1",
         run_id="r",
         pass_id="p",
