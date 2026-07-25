@@ -202,8 +202,8 @@ class DeepRefinerKS:
         # score near auto_accept territory, further refinement is
         # very unlikely to find a better match. Skip to save FaG
         # requests and throttle time.
-        _EARLY_STOP_SCORE = 0.68
-        _EARLY_STOP_MIN_CONVERGENCE = 2
+        _EARLY_STOP_SCORE = 0.65
+        _EARLY_STOP_MIN_CONVERGENCE = 1
         if top_score >= _EARLY_STOP_SCORE:
             top_candidate_obs = [
                 o for o in observations
@@ -223,12 +223,25 @@ class DeepRefinerKS:
                     or {}
                 )
                 has_signal = evidence.get("widow_pension", 0) > 0 or evidence.get("veteran", 0) > 0
-                conv = evidence.get("_convergence_count", 0)
-                if has_signal and conv >= _EARLY_STOP_MIN_CONVERGENCE:
+                # Count cross-plan convergence: how many unique
+                # FaGCandidateFetch observations have the same
+                # memorial_id (candidate found across plans).
+                best_mid = best_cand.payload.get("memorial_id")
+                cross_plan_conv = len(set(
+                    o.payload.get("memorial_id")
+                    for o in top_candidate_obs
+                ))
+                # Also need the best candidate specifically to
+                # appear in multiple observations.
+                best_obs_count = sum(
+                    1 for o in top_candidate_obs
+                    if o.payload.get("memorial_id") == best_mid
+                )
+                if has_signal and best_obs_count >= _EARLY_STOP_MIN_CONVERGENCE:
                     log.info(
                         "DeepRefinerKS: pensioner %d (score=%.3f) -> early-stop "
-                        "(strong signal + convergence=%d). Skipping refinement.",
-                        item.pensioner_id, top_score, conv,
+                        "(strong signal + cross-plan count=%d). Skipping refinement.",
+                        item.pensioner_id, top_score, best_obs_count,
                     )
                     return []
 
