@@ -480,7 +480,8 @@ class FaGScraperKS:
                 # Issue #118: tag candidates from spouse-linked searches.
                 # When the plan carries spouse names, FaG's linkedToName
                 # filter ensures returned candidates are family-tree-linked
-                # to the spouse. This is ground-truth spouse evidence.
+                # to the spouse. Only badge the top-ranked candidate
+                # to avoid noise — the view limits to cidx===0.
                 _spouse_linked = bool(
                     plan.params.get("pensioner_spouse_first")
                     and plan.params.get("pensioner_spouse_last")
