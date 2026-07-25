@@ -165,9 +165,16 @@ class RegionalPlannerKS:
         for key in ("first_name", "last_name", "middle_name", "birth_year",
                      "death_year", "regiment", "company", "burial_state",
                      "pensioner_spouse_first", "pensioner_spouse_last",
+                     "spouse_first_name", "spouse_last_name",
                      "_state_abbr"):
             if pensioner.get(key):
                 base_params[key] = pensioner[key]
+        # Normalize spouse keys so downstream consumers find
+        # both forms (issue #118).
+        if base_params.get("spouse_first_name"):
+            base_params.setdefault("pensioner_spouse_first", base_params["spouse_first_name"])
+        if base_params.get("spouse_last_name"):
+            base_params.setdefault("pensioner_spouse_last", base_params["spouse_last_name"])
         # Also set firstname/lastname for URL params
         if first:
             base_params["firstname"] = first
