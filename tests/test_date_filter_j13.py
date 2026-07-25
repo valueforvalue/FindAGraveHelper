@@ -410,10 +410,10 @@ def test_widow_candidate_with_late_birth_passes_window():
     score, breakdown = score_candidate(local, cand)
     # Should NOT have _date_penalty (born 1897 is okay for a widow)
     assert breakdown.get("_date_penalty") is None
-    # Should get widow_pension + death-era bonus
-    assert breakdown["widow_pension"] == 0.5
+    # first=0.6 (Leone vs Lucy) -> widow_pension = 0.5 * 0.6 = 0.3
+    assert breakdown["widow_pension"] == 0.3
     assert breakdown["death"] == 0.3
-    assert score > 0.4, f"expected >0.4, got {score:.3f}"
+    assert score > 0.3, f"expected >0.3, got {score:.3f}"
 
 
 def test_widow_modern_candidate_still_penalized():

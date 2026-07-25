@@ -151,7 +151,10 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     is_widow = bool(local.get("_is_widow", False))
     widow_pension_score = 0.0
     if is_widow:
-        widow_pension_score = 0.5
+        # Scale by first-name confidence — a widow candidate
+        # with wrong first name (e.g. Victor for Virginia)
+        # should not get full pension-family credit.
+        widow_pension_score = 0.5 * first_score
         veteran_score = 0.0  # widow's memorial won't have veteran flag
     else:
         is_vet = candidate.get("details", {}).get("is_veteran", False)
@@ -219,7 +222,7 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     # married name on her headstone and the memorial includes
     # her birth family name.
     maiden_name_score = 0.0
-    if is_widow and last_score > 0:
+    if is_widow and last_score > 0 and first_score >= 0.6:
         name_tokens = _count_name_tokens(candidate.get("name", ""))
         if name_tokens >= 3:
             maiden_name_score = 1.0  # binary: name structure suggests maiden name
