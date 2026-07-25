@@ -1417,7 +1417,11 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # When loading from config without CLI override, read
         # the recipe's mode back into args.
         if args.mode is not None:
+            from scripts.batch_config import MODE_DEFAULTS
+            preset = MODE_DEFAULTS.get(args.mode, MODE_DEFAULTS["standard"])
             batch_cfg.pipeline.mode.mode = args.mode
+            batch_cfg.pipeline.mode.max_refinements = preset["max_refinements"]
+            batch_cfg.pipeline.mode.bail_on_auto_accept = preset["bail_on_auto_accept"]
         else:
             args.mode = batch_cfg.pipeline.mode.mode
         args.batch_cfg = batch_cfg
@@ -1503,6 +1507,14 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     stream_handler = logging.StreamHandler()
     stream_handler.setFormatter(formatter)
     log.addHandler(stream_handler)
+    # Issue #112 follow-up: configure root logger so module-level
+    # loggers (fag_scraper, search.engine, etc.) propagate to the
+    # same handlers instead of being silently dropped.
+    root = logging.getLogger()
+    root.setLevel(logging.INFO)
+    for h in list(root.handlers):
+        root.removeHandler(h)
+    root.addHandler(file_handler)
 
     log.info("Run starting at %s", now_iso())
     log.info("Output dir: %s", out_dir)
