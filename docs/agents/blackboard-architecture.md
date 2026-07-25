@@ -148,7 +148,7 @@ strings from `scripts/pipeline/scoring_constants.py` (L9).
 
 ## Knowledge Sources
 
-Seven domain agents registered with the Scheduler. Each KS
+Domain agents registered with the Scheduler. Each KS
 declares an `eligible_work_kinds` set, an `invoke(work_item) →
 observations` method, and cooldown / budget gates.
 
@@ -156,11 +156,9 @@ observations` method, and cooldown / budget gates.
 |---|---|---|---|
 | `RegionalPlannerKS` | pensioner record, CGR index | `QueryPlan` × N | `OK → regiment → Texas → US` scope expansion. |
 | `FaGScraperKS` | `QueryPlan`, BrowserSession | `FaGSearchExecuted`, `ScoreObserved` | Throttle + CAPTCHA waits inside; throttle lives here, not in the scheduler. |
-| `CGRFetcherKS` | pensioner record | `CGRCorroboration` | Fast local lookup; no network. |
 | `CandidateScorerKS` | `FaGSearchExecuted` | `ScoreObserved` (if missing) | Re-scoring when weights change. |
 | `DeepRefinerKS` | `ScoreObserved` < threshold | `FaGSearchPlan` (follow-up) | Spouse + broadened-surname fallback. |
-| `IngestionKS` | source-data fingerprints | `RunManifest` | Runs once at start; emits lineage. |
-| `ProjectionKS` | all observations | writes `state.jsonl` | Deterministic; runs at checkpoint boundaries. |
+| `CalibratedDecisionKS` | `ScoreObserved` | `DecisionObserved` | Reads classifier from recipe; emits calibrated probability. |
 
 A KS does **not** know about other KSs. The Blackboard is the
 only shared state. Adding a new KS = declare its eligible
@@ -261,11 +259,8 @@ budget, dedup).
 ## Running the Blackboard
 
 The CLI lives at `scripts/pipeline/run_unified.py`. Since
-2026-07-19 it dispatches through the Blackboard by default
-(`run_batch_scheduler`); the legacy god-loop
-(`run_batch_scheduler` ← previous default `run_batch`) is
-still importable for `leftover_investigation.py` and
-`retry_errors.py` but is no longer the production path.
+2026-07-19 it dispatches exclusively through the Blackboard
+(`run_batch_scheduler`). The legacy god-loop has been removed.
 
 ```bash
 # Scaffold a v2 recipe
