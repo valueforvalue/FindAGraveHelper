@@ -407,6 +407,11 @@ h1 {
     margin-top: 0.35rem;
 }
 
+.pensioncard-thumbs {
+    margin-top: 0.5rem;
+    text-align: left;
+}
+
 .source-links a,
 .candidate-links a {
     color: var(--accent-dark);
@@ -1013,16 +1018,18 @@ kbd {
                                     <a :href="sourceUrl(record)" target="_blank" rel="noopener">↗ View source</a>
                                 </template>
                             </div>
+                            <div class="pensioncard-thumbs">
                             <template x-for="(pageId, i) in (record.attributes?.pensioncard_pages || [])" :key="pageId">
                                 <a href="#" @click.prevent="openLightbox('https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg', (record.title || 'pensioner') + ' card ' + (i + 1))" title="Click for full size">
                                     <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/600,/0/default.jpg'"
                                          :alt="(record.title || 'pensioner') + ' pension card ' + (i + 1)"
                                          loading="lazy"
-                                         style="max-width:480px; max-height:360px; margin:4px 6px 0 0;
+                                         style="max-width:480px; max-height:360px; margin:4px 8px 0 0;
                                                 border:1px solid #ccc; border-radius:3px;
                                                 vertical-align:top; background:#fafafa;">
                                 </a>
                             </template>
+                            </div>
                         </div>
                         <span class="record-id" x-text="'#' + record.id"></span>
                     </div>
