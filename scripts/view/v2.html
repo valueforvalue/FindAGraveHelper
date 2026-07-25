@@ -1064,7 +1064,7 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
-                                        <span class="spouse-match-badge" x-show="candidate.evidence?.score_breakdown?._spouse_linked">💍 spouse match</span>
+                                        <span class="spouse-match-badge" x-show="candidate.evidence?.score_breakdown?._spouse_linked && ((candidate.evidence?.score_breakdown?.widow_pension || 0) > 0 || (candidate.evidence?.score_breakdown?.veteran || 0) > 0)">💍 spouse match</span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
