@@ -1125,14 +1125,6 @@ kbd {
                                             </span>
                                             <span class="evidence-val" x-text="(candidate.evidence?.score_breakdown?.ok_burial || 0).toFixed(2)"></span>
                                         </span>
-                                        <span class="evidence-meter" data-feature="state">
-                                            <span>state</span>
-                                            <span class="evidence-track" role="progressbar" aria-label="state evidence"
-                                                  aria-valuemin="0" aria-valuemax="100"
-                                                  :aria-valuenow="Math.round(((candidate.evidence?.score_breakdown?.state || 0) / 0.1) * 100)">
-                                                <span class="evidence-fill" :style="'width:' + Math.round(((candidate.evidence?.score_breakdown?.state || 0) / 0.1) * 100) + '%'"></span>
-                                            </span>
-                                        </span>
                                     </div>
                                     <div class="candidate-action-line">
                                         <span class="candidate-links">
