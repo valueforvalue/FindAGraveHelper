@@ -1822,9 +1822,9 @@ function reviewApp() {
                 if (data.imageUri) {
                     const imgUrl = data.imageUri.startsWith('http') ? data.imageUri
                         : 'https://digitalprairie.ok.gov' + data.imageUri;
-                    html += '<img src="' + imgUrl + '" style="max-width:300px;max-height:200px;margin-bottom:0.75rem;border:1px solid #ccc;border-radius:3px;"><br>';
+                    html += '<a href="' + imgUrl + '" target="_blank"><img src="' + imgUrl + '" style="max-width:300px;max-height:200px;margin-bottom:0.75rem;border:1px solid #ccc;border-radius:3px;cursor:pointer;"></a><br>';
                 }
-                html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
+                html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;color:#1e293b;">';
                 // If API has 'fields' array (digitalprairie format), show those
                 const rows = Array.isArray(data.fields) ? data.fields : Object.entries(data);
                 for (const row of rows) {
@@ -1841,7 +1841,7 @@ function reviewApp() {
                     if (typeof val === 'object' && val !== null) {
                         display = JSON.stringify(val).slice(0, 200);
                     }
-                    html += '<tr><td style="padding:3px 8px;border-bottom:1px solid #eee;color:#647181;white-space:nowrap;vertical-align:top;">' + this.escapeHtml(String(key)) + '</td>';
+                    html += '<tr><td style="padding:3px 8px;border-bottom:1px solid #eee;color:#475569;white-space:nowrap;vertical-align:top;font-weight:500;">' + this.escapeHtml(String(key)) + '</td>';
                     html += '<td style="padding:3px 8px;border-bottom:1px solid #eee;word-break:break-word;">' + this.escapeHtml(String(display ?? '')) + '</td></tr>';
                 }
                 html += '</table></div>';
