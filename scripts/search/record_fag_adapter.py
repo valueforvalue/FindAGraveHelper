@@ -1,16 +1,6 @@
-"""Adapters between today's pensioner dict and the new
-SearchRecord / FaGEngine flow.
+"""Adapters between pensioner dict and SearchRecord / FaGEngine flow.
 
-This module demonstrates the integration: a future migration
-of scripts.fag.search.search_one_pensioner would replace
-its dict-based flow with a SearchRecord-based flow that uses
-FaGEngine. The functions here are the building blocks for
-that migration; today they're used by the engine and by tests.
-
-Back-compat: scripts.fag.search.search_one_pensioner continues
-to work. The new code path is opt-in via search_one_pensioner_v2
-(returns a SearchRecord-based result). When #35 (orchestrator
-refactor) lands, v2 becomes the default and v1 is deprecated.
+The Blackboard scheduler uses these adapters via FaGScraperKS.
 """
 from __future__ import annotations
 

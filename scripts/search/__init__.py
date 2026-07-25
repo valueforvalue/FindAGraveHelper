@@ -1,7 +1,5 @@
-"""scripts.search: FaG-search internals extracted from search_fag.py (T017).
+"""scripts.search: engine-agnostic search abstractions.
 
-This subpackage holds the strategy ladder + future search
-internals as private modules. The public surface stays in
-scripts/run_unified.py (the back-compat shim) and scripts/fag/
-in a future T021 restructure.
+Strategy ladder, SearchEngine Protocol, SearchContext, and
+engine implementations (FaG, Newspapers.com).
 """

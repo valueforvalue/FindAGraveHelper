@@ -15,9 +15,8 @@ heavy lifting; the engine class is a thin adapter that:
   3. Owns the FaG-specific URL building (BASE_URL, urlencode).
 
 Back-compat: scripts.fag.search.search_one_pensioner remains
-importable and works as before. It is now a thin shim that
-calls FaGEngine().search_one(...). The pipeline can migrate
-to use the engine directly; the shim is the safe default.
+importable. The pipeline uses FaGEngine via the Blackboard
+scheduler; the legacy function is the fallback path.
 """
 from __future__ import annotations
 
@@ -40,7 +39,7 @@ from scripts.search.strategies import STRATEGIES as _GENERIC_STRATEGIES
 # FaG search-URL builder: import here so the engine owns
 # the constant (the runner can read it via engine.base_url).
 import urllib.parse as _urlparse
-from scripts.fag.search import BASE_URL as _FAG_BASE_URL
+from scripts.fag.constants import FAG_SEARCH_BASE_URL as _FAG_BASE_URL
 
 
 # ============================================================
