@@ -57,9 +57,69 @@ def test_mollie_maps_to_mary():
     assert "Mary" in KNOWN_NICKNAMES["Mollie"]
 
 
+def test_lucy_maps_to_lucinda_and_lucille():
+    """Lucy is a nickname for Lucinda, Lucille, Lucia, Louise."""
+    assert "Lucinda" in KNOWN_NICKNAMES["Lucy"]
+    assert "Lucille" in KNOWN_NICKNAMES["Lucy"]
+    assert "Lucia" in KNOWN_NICKNAMES["Lucy"]
+
+
+def test_lucy_bidirectional_with_lou():
+    """Lucy resolves to Lou (reverse), and Lou resolves to Lucy (forward)."""
+    rev = reverse_nickname("Lucy")
+    assert "Lou" in rev
+    assert "Lue" in rev
+    cands = nickname_candidates("Lucy")
+    assert "Lucinda" in cands
+    assert "Lucille" in cands
+    assert "Lou" in cands
+
+
+def test_sallie_maps_to_sarah():
+    """Sallie (61 occurrences) is a nickname for Sarah."""
+    assert "Sarah" in KNOWN_NICKNAMES["Sallie"]
+
+
+def test_mattie_maps_to_martha_matilda():
+    """Mattie (38 occurrences) is a nickname for Martha and Matilda."""
+    assert "Martha" in KNOWN_NICKNAMES["Mattie"]
+    assert "Matilda" in KNOWN_NICKNAMES["Mattie"]
+
+
+def test_annie_maps_to_ann_anna_anne():
+    """Annie (38 occurrences) is a nickname for Ann, Anna, Anne."""
+    assert "Ann" in KNOWN_NICKNAMES["Annie"]
+    assert "Anna" in KNOWN_NICKNAMES["Annie"]
+
+
+def test_male_nicknames_present():
+    """Male nicknames like Joe, Sam, Tom, Ben are now covered."""
+    assert "Joseph" in KNOWN_NICKNAMES["Joe"]
+    assert "Samuel" in KNOWN_NICKNAMES["Sam"]
+    assert "Thomas" in KNOWN_NICKNAMES["Tom"]
+    assert "Benjamin" in KNOWN_NICKNAMES["Ben"]
+    assert "Charles" in KNOWN_NICKNAMES["Charley"]
+    assert "William" in KNOWN_NICKNAMES["Willie"]
+    assert "John" in KNOWN_NICKNAMES["Jack"]
+
+
+def test_male_nickname_reverse_works():
+    """Reverse lookup from formal male names returns nicknames."""
+    assert "Joe" in reverse_nickname("Joseph")
+    assert "Sam" in reverse_nickname("Samuel")
+    assert "Tom" in reverse_nickname("Thomas")
+
+
 def test_unknown_name_returns_empty():
     """Unknown name → empty list."""
     assert KNOWN_NICKNAMES.get("Xenophilius", []) == []
+
+
+def test_expanded_dict_still_deduplicates():
+    """With 88 entries, nickname_candidates still returns no duplicates."""
+    for name in ["Mary", "Elizabeth", "Margaret", "Sarah", "Lucy", "Lou"]:
+        cands = nickname_candidates(name)
+        assert len(set(cands)) == len(cands), f"duplicates for {name}: {cands}"
 
 
 def test_case_insensitive():

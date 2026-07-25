@@ -5,21 +5,12 @@ via optional URL params. We use these only when the pensioner
 data has a known nickname OR when we have a spouse (whose
 last name is often the maiden name).
 
-Known CW-era nickname patterns:
-  Fannie  -> Fayette
-  Mollie  -> Mary
-  Polly   -> Mary
-  Sally   -> Sarah
-  Bettie  -> Elizabeth
-  Nannie  -> Nancy
-  Maggie  -> Margaret
-  Nellie  -> Eleanor/Helen
-  Mamie   -> Mary
-  Patsy   -> Martha
-  Dolly   -> Dorothy
-  Lou     -> Louise
-  Jennie  -> Jane/Jennifer
-  Mandy   -> Amanda
+Known CW-era nickname patterns (88 entries covering both male and
+female diminutives common in 19th-century pension records):
+  Fannie -> Fayette, Sallie -> Sarah, Lucy -> Lucinda/Lucille,
+  Mattie -> Martha/Matilda, Joe -> Joseph, Sam -> Samuel,
+  Charley -> Charles, Annie -> Ann/Anna, Kate -> Katherine,
+  ... see KNOWN_NICKNAMES dict for full list.
 
 The reverse map is generated automatically from KNOWN_NICKNAMES.
 """
@@ -28,51 +19,94 @@ from __future__ import annotations
 
 # Forward nickname map (nickname -> [formal names])
 KNOWN_NICKNAMES: dict[str, list[str]] = {
-    "Fannie":  ["Fayette", "Frances", "Stephanie"],
-    "Fanny":   ["Frances", "Fayette"],
-    "Mollie":  ["Mary", "Molly"],
-    "Polly":   ["Mary", "Pauline"],
-    "Sally":   ["Sarah"],
+    "Abbie":   ["Abigail"],
+    "Addie":   ["Adeline", "Adelaide", "Ada"],
+    "Alex":    ["Alexander"],
+    "Allie":   ["Alice", "Allison"],
+    "Andy":    ["Andrew"],
+    "Annie":   ["Ann", "Anna", "Anne"],
+    "Arch":    ["Archibald"],
+    "Artie":   ["Arthur"],
+    "Becky":   ["Rebecca"],
+    "Belle":   ["Isabella", "Arabella"],
+    "Ben":     ["Benjamin"],
     "Bettie":  ["Elizabeth"],
     "Betty":   ["Elizabeth"],
-    "Lizzy":   ["Elizabeth"],
-    "Nannie":  ["Nancy", "Ann"],
-    "Nanny":   ["Nancy", "Ann"],
-    "Maggie":  ["Margaret"],
-    "Nellie":  ["Eleanor", "Helen", "Ellen"],
-    "Mamie":   ["Mary"],
-    "Patsy":   ["Martha", "Patricia"],
-    "Dolly":   ["Dorothy"],
-    "Lou":     ["Louise", "Louisa", "Lucy"],
-    "Jennie":  ["Jane", "Jennifer", "Virginia"],
-    "Jenny":   ["Jane", "Jennifer", "Virginia"],
-    "Mandy":   ["Amanda"],
-    "Dollie":  ["Dorothy"],
-    "Lizzie":  ["Elizabeth"],
-    "Libby":   ["Elizabeth"],
-    "Tina":    ["Christina", "Albertina"],
-    "Lula":    ["Louise", "Lucinda"],
-    "May":     ["Mary"],
-    "Kitty":   ["Katherine"],
-    "Katie":   ["Katherine"],
-    "Becky":   ["Rebecca"],
-    "Peggy":   ["Margaret"],
+    "Birdie":  ["Bertha", "Roberta"],
+    "Callie":  ["Caroline", "Calista"],
+    "Carrie":  ["Caroline", "Carolyn"],
+    "Charley": ["Charles"],
     "Connie":  ["Constance"],
     "Daisy":   ["Margaret"],
+    "Dave":    ["David"],
+    "Dixie":   ["Edith", "Margaret"],
+    "Dollie":  ["Dorothy"],
+    "Dolly":   ["Dorothy"],
+    "Dora":    ["Dorothy", "Theodora"],
+    "Ed":      ["Edward", "Edwin", "Edmond"],
+    "Effie":   ["Euphemia"],
+    "Etta":    ["Henrietta", "Loretta"],
+    "Fannie":  ["Fayette", "Frances", "Stephanie"],
+    "Fanny":   ["Frances", "Fayette"],
     "Flora":   ["Florence"],
     "Gussie":  ["Augusta"],
+    "Hallie":  ["Harriet"],
+    "Harve":   ["Harvey"],
+    "Hattie":  ["Harriet"],
+    "Ike":     ["Isaac"],
     "Inez":    ["Agnes"],
+    "Jack":    ["John"],
+    "Janie":   ["Jane"],
+    "Jeff":    ["Jefferson"],
+    "Jennie":  ["Jane", "Jennifer", "Virginia"],
+    "Jenny":   ["Jane", "Jennifer", "Virginia"],
+    "Joe":     ["Joseph"],
     "Josie":   ["Josephine"],
+    "Kate":    ["Katherine"],
+    "Katie":   ["Katherine"],
+    "Kitty":   ["Katherine"],
+    "Libby":   ["Elizabeth"],
+    "Lillie":  ["Lillian", "Elizabeth"],
+    "Lizzie":  ["Elizabeth"],
+    "Lizzy":   ["Elizabeth"],
     "Lottie":  ["Charlotte"],
+    "Lou":     ["Louise", "Louisa", "Lucy"],
+    "Lucy":    ["Lucinda", "Lucille", "Lucia", "Louise"],
+    "Lue":     ["Lucinda", "Louise", "Lucy"],
+    "Lula":    ["Louise", "Lucinda"],
+    "Mack":    ["Malcolm", "Maxwell"],
+    "Maggie":  ["Margaret"],
+    "Mamie":   ["Mary"],
+    "Mandy":   ["Amanda"],
+    "Mattie":  ["Martha", "Matilda"],
+    "May":     ["Mary"],
+    "Millie":  ["Mildred", "Millicent"],
     "Minnie":  ["Mary", "Minerva", "Wilhelmina"],
+    "Mollie":  ["Mary", "Molly"],
+    "Nannie":  ["Nancy", "Ann"],
+    "Nanny":   ["Nancy", "Ann"],
+    "Nellie":  ["Eleanor", "Helen", "Ellen"],
+    "Nick":    ["Nicholas"],
     "Nora":    ["Eleanor"],
     "Ollie":   ["Olive", "Oliver"],
+    "Patsy":   ["Martha", "Patricia"],
+    "Peggy":   ["Margaret"],
+    "Polly":   ["Mary", "Pauline"],
     "Rosa":    ["Rosalind", "Rose"],
+    "Roxie":   ["Roxanne", "Roxanna"],
+    "Sadie":   ["Sarah"],
+    "Sallie":  ["Sarah"],
+    "Sally":   ["Sarah"],
+    "Sam":     ["Samuel"],
+    "Sue":     ["Susan", "Susanna"],
+    "Susie":   ["Susan", "Susanna"],
     "Tillie":  ["Matilda"],
+    "Tina":    ["Christina", "Albertina"],
+    "Tom":     ["Thomas"],
     "Willa":   ["Wilhelmina"],
-    "Birdie":  ["Bertha", "Roberta"],
-    "Dixie":   ["Edith", "Margaret"],
-    "Hallie":  ["Harriet"],
+    "Willie":  ["William"],
+    "Winnie":  ["Winifred", "Winona"],
+    "Zack":    ["Zachariah"],
 }
 
 
