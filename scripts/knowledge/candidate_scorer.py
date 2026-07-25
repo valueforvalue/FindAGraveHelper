@@ -278,6 +278,16 @@ class DeepRefinerKS:
         first = str(params.get("first_name") or params.get("first") or "")
         last = str(params.get("last_name") or params.get("last") or "")
         regiment = str(params.get("regiment") or "").lower()
+        # Issue #105: widows carry the husband's regiment. Skip
+        # regiment-based refinement — FaG won't tag the widow's
+        # memorial with a regiment she didn't serve in.
+        is_widow = bool(
+            str(params.get("spouse_name_raw") or "").strip()
+        )
+        # Thread widow flag into params so the strategy ladder
+        # can skip F2-regiment-bio when it fires.
+        if is_widow:
+            params["_is_widow"] = True
 
         if not last:
             return plans
@@ -409,9 +419,11 @@ class DeepRefinerKS:
                     )
                 )
 
-            # Regiment-origin state if regiment names a state AND not in pass 1
+            # Regiment-origin state if regiment names a state AND not in pass 1.
+            # Issue #105: skip for widows — the regiment belongs to the
+            # deceased husband, not the pensioner.
             origin = self._infer_origin_state(regiment)
-            if origin and origin != "OK":
+            if origin and origin != "OK" and not is_widow:
                 origin_scope = self._STATE_TO_SCOPE.get(
                     origin,
                     PlanScope.RegimentOrigin,
