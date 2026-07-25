@@ -824,15 +824,28 @@ def run_batch_scheduler(
             )
 
     scheduler = BlackboardScheduler(store)
-    scheduler.register(
-        RegionalPlannerKS(
-            enable_search=config.enable_fag,
-            dedup_fn=store.plan_already_completed,
+
+    # Read enabled modules from recipe (default: all core modules).
+    from scripts.batch_config import DEFAULT_MODULES
+    _recipe_obj = getattr(config, "_recipe", None)
+    _enabled_modules: set[str] = set(DEFAULT_MODULES)
+    if _recipe_obj is not None:
+        _pipeline_cfg = getattr(_recipe_obj, "pipeline", None)
+        if _pipeline_cfg is not None:
+            _recipe_modules = getattr(_pipeline_cfg, "modules", None)
+            if _recipe_modules is not None:
+                _enabled_modules = set(_recipe_modules)
+
+    if "regional_planner" in _enabled_modules:
+        scheduler.register(
+            RegionalPlannerKS(
+                enable_search=config.enable_fag,
+                dedup_fn=store.plan_already_completed,
+            )
         )
-    )
 
     browser_session = None
-    if config.enable_fag:
+    if config.enable_fag and "fag_scraper" in _enabled_modules:
         from scripts.fag.browser_config import BrowserConfig
         from scripts.fag.browser_session import BrowserSession
 
@@ -841,10 +854,24 @@ def run_batch_scheduler(
         browser_session.start()
         if config.mock_fag_path:
             browser_session.enable_mock_fag(str(config.mock_fag_path))
+        # Resolve engine from recipe config (default: FaGEngine).
+        _engine = config.fag_engine
+        if _engine is None:
+            _backend = "findagrave"
+            if _recipe_obj is not None:
+                _engine_cfg = getattr(_recipe_obj, "engine", None)
+                if _engine_cfg is not None:
+                    _backend = getattr(_engine_cfg, "backend", "findagrave")
+            if _backend == "newspapers_com":
+                from scripts.search.newspapers_engine import NewspapersComEngine
+                _engine = NewspapersComEngine()
+            else:
+                from scripts.search.fag_engine import FaGEngine
+                _engine = FaGEngine()
         scheduler.register(
             FaGScraperKS(
                 browser_session=browser_session,
-                engine=config.fag_engine,
+                engine=_engine,
                 gate_min_interval=config.request_gate_min_interval,
                 audit_log=audit_log,
             )
@@ -865,8 +892,10 @@ def run_batch_scheduler(
         mode_cfg["skip_refine_above"] = preset.get("skip_refine_above", 0.85)
         mode_cfg["bail_on_auto_accept"] = preset["bail_on_auto_accept"]
 
-    scheduler.register(CandidateScorerKS())
-    scheduler.register(DeepRefinerKS(**mode_cfg))
+    if "candidate_scorer" in _enabled_modules:
+        scheduler.register(CandidateScorerKS())
+    if "deep_refiner" in _enabled_modules:
+        scheduler.register(DeepRefinerKS(**mode_cfg))
     # Issue #96: CalibratedDecisionKS reads the ScoreObserved
     # from CandidateScorerKS and emits a DecisionObserved
     # carrying calibrated_probability. The classifier is loaded
