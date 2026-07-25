@@ -1071,6 +1071,53 @@ def run_batch_scheduler(
                             cand["score"],
                         )
 
+            # Issue #125: memorial-detail signal check for
+            # non-widow borderline candidates. When the top
+            # candidate score is too low for auto-accept but
+            # the pensioner has regiment data (confirming CSA
+            # service), scrape the memorial page for military/
+            # era/location signals that corroborate the match.
+            if not spouse_data and browser_session is not None:
+                regiment = str(pensioner.get("regiment", "")).strip()
+                if regiment:
+                    top_candidates = sorted(
+                        candidates_by_id.values(),
+                        key=lambda c: c.get("score", 0),
+                        reverse=True,
+                    )
+                    if top_candidates:
+                        best = top_candidates[0]
+                        best_score = best.get("score", 0)
+                        if 0.50 <= best_score < 0.80:
+                            from scripts.fag.spouse_scrape import (
+                                fetch_spouse_html,
+                                parse_memorial_signals,
+                            )
+                            mem_id = str(best.get("memorial_id", ""))
+                            slug = best.get("slug", "")
+                            if mem_id and slug:
+                                html = fetch_spouse_html(
+                                    browser_session.page, mem_id, slug
+                                )
+                                if html:
+                                    signals = parse_memorial_signals(html)
+                                    if signals.get("has_csa_marker") and signals.get("in_acw_era"):
+                                        boost = 0.08
+                                        old_score = best_score
+                                        best["score"] = min(old_score + boost, 1.0)
+                                        best["_memorial_signals"] = signals
+                                        log.info(
+                                            "Memorial signals confirmed for "
+                                            "pensioner %d: csa=%s era=%s ok=%s "
+                                            "(score %.3f -> %.3f)",
+                                            pensioner_id,
+                                            signals.get("has_csa_marker"),
+                                            signals.get("in_acw_era"),
+                                            signals.get("in_ok"),
+                                            old_score,
+                                            best["score"],
+                                        )
+
             row = builder.build_state_row(
                 pensioner_id=pensioner_id,
                 pensioner_data=dict(pensioner),

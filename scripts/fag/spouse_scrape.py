@@ -357,6 +357,54 @@ def compare_spouses(
 
 
 # ============================================================
+# Memorial signal extraction (issue #125)
+# ============================================================
+
+# Regex patterns for military service indicators on memorial pages.
+_CSA_MARKERS = re.compile(
+    r'Confederate|C\.?S\.?A\.?|Civil War|'
+    r'Co\.\s*[A-K]|Regiment|Infantry|Cavalry|Artillery|'
+    r'Pvt\.?|Pvt|Private|Corp\.?|Sgt\.?|Lt\.?|Capt\.?|Maj\.?|Col\.?|'
+    r'(\(?CSA\)?)',
+    re.IGNORECASE,
+)
+
+
+def parse_memorial_signals(html: str) -> dict:
+    """Extract confirmation signals from a memorial detail page.
+
+    Returns a dict with boolean flags:
+        - has_csa_marker: military/CSA service indicators found
+        - in_acw_era: dates fall in Civil War veteran range
+        - in_ok: burial location includes Oklahoma
+    """
+    text = re.sub(r'<[^>]+>', ' ', html)
+    text = re.sub(r'&[a-z#0-9]+;', ' ', text)
+    text = re.sub(r'\s+', ' ', text)
+
+    has_csa = bool(_CSA_MARKERS.search(text))
+
+    # Check for dates in ACW veteran range (born 1820-1850, died 1861-1955)
+    years = [int(y) for y in re.findall(r'\b(18[2-5]\d|19[0-5][0-5])\b', text)]
+    birth_years = [y for y in years if 1820 <= y <= 1850]
+    death_years = [y for y in years if 1861 <= y <= 1955]
+    in_acw_era = bool(birth_years) or bool(death_years)
+
+    # Check for OK burial location
+    in_ok = bool(re.search(
+        r'\b(Oklahoma|OK|Tulsa|Oklahoma City|Muskogee|Ardmore|'
+        r'McAlester|Durant|Enid|Lawton|Shawnee|Ada)\b',
+        text, re.IGNORECASE,
+    ))
+
+    return {
+        "has_csa_marker": has_csa,
+        "in_acw_era": in_acw_era,
+        "in_ok": in_ok,
+    }
+
+
+# ============================================================
 # High-level: scrape + compare (used by the runner)
 # ============================================================
 
