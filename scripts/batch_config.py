@@ -56,6 +56,7 @@ class EngineConfig:
     backend: str = "findagrave"   # findagrave | newspapers_com
     throttle: float = 2.5
     state_filter: str = "OK"      # OK | TX | US | ""
+    relax_throttle_floor: bool = False  # allow throttle < 2.5s
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "EngineConfig":
@@ -65,6 +66,7 @@ class EngineConfig:
             backend=d.get("backend", "findagrave"),
             throttle=float(d.get("throttle", 2.5)),
             state_filter=d.get("state_filter", "OK"),
+            relax_throttle_floor=bool(d.get("relax_throttle_floor", False)),
         )
 
     def to_dict(self) -> dict:
@@ -147,12 +149,17 @@ class PostConfig:
 # ============================================================
 # Search mode config (issue #78)
 # ============================================================
-VALID_MODES = {"conservative", "standard", "aggressive"}
+VALID_MODES = {"none", "conservative", "standard", "aggressive"}
 
 #: Default per-mode parameters. The `mode` key in the config
 #: selects one of these presets; the operator can override
 #: individual fields inside the mode object.
 MODE_DEFAULTS: dict[str, dict] = {
+    "none": {
+        "max_refinements": 0,
+        "skip_refine_above": 1.0,
+        "bail_on_auto_accept": True,
+    },
     "conservative": {
         "max_refinements": 2,
         "skip_refine_above": 0.85,

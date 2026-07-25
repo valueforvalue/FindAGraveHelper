@@ -31,7 +31,7 @@ from scripts.batch_config import (
 
 def test_valid_modes_set():
     """The three named modes are declared."""
-    assert VALID_MODES == {"conservative", "standard", "aggressive"}
+    assert VALID_MODES == {"none", "conservative", "standard", "aggressive"}
 
 
 def test_mode_defaults_cover_all_valid_modes():

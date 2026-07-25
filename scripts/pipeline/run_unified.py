@@ -1303,11 +1303,16 @@ def build_parser() -> argparse.ArgumentParser:
                              "Cloudflare 1015 rate-limit hits at the "
                              "stricter cadence)")
     parser.add_argument("--mode", type=str, default=None,
-                        choices=["conservative", "standard", "aggressive"],
+                        choices=["none", "conservative", "standard", "aggressive"],
                         help="Search aggressiveness mode (issue #78). "
                              "Controls refinement depth and bail policy. "
+                             "'none' disables refinement entirely. "
                              "Defaults to mode from config.json or "
                              "'standard' when neither is set.")
+    parser.add_argument("--relax-throttle-floor", action="store_true",
+                        help="Allow throttle below 2.5s L1 floor. "
+                             "For slice runs and low-volume A/B tests. "
+                             "WARNING: re-introduces Cloudflare 1015 risk.")
     parser.add_argument(
         "--low-score-threshold", type=float,
         # Default lives in scoring_constants.LOW_SCORE_THRESHOLD so
@@ -1620,7 +1625,11 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         # J7: CGR path for post-run dedup.
         cgr_path=Path(args.cgr) if args.cgr else None,
         blackboard_db_path=args.blackboard_db or (out_dir / "blackboard.db"),
-        enforce_throttle_floor=True,
+        enforce_throttle_floor=not (
+            getattr(args, "relax_throttle_floor", False)
+            or (batch_cfg is not None
+                and batch_cfg.engine.relax_throttle_floor)
+        ),
         request_gate_min_interval=args.throttle,
         mock_fag_path=args.mock_fag if args.mock_fag else None,
         search_mode=args.mode or "standard",
