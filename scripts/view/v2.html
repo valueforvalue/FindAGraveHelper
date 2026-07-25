@@ -1015,7 +1015,7 @@ kbd {
                                     <a :href="cardUrl(record)" target="_blank" rel="noopener">→ source card</a>
                                 </template>
                                 <template x-if="sourceUrl(record)">
-                                    <a :href="sourceUrl(record)" target="_blank" rel="noopener">↗ View source</a>
+                                    <a href="#" @click.prevent="openSourceViewer(sourceUrl(record), record.title)" rel="noopener">↗ View source</a>
                                 </template>
                             </div>
                             <div class="pensioncard-thumbs">
@@ -1812,6 +1812,39 @@ function reviewApp() {
             this.lightboxAlt = '';
         },
 
+        async openSourceViewer(url, title) {
+            try {
+                const resp = await fetch(url);
+                const data = await resp.json();
+                // Build a readable HTML table from the JSON
+                let html = '<div style="max-width:700px;max-height:85vh;overflow:auto;background:#fff;padding:1.5rem;border-radius:6px;text-align:left;cursor:default;">';
+                html += '<h3 style="margin:0 0 0.75rem;font-size:1.1rem;">' + this.escapeHtml(title || 'Source') + '</h3>';
+                html += '<table style="width:100%;border-collapse:collapse;font-size:0.82rem;">';
+                for (const [k, v] of Object.entries(data)) {
+                    if (k === 'all_fields' || k === 'pensioncard_all_fields') continue;
+                    let val = v;
+                    if (typeof v === 'object' && v !== null) {
+                        val = JSON.stringify(v).slice(0, 200);
+                    }
+                    html += '<tr><td style="padding:3px 8px;border-bottom:1px solid #eee;color:#647181;white-space:nowrap;vertical-align:top;">' + this.escapeHtml(k) + '</td>';
+                    html += '<td style="padding:3px 8px;border-bottom:1px solid #eee;word-break:break-word;">' + this.escapeHtml(String(val ?? '')) + '</td></tr>';
+                }
+                html += '</table></div>';
+                this.lightboxSrc = html;  // overload lightbox to show HTML
+                this.lightboxAlt = title || '';
+                this.lightboxOpen = true;
+            } catch (e) {
+                // Fallback: open in new tab
+                window.open(url, '_blank');
+            }
+        },
+
+        escapeHtml(str) {
+            const div = document.createElement('div');
+            div.textContent = str;
+            return div.innerHTML;
+        },
+
         // ── Drag-drop ──
         dragOver() {
             this.dragCounter++;
@@ -2383,7 +2416,8 @@ function reviewApp() {
 <div class="lightbox-overlay" x-show="lightboxOpen" x-cloak
      @click.self="closeLightbox()">
     <button class="lightbox-close" @click="closeLightbox()" aria-label="Close">&times;</button>
-    <img :src="lightboxSrc" :alt="lightboxAlt" class="lightbox-img">
+    <img :src="lightboxSrc" :alt="lightboxAlt" class="lightbox-img" x-show="!lightboxSrc.startsWith('<')">
+    <div x-show="lightboxSrc.startsWith('<')" x-html="lightboxSrc"></div>
 </div>
 </body>
 </html>
