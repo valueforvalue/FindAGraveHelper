@@ -737,6 +737,15 @@ def run_batch_scheduler(
 
     # Issue #68: write restart.sh for resuming failed runs
     write_restart_script(out_dir)
+    # Issue #112: persist updated RunRecipe (with CLI --mode)
+    # so config.json captures the actual run parameters.
+    _recipe_obj = getattr(config, "_recipe", None)
+    if _recipe_obj is not None:
+        cfg_path = out_dir / "config.json"
+        cfg_path.write_text(
+            json.dumps(_recipe_obj.to_dict(), indent=2),
+            encoding="utf-8",
+        )
 
     # Copy view.html into out_dir so the reviewer has a per-run page
     # that works from file:// without a server.
@@ -1385,6 +1394,10 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
             size = batch_cfg.end_row - batch_cfg.start_row
             if size > 0:
                 args.limit = size
+        # Issue #112: persist --mode into RunRecipe so
+        # config.json captures the search mode for resume.sh.
+        if args.mode is not None:
+            batch_cfg.pipeline.mode.mode = args.mode
         args.batch_cfg = batch_cfg
     else:
         args.batch_cfg = None
