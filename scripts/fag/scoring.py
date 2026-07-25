@@ -145,6 +145,16 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     if cand_state and cand_state.upper() == "OK":
         ok_burial_score = 0.3  # smaller bonus; was 0.5
 
+    # Issue #125: cemetery type bonus — Confederate/National/Veterans
+    # cemeteries are strong corroborating signals for CW soldiers.
+    cemetery = (candidate.get("details", {}).get("cemetery") or "").lower()
+    _CEMETERY_BONUS_TERMS = [
+        "confederate", "national cemetery", "veterans",
+        "soldiers cemetery", "csa", "memorial cemetery",
+    ]
+    if any(term in cemetery for term in _CEMETERY_BONUS_TERMS):
+        ok_burial_score = max(ok_burial_score, 0.2)
+
     # State match — tiebreaker when local regiment state's abbreviation
     # matches the candidate's burial state (rare, but useful).
     state_score = 0.0
@@ -255,19 +265,19 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     # - death year: confirms correct person (0.5 max) — bumped up
     # - veteran: strong tiebreaker (0.4 max)
     # - widow_pension: moderate pension-family signal (0.25 max, issue #105)
-    # - OK burial: smaller bonus (0.3 max, was 0.5)
-    # - state match: minor (0.1 max, was 0.2)
+    # - OK burial: bumped to 0.15 for disambiguation (was 0.10)
+    # - state match: minor (0.05 max, was 0.10)
     #
     # A perfect name+veteran+death match = 1.00 (the right person)
     # Without death year (some records lack it): 0.62 name + 0.4 vet = 1.02 → 0.78
     # Without veteran flag: name + death = 0.92 → still strong
     # Widow with name+death(pension-era)+widow_pension = 0.77 → strong widow match
-    # With OK burial bonus: +0.10, helps break ties among same-name people
+    # With OK burial bonus: +0.15, helps break ties among same-name people
     score = (
         0.22 * last_score +
         0.17 * first_score +
         0.11 * middle_score +
-        0.10 * ok_burial_score +
+        0.15 * ok_burial_score +
         0.05 * state_score +
         0.18 * (veteran_score if not is_widow else 0.0) +
         0.18 * widow_pension_score +

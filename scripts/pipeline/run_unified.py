@@ -1118,6 +1118,31 @@ def run_batch_scheduler(
                                             best["score"],
                                         )
 
+            # Issue #125: name uniqueness factor for disambiguation.
+            # Common names (John Smith) have many same-name candidates;
+            # unique names (Syon Traywick) have few. Apply a mild
+            # multiplicative factor so unique-name matches rank higher.
+            import math
+            candidates_list = list(candidates_by_id.values())
+            # Count candidates sharing same last+first name
+            name_counts: dict[str, int] = {}
+            for c in candidates_list:
+                last = str(c.get("name", "")).split()[-1] if c.get("name") else ""
+                first = str(c.get("name", "")).split()[0] if c.get("name") else ""
+                key = f"{last}|{first}".lower()
+                name_counts[key] = name_counts.get(key, 0) + 1
+            for c in candidates_list:
+                last = str(c.get("name", "")).split()[-1] if c.get("name") else ""
+                first = str(c.get("name", "")).split()[0] if c.get("name") else ""
+                key = f"{last}|{first}".lower()
+                count = name_counts.get(key, 1)
+                if count >= 2:
+                    # Mild penalty for common names: 0.03 per doubling
+                    factor = 1.0 / (1.0 + 0.03 * math.log2(count))
+                    old = c.get("score", 0)
+                    c["score"] = round(old * factor, 4)
+                    c["_uniqueness_factor"] = round(factor, 4)
+
             row = builder.build_state_row(
                 pensioner_id=pensioner_id,
                 pensioner_data=dict(pensioner),
