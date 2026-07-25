@@ -206,14 +206,18 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
             if sm2 and not birth_year:
                 birth_year = sm2.group(1)
 
-        # Extract state from the link text. Previously this used a
-        # `link.evaluate('el => parentElement.parentElement.innerText')`
-        # JS round-trip per candidate. Over a full run that added up
-        # to millions of V8 IPC calls and a steady Chromium RSS leak.
-        # Use `text` (already computed above) instead — it's the link's
-        # own innerText, which on FaG result cards contains the state
-        # abbreviation or full state name.
-        card_text = text  # alias; preserves existing logic below.
+        # Extract location from card ancestor. link.inner_text()
+        # only returns name + dates ("John Smith 1840 – 1920").
+        # Cemetery + city/county/state lives in the parent's parent.
+        # One evaluate() per candidate (max 20) — negligible vs
+        # page.goto() cost and necessary for burial-state scoring.
+        try:
+            location_text = link.evaluate(
+                "el => { const p = el.parentElement; return p?.parentElement?.innerText || p?.innerText || ''; }"
+            )
+        except Exception:
+            location_text = ""
+        card_text = text + "\n" + location_text
 
         # Extract state from the card text. Location is rendered like:
         #   "Eolian, Stephens County, Texas"  (one entry)

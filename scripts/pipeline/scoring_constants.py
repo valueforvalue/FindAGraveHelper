@@ -75,6 +75,11 @@ FAG_AUTO_ACCEPT_GAP: float = 0.10
 #: pipeline share a single source of truth.
 SOUNDEX_MATCH_SCORE: float = 0.85
 
+#: Score boost applied when spouse name is verified via
+#: memorial detail page scraping (issue #122). Added to the
+#: candidate's score after successful spouse name comparison.
+SPOUSE_VERIFIED_SCORE_BOOST: float = 0.15
+
 
 # ============================================================
 # Status strings (the canonical enum of PensionerRecord.status)

@@ -350,7 +350,8 @@ h1 {
 .decision-pill,
 .picked-badge,
 .best-badge,
-.spouse-match-badge {
+.spouse-match-badge,
+.spouse-verified-badge {
     display: inline-flex;
     align-items: center;
     border-radius: 999px;
@@ -461,6 +462,12 @@ h1 {
 .spouse-match-badge {
     background: var(--warning-soft);
     color: var(--warning);
+    padding: 1px 8px;
+}
+
+.spouse-verified-badge {
+    background: var(--success-soft);
+    color: var(--success);
     padding: 1px 8px;
 }
 
@@ -1086,7 +1093,8 @@ kbd {
                                         <span class="picked-badge" x-show="isPicked(record.id, candidate.id)">PICKED</span>
                                         <span class="follow-up-badge" x-show="isFollowUp(candidate)">follow-up</span>
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
-                                        <span class="spouse-match-badge" x-show="cidx === 0 && candidate.evidence?.score_breakdown?._spouse_linked && ((candidate.evidence?.score_breakdown?.widow_pension || 0) > 0 || (candidate.evidence?.score_breakdown?.veteran || 0) > 0)">💍 spouse match</span>
+                                        <span class="spouse-verified-badge" x-show="cidx === 0 && candidate.evidence?.score_breakdown?._spouse_verified">💍 verified spouse</span>
+                                        <span class="spouse-match-badge" x-show="cidx === 0 && !candidate.evidence?.score_breakdown?._spouse_verified && candidate.evidence?.score_breakdown?._spouse_linked && ((candidate.evidence?.score_breakdown?.widow_pension || 0) > 0 || (candidate.evidence?.score_breakdown?.veteran || 0) > 0)">💍 spouse match</span>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>

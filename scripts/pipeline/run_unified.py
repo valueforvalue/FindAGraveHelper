@@ -1016,11 +1016,67 @@ def run_batch_scheduler(
                     }
                     break
 
+            # Issue #122: spouse verification via memorial detail page
+            # scraping. For widow pensioners with spouse-linked top
+            # candidates (score >= 0.65), navigate to the candidate
+            # memorial page and compare spouse names.
+            spouse_data: dict[str, Any] | None = None
+            spouse_first = str(pensioner.get("spouse_first_name") or "")
+            spouse_last = str(pensioner.get("spouse_last_name") or "")
+            if spouse_first and spouse_last and browser_session is not None:
+                from scripts.fag.spouse_scrape import scrape_and_compare
+                from scripts.pipeline.scoring_constants import (
+                    SPOUSE_VERIFIED_SCORE_BOOST,
+                )
+                local_spouse = {"first": spouse_first, "last": spouse_last}
+                top_candidates = sorted(
+                    candidates_by_id.values(),
+                    key=lambda c: c.get("score", 0),
+                    reverse=True,
+                )
+                verified_count = 0
+                max_verify = 3  # top 3 per widow (respect throttle)
+                for cand in top_candidates:
+                    if verified_count >= max_verify:
+                        break
+                    if not cand.get("_spouse_linked"):
+                        continue
+                    if cand.get("score", 0) < 0.65:
+                        continue
+                    sp_result = scrape_and_compare(
+                        browser_session.page,
+                        cand,
+                        local_spouse,
+                        throttle_seconds=0.5,
+                    )
+                    if sp_result and sp_result.get("matched"):
+                        cand["_spouse_verified"] = True
+                        cand["spouse_match"] = sp_result
+                        old_score = cand.get("score", 0)
+                        cand["score"] = min(
+                            old_score + SPOUSE_VERIFIED_SCORE_BOOST, 1.0
+                        )
+                        spouse_data = {
+                            "match_confirmed": True,
+                            "match_details": sp_result,
+                        }
+                        verified_count += 1
+                        log.info(
+                            "Spouse verified for pensioner %d: "
+                            "%s -> %s (score %.3f -> %.3f)",
+                            pensioner_id,
+                            local_spouse.get("first") + " " + local_spouse.get("last"),
+                            sp_result.get("captured_display", "?"),
+                            old_score,
+                            cand["score"],
+                        )
+
             row = builder.build_state_row(
                 pensioner_id=pensioner_id,
                 pensioner_data=dict(pensioner),
                 candidates=list(candidates_by_id.values()),
                 cgr_data=cgr_data,
+                spouse_data=spouse_data,
                 dd_data=dd_data,
             )
             # Issue #62: populate pensioncard_pages from the
