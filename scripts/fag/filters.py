@@ -467,3 +467,41 @@ _STATE_NAMES_UPPER = {
 # matched case-insensitively against the candidate text).
 _STATE_NAMES_LOWER = {k.lower(): v for k, v in _STATE_NAMES_UPPER.items()}
 
+
+
+# ------------------------------------------------------------
+# Widow detection (issue #107)
+# ------------------------------------------------------------
+
+# First names that are male veterans in the OK pensioner data.
+# These appear with spouse_name_raw because the VETERAN'S WIFE
+# filed the pension application. They should NOT be scored as
+# widows. Built from the 48 male names found in the 3793
+# spouse_name_raw pensioners (ok_pensioners.json, 2026-07).
+_MALE_VETERAN_FIRST_NAMES: set[str] = {
+    "abraham", "albert", "alexander", "alfred", "andrew", "arthur",
+    "benjamin", "charles", "daniel", "david", "edward", "frank",
+    "frederick", "george", "henry", "isaac", "jacob", "james",
+    "jeff", "jesse", "john", "joseph", "lewis", "martin",
+    "nathan", "patrick", "peter", "richard", "robert", "samuel",
+    "stephen", "thomas", "walter", "wiley", "william",
+}
+
+
+def is_widow_pensioner(pensioner: dict) -> bool:
+    """Return True if the pensioner is a widow (not the veteran).
+
+    A widow has spouse_name_raw populated AND a first name that
+    is not in the known-male veteran list. Male veterans whose
+    wives applied on their behalf also have spouse_name_raw, but
+    their first_name is in _MALE_VETERAN_FIRST_NAMES (issue #107).
+
+    When spouse_name_raw is absent, the pensioner is always a vet.
+    """
+    spouse_raw = str(pensioner.get("spouse_name_raw") or "").strip()
+    if not spouse_raw:
+        return False
+    first = str(pensioner.get("first_name") or "").strip().lower().rstrip(".")
+    if first in _MALE_VETERAN_FIRST_NAMES:
+        return False  # veteran, wife applied
+    return True

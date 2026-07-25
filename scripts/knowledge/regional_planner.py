@@ -154,12 +154,11 @@ class RegionalPlannerKS:
         last = str(pensioner.get("last_name") or pensioner.get("last") or "")
         regiment = str(pensioner.get("regiment") or "").lower()
         birth_year = str(pensioner.get("birth_year") or "")
-        # Issue #105: widows carry the deceased husband's regiment
-        # on their pension record. Regiment-scoped searches (F2,
-        # RegimentOrigin) find the veteran, not the widow. Detect
-        # widow status from spouse_name_raw so we can skip those.
-        spouse_raw = str(pensioner.get("spouse_name_raw") or "").strip()
-        is_widow = bool(spouse_raw)
+        # Issue #105 / #107: widows carry the deceased husband's
+        # regiment. Use shared detection to avoid flagging male
+        # vets whose wives applied for them.
+        from scripts.fag.filters import is_widow_pensioner
+        is_widow = is_widow_pensioner(pensioner)
 
         base_params: dict[str, Any] = {}
         # Pass through all pensioner fields so FaGScraperKS has full context

@@ -278,12 +278,11 @@ class DeepRefinerKS:
         first = str(params.get("first_name") or params.get("first") or "")
         last = str(params.get("last_name") or params.get("last") or "")
         regiment = str(params.get("regiment") or "").lower()
-        # Issue #105: widows carry the husband's regiment. Skip
-        # regiment-based refinement — FaG won't tag the widow's
-        # memorial with a regiment she didn't serve in.
-        is_widow = bool(
-            str(params.get("spouse_name_raw") or "").strip()
-        )
+        # Issue #105 / #107: widows carry the husband's regiment.
+        # Use shared detection to avoid flagging male vets whose
+        # wives applied for them.
+        from scripts.fag.filters import is_widow_pensioner
+        is_widow = is_widow_pensioner(pensioner_params)
         # Thread widow flag into params so the strategy ladder
         # can skip F2-regiment-bio when it fires.
         if is_widow:
