@@ -1434,11 +1434,16 @@ function reviewApp() {
 
         recordMeta(record) {
             const attrs = record.attributes || {};
+            const spouse = attrs.spouse || {};
+            const spouseText = (spouse.first && spouse.last)
+                ? 'spouse: ' + [spouse.first, spouse.middle, spouse.last].filter(Boolean).join(' ')
+                : '';
             return [
                 attrs.regiment,
                 attrs.company ? 'Company ' + attrs.company : '',
                 this.lifespan(attrs),
                 attrs.application_number ? 'app #' + attrs.application_number : '',
+                spouseText,
             ].filter(Boolean);
         },
 
