@@ -408,6 +408,8 @@ h1 {
 }
 
 .pensioncard-thumbs {
+    display: block;
+    clear: both;
     margin-top: 0.5rem;
     text-align: left;
 }
@@ -1018,20 +1020,20 @@ kbd {
                                     <a href="#" @click.prevent="openSourceViewer(sourceUrl(record), record.title)" rel="noopener">↗ View source</a>
                                 </template>
                             </div>
-                            <div class="pensioncard-thumbs">
-                            <template x-for="(pageId, i) in (record.attributes?.pensioncard_pages || [])" :key="pageId">
-                                <a href="#" @click.prevent="openLightbox('https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg', (record.title || 'pensioner') + ' card ' + (i + 1))" title="Click for full size">
-                                    <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/600,/0/default.jpg'"
-                                         :alt="(record.title || 'pensioner') + ' pension card ' + (i + 1)"
-                                         loading="lazy"
-                                         style="max-width:480px; max-height:360px; margin:4px 8px 0 0;
-                                                border:1px solid #ccc; border-radius:3px;
-                                                vertical-align:top; background:#fafafa;">
-                                </a>
-                            </template>
-                            </div>
                         </div>
                         <span class="record-id" x-text="'#' + record.id"></span>
+                    </div>
+                    <div class="pensioncard-thumbs">
+                    <template x-for="(pageId, i) in (record.attributes?.pensioncard_pages || [])" :key="pageId">
+                        <a href="#" @click.prevent="openLightbox('https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/full/0/default.jpg', (record.title || 'pensioner') + ' card ' + (i + 1))" title="Click for full size">
+                            <img :src="'https://digitalprairie.ok.gov/iiif/2/pensioncard:' + pageId + '/full/600,/0/default.jpg'"
+                                 :alt="(record.title || 'pensioner') + ' pension card ' + (i + 1)"
+                                 loading="lazy"
+                                 style="max-width:480px; max-height:360px; margin:4px 8px 0 0;
+                                        border:1px solid #ccc; border-radius:3px;
+                                        vertical-align:top; background:#fafafa;">
+                        </a>
+                    </template>
                     </div>
                 </section>
                 <section class="record-status" :aria-labelledby="'record-' + hashId(record.id) + '-heading'">
