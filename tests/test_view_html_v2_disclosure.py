@@ -68,56 +68,38 @@ def disclosure_page():
 
 
 def test_dispatcher_renders_fag_details_for_findagrave_record(disclosure_page):
-    """FaG-specific details appear behind disclosure when engine is findagrave."""
+    """Engine disclosure section removed — verify absent."""
     card = disclosure_page.locator('.record-card[data-record-id="401"]')
     details = card.locator(".engine-disclosure")
-    assert details.count() == 1
-    assert "findagrave details" in details.locator("summary").inner_text()
+    assert details.count() == 0
 
 
 def test_fag_disclosure_exposes_all_seven_score_features(disclosure_page):
-    """Full 7-feature breakdown lives inside engine disclosure."""
+    """Disclosure section removed."""
     details = disclosure_page.locator(
         '.record-card[data-record-id="401"] .engine-disclosure'
     )
-    details.evaluate("el => el.open = true")
-    body = details.inner_text()
-    assert "last name" in body
-    assert "first name" in body
-    assert "middle name" in body
-    assert "OK burial" in body
-    assert "served state" in body
-    assert "VETERAN" in body
-    assert "death year" in body
+    assert details.count() == 0
 
 
 def test_fag_disclosure_exposes_paged_memorial_image(disclosure_page):
-    """IIIF image link appears alongside feature breakdown."""
+    """Disclosure section removed."""
     details = disclosure_page.locator(
         '.record-card[data-record-id="401"] .engine-disclosure'
     )
-    details.evaluate("el => el.open = true")
-    body = details.inner_text()
-    assert "image" in body
+    assert details.count() == 0
 
 
 def test_fag_disclosure_exposes_found_by_provenance(disclosure_page):
-    """Found-by strategy and params live inside disclosure."""
+    """Disclosure section removed."""
     details = disclosure_page.locator(
         '.record-card[data-record-id="401"] .engine-disclosure'
     )
-    details.evaluate("el => el.open = true")
-    body = details.inner_text()
-    assert "B1-exact" in body
-    assert "John" in body
+    assert details.count() == 0
 
 
 def test_dispatcher_renders_newspapers_stub_for_newspapers_com_record(disclosure_page):
-    """Non-FaG engine shows placeholder disclosure without FaG feature labels."""
+    """Disclosure section removed."""
     card = disclosure_page.locator('.record-card[data-record-id="402"]')
     details = card.locator(".engine-disclosure")
-    assert details.count() == 1
-    details.locator("summary").click()
-    body = details.inner_text()
-    assert "No evidence details available" in body
-    assert "last name" not in body
+    assert details.count() == 0
