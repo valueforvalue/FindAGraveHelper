@@ -4,6 +4,10 @@ All notable changes to this project.
 
 ## [Unreleased] — 2026-07-25
 
+### Added
+
+- Add an **Export for DixieData** button to `scripts/view/v2.html` that downloads picked memorials in the exact `memorial_v1` envelope (`format_version`, `script_version`, `script_name`, `entries`) while preserving the existing scraper export (#131).
+
 ### Session: scoring + view hardening (2026-07-25)
 
 Full-day session hardening widow/vet scoring, reducing false

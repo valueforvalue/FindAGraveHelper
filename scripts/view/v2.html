@@ -974,6 +974,7 @@ kbd {
                 </label>
                 <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveDecisionsToFile">Save decisions</button>
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Export picks</button>
+                <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieDataFile">Export for DixieData</button>
                 <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Import decisions</button>
                 <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
@@ -2308,6 +2309,62 @@ function reviewApp() {
         // Legacy test-compat: buildScraperExportBlob returns a Blob directly.
         async buildScraperExportBlob() {
             return new Blob([JSON.stringify(this.pensionersToScraperExport(this.records, this.decisions), null, 2)], { type: 'application/json' });
+        },
+
+        // Exact memorial_v1 contract consumed by DixieData imports.
+        buildDixieDataPayload() {
+            const entries = [];
+            for (const record of this.records) {
+                if (record.engine !== 'findagrave') continue;
+                const decision = this.decisions[String(record.id)] || null;
+                if (!decision?.memorial_id) continue;
+                const picked = (record.candidates || []).find(
+                    candidate => String(candidate.id) === String(decision.memorial_id)
+                );
+                if (!picked) continue;
+                const scraperRecord = this.candidateToScraperRecord(picked, record);
+                const candidateAttrs = picked.attributes || {};
+                const birthDate = candidateAttrs.birth_year || scraperRecord.birth_date || '';
+                const deathDate = candidateAttrs.death_year || scraperRecord.death_date || '';
+                let deathAge = null;
+                if (birthDate && deathDate) {
+                    const birthYear = parseInt(birthDate, 10);
+                    const deathYear = parseInt(deathDate, 10);
+                    if (!isNaN(birthYear) && !isNaN(deathYear)) deathAge = deathYear - birthYear;
+                }
+                entries.push({
+                    memorial_id: String(scraperRecord.memorial_id || ''),
+                    name: scraperRecord.name || '',
+                    url: scraperRecord.url || '',
+                    birth_date: birthDate,
+                    birth_location: scraperRecord.birth_location || '',
+                    death_date: deathDate,
+                    death_age: deathAge,
+                    death_location: scraperRecord.death_location || '',
+                    burial_cemetery: candidateAttrs.cemetery || scraperRecord.burial_cemetery || '',
+                    burial_location: candidateAttrs.state || scraperRecord.burial_location || '',
+                    biography: scraperRecord.biography || '',
+                    family_parents: scraperRecord.family_parents || [],
+                    family_spouse: scraperRecord.family_spouse || '',
+                    family_children: scraperRecord.family_children || [],
+                    scraped_at: scraperRecord.scraped_at,
+                });
+            }
+            return {
+                format_version: 'memorial_v1',
+                script_version: '1.0',
+                script_name: 'Find A Grave Ambient Scraper',
+                entries,
+            };
+        },
+
+        async buildDixieDataExportBlob() {
+            return new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
+        },
+
+        exportDixieDataFile() {
+            const blob = new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
+            this.downloadBlob(blob, 'memorials_dixiedata_memorial_v1.json');
         },
 
         saveDecisionsToFile() {

@@ -140,3 +140,111 @@ def test_export_picks_button_downloads_scraper_shape(exports_page):
     assert export[0]["_source_pensioner_id"] == 201
     assert export[1]["memorial_id"] == ""
     assert export[1]["_reviewer_decision"] == "no_match"
+
+
+def test_dixiedata_export_has_exact_memorial_v1_shape(exports_page):
+    """DixieData export wraps picked memorials in memorial_v1."""
+    blob_json = exports_page.evaluate("async () => {"
+        "  const blob = await window.ViewV2.buildDixieDataExportBlob();"
+        "  return await blob.text();"
+        "}")
+    payload = json.loads(blob_json)
+
+    assert list(payload) == [
+        "format_version", "script_version", "script_name", "entries"
+    ]
+    assert payload["format_version"] == "memorial_v1"
+    assert payload["script_version"] == "1.0"
+    assert payload["script_name"] == "Find A Grave Ambient Scraper"
+    assert len(payload["entries"]) == 1
+
+    entry = payload["entries"][0]
+    assert list(entry) == [
+        "memorial_id", "name", "url", "birth_date", "birth_location",
+        "death_date", "death_age", "death_location", "burial_cemetery",
+        "burial_location", "biography", "family_parents", "family_spouse",
+        "family_children", "scraped_at",
+    ]
+    assert entry["memorial_id"] == "mem-201-a"
+    assert entry["birth_date"] == "1840"
+    assert entry["death_date"] == "1901"
+    assert entry["death_age"] == 61
+    assert entry["burial_location"] == "Oklahoma"
+    assert entry["biography"] == ""
+    assert entry["family_parents"] == []
+    assert entry["scraped_at"] == exports_page.evaluate(
+        "window.ViewV2.getDecisions()['201'].at"
+    )
+    assert not any(key.startswith("_") for key in entry)
+
+
+def test_dixiedata_export_has_empty_entries_without_decisions(exports_page):
+    """No decisions still produce a valid memorial_v1 envelope."""
+    payload = exports_page.evaluate("() => {"
+        "  const decisions = window.ViewV2.getDecisions();"
+        "  const saved = {...decisions};"
+        "  for (const key of Object.keys(decisions)) delete decisions[key];"
+        "  try { return window.ViewV2.buildDixieDataPayload(); }"
+        "  finally { Object.assign(decisions, saved); }"
+        "}")
+
+    assert payload == {
+        "format_version": "memorial_v1",
+        "script_version": "1.0",
+        "script_name": "Find A Grave Ambient Scraper",
+        "entries": [],
+    }
+
+
+def test_dixiedata_export_uses_common_candidate_attributes(exports_page):
+    """Canonical common candidates retain their own memorial metadata."""
+    payload = exports_page.evaluate("() => {"
+        "  const records = window.ViewV2.getRecords();"
+        "  const decisions = window.ViewV2.getDecisions();"
+        "  const savedRecords = [...records];"
+        "  const savedDecisions = {...decisions};"
+        "  records.splice(0, records.length, {"
+        "    id: 301, title: 'Pensioner', engine: 'findagrave',"
+        "    attributes: {birth_year: '1830', death_year: '1900'},"
+        "    candidates: [{"
+        "      id: 'mem-301', title: 'Candidate', url: 'https://www.findagrave.com/memorial/301/candidate',"
+        "      attributes: {birth_year: '1842', death_year: '1912', state: 'Texas', cemetery: 'Oak Lawn'},"
+        "      evidence: {}"
+        "    }]"
+        "  });"
+        "  for (const key of Object.keys(decisions)) delete decisions[key];"
+        "  decisions['301'] = {memorial_id: 'mem-301', at: '2026-07-26T01:00:00.000Z'};"
+        "  try { return window.ViewV2.buildDixieDataPayload(); }"
+        "  finally {"
+        "    records.splice(0, records.length, ...savedRecords);"
+        "    for (const key of Object.keys(decisions)) delete decisions[key];"
+        "    Object.assign(decisions, savedDecisions);"
+        "  }"
+        "}")
+
+    entry = payload["entries"][0]
+    assert entry["birth_date"] == "1842"
+    assert entry["death_date"] == "1912"
+    assert entry["burial_cemetery"] == "Oak Lawn"
+    assert entry["burial_location"] == "Texas"
+
+
+def test_dixiedata_export_excludes_non_findagrave_picks(exports_page):
+    """Generic engine candidates are never mislabeled as FaG memorials."""
+    payload = exports_page.evaluate("() => {"
+        "  const records = window.ViewV2.getRecords();"
+        "  const originalEngine = records[0].engine;"
+        "  records[0].engine = 'newspapers_com';"
+        "  try { return window.ViewV2.buildDixieDataPayload(); }"
+        "  finally { records[0].engine = originalEngine; }"
+        "}")
+
+    assert payload["entries"] == []
+
+
+def test_dixiedata_button_downloads_memorial_v1_file(exports_page):
+    """Visible DixieData button reaches the browser download seam."""
+    with exports_page.expect_download() as download_info:
+        exports_page.locator("#exportDixieDataBtn").click()
+    download = download_info.value
+    assert download.suggested_filename == "memorials_dixiedata_memorial_v1.json"
