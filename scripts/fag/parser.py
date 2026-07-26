@@ -46,6 +46,11 @@ _FAG_BOILERPLATE_STRS = [
     "IN LOVING MEMORY OF",
     "IN HONOR OF",
     "REST IN PEACE",
+    "Children:",
+    "Siblings:",
+    "Parents:",
+    "Spouses:",
+    "Spouse:",
 ]
 
 # Noise prefix patterns: memorial tributes that prepend to names.
@@ -202,7 +207,7 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         # Strip trailing partial dates after name ("1 Aug", "27 Apr 1842", etc.)
         name_display = re.sub(r'\s+(?:\d{1,2}\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s*(?:\d{4})?\s*$', '', name_display, flags=re.I)
         # Strip year ranges trailing name ("John Smith 1840 – 1920")
-        name_display = re.sub(r'\s*\d{4}\s*[–\-]\s*(?:\d{4}|\d{1,2}\s+\w+\s+\d{4}).*$', '', name_display)
+        name_display = re.sub(r'\s*\d{4}\s*[–\-—]\s*(?:\d{4}|\d{1,2}\s+\w+\s+\d{4}).*$', '', name_display)
         # Strip trailing dash/em-dash residue from year range removal
         name_display = re.sub(r'\s*[–\-]\s*$', '', name_display)
         name_display = name_display.strip()
