@@ -988,7 +988,7 @@ kbd {
                 <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveStateToFile">Save state</button>
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Legacy export</button>
                 <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
-                <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Load review</button>
+                <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Load state</button>
                 <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
@@ -2579,32 +2579,59 @@ function reviewApp() {
         applyDecisionsSidecar(text, filename) {
             let payload;
             try { payload = JSON.parse(text); } catch (_) {
-                this.loadStatus = 'Failed to parse decisions file: ' + filename;
+                this.loadStatus = 'Failed to parse: ' + filename;
                 return 0;
             }
-            if (!payload || !payload.decisions || typeof payload.decisions !== 'object') return 0;
             let count = 0;
-            for (const [pid, entry] of Object.entries(payload.decisions)) {
-                const d = (entry && entry.decision) ? entry.decision : entry;
-                if (!d || typeof d !== 'object') continue;
-                this.decisions[pid] = {
-                    ...this.decisions[pid],
-                    memorial_id: d.memorial_id || null,
-                    slug: d.slug || null,
-                    by: d.by || (d.memorial_id ? 'user' : undefined),
-                    at: d.at || undefined,
-                    notes: d.notes || '',
-                    removed_candidates: d.removed_candidates || [],
-                    candidate_notes: d.candidate_notes || {},
-                    decision_type: d.decision_type || undefined,
-                };
-                count += 1;
+            // v2 format: { version: 2, records: [...] }
+            if (payload.version === 2 && Array.isArray(payload.records)) {
+                for (const entry of payload.records) {
+                    const pid = String(entry.pensioner_id);
+                    if (entry.decision) {
+                        this.decisions[pid] = {
+                            memorial_id: entry.decision.memorial_id || null,
+                            slug: entry.decision.slug || null,
+                            by: entry.decision.by || 'user',
+                            at: entry.decision.at || undefined,
+                            notes: entry.decision.notes || '',
+                            removed_candidates: entry.decision.removed_candidates || [],
+                            candidate_notes: entry.decision.candidate_notes || {},
+                            decision_type: entry.decision.decision_type || undefined,
+                        };
+                        count += 1;
+                    }
+                    // Restore record-level notes
+                    if (entry.record_notes) {
+                        const record = this.records.find(r => String(r.id) === pid);
+                        if (record) record._notes = entry.record_notes;
+                    }
+                }
             }
+            // v1 format: { version: 1, decisions: { pid: {...} } }
+            else if (payload.decisions && typeof payload.decisions === 'object') {
+                for (const [pid, entry] of Object.entries(payload.decisions)) {
+                    const d = (entry && entry.decision) ? entry.decision : entry;
+                    if (!d || typeof d !== 'object') continue;
+                    this.decisions[pid] = {
+                        ...this.decisions[pid],
+                        memorial_id: d.memorial_id || null,
+                        slug: d.slug || null,
+                        by: d.by || (d.memorial_id ? 'user' : undefined),
+                        at: d.at || undefined,
+                        notes: d.notes || '',
+                        removed_candidates: d.removed_candidates || [],
+                        candidate_notes: d.candidate_notes || {},
+                        decision_type: d.decision_type || undefined,
+                    };
+                    count += 1;
+                }
+            }
+            if (!count) return 0;
             this.saveDecisions();
             this.decisionsDirty = false;
             this.undoStack = [];
             this.redoStack = [];
-            this.loadStatus = 'Loaded ' + this.plural(count, 'decision') + ' from ' + (filename || 'decisions.json') + '.';
+            this.loadStatus = 'Loaded ' + this.plural(count, 'decision') + ' from ' + (filename || 'file') + '.';
             return count;
         },
 
