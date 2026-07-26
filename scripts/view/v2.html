@@ -1866,7 +1866,7 @@ function reviewApp() {
             if (event.ctrlKey || event.metaKey || event.altKey) return;
 
             const cards = Array.from(document.querySelectorAll('.record-card'))
-                .filter(c => c.offsetParent !== null);
+                .filter(c => c.offsetParent !== null && getComputedStyle(c).display !== 'none');
             if (!cards.length) return;
 
             switch (event.key) {
@@ -1915,7 +1915,11 @@ function reviewApp() {
 
         focusCard(card) {
             const identity = card.querySelector('.record-identity, h2');
-            identity?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            if (!identity) return;
+            const rect = identity.getBoundingClientRect();
+            const toolbarH = 72; // ~4.5rem
+            if (rect.top >= toolbarH && rect.top < toolbarH + 50) return; // already in position
+            identity.scrollIntoView({ behavior: 'auto', block: 'start' });
             card.querySelector('h2')?.focus({ preventScroll: true });
         },
 
