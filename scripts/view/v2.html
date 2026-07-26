@@ -1371,6 +1371,7 @@ function reviewApp() {
                 this.sourceLabel = label || 'results.jsonl';
                 this.recordsFingerprint = this.hashId(JSON.stringify(rawRecords));
                 this.records = rawRecords.map(r => this.normalizeRecordV2(r));
+                this.autoPopulateAutoAcceptDecisions();
                 this.collapsedRecords.clear();
                 this.showAllCandidateSections.clear();
                 this.compareRecords.clear();
@@ -1385,6 +1386,27 @@ function reviewApp() {
                 this.scheduleRemainingChunks();
                 return this.records;
             };
+
+            // Auto-create decisions for auto-accepted records so
+            // "Save review" includes them without manual picking.
+            this.autoPopulateAutoAcceptDecisions = () => {
+                for (const record of this.records) {
+                    if (record.status !== 'auto_accept' || !record.candidates?.length) continue;
+                    const rid = String(record.id);
+                    if (!this.decisions[rid]) {
+                        this.decisions[rid] = {
+                            memorial_id: String(record.candidates[0].id),
+                            slug: record.candidates[0].id || '',
+                            by: 'auto',
+                            at: new Date().toISOString(),
+                            notes: '',
+                            removed_candidates: [],
+                            candidate_notes: {},
+                        };
+                    }
+                }
+            };
+
             this.renderRecord = (record) => {
                 // Legacy renderRecord for test backward compatibility (#44).
                 // Alpine handles UI rendering; this function exists so
@@ -1997,6 +2019,7 @@ function reviewApp() {
             const rawRecords = this.parseRecordsText(text);
             this.recordsFingerprint = this.hashId(JSON.stringify(rawRecords));
             this.records = rawRecords.map(r => this.normalizeRecordV2(r));
+            this.autoPopulateAutoAcceptDecisions();
             this.collapsedRecords.clear();
             this.showAllCandidateSections.clear();
             this.compareRecords.clear();
