@@ -247,6 +247,10 @@ h1 {
     letter-spacing: -0.01em;
 }
 
+.record-card h2 {
+    scroll-margin-top: 7rem;
+}
+
 .file-picker,
 .button {
     min-height: 2.25rem;
@@ -1906,8 +1910,9 @@ function reviewApp() {
         },
 
         focusCard(card) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            card.querySelector('h2')?.focus({ preventScroll: true });
+            const heading = card.querySelector('h2');
+            (heading || card).scrollIntoView({ behavior: 'smooth', block: 'start' });
+            heading?.focus({ preventScroll: true });
         },
 
         openLightbox(src, alt) {
