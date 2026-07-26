@@ -71,9 +71,14 @@ select:focus-visible {
 .filter-row {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.55rem;
+    gap: 0.35rem;
     align-items: center;
-    margin-top: 0.5rem;
+    margin-top: 0.3rem;
+}
+
+.button.sm {
+    font-size: 0.78rem;
+    padding: 0.2rem 0.5rem;
 }
 
 .filter-row label {
@@ -217,7 +222,7 @@ select:focus-visible {
 .header-inner {
     width: min(100%, 90rem);
     margin: 0 auto;
-    padding: 0.9rem 1rem;
+    padding: 0.5rem 1rem;
 }
 
 .header-top,
@@ -226,18 +231,18 @@ select:focus-visible {
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    gap: 0.55rem;
+    gap: 0.35rem;
 }
 
 .header-top {
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.5rem;
 }
 
 h1 {
     margin: 0;
     font-family: Georgia, "Times New Roman", serif;
-    font-size: clamp(1.25rem, 2.2vw, 1.65rem);
+    font-size: 1.2rem;
     font-weight: 600;
     letter-spacing: -0.01em;
 }
@@ -977,44 +982,38 @@ kbd {
             <h1 id="runTitle" x-text="runTitle">Search results</h1>
             <div class="header-actions">
                 <label class="file-picker">
-                    Load results
+                    Load
                     <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)">
                 </label>
-                <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveDecisionsToFile">Save decisions</button>
-                <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Export picks</button>
-                <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">Export for DixieData</button>
-                <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Import decisions</button>
+                <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveDecisionsToFile">Save</button>
+                <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Export</button>
+                <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
+                <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Import</button>
                 <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
         </div>
         <div class="filter-row">
-            <button class="button" type="button" id="collapseAll" @click="collapseAll">Collapse all</button>
-            <button class="button" type="button" id="expandAll" @click="expandAll">Expand all</button>
-            <label>Search:
-                <input type="text" id="searchFilter" x-model="searchFilter"
-                       placeholder="name, regiment…"
-                       style="border:1px solid var(--line-strong); border-radius:var(--radius);
-                              padding:0.3rem 0.45rem; background:var(--paper); width:12rem;">
-            </label>
-            <label>Engine:
-                <select id="engineFilter" x-model="engineFilter">
-                    <option value="all">All engines</option>
-                    <template x-for="engine in engines" :key="engine">
-                        <option :value="engine" x-text="engine"></option>
-                    </template>
-                </select>
-            </label>
-            <label>Decision:
-                <select id="decisionFilter" x-model="decisionFilter">
-                    <option value="all">All</option>
-                    <option value="undecided">Undecided</option>
-                    <option value="picked">Picked</option>
-                    <option value="none_match">No match</option>
-                    <option value="needs_research">Needs research</option>
-                    <option value="follow_up">Follow-up</option>
-                </select>
-            </label>
+            <button class="button sm" type="button" id="collapseAll" @click="collapseAll">− All</button>
+            <button class="button sm" type="button" id="expandAll" @click="expandAll">+ All</button>
+            <input type="text" id="searchFilter" x-model="searchFilter"
+                   placeholder="Filter name, regiment…"
+                   style="border:1px solid var(--line-strong); border-radius:var(--radius);
+                          padding:0.2rem 0.4rem; background:var(--paper); width:11rem; font-size:0.8rem;">
+            <select id="engineFilter" x-model="engineFilter" style="font-size:0.8rem;">
+                <option value="all">All engines</option>
+                <template x-for="engine in engines" :key="engine">
+                    <option :value="engine" x-text="engine"></option>
+                </template>
+            </select>
+            <select id="decisionFilter" x-model="decisionFilter" style="font-size:0.8rem;">
+                <option value="all">All decisions</option>
+                <option value="undecided">Undecided</option>
+                <option value="picked">Picked</option>
+                <option value="none_match">No match</option>
+                <option value="needs_research">Needs research</option>
+                <option value="follow_up">Follow-up</option>
+            </select>
         </div>
         <div id="statsBar" class="stats-bar" aria-label="Run statistics" x-html="statsHtml"></div>
         <p id="loadStatus" class="load-status" role="status" aria-live="polite" x-text="loadStatus"
