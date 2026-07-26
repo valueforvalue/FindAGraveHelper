@@ -497,6 +497,19 @@ h1 {
 .icon-check { color: var(--success); font-weight: 700; }
 .icon-cross { color: #ef4444; font-weight: 700; }
 
+.exported-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    white-space: nowrap;
+    background: #dbeafe;
+    color: #1e40af;
+    padding: 1px 8px;
+}
+
 .candidate-section-header {
     display: flex;
     justify-content: space-between;
@@ -990,6 +1003,9 @@ kbd {
         <div class="filter-row">
             <button class="button sm" type="button" id="collapseAll" @click="collapseAll">− All</button>
             <button class="button sm" type="button" id="expandAll" @click="expandAll">+ All</button>
+            <label style="font-size:0.78rem;display:inline-flex;align-items:center;gap:0.25rem;">
+                <input type="checkbox" x-model="hideExported"> Hide exported
+            </label>
             <input type="text" id="searchFilter" x-model="searchFilter"
                    placeholder="Filter name, regiment…"
                    style="border:1px solid var(--line-strong); border-radius:var(--radius);
@@ -1039,6 +1055,7 @@ kbd {
                 <div class="collapsed-summary" x-data="{ d: decisionFor(record.id), label: decisionLabel(decisionFor(record.id)) }">
                     <span class="status-pill" :class="record.status" x-text="record.status"></span>
                     <span class="decision-pill" :class="label" x-text="label"></span>
+                    <span class="exported-badge" x-show="ddExported.has(String(record.id))">✓ Exported</span>
                     <span x-text="'TOP 1: ' + (record.candidates[0] ? (Number(record.candidates[0].score || 0).toFixed(2) + '  ' + record.candidates[0].title + (record.candidates[0].attributes?.birth_year ? ' · ' + record.candidates[0].attributes.birth_year + '–' + (record.candidates[0].attributes.death_year || '?') : '') + (record.candidates[0].attributes?.state ? ' · ' + record.candidates[0].attributes.state : '')) : 'no candidates')"></span>
                     <div class="corroboration-line">
                         <span x-text="'CGR ' + (record.corroboration?.cgr?.length || 0) + ' match' + ((record.corroboration?.cgr?.length || 0) === 1 ? '' : 'es')"></span>
@@ -1097,6 +1114,7 @@ kbd {
                             <span class="eyebrow">Decision</span>
                             <span class="decision-pill" :class="decisionLabel(decisionFor(record.id))"
                                   x-text="decisionLabel(decisionFor(record.id))"></span>
+                            <span class="exported-badge" x-show="ddExported.has(String(record.id))">✓ Exported</span>
                         </div>
                     </div>
                     <div class="corroboration-summary">
@@ -1263,6 +1281,8 @@ function reviewApp() {
         // ── State ──
         records: [],
         decisions: {},
+        ddExported: new Set(),
+        hideExported: false,
         sourceLabel: 'results.jsonl',
         recordsFingerprint: 'empty',
         collapsedRecords: new Set(),
@@ -1334,6 +1354,7 @@ function reviewApp() {
             const search = (this.searchFilter || '').toLowerCase();
             return this.records.filter(r => {
                 if (this.engineFilter !== 'all' && r.engine !== this.engineFilter) return false;
+                if (this.hideExported && this.ddExported.has(String(r.id))) return false;
                 const label = this.decisionLabel(this.decisionFor(r.id));
                 if (this.decisionFilter !== 'all' && label !== this.decisionFilter) return false;
                 if (search) {
@@ -1375,6 +1396,7 @@ function reviewApp() {
                 this.renderedCount = CHUNK_SIZE;
                 this.loadError = false;
                 this.loadStoredDecisions();
+                this.loadDdExported();
                 this.loadStatus = 'Loaded ' + this.plural(this.records.length, 'record') + ' from ' + (label || 'results.jsonl') + '.';
                 this.scheduleRemainingChunks();
                 return this.records;
@@ -1645,6 +1667,18 @@ function reviewApp() {
         saveDecisions() {
             try {
                 localStorage.setItem(this.decisionsStorageKey(), JSON.stringify(this.decisions));
+            } catch (_) {}
+        },
+
+        loadDdExported() {
+            try {
+                this.ddExported = new Set(JSON.parse(localStorage.getItem(this.decisionsStorageKey() + '_dd_exported') || '[]'));
+            } catch (_) { this.ddExported = new Set(); }
+        },
+
+        saveDdExported() {
+            try {
+                localStorage.setItem(this.decisionsStorageKey() + '_dd_exported', JSON.stringify([...this.ddExported]));
             } catch (_) {}
         },
 
@@ -2042,6 +2076,7 @@ function reviewApp() {
             this.renderedCount = CHUNK_SIZE;
             this.loadError = false;
             this.loadStoredDecisions();
+            this.loadDdExported();
             this.loadStatus = 'Loaded ' + this.plural(this.records.length, 'record') + ' from ' + label + '.';
             this.scheduleRemainingChunks();
         },
@@ -2443,6 +2478,12 @@ function reviewApp() {
         exportDixieData() {
             const blob = new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
             this.downloadBlob(blob, 'memorials_dixiedata_memorial_v1.json');
+            // Mark all picked records as exported
+            for (const record of this.records) {
+                const d = this.decisions[String(record.id)];
+                if (d?.memorial_id) this.ddExported.add(String(record.id));
+            }
+            this.saveDdExported();
         },
 
         exportScraperFile() {
