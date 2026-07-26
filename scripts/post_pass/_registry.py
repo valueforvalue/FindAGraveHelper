@@ -134,7 +134,7 @@ POST_PASSES: list[tuple[str, PassCallable, PassFactory]] = [
             view_copy.config_from(
                 ctx.config,
                 dest_dir=ctx.out_dir,
-                results_path=ctx.state_repo.path,
+                results_path=ctx.out_dir / "results.jsonl",
                 dd_match_path=ctx.out_dir / "dd_match.json",
                 source=ctx.view_html_source,
             ),
