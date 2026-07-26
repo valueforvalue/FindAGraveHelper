@@ -1914,9 +1914,9 @@ function reviewApp() {
         },
 
         focusCard(card) {
-            const heading = card.querySelector('h2');
-            (heading || card).scrollIntoView({ behavior: 'smooth', block: 'start' });
-            heading?.focus({ preventScroll: true });
+            const identity = card.querySelector('.record-identity, h2');
+            identity?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            card.querySelector('h2')?.focus({ preventScroll: true });
         },
 
         openLightbox(src, alt) {
