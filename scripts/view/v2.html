@@ -317,6 +317,7 @@ h1 {
     border-radius: var(--radius);
     background: var(--paper);
     box-shadow: var(--shadow);
+    scroll-margin-top: 7rem;
 }
 
 .welcome {
@@ -1905,7 +1906,7 @@ function reviewApp() {
         },
 
         focusCard(card) {
-            card.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            card.scrollIntoView({ behavior: 'smooth', block: 'start' });
             card.querySelector('h2')?.focus({ preventScroll: true });
         },
 
