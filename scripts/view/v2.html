@@ -981,10 +981,8 @@ kbd {
         <div class="header-top">
             <h1 id="runTitle" x-text="runTitle">Search results</h1>
             <div class="header-actions">
-                <label class="file-picker">
-                    Open results
-                    <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)">
-                </label>
+                <button class="button primary" type="button" id="loadResultsBtn" @click="autoLoadResults">Open results</button>
+                <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)" hidden>
                 <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
@@ -1987,6 +1985,20 @@ function reviewApp() {
             if (!file) return;
             this.loadFile(file);
             event.target.value = '';
+        },
+
+        async autoLoadResults() {
+            // Try fetching results.jsonl from same directory
+            try {
+                const resp = await fetch('results.jsonl');
+                if (resp.ok) {
+                    this.loadFromText(await resp.text(), 'results.jsonl');
+                    await this.tryAutoLoadSidecar();
+                    return;
+                }
+            } catch (_) {}
+            // Fall back to file picker
+            document.getElementById('resultsFile').click();
         },
 
         async loadFile(file) {
