@@ -1915,7 +1915,7 @@ function reviewApp() {
 
         focusCard(card) {
             const heading = card.querySelector('h2');
-            (heading || card).scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            (heading || card).scrollIntoView({ behavior: 'smooth', block: 'start' });
             heading?.focus({ preventScroll: true });
         },
 
