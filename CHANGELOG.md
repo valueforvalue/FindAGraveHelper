@@ -9,6 +9,11 @@ All notable changes to this project.
 - Add an **Export for DixieData** button to `scripts/view/v2.html` that downloads picked memorials in the exact `memorial_v1` envelope (`format_version`, `script_version`, `script_name`, `entries`) while preserving the existing scraper export (#131).
 - Browser-only candidate-name cleanup in `scripts/view/v2.html` removes FaG badges, status captions, date ranges, and `V VETERAN` markers from display, scraper export, and DixieData export (#132). Defense in depth until the parser-side fix lands.
 
+### Fixed
+
+- CI: `test_dixiedata_match_j14::test_cli_full_integration_with_zip_backup` failed because the fixture's `records.soldier_id` column did not match the production join key (`r.person_record_id`); updated fixture to use `person_record_id` (matches real dixiedata schema).
+- CI: `test_view_html_v2_sidecar::test_import_button_loads_export_json` failed because v2.html had no `#importFile` input wired to `handleImport`; added the hidden input + an "Import decisions" trigger button in the header.
+
 ### Session: scoring + view hardening (2026-07-25)
 
 Full-day session hardening widow/vet scoring, reducing false

@@ -384,12 +384,12 @@ def test_cli_full_integration_with_zip_backup(tmp_path):
     )""")
     con.execute("""
     CREATE TABLE records (
-        id INTEGER PRIMARY KEY, soldier_id INTEGER,
+        id INTEGER PRIMARY KEY, person_record_id INTEGER,
         record_type TEXT, app_id TEXT, details TEXT
     )""")
     con.execute("INSERT INTO soldiers (id, first_name, last_name) VALUES (1, 'William', 'Looney')")
     con.execute(
-        "INSERT INTO records (soldier_id, record_type, app_id, details) VALUES (1, 'Find a Grave', 'FaG ID: 50923719', '')"
+        "INSERT INTO records (person_record_id, record_type, app_id, details) VALUES (1, 'Find a Grave', 'FaG ID: 50923719', '')"
     )
     con.commit()
     con.close()

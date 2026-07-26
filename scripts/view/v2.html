@@ -1005,6 +1005,8 @@ kbd {
             <div class="header-actions">
                 <button class="button primary" type="button" id="loadResultsBtn" @click="autoLoadResults">Open results</button>
                 <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)" hidden>
+                <input type="file" id="importFile" accept=".json" @change="handleImport($event)" hidden>
+                <button class="button" type="button" id="importDecisionsBtn" @click="document.getElementById('importFile').click()">Import decisions</button>
                 <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
