@@ -982,14 +982,11 @@ kbd {
             <h1 id="runTitle" x-text="runTitle">Search results</h1>
             <div class="header-actions">
                 <label class="file-picker">
-                    Load
+                    Open results
                     <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)">
                 </label>
-                <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveStateToFile">Save state</button>
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Legacy export</button>
                 <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
-                <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Load state</button>
-                <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
             </div>
         </div>
@@ -2435,13 +2432,6 @@ function reviewApp() {
         exportDixieData() {
             const blob = new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
             this.downloadBlob(blob, 'memorials_dixiedata_memorial_v1.json');
-        },
-
-        saveStateToFile() {
-            const payload = this.buildDecisionsPayload();
-            const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-            this.downloadBlob(blob, this.runnameFromLabel() + '_state.json');
-            this.decisionsDirty = false;
         },
 
         exportScraperFile() {
