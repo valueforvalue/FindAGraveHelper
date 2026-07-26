@@ -1368,6 +1368,7 @@ function reviewApp() {
             this.loadRecords = (rawRecords, label) => {
                 this.sourceLabel = label || 'results.jsonl';
                 this.recordsFingerprint = this.hashId(JSON.stringify(rawRecords));
+                this._rawRecords = rawRecords;
                 this.records = rawRecords.map(r => this.normalizeRecordV2(r));
                 this.autoPopulateAutoAcceptDecisions();
                 this.collapsedRecords.clear();
@@ -2016,6 +2017,7 @@ function reviewApp() {
             this.sourceLabel = label || 'results.jsonl';
             const rawRecords = this.parseRecordsText(text);
             this.recordsFingerprint = this.hashId(JSON.stringify(rawRecords));
+            this._rawRecords = rawRecords;
             this.records = rawRecords.map(r => this.normalizeRecordV2(r));
             this.autoPopulateAutoAcceptDecisions();
             this.collapsedRecords.clear();
@@ -2465,30 +2467,21 @@ function reviewApp() {
             const recordsOut = [];
             for (const record of this.records) {
                 const d = this.decisions[String(record.id)] || null;
-                const entry = {
-                    pensioner_id: record.id,
-                    pensioner_name: record.title,
-                    status: record.status,
-                    best_score: record.best_score,
-                    decision: d ? {
-                        memorial_id: d.memorial_id || null,
-                        slug: d.slug || null,
-                        by: d.by || 'user',
-                        at: d.at || new Date().toISOString(),
-                        notes: d.notes || '',
-                        removed_candidates: d.removed_candidates || [],
-                        candidate_notes: d.candidate_notes || {},
-                        decision_type: d.decision_type || undefined,
-                    } : null,
-                    record_notes: record._notes || '',
-                    candidates: (record.candidates || []).map(c => ({
-                        id: c.id,
-                        title: c.title,
-                        score: c.score,
-                        attributes: c.attributes,
-                        candidate_notes: (d?.candidate_notes || {})[String(c.id)] || '',
-                    })),
-                };
+                // Clone from raw data to avoid Alpine proxy issues
+                const rawRec = (this._rawRecords || []).find(r => String(r.pensioner_id || r.id) === String(record.id));
+                const entry = rawRec ? JSON.parse(JSON.stringify(rawRec)) : {};
+                // Overlay review decisions + notes
+                entry._decision = d ? {
+                    memorial_id: d.memorial_id || null,
+                    slug: d.slug || null,
+                    by: d.by || 'user',
+                    at: d.at || new Date().toISOString(),
+                    notes: d.notes || '',
+                    removed_candidates: d.removed_candidates || [],
+                    candidate_notes: d.candidate_notes || {},
+                    decision_type: d.decision_type || undefined,
+                } : null;
+                entry._notes = record._notes || '';
                 recordsOut.push(entry);
             }
             return {
@@ -2584,24 +2577,24 @@ function reviewApp() {
             // v2 format: { version: 2, records: [...] }
             if (payload.version === 2 && Array.isArray(payload.records)) {
                 for (const entry of payload.records) {
-                    const pid = String(entry.pensioner_id);
-                    if (entry.decision) {
+                    const pid = String(entry.pensioner_id || entry.id);
+                    const dec = entry._decision;
+                    if (dec) {
                         this.decisions[pid] = {
-                            memorial_id: entry.decision.memorial_id || null,
-                            slug: entry.decision.slug || null,
-                            by: entry.decision.by || 'user',
-                            at: entry.decision.at || undefined,
-                            notes: entry.decision.notes || '',
-                            removed_candidates: entry.decision.removed_candidates || [],
-                            candidate_notes: entry.decision.candidate_notes || {},
-                            decision_type: entry.decision.decision_type || undefined,
+                            memorial_id: dec.memorial_id || null,
+                            slug: dec.slug || null,
+                            by: dec.by || 'user',
+                            at: dec.at || undefined,
+                            notes: dec.notes || '',
+                            removed_candidates: dec.removed_candidates || [],
+                            candidate_notes: dec.candidate_notes || {},
+                            decision_type: dec.decision_type || undefined,
                         };
                         count += 1;
                     }
-                    // Restore record-level notes
-                    if (entry.record_notes) {
+                    if (entry._notes) {
                         const record = this.records.find(r => String(r.id) === pid);
-                        if (record) record._notes = entry.record_notes;
+                        if (record) record._notes = entry._notes;
                     }
                 }
             }

@@ -123,11 +123,11 @@ def test_save_decisions_button_downloads_v1_export_shape(exports_page):
     assert "records" in payload
     assert len(payload["records"]) == 2
     # Auto-accepted record (201) should have a decision
-    r201 = next(r for r in payload["records"] if r["pensioner_id"] == 201)
-    assert r201["decision"]["memorial_id"] == "mem-201-a"
+    r201 = next(r for r in payload["records"] if (r.get("pensioner_id") or r.get("id")) == 201)
+    assert r201["_decision"]["memorial_id"] == "mem-201-a"
     # No-match record (202) should have decision with null memorial_id
-    r202 = next(r for r in payload["records"] if r["pensioner_id"] == 202)
-    assert r202["decision"]["memorial_id"] is None
+    r202 = next(r for r in payload["records"] if (r.get("pensioner_id") or r.get("id")) == 202)
+    assert r202["_decision"]["memorial_id"] is None
 
 
 def test_export_picks_button_downloads_scraper_shape(exports_page):
