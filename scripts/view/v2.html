@@ -325,6 +325,11 @@ h1 {
     overflow: hidden;
 }
 
+.auto-accept-card {
+    border-left: 4px solid var(--success);
+    background: linear-gradient(to right, var(--success-soft), var(--paper) 2rem);
+}
+
 .record-identity,
 .record-status,
 .record-candidates,
@@ -974,7 +979,7 @@ kbd {
                 </label>
                 <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveDecisionsToFile">Save decisions</button>
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Export picks</button>
-                <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieDataFile">Export for DixieData</button>
+                <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">Export for DixieData</button>
                 <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Import decisions</button>
                 <input type="file" id="importFile" x-ref="importFile" accept=".json" hidden @change="handleImport($event)">
                 <button class="button feedback-btn" type="button" @click="showFeedback = true">Feedback</button>
@@ -1018,6 +1023,7 @@ kbd {
     <div class="welcome" x-show="!records.length">No search records loaded.</div>
     <template x-for="(record, idx) in chunkedRecords" :key="record.id">
         <article class="record-card" :data-record-id="record.id"
+                 :class="{ 'auto-accept-card': record.status === 'auto_accept' }"
                  :aria-labelledby="'record-' + hashId(record.id) + '-heading'">
             <!-- Collapsed state -->
             <template x-if="collapsedRecords.has(String(record.id))">
@@ -1391,7 +1397,8 @@ function reviewApp() {
                 const sources = [];
                 if (r.attributes?.pensioncard_url) sources.push('<a href="#">→ source card</a>');
                 if (r.attributes?.source_url) sources.push('<a href="#">↗ View source</a>');
-                return `<article class="record-card" data-record-id="${this.escapeHtml(r.id)}">
+                const autoClass = r.status === 'auto_accept' ? ' auto-accept-card' : '';
+                return `<article class="record-card${autoClass}" data-record-id="${this.escapeHtml(r.id)}">
                     <section class="record-identity">
                         <span class="engine-badge ${this.escapeHtml(r.engine || 'findagrave')}">${this.escapeHtml(r.engine || 'findagrave')}</span>
                         <h2>${this.escapeHtml(r.title || 'Unnamed record')}</h2>
@@ -2402,7 +2409,7 @@ function reviewApp() {
             return new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
         },
 
-        exportDixieDataFile() {
+        exportDixieData() {
             const blob = new Blob([JSON.stringify(this.buildDixieDataPayload(), null, 2)], { type: 'application/json' });
             this.downloadBlob(blob, 'memorials_dixiedata_memorial_v1.json');
         },
