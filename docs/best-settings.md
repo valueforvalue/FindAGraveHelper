@@ -70,3 +70,41 @@ PYTHONPATH=. python scripts/pipeline/run_unified.py \
 | Spouse verified | 3/5 widows |
 | Memorial CSA signals | 6/10 |
 | State extraction | 20/20 all candidates |
+
+## DixieData matching (post-run)
+
+DD matching is a post-pass step that requires the `dixiedata.db` file
+in the repo root. It runs AFTER the pipeline completes and enriches
+results with DD memorial cross-references.
+
+```bash
+# After a run completes, run the DD post-passes:
+DIXIEDATA_DB=dixiedata.db PYTHONPATH=. python -c "
+import sys, logging, json
+sys.path.insert(0, '.')
+logging.basicConfig(level=logging.INFO, format='%(message)s')
+
+from pathlib import Path
+from scripts.state.repository import JsonlStateRepository
+from scripts.blackboard.store import SqliteBlackboardStore
+from scripts.post_pass import dd as dd_pass
+from scripts.post_pass import observation_enrichment as enrich_pass
+
+out_dir = Path('output/YOUR_RUN_NAME')
+state_repo = JsonlStateRepository(out_dir / 'results.jsonl')
+log = logging.getLogger('dd')
+
+store = SqliteBlackboardStore(out_dir / 'blackboard.db')
+store.open()
+try:
+    dd_pass.run(state_repo, store, config=dd_pass.DDConfig(db_path=Path('dixiedata.db')), run_id='dd-post', log=log)
+    enrich_pass.run(state_repo, store, config=enrich_pass.ObservationEnrichmentConfig(), run_id='dd-post', log=log)
+finally:
+    store.close()
+"
+
+# Regenerate view.html with DD data embedded:
+PYTHONPATH=. python scripts/pipeline/run_unified.py \
+    --config output/YOUR_RUN_NAME/config.json \
+    --post-process-only --relax-throttle-floor
+```

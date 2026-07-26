@@ -111,7 +111,7 @@ def _load_dd_from_db(db_path: Path) -> dict:
     cur.execute(
         "SELECT s.first_name, s.last_name, r.app_id, r.details, r.record_type "
         "FROM soldiers s "
-        "JOIN records r ON r.soldier_id = s.id "
+        "JOIN records r ON r.person_record_id = s.id "
         "WHERE r.record_type LIKE '%Find a Grave%' "
         "   OR r.app_id LIKE 'FaG%' "
         "   OR r.details LIKE '%findagrave.com/memorial/%'"
