@@ -112,19 +112,22 @@ def test_pensioners_to_scraper_export_excludes_undecided_records(exports_page):
 
 
 def test_save_decisions_button_downloads_v1_export_shape(exports_page):
-    """Save decisions Blob matches today's decisions.json schema."""
+    """Save state Blob matches current state.json schema."""
     blob_json = exports_page.evaluate("async () => {"
         "  const blob = await window.ViewV2.buildDecisionsBlob();"
         "  return await blob.text();"
         "}")
     payload = json.loads(blob_json)
-    assert payload["version"] == 1
+    assert payload["version"] == 2
     assert "exported_at" in payload
-    assert "decisions" in payload
-    assert "201" in payload["decisions"]
-    assert "202" in payload["decisions"]
-    assert payload["decisions"]["201"]["decision"]["memorial_id"] == "mem-201-a"
-    assert payload["decisions"]["202"]["decision"]["memorial_id"] is None
+    assert "records" in payload
+    assert len(payload["records"]) == 2
+    # Auto-accepted record (201) should have a decision
+    r201 = next(r for r in payload["records"] if r["pensioner_id"] == 201)
+    assert r201["decision"]["memorial_id"] == "mem-201-a"
+    # No-match record (202) should have decision with null memorial_id
+    r202 = next(r for r in payload["records"] if r["pensioner_id"] == 202)
+    assert r202["decision"]["memorial_id"] is None
 
 
 def test_export_picks_button_downloads_scraper_shape(exports_page):

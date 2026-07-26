@@ -985,7 +985,7 @@ kbd {
                     Load
                     <input type="file" id="resultsFile" accept=".jsonl,.json" @change="handleFilePick($event)">
                 </label>
-                <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveDecisionsToFile">Save review</button>
+                <button class="button primary" type="button" id="saveDecisionsBtn" @click="saveStateToFile">Save state</button>
                 <button class="button" type="button" id="exportPicksBtn" @click="exportScraperFile">Legacy export</button>
                 <button class="button" type="button" id="exportDixieDataBtn" @click="exportDixieData">DD export</button>
                 <button class="button" type="button" id="importBtn" @click="$refs.importFile.click()">Load review</button>
@@ -2437,10 +2437,10 @@ function reviewApp() {
             this.downloadBlob(blob, 'memorials_dixiedata_memorial_v1.json');
         },
 
-        saveDecisionsToFile() {
+        saveStateToFile() {
             const payload = this.buildDecisionsPayload();
             const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-            this.downloadBlob(blob, 'decisions_' + this.runnameFromLabel() + '.json');
+            this.downloadBlob(blob, this.runnameFromLabel() + '_state.json');
             this.decisionsDirty = false;
         },
 
@@ -2464,12 +2464,15 @@ function reviewApp() {
         },
 
         buildDecisionsPayload() {
-            const decisionsOut = {};
-            for (const [pid, d] of Object.entries(this.decisions)) {
-                const record = this.records.find(r => String(r.id) === pid);
-                if (!record) continue;
-                decisionsOut[pid] = {
-                    decision: {
+            const recordsOut = [];
+            for (const record of this.records) {
+                const d = this.decisions[String(record.id)] || null;
+                const entry = {
+                    pensioner_id: record.id,
+                    pensioner_name: record.title,
+                    status: record.status,
+                    best_score: record.best_score,
+                    decision: d ? {
                         memorial_id: d.memorial_id || null,
                         slug: d.slug || null,
                         by: d.by || 'user',
@@ -2478,22 +2481,25 @@ function reviewApp() {
                         removed_candidates: d.removed_candidates || [],
                         candidate_notes: d.candidate_notes || {},
                         decision_type: d.decision_type || undefined,
-                    },
-                    pensioner: { pensioner_id: record.id, pensioner_name: record.title },
-                    candidates: record.candidates,
+                    } : null,
+                    record_notes: record._notes || '',
+                    candidates: (record.candidates || []).map(c => ({
+                        id: c.id,
+                        title: c.title,
+                        score: c.score,
+                        attributes: c.attributes,
+                        candidate_notes: (d?.candidate_notes || {})[String(c.id)] || '',
+                    })),
                 };
+                recordsOut.push(entry);
             }
             return {
-                version: 1,
+                version: 2,
                 exported_at: new Date().toISOString(),
                 source_file: this.sourceLabel || 'results.jsonl',
-                stats: {
-                    total_pensioners: this.records.length,
-                    decided: Object.keys(this.decisions).length,
-                    by_status: {},
-                    by_cgr_dedup: {},
-                },
-                decisions: decisionsOut,
+                total_pensioners: this.records.length,
+                decided: Object.keys(this.decisions).length,
+                records: recordsOut,
             };
         },
 
