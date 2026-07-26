@@ -75,6 +75,7 @@ def _ensure_searcher_run():
         [
             "python", "scripts/run_unified.py",
             "--input-csv", str(GT_CSV),
+            "--cgr", str(ROOT / "docs" / "research" / "cgr" / "ok_vets_enriched.jsonl"),
             "--out", str(GT_OUT_DIR),
             "--limit", "50",
         ],

@@ -35,7 +35,32 @@ _FAG_BOILERPLATE_STRS = [
     "drag images here",
     "Photo added by",
     "ADVERTISEMENT",
+    "No grave photo",
+    "No grave photo.",
+    "Birth and death dates unknown.",
+    "Birth and death dates unknown",
+    "Birth unknown",
+    "Death unknown",
+    "HONORING",
+    "IN MEMORY OF",
+    "IN LOVING MEMORY OF",
+    "IN HONOR OF",
+    "REST IN PEACE",
 ]
+
+# Noise prefix patterns: memorial tributes that prepend to names.
+# e.g. "HONORING Permelia Malcom BIRTH 1845 DEATH 1935"
+_NOISE_PREFIX_RE = re.compile(
+    r'^(?:HONORING|IN\s+MEMORY\s+OF|IN\s+LOVING\s+MEMORY\s+OF|IN\s+HONOR\s+OF|'
+    r'REST\s+IN\s+PEACE|SPONSORED)\s+',
+    re.IGNORECASE,
+)
+
+# Date-like noise: "BIRTH 1845 DEATH 1935" trailing after a name.
+_DATE_NOISE_RE = re.compile(
+    r'\s*(?:BIRTH|DEATH|BORN|DIED)\s*\d{4}',
+    re.IGNORECASE,
+)
 
 
 def _strip_fag_boilerplate(text: str) -> str:
@@ -170,6 +195,12 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         name_display = lines[0] if lines else slug.replace('-', ' ').title()
         # Strip the "V Veteran" marker from the name
         name_display = re.sub(r'\s*V\s*Veteran\s*$', '', name_display, flags=re.I)
+        # Strip noise prefixes (HONORING, IN MEMORY OF, etc.)
+        name_display = _NOISE_PREFIX_RE.sub('', name_display)
+        # Strip date noise (BIRTH 1845 DEATH 1935)
+        name_display = _DATE_NOISE_RE.sub('', name_display)
+        # Strip year ranges trailing name ("John Smith 1840 – 1920")
+        name_display = re.sub(r'\s*\d{4}\s*[–\-]\s*(?:\d{4}|\d{1,2}\s+\w+\s+\d{4}).*$', '', name_display)
         name_display = name_display.strip()
         if not name_display:
             name_display = slug.replace('-', ' ').title()
