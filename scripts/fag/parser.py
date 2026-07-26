@@ -193,14 +193,18 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
 
         # The name is the first line; subsequent lines are flags/dates
         name_display = lines[0] if lines else slug.replace('-', ' ').title()
-        # Strip the "V Veteran" marker from the name
-        name_display = re.sub(r'\s*V\s*Veteran\s*$', '', name_display, flags=re.I)
-        # Strip noise prefixes (HONORING, IN MEMORY OF, etc.)
+        # Strip noise prefixes (HONORING, IN MEMORY OF, SPONSORED, etc.)
         name_display = _NOISE_PREFIX_RE.sub('', name_display)
-        # Strip date noise (BIRTH 1845 DEATH 1935)
-        name_display = _DATE_NOISE_RE.sub('', name_display)
+        # Strip mid-string SPONSORED + trailing text
+        name_display = re.sub(r'\s+SPONSORED\b.*$', '', name_display, flags=re.I)
+        # Strip the "V Veteran" marker from the name (mid-string or end)
+        name_display = re.sub(r'\s*V\s+Veteran\b', '', name_display, flags=re.I)
+        # Strip trailing partial dates after name ("1 Aug", "27 Apr 1842", etc.)
+        name_display = re.sub(r'\s+(?:\d{1,2}\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s*(?:\d{4})?\s*$', '', name_display, flags=re.I)
         # Strip year ranges trailing name ("John Smith 1840 – 1920")
         name_display = re.sub(r'\s*\d{4}\s*[–\-]\s*(?:\d{4}|\d{1,2}\s+\w+\s+\d{4}).*$', '', name_display)
+        # Strip trailing dash/em-dash residue from year range removal
+        name_display = re.sub(r'\s*[–\-]\s*$', '', name_display)
         name_display = name_display.strip()
         if not name_display:
             name_display = slug.replace('-', ' ').title()
