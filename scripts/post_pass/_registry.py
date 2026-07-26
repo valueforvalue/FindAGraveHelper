@@ -135,6 +135,7 @@ POST_PASSES: list[tuple[str, PassCallable, PassFactory]] = [
                 ctx.config,
                 dest_dir=ctx.out_dir,
                 results_path=ctx.state_repo.path,
+                dd_match_path=ctx.out_dir / "dd_match.json",
                 source=ctx.view_html_source,
             ),
             {"log": ctx.log},

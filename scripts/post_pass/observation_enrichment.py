@@ -12,9 +12,11 @@ identically to before the slice.
 """
 from __future__ import annotations
 
+import json
 import logging
 import time
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any, Protocol
 
 from scripts.post_pass._ids import deterministic_observation_id
@@ -133,6 +135,20 @@ def run(
             "Enriched %d state rows with CGR/DD/spouse observations.",
             enriched,
         )
+
+    # Write DD match sidecar for view_copy embed (issue #134).
+    if dd_by_pid:
+        repo_path = getattr(state_repo, "path", None)
+        if repo_path:
+            dd_path = Path(repo_path).parent / "dd_match.json"
+            try:
+                dd_path.write_text(
+                    json.dumps(dd_by_pid, indent=2, default=str),
+                    encoding="utf-8",
+                )
+                log.info("Wrote dd_match.json sidecar with %d entries.", len(dd_by_pid))
+            except Exception as exc:
+                log.warning("Failed to write dd_match.json: %s", exc)
 
     return PostPassStats(
         name="observation_enrichment",
