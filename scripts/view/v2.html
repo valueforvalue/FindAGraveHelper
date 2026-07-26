@@ -1865,33 +1865,37 @@ function reviewApp() {
             if (this.isTextInputFocused()) return;
             if (event.ctrlKey || event.metaKey || event.altKey) return;
 
-            const cards = Array.from(document.querySelectorAll('.record-card'))
-                .filter(c => c.offsetParent !== null && getComputedStyle(c).display !== 'none');
-            if (!cards.length) return;
+            const visible = this.visibleRecords;
+            if (!visible.length) return;
+
+            // Clamp index to valid range (handles lazy render + hide-exported)
+            this.focusedRecordIndex = Math.max(0, Math.min(this.focusedRecordIndex, visible.length - 1));
 
             switch (event.key) {
                 case 'j':
                 case 'ArrowDown':
                     event.preventDefault();
-                    this.focusedRecordIndex = Math.min(this.focusedRecordIndex + 1, cards.length - 1);
-                    this.focusCard(cards[this.focusedRecordIndex]);
+                    this.focusedRecordIndex = Math.min(this.focusedRecordIndex + 1, visible.length - 1);
+                    this.scrollToRecord(visible[this.focusedRecordIndex]);
                     break;
                 case 'k':
                 case 'ArrowUp':
                     event.preventDefault();
                     this.focusedRecordIndex = Math.max(this.focusedRecordIndex - 1, 0);
-                    if (this.focusedRecordIndex >= 0) this.focusCard(cards[this.focusedRecordIndex]);
+                    this.scrollToRecord(visible[this.focusedRecordIndex]);
                     break;
                 case 'p':
                     event.preventDefault();
-                    if (this.focusedRecordIndex >= 0 && this.focusedRecordIndex < cards.length) {
-                        cards[this.focusedRecordIndex].querySelector('button.primary')?.click();
+                    if (this.focusedRecordIndex >= 0 && this.focusedRecordIndex < visible.length) {
+                        const card = document.querySelector(`.record-card[data-record-id="${visible[this.focusedRecordIndex].id}"]`);
+                        card?.querySelector('button.primary')?.click();
                     }
                     break;
                 case 'n':
                     event.preventDefault();
-                    if (this.focusedRecordIndex >= 0 && this.focusedRecordIndex < cards.length) {
-                        const btns = cards[this.focusedRecordIndex].querySelectorAll('button');
+                    if (this.focusedRecordIndex >= 0 && this.focusedRecordIndex < visible.length) {
+                        const card = document.querySelector(`.record-card[data-record-id="${visible[this.focusedRecordIndex].id}"]`);
+                        const btns = card?.querySelectorAll('button') || [];
                         for (const btn of btns) {
                             if (btn.textContent === 'No match') { btn.click(); break; }
                         }
@@ -1913,13 +1917,22 @@ function reviewApp() {
             return el.isContentEditable;
         },
 
-        focusCard(card) {
+        scrollToRecord(record) {
+            // Ensure record is rendered (lazy loading)
+            const idx = this.visibleRecords.indexOf(record);
+            if (idx >= this.renderedCount) {
+                this.renderedCount = idx + CHUNK_SIZE;
+                this.$nextTick(() => this._scrollToRecordCard(record));
+                return;
+            }
+            this._scrollToRecordCard(record);
+        },
+
+        _scrollToRecordCard(record) {
+            const card = document.querySelector(`.record-card[data-record-id="${record.id}"]`);
+            if (!card) return;
             const identity = card.querySelector('.record-identity, h2');
-            if (!identity) return;
-            const rect = identity.getBoundingClientRect();
-            const toolbarH = 72; // ~4.5rem
-            if (rect.top >= toolbarH && rect.top < toolbarH + 50) return; // already in position
-            identity.scrollIntoView({ behavior: 'auto', block: 'start' });
+            identity?.scrollIntoView({ behavior: 'auto', block: 'start' });
             card.querySelector('h2')?.focus({ preventScroll: true });
         },
 
