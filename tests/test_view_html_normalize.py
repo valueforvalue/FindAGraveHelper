@@ -182,7 +182,74 @@ def test_normalize_record_defaults_missing_engine_and_collections(normalization_
     }
 
 
-def test_normalize_v2_reads_common_key_when_present(normalization_page):
+def test_clean_candidate_name_strips_fag_presentation_noise(normalization_page):
+    """Defense-in-depth cleaner removes FaG badges, captions, date ranges, status notes."""
+    cases = [
+        ("Rev Hugh H Akers 4 Jul 1846 – 29 Apr 1924", "Rev Hugh H Akers"),
+        ("Harold T. Akers V VETERAN", "Harold T. Akers"),
+        ("No grave photo Henry Beecher Akers Jr.", "Henry Beecher Akers Jr."),
+        ("Eliza H Dillard Akers Flowers have been left.", "Eliza H Dillard Akers"),
+        ("HONORING Elizabeth Young BIRTH 1808 DEATH 1878", "Elizabeth Young"),
+        ("John Henry Gamblin SPONSORED", "John Henry Gamblin"),
+        ("Martha E Beaumont Garner No grave photo", "Martha E Beaumont Garner"),
+        ("Corp J H Akers Birth and death dates unknown.", "Corp J H Akers"),
+        ("Outlaw V Anderson", "Outlaw V Anderson"),
+        ("Alvin O Andrews Jr.", "Alvin O Andrews Jr."),
+        ("Adam Joseph “Buddy” Andrews", "Adam Joseph “Buddy” Andrews"),
+        ("", ""),
+    ]
+
+    for raw, expected in cases:
+        actual = normalization_page.evaluate(
+            "name => window.ViewV2.cleanCandidateName(name)", raw
+        )
+        assert actual == expected, (raw, actual, expected)
+
+
+def test_clean_candidate_name_runs_in_normalize_and_exports(normalization_page):
+    """Both scraper export and DixieData export see cleaned candidate names."""
+    payload = {
+        "pensioner_id": 401,
+        "pensioner_name": "Pensioner",
+        "pensioner_first": "Tester",
+        "pensioner_last": "Pensioner",
+        "fag_status": "auto_accept",
+        "best_score": 0.92,
+        "fag_records": [
+            {
+                "memorial_id": "mem-401",
+                "slug": "pensioner",
+                "name": "No grave photo Tester Pensioner 1840 – 1920 Flowers have been left.",
+                "backlink": "https://www.findagrave.com/memorial/mem-401/pensioner",
+                "iiif_url": "",
+                "score": 0.92,
+                "score_breakdown": {"last": 1, "first": 0.8},
+                "details": {"birth_year": "1840", "death_year": "1920", "state": "Oklahoma"},
+            }
+        ],
+    }
+
+    normalization_page.evaluate(
+        "record => window.ViewV2.loadRecords([record], 'noise.jsonl')", payload
+    )
+    normalization_page.evaluate(
+        "() => { const d = window.ViewV2.getDecisions();"
+        " d['401'] = { memorial_id: 'mem-401', at: '2026-07-26T02:00:00.000Z' }; }"
+    )
+
+    names = normalization_page.evaluate(
+        "() => {"
+        " const scraper = window.ViewV2.pensionersToScraperExport("
+        "     window.ViewV2.getRecords(), window.ViewV2.getDecisions()"
+        " )[0];"
+        " const dixi = window.ViewV2.buildDixieDataPayload().entries[0];"
+        " return { scraper: scraper.name, dixi: dixi.name };"
+        "}"
+    )
+
+    assert names == {"scraper": "Tester Pensioner", "dixi": "Tester Pensioner"}
+
+
     """When record has common key, normalizeRecordV2 uses it directly."""
     record = {
         "pensioner_id": 42,

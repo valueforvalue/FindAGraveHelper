@@ -2044,10 +2044,50 @@ function reviewApp() {
             return this.normalizeRecord(rec);
         },
 
+        cleanCandidateName(rawName) {
+            const raw = (rawName == null ? '' : String(rawName)).trim();
+            if (!raw) return '';
+            const monthDays = '(?:\\d{1,2}\\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec|January|February|March|April|June|July|August|September|October|November|December)';
+            const rangeWithMonths = new RegExp(
+                `\\s*(?:(?:${monthDays}\\s*)?\\d{4})?\\s*[\\u2013\\-]\\s*(?:(?:${monthDays}\\s*)?\\d{4}|(?:Birth and death dates unknown\\.?|unknown))\\s*$`,
+                'i'
+            );
+            const labelRange = /\s*BIRTH\s+\d{4}\s+DEATH\s+\d{4}\s*$/i;
+            const labelSingle = /\s*(?:BIRTH|DEATH)\s+\d{4}\s*$/i;
+            const veteranMarker = /\s*V\s*VETERAN\s*$/i;
+            const photoStatus = /^(?:No\s*grave\s*photo|Photo\s*requested|Photo\s*rejected)\s*/i;
+            const captionPrefix = /^\s*(?:HONORING|IN\s+MEMORY\s+OF|IN\s+LOVING\s+MEMORY\s+OF|IN\s+HONOR\s+OF|REST\s+IN\s+PEACE)\s*/i;
+            const trailingStatus = new RegExp(
+                '\\s+(?:No\\s*grave\\s*photo|Photo\\s*requested|Photo\\s*rejected)\\s*$',
+                'i'
+            );
+            const trailingCaptions = new RegExp(
+                '\\s+(?:SPONSORED|Leave\\s+a\\s+flower|Leave\\s+flowers|Flowers\\s+have\\s+been\\s+left\\.?|Birth\\s+and\\s+death\\s+dates\\s+unknown\\.?)\\s*$',
+                'i'
+            );
+            let cleaned = raw;
+            for (let i = 0; i < 3; i++) {
+                const next = cleaned
+                    .replace(rangeWithMonths, '')
+                    .replace(labelRange, '')
+                    .replace(labelSingle, '')
+                    .replace(veteranMarker, '')
+                    .replace(photoStatus, '')
+                    .replace(captionPrefix, '')
+                    .replace(trailingStatus, '')
+                    .replace(trailingCaptions, '')
+                    .replace(/\s{2,}/g, ' ')
+                    .trim();
+                if (next === cleaned) break;
+                cleaned = next;
+            }
+            return cleaned;
+        },
+
         normalizeRecord(rec) {
             const candidates = (rec.fag_records || rec.ranked_candidates || []).map(c => ({
                 id: c.memorial_id,
-                title: c.name || '',
+                title: this.cleanCandidateName(c.name || ''),
                 url: c.backlink || '',
                 score: c.score || 0,
                 search_url: c.search_url || '',
@@ -2222,7 +2262,7 @@ function reviewApp() {
 
             return {
                 memorial_id: candidate.id || '',
-                name: candidate.title || '',
+                name: this.cleanCandidateName(candidate.title || ''),
                 url: candidate.url || '',
                 birth_date: by, death_date: dy, death_age: deathAge,
                 death_location: '', birth_location: '',

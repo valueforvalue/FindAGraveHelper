@@ -7,6 +7,7 @@ All notable changes to this project.
 ### Added
 
 - Add an **Export for DixieData** button to `scripts/view/v2.html` that downloads picked memorials in the exact `memorial_v1` envelope (`format_version`, `script_version`, `script_name`, `entries`) while preserving the existing scraper export (#131).
+- Browser-only candidate-name cleanup in `scripts/view/v2.html` removes FaG badges, status captions, date ranges, and `V VETERAN` markers from display, scraper export, and DixieData export (#132). Defense in depth until the parser-side fix lands.
 
 ### Session: scoring + view hardening (2026-07-25)
 
