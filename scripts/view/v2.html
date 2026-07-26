@@ -489,6 +489,9 @@ h1 {
     margin-top: 0.55rem;
 }
 
+.icon-check { color: var(--success); font-weight: 700; }
+.icon-cross { color: #ef4444; font-weight: 700; }
+
 .candidate-section-header {
     display: flex;
     justify-content: space-between;
@@ -1046,8 +1049,8 @@ kbd {
                     <span x-text="'TOP 1: ' + (record.candidates[0] ? (Number(record.candidates[0].score || 0).toFixed(2) + '  ' + record.candidates[0].title + (record.candidates[0].attributes?.birth_year ? ' · ' + record.candidates[0].attributes.birth_year + '–' + (record.candidates[0].attributes.death_year || '?') : '') + (record.candidates[0].attributes?.state ? ' · ' + record.candidates[0].attributes.state : '')) : 'no candidates')"></span>
                     <div class="corroboration-line">
                         <span x-text="'CGR ' + (record.corroboration?.cgr?.length || 0) + ' match' + ((record.corroboration?.cgr?.length || 0) === 1 ? '' : 'es')"></span>
-                        · DD tracked <span x-text="(record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id) ? '✓ #' + record.corroboration.dd_match.dd_memorial_id : '✗'"></span>
-                        · Spouse known <span x-text="(record.attributes?.spouse?.first && record.attributes?.spouse?.last) ? '✓' : '✗'"></span>
+                        · DD tracked <span x-show="record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id" class="icon-check">✓ #<span x-text="record.corroboration?.dd_match?.dd_memorial_id"></span></span><span x-show="!(record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id)" class="icon-cross">✗</span>
+                        · Spouse known <span x-show="record.attributes?.spouse?.first && record.attributes?.spouse?.last" class="icon-check">✓</span><span x-show="!(record.attributes?.spouse?.first && record.attributes?.spouse?.last)" class="icon-cross">✗</span>
                     </div>
                 </div>
             </template>
@@ -1105,8 +1108,8 @@ kbd {
                     </div>
                     <div class="corroboration-summary">
                         <span x-text="'CGR ' + plural(record.corroboration?.cgr?.length || 0, 'match')"></span>
-                        <span x-text="'DD tracked ' + ((record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id) ? '✓' : '✗')"></span>
-                        <span x-text="'Spouse known ' + ((record.attributes?.spouse?.first && record.attributes?.spouse?.last) ? '✓' : '✗')"></span>
+                        <span>DD tracked <span x-show="record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id" class="icon-check">✓</span><span x-show="!(record.corroboration?.dd_match && record.corroboration.dd_match.dd_memorial_id)" class="icon-cross">✗</span></span>
+                        <span>Spouse known <span x-show="record.attributes?.spouse?.first && record.attributes?.spouse?.last" class="icon-check">✓</span><span x-show="!(record.attributes?.spouse?.first && record.attributes?.spouse?.last)" class="icon-cross">✗</span></span>
                     </div>
                 </section>
                 <section class="record-candidates" :aria-labelledby="'record-' + hashId(record.id) + '-heading'">
