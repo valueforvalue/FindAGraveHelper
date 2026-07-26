@@ -208,6 +208,10 @@ def parse_results_page(page: Page) -> tuple[int, list[dict]]:
         name_display = re.sub(r'\s+(?:\d{1,2}\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s*(?:\d{4})?\s*$', '', name_display, flags=re.I)
         # Strip year ranges trailing name ("John Smith 1840 – 1920")
         name_display = re.sub(r'\s*\d{4}\s*[–\-—]\s*(?:\d{4}|\d{1,2}\s+\w+\s+\d{4}).*$', '', name_display)
+        # Strip full date ranges ("1 Aug 1878 – 5 Dec 1905")
+        name_display = re.sub(
+            r'\s+(?:\d{1,2}\s+)?(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w*\s+\d{4}'
+            r'\s*[–\-—]\s*.*$', '', name_display, flags=re.I)
         # Strip trailing dash/em-dash residue from year range removal
         name_display = re.sub(r'\s*[–\-]\s*$', '', name_display)
         name_display = name_display.strip()
