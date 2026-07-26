@@ -325,11 +325,6 @@ h1 {
     overflow: hidden;
 }
 
-.auto-accept-card {
-    border-left: 4px solid var(--success);
-    background: linear-gradient(to right, var(--success-soft), var(--paper) 2rem);
-}
-
 .record-identity,
 .record-status,
 .record-candidates,
@@ -528,6 +523,11 @@ h1 {
 
 .candidate-row.picked {
     background: var(--success-soft);
+}
+
+.candidate-row.auto-picked {
+    border-left: 4px solid var(--success);
+    background: linear-gradient(to right, var(--success-soft), var(--paper) 1.5rem);
 }
 
 .candidate-row.removed {
@@ -1023,7 +1023,6 @@ kbd {
     <div class="welcome" x-show="!records.length">No search records loaded.</div>
     <template x-for="(record, idx) in chunkedRecords" :key="record.id">
         <article class="record-card" :data-record-id="record.id"
-                 :class="{ 'auto-accept-card': record.status === 'auto_accept' }"
                  :aria-labelledby="'record-' + hashId(record.id) + '-heading'">
             <!-- Collapsed state -->
             <template x-if="collapsedRecords.has(String(record.id))">
@@ -1126,7 +1125,7 @@ kbd {
                         </template>
                         <template x-for="(candidate, cidx) in visibleCandidates(record)" :key="candidate.id">
                             <article class="candidate-row"
-                                     :class="{ picked: isPicked(record.id, candidate.id), removed: isRemoved(record.id, candidate.id) }"
+                                     :class="{ picked: isPicked(record.id, candidate.id), removed: isRemoved(record.id, candidate.id), 'auto-picked': record.status === 'auto_accept' && cidx === 0 }"
                                      :data-candidate-id="candidate.id">
                                 <div class="candidate-rank" x-text="'#' + (cidx + 1)"></div>
                                 <div class="candidate-main">
@@ -1397,8 +1396,7 @@ function reviewApp() {
                 const sources = [];
                 if (r.attributes?.pensioncard_url) sources.push('<a href="#">→ source card</a>');
                 if (r.attributes?.source_url) sources.push('<a href="#">↗ View source</a>');
-                const autoClass = r.status === 'auto_accept' ? ' auto-accept-card' : '';
-                return `<article class="record-card${autoClass}" data-record-id="${this.escapeHtml(r.id)}">
+                return `<article class="record-card" data-record-id="${this.escapeHtml(r.id)}">
                     <section class="record-identity">
                         <span class="engine-badge ${this.escapeHtml(r.engine || 'findagrave')}">${this.escapeHtml(r.engine || 'findagrave')}</span>
                         <h2>${this.escapeHtml(r.title || 'Unnamed record')}</h2>
