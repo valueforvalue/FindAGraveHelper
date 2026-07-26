@@ -1258,8 +1258,6 @@ kbd {
     <span><kbd>n</kbd> no match</span>
 </footer>
 
-<!--EMBEDDED_RESULTS_JSONL-->
-
 <script>
 'use strict';
 
@@ -2637,18 +2635,18 @@ function reviewApp() {
 
         // ── Auto-load ──
         async tryAutoLoad() {
-            const embedded = document.getElementById('embedded-results-jsonl');
-            if (embedded?.textContent.trim()) {
-                this.loadFromText(embedded.textContent, 'embedded results.jsonl');
+            if (window.location.protocol === 'file:') {
+                this.loadStatus = 'Open results.jsonl to begin review.';
                 return;
             }
-            if (window.location.protocol === 'file:') return;
             try {
                 const resp = await fetch('results.jsonl');
                 if (!resp.ok) return;
                 this.loadFromText(await resp.text(), 'results.jsonl');
                 await this.tryAutoLoadSidecar();
-            } catch (_) {}
+            } catch (_) {
+                this.loadStatus = 'Could not auto-load results.jsonl. Use Load button.';
+            }
         },
 
         async tryAutoLoadSidecar() {
