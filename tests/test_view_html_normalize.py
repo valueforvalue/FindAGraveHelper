@@ -154,6 +154,9 @@ def test_fag_record_normalizes_to_engine_agnostic_shape(normalization_page):
                     },
                     "raw": record["fag_records"][0],
                 },
+                # Issue #137: lifted from raw so the view can render
+                # the spouse link without digging into evidence.raw.
+                "spouse_match": None,
             }
         ],
         "corroboration": {

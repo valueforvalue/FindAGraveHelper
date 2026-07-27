@@ -485,6 +485,28 @@ html {
     padding: 1px 8px;
 }
 
+/* Issue #137: verified-spouse link to the spouse's FaG memorial. */
+.spouse-link {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 999px;
+    background: var(--accent-soft, #e0f2fe);
+    color: var(--accent, #0369a1);
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1;
+    padding: 1px 8px;
+    text-decoration: none;
+    white-space: nowrap;
+    margin-left: 4px;
+}
+
+.spouse-link:hover {
+    background: var(--accent, #0369a1);
+    color: white;
+    text-decoration: underline;
+}
+
 .status-pill.ambiguous,
 .status-pill.too_many,
 .decision-pill.none_match,
@@ -1164,6 +1186,11 @@ kbd {
                                         <span class="strategy-badge" :class="strategyBadgeClass(candidate)" x-show="strategyLabel(candidate)" x-text="strategyLabel(candidate)"></span>
                                         <span class="spouse-verified-badge" x-show="cidx === 0 && candidate.evidence?.score_breakdown?._spouse_verified">💍 verified spouse</span>
                                         <span class="spouse-match-badge" x-show="cidx === 0 && !candidate.evidence?.score_breakdown?._spouse_verified && candidate.evidence?.score_breakdown?._spouse_linked && ((candidate.evidence?.score_breakdown?.widow_pension || 0) > 0 || (candidate.evidence?.score_breakdown?.veteran || 0) > 0)">💍 spouse match</span>
+                                        <template x-if="cidx === 0 && spouseLink(candidate)">
+                                            <a class="spouse-link" :href="spouseLink(candidate).url" target="_blank" rel="noopener"
+                                               :title="'FaG memorial for verified spouse (' + spouseLink(candidate).match_strength + ' match)'"
+                                               x-text="'👫 ' + spouseLink(candidate).text"></a>
+                                        </template>
                                     </div>
                                     <div class="candidate-score-line">
                                         <span class="candidate-score" x-text="Number(candidate.score || 0).toFixed(2)"></span>
@@ -1553,6 +1580,23 @@ function reviewApp() {
                 attrs.application_number ? 'app #' + attrs.application_number : '',
                 spouseText,
             ].filter(Boolean);
+        },
+
+        // Issue #137: build a clickable link to the spouse's FaG
+        // memorial page when the top candidate was spouse-verified.
+        // Returns { text, url, match_strength } or null.
+        spouseLink(candidate) {
+            const sm = candidate?.spouse_match;
+            if (!sm || !sm.captured_memorial_id) return null;
+            const slug = sm.captured_slug || '';
+            const url = slug
+                ? `https://www.findagrave.com/memorial/${sm.captured_memorial_id}/${slug}`
+                : `https://www.findagrave.com/memorial/${sm.captured_memorial_id}`;
+            return {
+                text: sm.captured_display || 'spouse',
+                url: this.safeUrl(url),
+                match_strength: sm.match_strength || 'unknown',
+            };
         },
 
         cardUrl(record) {
@@ -2128,13 +2172,28 @@ function reviewApp() {
             if (rec.common && rec.common.candidates) {
                 const com = rec.common;
                 const legacy = this.normalizeRecord(rec);
+                // Issue #137: lift the captured spouse_match onto the
+                // top common candidate so the view can render a link
+                // to the spouse's FaG memorial. The captured_match
+                // lives in `com.candidates[0].evidence.raw.spouse_match`
+                // (the ProjectionBuilder keeps the full FaG-shape
+                // envelope under evidence.raw); rec.spouse_match at
+                // top level is NOT populated for current runs.
+                const candidates = (com.candidates || legacy.candidates).map((c, i) => {
+                    if (i !== 0) return c;
+                    const sm = c.evidence?.raw?.spouse_match || null;
+                    if (sm && c.evidence?.score_breakdown?._spouse_verified) {
+                        return { ...c, spouse_match: sm };
+                    }
+                    return c;
+                });
                 return {
                     id: com.id,
                     title: com.title,
                     engine: com.engine || 'findagrave',
                     status: com.status || legacy.status,
                     best_score: com.best_score || legacy.best_score,
-                    candidates: com.candidates || legacy.candidates,
+                    candidates,
                     attributes: legacy.attributes,
                     corroboration: {
                         cgr: com.corroboration?.cgr || legacy.corroboration?.cgr || [],
@@ -2204,6 +2263,10 @@ function reviewApp() {
                     score_breakdown: this.fagEvidenceToCommon(c.score_breakdown),
                     raw: c,
                 },
+                // Issue #137: lift spouse_match out of raw so the view
+                // can render the verified spouse as a link to their
+                // FaG memorial page without digging into evidence.raw.
+                spouse_match: c.spouse_match || null,
             }));
             let bestScore = rec.best_score || 0;
             if (!bestScore && candidates.length) {
