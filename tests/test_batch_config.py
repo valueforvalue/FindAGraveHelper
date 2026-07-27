@@ -273,3 +273,35 @@ def test_manifest_roundtrip():
     assert restored.run_id == original.run_id
     assert restored.policy_version == original.policy_version
     assert restored.knowledge_source_versions == original.knowledge_source_versions
+
+
+# ============================================================
+# dd_enabled + dd_db recipe flag (post-pass wiring)
+# ============================================================
+def test_postconfig_defaults_to_dd_disabled():
+    """PostConfig.dd_enabled defaults to False (preserves Slice 4 env gate)."""
+    from scripts.batch_config import PostConfig
+    cfg = PostConfig()
+    assert cfg.dd_enabled is False
+    assert cfg.dd_db is None
+
+
+def test_postconfig_round_trip_with_dd_flags():
+    """dd_enabled + dd_db serialize/deserialize via PostConfig."""
+    from scripts.batch_config import PostConfig
+    cfg = PostConfig(dd_enabled=True, dd_db="dixiedata.db")
+    d = cfg.to_dict()
+    assert d["dd_enabled"] is True
+    assert d["dd_db"] == "dixiedata.db"
+    restored = PostConfig.from_dict(d)
+    assert restored.dd_enabled is True
+    assert restored.dd_db == "dixiedata.db"
+
+
+def test_init_batch_includes_dd_flags_off_by_default(tmp_path, monkeypatch):
+    """init-batch writes dd_enabled: false in the scaffolded config."""
+    monkeypatch.chdir(tmp_path)
+    init_batch("foo")
+    raw = json.loads((tmp_path / "output" / "foo" / "config.json").read_text())
+    assert raw["post"]["dd_enabled"] is False
+    assert raw["post"].get("dd_db") is None

@@ -8,6 +8,7 @@ All notable changes to this project.
 
 - Add an **Export for DixieData** button to `scripts/view/v2.html` that downloads picked memorials in the exact `memorial_v1` envelope (`format_version`, `script_version`, `script_name`, `entries`) while preserving the existing scraper export (#131).
 - Browser-only candidate-name cleanup in `scripts/view/v2.html` removes FaG badges, status captions, date ranges, and `V VETERAN` markers from display, scraper export, and DixieData export (#132). Defense in depth until the parser-side fix lands.
+- **Recipe-flag wiring for the DixieData post-pass** (#134): `RunRecipe.post` gains `dd_enabled: bool` (default `false`) and `dd_db: str | None` fields. When `dd_enabled: true` and `dd_db` is unset, defaults to `dixiedata.db` at the repo root. `UnifiedRunnerConfig` carries the recipe's `PostConfig` through to `dd.config_from()`, which resolves in priority order: env vars (legacy gate) → recipe flags → default. `init-batch` scaffolds the new fields off by default; the existing env-var path still works for ops who don't want to bake the path into a recipe. Six new RED tests pin the contract; full suite remains 1505 passing with no regressions.
 
 ### Fixed
 

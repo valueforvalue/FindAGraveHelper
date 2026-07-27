@@ -132,6 +132,11 @@ class DecisionConfig:
 class PostConfig:
     collect_labels: bool = True
     labels_path: str = "output/labels/labels_v1.jsonl"
+    # Issue #134: DD post-pass recipe flag. Default OFF (env vars
+    # remain a valid override). dd_db=None → 'dixiedata.db' default
+    # in dd.config_from(). Env vars still take precedence when set.
+    dd_enabled: bool = False
+    dd_db: str | None = None
 
     @classmethod
     def from_dict(cls, d: dict | None) -> "PostConfig":
@@ -140,6 +145,8 @@ class PostConfig:
         return cls(
             collect_labels=bool(d.get("collect_labels", True)),
             labels_path=d.get("labels_path", "output/labels/labels_v1.jsonl"),
+            dd_enabled=bool(d.get("dd_enabled", False)),
+            dd_db=d.get("dd_db", None),
         )
 
     def to_dict(self) -> dict:

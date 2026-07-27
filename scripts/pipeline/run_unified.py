@@ -125,6 +125,10 @@ class UnifiedRunnerConfig:
     # to FaGEngine(). Per issue #61: the Blackboard path must use
     # the engine's ladder, not the legacy fag.search one.
     fag_engine: Any = None
+    # Issue #134: PostConfig from the recipe (dd_enabled, dd_db, etc.)
+    # Threaded through to dd.config_from() so a recipe flag actually
+    # enables the DD post-pass without env-var gymnastics.
+    post: Any = None
 
     # Override L1 throttle floor. L1 (CONTEXT.md) sets 2.5s as the
     # safe floor; lowering below this re-introduces the Cloudflare
@@ -1723,6 +1727,9 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
         search_mode=args.mode or "standard",
         reprocess=getattr(args, "reprocess", False),
         browser_state_filter=args.fag_state_filter or "OK",
+        # Issue #134: thread recipe's PostConfig so the DD post-pass
+        # can read dd_enabled / dd_db without env-var gymnastics.
+        post=batch_cfg.post if (batch_cfg is not None) else None,
     )
     # Issue #55: attach recipe for post-run label collection.
     if args.config is not None:

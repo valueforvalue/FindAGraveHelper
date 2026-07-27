@@ -1,15 +1,16 @@
-"""Tests for scripts/post_pass/dd.py — Slice 4.
-
-Pin the post-pass extraction: the moved DixieData post-pass must
-load the DD index, iterate state rows, and append DixieDataMatch
-observations to the Blackboard store identically to the inline
-behavior in run_unified.py.
+"""Tests for scripts/post_pass/dd.py — Slice 4 + recipe-flag wiring.
 
 Slice 4 acceptance criterion (from
 docs/designs/post-pass-extraction.md §Slice 4):
     "After Slice 4 lands, running the runner with
     DIXIEDATA_DB or DIXIEDATA_ZIP_BACKUP set produces DixieDataMatch
     observations in the store identical to before the slice."
+
+Recipe-flag acceptance (post-dd_enabled wiring):
+    dd_enabled: true on the RunRecipe must enable the post-pass
+    without requiring DIXIEDATA_DB in the environment. dd_db
+    provides the path; when unset the default 'dixiedata.db' is
+    used. Env vars still take precedence when set.
 """
 
 from __future__ import annotations
@@ -169,3 +170,109 @@ def test_run_returns_post_pass_stats(monkeypatch, sqlite_store):
         )
     assert stats.name == "dd"
     assert stats.errors == 0
+
+
+# ============================================================
+# Recipe-flag wiring (dd_enabled + dd_db)
+# ============================================================
+def test_config_from_recipe_disabled_by_default(monkeypatch):
+    """config_from(parent) without dd_enabled=True → no-op DDConfig.
+
+    Recipe flag is OFF by default (preserves Slice 4 behavior: env
+    vars were the gate). Without an env override AND without
+    dd_enabled, the pass self-skips.
+    """
+    from scripts.post_pass.dd import config_from
+    monkeypatch.delenv("DIXIEDATA_DB", raising=False)
+    monkeypatch.delenv("DIXIEDATA_ZIP_BACKUP", raising=False)
+
+    class ParentCfg:
+        class post:
+            dd_enabled = False
+            dd_db = None
+
+    cfg = config_from(ParentCfg())
+    assert cfg.db_path is None
+    assert cfg.zip_path is None
+
+
+def test_config_from_recipe_enabled_uses_dd_db(monkeypatch):
+    """dd_enabled=True + dd_db='path' → DDConfig wired without env."""
+    from scripts.post_pass.dd import config_from
+    monkeypatch.delenv("DIXIEDATA_DB", raising=False)
+    monkeypatch.delenv("DIXIEDATA_ZIP_BACKUP", raising=False)
+
+    class ParentCfg:
+        class post:
+            dd_enabled = True
+            dd_db = "dixiedata.db"
+
+    cfg = config_from(ParentCfg())
+    assert cfg.db_path == Path("dixiedata.db")
+    assert cfg.zip_path is None
+
+
+def test_config_from_env_wins_over_recipe(monkeypatch, tmp_path):
+    """Env var DIXIEDATA_DB overrides dd_db when both are set."""
+    from scripts.post_pass.dd import config_from
+    fake = tmp_path / "env-db.sqlite"
+    monkeypatch.setenv("DIXIEDATA_DB", str(fake))
+
+    class ParentCfg:
+        class post:
+            dd_enabled = True
+            dd_db = "dixiedata.db"  # should be ignored
+
+    cfg = config_from(ParentCfg())
+    assert cfg.db_path == fake
+
+
+def test_config_from_recipe_enabled_default_path(monkeypatch):
+    """dd_enabled=True with no dd_db → default to 'dixiedata.db'."""
+    from scripts.post_pass.dd import config_from
+    monkeypatch.delenv("DIXIEDATA_DB", raising=False)
+    monkeypatch.delenv("DIXIEDATA_ZIP_BACKUP", raising=False)
+
+    class ParentCfg:
+        class post:
+            dd_enabled = True
+            dd_db = None
+
+    cfg = config_from(ParentCfg())
+    assert cfg.db_path == Path("dixiedata.db")
+
+
+def test_run_with_recipe_flag_emits_matches(monkeypatch, sqlite_store):
+    """End-to-end: config_from(recipe) → run() emits DixieDataMatch."""
+    from scripts.post_pass.dd import config_from
+    monkeypatch.delenv("DIXIEDATA_DB", raising=False)
+    monkeypatch.delenv("DIXIEDATA_ZIP_BACKUP", raising=False)
+
+    class ParentCfg:
+        class post:
+            dd_enabled = True
+            dd_db = "/fake/db.sqlite"
+
+    config = config_from(ParentCfg())
+    state_repo = InMemoryStateRepository(
+        [{"pensioner_id": 42, "name_raw": "X"}]
+    )
+
+    with patch(
+        "scripts.cgr.dixiedata_match.load_dd_index", return_value={"k": "v"}
+    ), patch(
+        "scripts.cgr.dixiedata_match._match_pensioner_to_dd",
+        return_value={"slug": "x-y"},
+    ):
+        stats = run(
+            state_repo, sqlite_store, config=config,
+            run_id="r1", log=_NullLogger(),
+        )
+
+    assert stats.skipped is False
+    assert stats.matched == 1
+    obs = [
+        o for o in sqlite_store.read_observations_since(None)
+        if o.kind == Kind.DixieDataMatch
+    ]
+    assert len(obs) == 1

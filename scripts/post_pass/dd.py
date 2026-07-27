@@ -136,16 +136,30 @@ def run(
 
 
 def config_from(parent: Any) -> DDConfig:
-    """Build DDConfig from environment variables.
+    """Build DDConfig from recipe flags + environment fallback.
 
-    Reads DIXIEDATA_DB and DIXIEDATA_ZIP_BACKUP; the runner config
-    does not own these (they're env-only).
+    Resolution order (highest priority first):
+      1. DIXIEDATA_DB / DIXIEDATA_ZIP_BACKUP env vars (Slice 4 gate)
+      2. parent.post.dd_db when parent.post.dd_enabled is True
+      3. 'dixiedata.db' default when dd_enabled=True and dd_db unset
+      4. None (pass self-skips) when dd_enabled is False AND no env
+
+    The env path stays a valid escape hatch for ops who don't want
+    to bake the path into a recipe file.
     """
     import os
 
-    db = os.environ.get("DIXIEDATA_DB")
-    zip_ = os.environ.get("DIXIEDATA_ZIP_BACKUP")
-    return DDConfig(
-        db_path=Path(db) if db else None,
-        zip_path=Path(zip_) if zip_ else None,
-    )
+    env_db = os.environ.get("DIXIEDATA_DB")
+    env_zip = os.environ.get("DIXIEDATA_ZIP_BACKUP")
+    if env_db or env_zip:
+        return DDConfig(
+            db_path=Path(env_db) if env_db else None,
+            zip_path=Path(env_zip) if env_zip else None,
+        )
+
+    post = getattr(parent, "post", None)
+    if post is not None and getattr(post, "dd_enabled", False):
+        db_str = getattr(post, "dd_db", None) or "dixiedata.db"
+        return DDConfig(db_path=Path(db_str), zip_path=None)
+
+    return DDConfig(db_path=None, zip_path=None)
