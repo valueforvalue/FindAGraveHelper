@@ -27,6 +27,7 @@ the project for the first time, read this first.
 | Export picks for FindaGraveScraper (v2) | "Export picks (scraper shape)" button |
 | Re-train the self-learning loop | `python scripts/learning/train.py --labels labels.jsonl` |
 | Re-scrape a different set of CW rosters | `python scripts/ingest/build_broadened_set.py` |
+| Pack run folders into portable .zip bundles | `python scripts/distribute.py --group "NAME=run1,run2"` |
 
 ## The full pipeline
 
@@ -224,5 +225,59 @@ to the engine's ladder in `scripts/search/strategies.py` (generic)
 or `scripts/search/fag_strategies.py` (FaG-specific, like F2/F3/F4).
 See [`../agents/search-abstraction.md`](../agents/search-abstraction.md)
 for the contract.
-</content>
-</invoke>
+
+## Pack runs for sharing (distribute.py)
+
+When the run is finished and the review UI is in `output/<run>/view.html`,
+the next move is usually to share the bundle with a reviewer. The
+`scripts/distribute.py` helper builds portable .zip bundles without
+touching the original run folders.
+
+```bash
+PYTHONPATH=. python scripts/distribute.py \
+    --group "H-surnames=ha,ho,he,hu,hi,h-rest" \
+    --group "G-surnames=g-all"
+# -> dist/H-surnames.zip  dist/G-surnames.zip
+```
+
+**What goes into the zip:** for each named run, `<runname>/view.html`
++ `<runname>/results.jsonl`. Nothing else — no checkpoints, no
+analytics, no blackboard.db, no audit logs. The reviewer gets exactly
+what they need to open the review UI; nothing extra to confuse them.
+
+**Why this layout:** v2.html auto-fetches `results.jsonl` from the
+same directory when opened directly (see `scripts/view/v2.html`
+line ~2100). Unzip anywhere and double-click view.html to start
+reviewing. No build step, no server, no Python required for the
+reviewer.
+
+**CLI flags:**
+
+| Flag | Purpose |
+|---|---|
+| `--root <dir>` | Run root (default `output/`) |
+| `--out <dir>` | Zip output dir (default `dist/`) |
+| `--group NAME=runs` | One group spec, repeatable |
+| `--groups-file path` | File with one group per line (`#` comments) |
+| `--skip-view-html` | Data-only bundle |
+| `--skip-results` | View-only bundle |
+| `--dry-run` | Validate inputs without writing |
+
+**Group file format** (`groups.txt`):
+
+```
+# H-surnames full run
+H-surnames=ha,ho,he,hu,hi,h-rest
+
+# G-surnames full run
+G-surnames=g-all
+```
+
+**Validation:** group names accept letters, digits, spaces,
+hyphens, underscores, dots (no path separators). Missing run
+folders, missing `view.html`, or missing `results.jsonl` are
+reported per-group; one bad group doesn't abort the others.
+
+**Verified end-to-end** with the H + G run: 87 of 300 ha
+candidates render the verified-spouse link (#137); round-trip
+extract + filecmp confirms source fidelity.

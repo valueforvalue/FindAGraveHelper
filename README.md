@@ -3,7 +3,7 @@
 [![tests](https://github.com/valueforvalue/FindAGraveHelper/actions/workflows/test.yml/badge.svg)](https://github.com/valueforvalue/FindAGraveHelper/actions/workflows/test.yml)
 
 Automated pipeline for matching Oklahoma Confederate pensioners to
-[Find a Grave](https://www.findagrave.com) memorials. 1,490 tests, blackboard
+[Find a Grave](https://www.findagrave.com) memorials. 1,527 tests, blackboard
 architecture, engine-agnostic search abstraction.
 
 ## Project goal
@@ -94,10 +94,26 @@ RegionalPlannerKS → FaGScraperKS → CandidateScorerKS
 breakdown bars, picks vs rank export, strategy badges, and spouse
 verification badges. Feedback button posts to project maintainer.
 
+## Pack runs for sharing
+
+```bash
+# Bundle H-surname runs + G-surname run into two review-ready .zips
+PYTHONPATH=. python scripts/distribute.py \
+    --group "H-surnames=ha,ho,he,hu,hi,h-rest" \
+    --group "G-surnames=g-all"
+# -> dist/H-surnames.zip  dist/G-surnames.zip
+```
+
+Each zip contains `<runname>/view.html` + `<runname>/results.jsonl`.
+Source folders are never modified. Unzip anywhere and double-click
+view.html to start reviewing — the v2 UI auto-fetches its sibling
+results.jsonl. See `scripts/distribute.py --help` for
+`--groups-file`, `--skip-view-html`, `--skip-results`, `--dry-run`.
+
 ## Run the tests
 
 ```bash
-pytest tests/                              # full suite (1,490 tests)
+pytest tests/                              # full suite (1,527 tests)
 pytest tests/test_<name>.py                # one file
 pytest -m "not integration"                # skip real-browser tests
 ```
