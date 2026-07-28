@@ -25,6 +25,7 @@ to hammer.
 
 Usage:
     python scripts/ingest/download_pensioncard_images.py
+    python scripts/ingest/download_pensioncard_images.py --input ok_pensioners_sample_50.json
     python scripts/ingest/download_pensioncard_images.py --refresh
 """
 from __future__ import annotations
@@ -42,14 +43,14 @@ _ROOT = _SCRIPTS_DIR.parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-DEFAULT_INPUT = Path("docs/research/digitalprairie/ok_pensioners_sample_50.json")
-DEFAULT_OUT_DIR = Path("data/pilot/img")
+DEFAULT_INPUT = Path("docs/research/digitalprairie/ok_pensioners.json")
+DEFAULT_OUT_DIR = Path("data/cards/img")
 PENSIONCARD_API = (
     "https://digitalprairie.ok.gov/digital/api/singleitem/"
     "collection/pensioncard/id/{id}"
 )
-THROTTLE_SECONDS = 1.25
-UA = "Mozilla/5.0 (FindAGraveHelper; red-ink-ocr-pilot)"
+THROTTLE_SECONDS = 1.0
+UA = "Mozilla/5.0 (FindAGraveHelper; red-ink-ocr)"
 
 
 def http_get(url: str, timeout: int = 30) -> bytes | None:

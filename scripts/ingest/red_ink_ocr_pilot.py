@@ -39,12 +39,12 @@ _ROOT = _SCRIPTS_DIR.parent.parent
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
 
-DEFAULT_IN_DIR = Path("data/pilot/img")
+DEFAULT_IN_DIR = Path("data/cards/img")
 DEFAULT_INPUT_JSON = Path(
-    "docs/research/digitalprairie/ok_pensioners_sample_50.json"
+    "docs/research/digitalprairie/ok_pensioners.json"
 )
-DEFAULT_OUT = Path("data/pilot/red_ocr_results.json")
-DEFAULT_SUMMARY = Path("data/pilot/red_ocr_summary.json")
+DEFAULT_OUT = Path("data/cards/red_ocr_results.json")
+DEFAULT_SUMMARY = Path("data/cards/red_ocr_summary.json")
 
 # Year bounds for plausibility. OK Confederate pensioners were alive
 # during/after the war; their death dates fall roughly 1865-1940 with
@@ -52,6 +52,14 @@ DEFAULT_SUMMARY = Path("data/pilot/red_ocr_summary.json")
 # OCR noise (page numbers, regiment years, etc.).
 MIN_YEAR = 1865
 MAX_YEAR = 1940
+
+# Precision filters (see docs/learnings/2026-07-28-red-ink-ocr-pilot.md).
+# These reject candidates that look like other-dates misread as death
+# dates. Each filter is a regex matched (case-insensitive) against
+# the context window around the chosen date.
+WAR_END_RE = re.compile(r"(?i)\b(paroled|surrendered|citronelle|appomattox)\b")
+GRANT_RE = re.compile(r"(?i)\b(granted|rejected|filed)\b")
+CAME_TO_RE = re.compile(r"(?i)\b(came to|arrived in|moved to)\b")
 
 # Death-context regexes. The word "Deceased" appears as the most
 # reliable anchor (saw it on the Andrews card); "died"/"death" are
@@ -191,16 +199,35 @@ def find_death_date(text: str) -> tuple[dict | None, str]:
                        for ks, ke in keyword_spans)
         return (0, min_dist)
 
+    # Precision filters (post-sort, pre-pick). We try the best
+    # candidate first; if it triggers a filter, fall through to
+    # the next candidate. The filters are strong signals but not
+    # absolute, so we keep the highest-scoring candidate that
+    # doesn't trip any of them.
     candidates.sort(key=score)
-    chosen_text, chosen_info = candidates[0]
+    chosen_info = None
+    chosen_window = ""
+    for _match_text, info in candidates:
+        s = max(0, info["span"][0] - 30)
+        e = min(len(text), info["span"][1] + 30)
+        window = text[s:e].replace("\n", " ").strip()
+        # If a death keyword is anywhere in the text, a death
+        # date SHOULD exist somewhere. Apply filters softly:
+        # reject only when the filter phrase is in the immediate
+        # window AND no death keyword is in that same window.
+        has_kw_in_window = bool(DEATH_KEYWORDS.search(window))
+        if GRANT_RE.search(window) and not has_kw_in_window:
+            continue
+        if CAME_TO_RE.search(window) and not has_kw_in_window:
+            continue
+        if info["year"] < 1870 and WAR_END_RE.search(window) \
+                and not has_kw_in_window:
+            continue
+        chosen_info = info
+        chosen_window = window
+        break
 
-    # Build a small context window around the chosen match for
-    # human review.
-    s = max(0, chosen_info["span"][0] - 30)
-    e = min(len(text), chosen_info["span"][1] + 30)
-    window = text[s:e].replace("\n", " ").strip()
-
-    return chosen_info, window
+    return chosen_info, chosen_window
 
 
 def process_image(path: Path) -> dict:
@@ -223,6 +250,13 @@ def process_image(path: Path) -> dict:
 
     chosen = red_parsed or full_parsed
     chosen_window = red_window or full_window
+
+    # Stamp the death-keyword presence for downstream review.
+    if chosen is not None:
+        chosen = dict(chosen)
+        chosen["near_death_keyword"] = bool(
+            DEATH_KEYWORDS.search((red_text or "") + (full_text or ""))
+        )
 
     return {
         "image": path.name,
@@ -305,8 +339,12 @@ def main(argv: list[str] | None = None) -> int:
     keyword_dates = sum(
         1 for r in results
         if r.get("death_date")
-        and any(kw in (r.get("red_text", "") or "")
-                for kw in ("deceased", "died", "death"))
+        and (
+            any(kw in (r.get("red_text", "") or "")
+                for kw in ("deceased", "died", "death", "dead"))
+            or any(kw in (r.get("full_text", "") or "")
+                   for kw in ("deceased", "died", "death", "dead"))
+        )
     )
     plausible = sum(
         1 for r in results
