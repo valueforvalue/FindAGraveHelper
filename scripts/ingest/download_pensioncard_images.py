@@ -137,6 +137,7 @@ def main(argv: list[str] | None = None) -> int:
         "cards": [],
     }
     started = time.time()
+    last_heartbeat = started
     for i, row in enumerate(rows, 1):
         pcid = row.get("pensioncard_id")
         pensioner_id = row.get("id")
@@ -189,6 +190,30 @@ def main(argv: list[str] | None = None) -> int:
                          dest.stat().st_size if dest.exists() else 0)
             time.sleep(args.throttle)
         summary["cards"].append(card_record)
+        # Heartbeat every 5 minutes — helps detect silent crashes
+        # (the script has died twice in test runs without leaving
+        # a trace; the heartbeat gives external monitors something
+        # to grep for).
+        now = time.time()
+        if now - last_heartbeat > 300:
+            elapsed_min = (now - started) / 60
+            logging.info(
+                "heartbeat: i=%d/%d ok=%d skip=%d fail=%d elapsed=%.1fmin",
+                i, len(rows),
+                summary["ok_pages"], summary["skip_pages"],
+                summary["fail_pages"], elapsed_min,
+            )
+            last_heartbeat = now
+        # Flush summary to disk periodically so external watchers
+        # can see current progress without waiting for the script
+        # to finish.
+        if i % 100 == 0 or i == len(rows):
+            out_meta.write_text(
+                json.dumps({**summary,
+                            "elapsed_seconds": round(now - started, 2)},
+                           indent=2),
+                encoding="utf-8",
+            )
 
     elapsed = time.time() - started
     summary["elapsed_seconds"] = round(elapsed, 2)
