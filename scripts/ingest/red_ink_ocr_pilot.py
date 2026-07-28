@@ -304,17 +304,38 @@ def main(argv: list[str] | None = None) -> int:
     images = sorted(args.in_dir.glob("*.jpg"))
     if args.limit:
         images = images[: args.limit]
-    logging.info("processing %d images from %s", len(images), args.in_dir)
+    logging.info("found %d images in %s", len(images), args.in_dir)
 
-    results = []
-    for i, path in enumerate(images, 1):
+    # Resume support: load any existing results JSON and skip
+    # images that were already processed. Append new results.
+    existing_results: list[dict] = []
+    existing_names: set[str] = set()
+    if args.out.exists():
+        try:
+            existing_results = json.loads(
+                args.out.read_text(encoding="utf-8")
+            )
+            existing_names = {r.get("image") for r in existing_results
+                              if r.get("image")}
+            logging.info("resuming: %d existing results loaded",
+                         len(existing_results))
+        except Exception as e:
+            logging.warning("could not load existing results: %s", e)
+
+    new_images = [p for p in images if p.name not in existing_names]
+    skipped = len(images) - len(new_images)
+    logging.info("processing %d new images (%d already done)",
+                 len(new_images), skipped)
+
+    results = list(existing_results)
+    for i, path in enumerate(new_images, 1):
         # filename: <pcid>__<page_id>.jpg
         try:
             pcid = int(path.stem.split("__")[0])
         except Exception:
             pcid = None
         pensioner = pcid_to_pensioner.get(pcid) if pcid is not None else None
-        logging.info("[%d/%d] %s", i, len(images), path.name)
+        logging.info("[%d/%d] %s", i, len(new_images), path.name)
         try:
             r = process_image(path)
         except Exception as e:
@@ -323,6 +344,12 @@ def main(argv: list[str] | None = None) -> int:
         r["pensioncard_id"] = pcid
         r["pensioner"] = pensioner
         results.append(r)
+        # Per-record flush so a crash mid-run doesn't lose work
+        # (CONTEXT.md §L3 spirit).
+        if (i % 20 == 0) or i == len(new_images):
+            args.out.write_text(
+                json.dumps(results, indent=2), encoding="utf-8"
+            )
 
     args.out.write_text(json.dumps(results, indent=2), encoding="utf-8")
 
