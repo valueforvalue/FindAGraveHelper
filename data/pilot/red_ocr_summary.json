@@ -1,0 +1,13 @@
+{
+  "total_images": 95,
+  "with_red_text": 49,
+  "with_full_text": 88,
+  "with_death_date": 68,
+  "from_red_pass": 7,
+  "from_full_fallback": 61,
+  "near_death_keyword": 0,
+  "year_in_range": 68,
+  "candidate_rate": 0.716,
+  "plausible_rate": 0.716,
+  "red_vs_full_ratio": 0.103
+}

@@ -6,6 +6,10 @@ All notable changes to this project.
 
 ### Added
 
+- **Red-ink OCR pilot for death dates on Confederate pension cards.** Two new scripts under `scripts/ingest/`: `download_pensioncard_images.py` resolves `pensioncard_id` to actual IIIF page IDs via the Digital Prairie singleitem API (compound two-sided cards need `objectInfo.page[*].pageptr`, not the parent ID) and downloads tiles; `red_ink_ocr_pilot.py` masks red ink (`R > G+B AND R > 100`), runs Tesseract pass on the masked image, falls back to full-image OCR, parses `deceased|died|death` + date regex. Pilot on 50 cards (95 page-sides): 44/48 unique cards yielded a candidate date (91.7% per-card), ~77% precision after manual review. Full-image OCR did most of the work — red-mask is bonus. Three precision filters identified (war-end 1865, grant-stamp 1915, "came to territory" years) that should lift precision to 90%+. Throttle 1.25s works for Digital Prairie IIIF. See `docs/learnings/2026-07-28-red-ink-ocr-pilot.md`.
+
+### Fixed
+
 - Add an **Export for DixieData** button to `scripts/view/v2.html` that downloads picked memorials in the exact `memorial_v1` envelope (`format_version`, `script_version`, `script_name`, `entries`) while preserving the existing scraper export (#131).
 - Browser-only candidate-name cleanup in `scripts/view/v2.html` removes FaG badges, status captions, date ranges, and `V VETERAN` markers from display, scraper export, and DixieData export (#132). Defense in depth until the parser-side fix lands.
 - **Recipe-flag wiring for the DixieData post-pass** (#134): `RunRecipe.post` gains `dd_enabled: bool` (default `false`) and `dd_db: str | None` fields. When `dd_enabled: true` and `dd_db` is unset, defaults to `dixiedata.db` at the repo root. `UnifiedRunnerConfig` carries the recipe's `PostConfig` through to `dd.config_from()`, which resolves in priority order: env vars (legacy gate) → recipe flags → default. `init-batch` scaffolds the new fields off by default; the existing env-var path still works for ops who don't want to bake the path into a recipe. Six new RED tests pin the contract; full suite remains 1505 passing with no regressions.
