@@ -48,8 +48,13 @@ DEFAULT_INPUT_JSON = Path(
     "docs/research/digitalprairie/ok_pensioners.json"
 )
 DEFAULT_OCR_JSON = Path("data/cards/red_ocr_results.json")
+# Default output is a SIDE-CAR file, NOT ok_pensioners.json
+# itself. This is intentional — the developer wants to review the
+# enrichment before merging into the source. Once validated, copy
+# sidecar -> source:
+#   cp ok_pensioners.with_death_dates.json ok_pensioners.json
 DEFAULT_OUT_JSON = Path(
-    "docs/research/digitalprairie/ok_pensioners.json"
+    "docs/research/digitalprairie/ok_pensioners.with_death_dates.json"
 )
 DEFAULT_REPORT = Path("data/cards/enrichment_report.json")
 

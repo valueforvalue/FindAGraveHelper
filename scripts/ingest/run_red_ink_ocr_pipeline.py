@@ -86,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--ocr-summary", type=Path,
                     default=Path("data/cards/red_ocr_summary.json"))
     ap.add_argument("--enriched-json", type=Path,
-                    default=Path("docs/research/digitalprairie/ok_pensioners.json"))
+                    default=Path("docs/research/digitalprairie/ok_pensioners.with_death_dates.json"))
     ap.add_argument("--enrichment-report", type=Path,
                     default=Path("data/cards/enrichment_report.json"))
     ap.add_argument("--throttle", type=float, default=1.0)
