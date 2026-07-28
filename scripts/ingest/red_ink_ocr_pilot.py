@@ -149,7 +149,7 @@ def ocr_image(img: Image.Image, psm: int = 6) -> str:
     return pytesseract.image_to_string(img, config=f"--psm {psm}")
 
 
-def find_death_date(text: str) -> tuple[dict | None, str]:
+def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str]:
     """Return (parsed_date_dict, source_text_window).
 
     Strategy:
@@ -157,6 +157,11 @@ def find_death_date(text: str) -> tuple[dict | None, str]:
        text window for a date; prefer the closest match.
     2. If no keyword, fall back to the first plausible date in
        the whole text (less reliable).
+    3. Widow-aware (issue #145): when ``soldier_name`` is given,
+       candidates in windows that mention the soldier's name are
+       preferred. This handles the case where a widow's pension
+       card has BOTH the widow's own death date AND the soldier
+       husband's death date — we want the latter for FaG search.
     """
     if not text:
         return None, ""
@@ -187,17 +192,30 @@ def find_death_date(text: str) -> tuple[dict | None, str]:
     # Prefer dates that appear within ~40 chars of a death keyword.
     keyword_spans = [(m.start(), m.end())
                      for m in DEATH_KEYWORDS.finditer(text)]
+    soldier_lower = soldier_name.strip().lower() if soldier_name else ""
 
-    def score(c: tuple[str, dict]) -> tuple[int, int]:
+    def score(c: tuple[str, dict]) -> tuple[int, int, int, int]:
         match_text, info = c
+        ms, me = info["span"]
         if not keyword_spans:
             # No keyword at all: deprioritize.
-            return (1, info["span"][0])
-        ms, me = info["span"]
-        # Prefer the candidate closest to ANY keyword.
+            return (1, 0, 0, info["span"][0])
         min_dist = min(min(abs(ms - ke), abs(me - ks))
                        for ks, ke in keyword_spans)
-        return (0, min_dist)
+        # Widow-aware bonus: if the soldier's name appears
+        # ANYWHERE on the same side (full text window of ~120
+        # chars), the candidate is much more likely to be the
+        # soldier's death date. The narrow ±40 window misses
+        # cases where the death is in prose but the name is
+        # elsewhere on the card (e.g. "Baldwin, James
+        # Thompson" at top, "He died" in middle prose).
+        # Sort key is ascending tuple — we NEGATE the soldier
+        # bonus so candidates mentioning the soldier sort FIRST.
+        ws = max(0, ms - 120)
+        we = min(len(text), me + 120)
+        soldier_in_window = soldier_lower in text[ws:we].lower() \
+            if soldier_lower else False
+        return (0, 0 if soldier_in_window else 1, 0, min_dist)
 
     # Precision filters (post-sort, pre-pick). We try the best
     # candidate first; if it triggers a filter, fall through to
@@ -230,13 +248,22 @@ def find_death_date(text: str) -> tuple[dict | None, str]:
     return chosen_info, chosen_window
 
 
-def process_image(path: Path) -> dict:
-    """Run red-OCR + fallback OCR + date parsing on one image."""
-    img = Image.open(path).convert("RGB")
+def process_image(path: Path, soldier_name: str = "") -> dict:
+    """Run red-OCR + fallback OCR + date parsing on one image.
+
+    Args:
+        path: path to the card image.
+        soldier_name: the deceased soldier's last name (or full
+            name). Used to disambiguate widow cards where the
+            widow's own death date may also appear.
+    """
+    img = Image.open(path)
+    img.load()  # force full decode; protects against partial files
+    img = img.convert("RGB")
     red_img = build_red_mask(img)
 
     red_text = ocr_image(red_img)
-    red_parsed, red_window = find_death_date(red_text)
+    red_parsed, red_window = find_death_date(red_text, soldier_name)
 
     full_text = ""
     full_parsed = None
@@ -244,7 +271,7 @@ def process_image(path: Path) -> dict:
     source_pass = "red"
     if red_parsed is None:
         full_text = ocr_image(img)
-        full_parsed, full_window = find_death_date(full_text)
+        full_parsed, full_window = find_death_date(full_text, soldier_name)
         if full_parsed is not None:
             source_pass = "full-fallback"
 
@@ -254,8 +281,19 @@ def process_image(path: Path) -> dict:
     # Stamp the death-keyword presence for downstream review.
     if chosen is not None:
         chosen = dict(chosen)
+        combined_text = (red_text or "") + " " + (full_text or "")
         chosen["near_death_keyword"] = bool(
-            DEATH_KEYWORDS.search((red_text or "") + (full_text or ""))
+            DEATH_KEYWORDS.search(combined_text)
+        )
+        # Widow-aware tag: does the chosen window mention the
+        # soldier's name? If yes, it's likely the soldier's death
+        # date (the one we want for FaG search). If no on a widow
+        # card, it's likely the widow's own death date.
+        ws = max(0, chosen["span"][0] - 30)
+        we = min(len(combined_text), chosen["span"][1] + 30)
+        chosen_window_text = combined_text[ws:we]
+        chosen["mentions_soldier_name"] = bool(
+            soldier_name and soldier_name.lower() in chosen_window_text.lower()
         )
 
     return {
@@ -290,16 +328,40 @@ def main(argv: list[str] | None = None) -> int:
     # Build pensioncard_id -> pensioner record lookup for context.
     rows = json.loads(args.input_json.read_text(encoding="utf-8"))
     pcid_to_pensioner = {}
+    pcid_to_soldier_name = {}
+    pcid_is_widow = {}
     for i, row in enumerate(rows):
         pcid = row.get("pensioncard_id")
-        if pcid is not None:
-            pcid_to_pensioner[int(pcid)] = {
-                "pensioner_id": row.get("id"),
-                "pensioner_index": i,
-                "name_raw": row.get("name_raw"),
-                "first_name": row.get("first_name"),
-                "last_name": row.get("last_name"),
-            }
+        if pcid is None:
+            continue
+        pcid = int(pcid)
+        spouse_raw = (row.get("spouse_name_raw") or "").strip()
+        is_widow = bool(spouse_raw)
+        pcid_to_pensioner[pcid] = {
+            "pensioner_id": row.get("id"),
+            "pensioner_index": i,
+            "name_raw": row.get("name_raw"),
+            "first_name": row.get("first_name"),
+            "last_name": row.get("last_name"),
+            "spouse_name_raw": row.get("spouse_name_raw", ""),
+            "is_widow_card": is_widow,
+        }
+        pcid_is_widow[pcid] = is_widow
+        # Issue #145: on widow cards the SOLDIER's last name is
+        # in the spouse field. We need it for widow-aware date
+        # disambiguation so the FaG searcher picks the soldier's
+        # death date, not the widow's.
+        if is_widow:
+            # spouse_raw formats seen: "Last, First M.", "First Last"
+            if "," in spouse_raw:
+                soldier_last = spouse_raw.split(",")[0].strip()
+            else:
+                parts = spouse_raw.split()
+                soldier_last = parts[-1] if parts else ""
+            pcid_to_soldier_name[pcid] = soldier_last
+        else:
+            # Non-widow card: the pensioner IS the soldier.
+            pcid_to_soldier_name[pcid] = (row.get("last_name") or "").strip()
 
     images = sorted(args.in_dir.glob("*.jpg"))
     if args.limit:
@@ -335,14 +397,18 @@ def main(argv: list[str] | None = None) -> int:
         except Exception:
             pcid = None
         pensioner = pcid_to_pensioner.get(pcid) if pcid is not None else None
+        soldier_name = pcid_to_soldier_name.get(pcid, "") if pcid is not None else ""
         logging.info("[%d/%d] %s", i, len(new_images), path.name)
         try:
-            r = process_image(path)
+            r = process_image(path, soldier_name=soldier_name)
         except Exception as e:
             logging.warning("OCR failed %s: %s", path.name, e)
             r = {"image": path.name, "error": str(e)}
         r["pensioncard_id"] = pcid
         r["pensioner"] = pensioner
+        r["soldier_name_used"] = soldier_name
+        r["is_widow_card"] = pcid_is_widow.get(pcid, False) \
+            if pcid is not None else False
         results.append(r)
         # Per-record flush so a crash mid-run doesn't lose work
         # (CONTEXT.md §L3 spirit).

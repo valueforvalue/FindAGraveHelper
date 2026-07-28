@@ -66,6 +66,20 @@ def pick_best_per_card(sides: list[dict]) -> dict | None:
     """Pick the best death date from one card's page-sides.
 
     Returns the chosen info dict (with year/month/day/iso) or None.
+
+    Selection priority (issue #145 — widow vs soldier):
+    1. ``mentions_soldier_name=True`` wins. On widow cards the
+       soldier's death date is usually in the body prose ("He
+       died ... in ...") which mentions his name, while the
+       red stamp records the widow's own death. Picking the
+       soldier-mentioning candidate is the right call for FaG
+       search.
+    2. ``near_death_keyword=True``.
+    3. ``kind=date`` over year-only.
+    4. Earlier year — the soldier typically died before the
+       widow (decades gap), so when multiple candidates tie on
+       the criteria above, the earlier year is more likely the
+       soldier's death.
     """
     candidates = []
     for s in sides:
@@ -80,11 +94,14 @@ def pick_best_per_card(sides: list[dict]) -> dict | None:
     if not candidates:
         return None
 
-    def score(c: dict) -> tuple[int, int, int]:
-        # Higher score wins. Tuple order matters.
+    def score(c: dict) -> tuple[int, int, int, int]:
+        # Sort ascending — highest tuple wins. Tuple order:
+        # mentions_soldier, kw, kind, NEGATED_year (older = better).
+        mentions_soldier = 1 if c.get("mentions_soldier_name") else 0
         kw = 1 if c.get("near_death_keyword") else 0
         kind = 1 if c.get("kind") == "date" else 0
-        return (kw, kind, c.get("year") or 0)
+        year = c.get("year") or 0
+        return (mentions_soldier, kw, kind, -year)
 
     return max(candidates, key=score)
 
@@ -143,9 +160,11 @@ def main(argv: list[str] | None = None) -> int:
             "pensioner_id": row.get("id"),
             "pensioncard_id": pcid,
             "name_raw": row.get("name_raw"),
+            "is_widow_card": row.get("spouse_name_raw", "").strip() != "",
             "death_year": row["death_year"],
             "death_date_iso": row["death_date_iso"],
             "near_death_keyword": chosen.get("near_death_keyword", False),
+            "mentions_soldier_name": chosen.get("mentions_soldier_name", False),
             "source_pass": sides[0].get("source_pass") if sides else None,
         })
 
