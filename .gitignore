@@ -67,3 +67,15 @@ scripts/_probe_*.py
 
 # One-off HTML preview renders from data/preview_view.html experiments.
 data/preview_view.html
+
+# Pension card images + per-image OCR results from the red-ink
+# OCR pipeline. Reproducible from public IIIF tiles via
+# scripts/ingest/download_pensioncard_images.py. ~5GB for the
+# full 7709-card set; 5KB/image PNG would be ~2x smaller but
+# not worth the conversion cost.
+data/cards/img/
+data/cards/red_ocr_results.json
+data/cards/red_ocr_summary.json
+data/cards/download.log
+# Allow the enrichment report (small, useful for review):
+!data/cards/enrichment_report.json
