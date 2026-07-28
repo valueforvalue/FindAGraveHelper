@@ -138,6 +138,7 @@ def main(argv: list[str] | None = None) -> int:
     }
     started = time.time()
     last_heartbeat = started
+    out_meta = args.out.parent / "download_summary.json"
     for i, row in enumerate(rows, 1):
         pcid = row.get("pensioncard_id")
         pensioner_id = row.get("id")
@@ -217,7 +218,6 @@ def main(argv: list[str] | None = None) -> int:
 
     elapsed = time.time() - started
     summary["elapsed_seconds"] = round(elapsed, 2)
-    out_meta = args.out.parent / "download_summary.json"
     out_meta.write_text(json.dumps(summary, indent=2), encoding="utf-8")
     logging.info(
         "done pages ok=%d skip=%d fail=%d cards_no_pages=%d elapsed=%.1fs -> %s",
