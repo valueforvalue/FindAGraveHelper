@@ -88,8 +88,17 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", type=Path, default=DEFAULT_INPUT,
                     help="cached OCR results JSON")
-    ap.add_argument("--output", type=Path, default=DEFAULT_OUTPUT,
-                    help="output path (default: overwrite --input)")
+    ap.add_argument("--output", type=Path, default=None,
+                    help="output path (default: in-place overwrite of "
+                         "--input). For slice runs, ALWAYS pass an "
+                         "explicit --output pointing at a sidecar file "
+                         "or the canonical red_ocr_results.json will be "
+                         "clobbered with the slice contents.")
+    ap.add_argument("--in-place", action="store_true",
+                    help="allow overwriting --input (canonical file). "
+                         "Required when --output is omitted and --input "
+                         "is the canonical red_ocr_results.json. "
+                         "Intended for production runs only.")
     ap.add_argument("--img-dir", type=Path, default=DEFAULT_IMG_DIR,
                     help="directory containing the card jpegs")
     ap.add_argument("--limit", type=int, default=0,
@@ -123,6 +132,34 @@ def main(argv=None) -> int:
     log.info("loading %s...", args.input)
     results = json.loads(args.input.read_text(encoding="utf-8"))
     log.info("loaded %d image records", len(results))
+
+    # Output resolution + safety guard.
+    # Default behavior: in-place overwrite of --input (the legacy
+    # contract). When --input is the canonical file and the loaded
+    # record count looks like a slice (< canonical size), refuse to
+    # proceed unless --in-place was given. This prevents the
+    # 2026-07-29 incident where running the script with --input
+    # pointed at a 50-record slice file silently clobbered the
+    # 9436-record canonical red_ocr_results.json.
+    if args.output is None:
+        output_path = args.input
+    else:
+        output_path = args.output
+
+    if (output_path == DEFAULT_INPUT
+            and len(results) < 1000
+            and not args.in_place):
+        log.error(
+            "REFUSING to run: --input resolves to the canonical "
+            "%s but only %d records were loaded (looks like a "
+            "slice). Pass --output <sidecar.json> or --in-place "
+            "to proceed.",
+            DEFAULT_INPUT, len(results),
+        )
+        return 2
+
+    args.output = output_path
+    log.info("output -> %s", args.output)
 
     # Load the enriched sidecar to determine which records are
     # widow cards (we need the spouse_name_raw to run the
