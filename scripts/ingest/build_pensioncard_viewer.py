@@ -367,8 +367,18 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Pension Cards \u2014 Letter {LETTER} ({COUNT} cards)</title>
 <style>{CSS}</style>
+<script>
+  // Records are injected into this JSON block at build time (see
+  // build_pensioncard_viewer.py:render_letter). The Alpine app
+  // factory below reads from window.__PCIDS__ once Alpine evaluates
+  // x-data. Keeping the JSON in a <script type=application/json>
+  // block avoids HTML-attribute quoting hell (the records list
+  // is a JSON array with "double quotes" inside it, which would
+  // terminate an x-data="…" attribute mid-string).
+  window.__PCIDS__ = __RECORDS__;
+</script>
 </head>
-<body x-data="letterApp({{records: __RECORDS__}})" x-init="init()" x-cloak
+<body x-data="letterApp()" x-init="init()" x-cloak
       @keydown.window="handleKey($event)">
 {HEADER}
 <main>
@@ -456,9 +466,13 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
 
 LETTER_APP_JS = """\
 // Alpine + OpenSeadragon viewer app for one letter page.
-function letterApp({records}) {
+// Reads the per-letter record list from window.__PCIDS__, which the
+// build script sets inside a <script> block in <head>. Keeping
+// records out of the x-data attribute sidesteps the
+// unescaped-quotes bug that broke the previous viewer build.
+function letterApp() {
   return {
-    records: records,
+    records: (window.__PCIDS__ || []),
     filter: '',
     visible: [],
     lightbox: {open: false, idx: null, total: 0, rec: null},

@@ -13,6 +13,8 @@ All notable changes to this project.
   - **Alpine.js** — letter pages drive filtering, the lightbox state, prev/next scroll, and keyboard navigation via `x-data`, `x-model`, `x-for`, `@click` bindings. No more server-rendered filter JS. `lib/alpine.min.js` vendored locally (44 KB, no CDN).
   - **OpenSeadragon deep-zoom** — clicking any thumbnail opens a fullscreen lightbox with mouse-wheel zoom, click-drag pan, double-click to zoom, + / − / 0 keyboard zoom, r rotate, f fullscreen, esc close, ← → step between front/back cards, s to download a PNG screenshot. `lib/openseadragon.min.js` + 40 nav-button PNG sprites vendored locally (337 KB).
   - **Better letter routing** — rebuilds letter bucket from `name_raw` when `last_name` is empty, so genuine surnames with no last_name field (e.g. `Costen A. J.`, `Mooney James W a1176 p1458.pdf`) now route to their real letter, not the `_` orphan bucket. Index-page cards show how many records per letter have a death-date extracted.
+
+- **Fix letter-page rendering.** The previous build wrote the per-letter record list JSON inside `x-data="letterApp({records: …})"`, but JSON's `"` quotes terminated the HTML attribute mid-value, leaving Alpine with broken JS and an empty card list — the page rendered only the OpenSeadragon chrome with no records to click. The fix moves the JSON into a `<script>window.__PCIDS__ = …</script>` block in `<head>` and the Alpine factory now reads from there. Letter pages render the full list of cards with their images, names, company/regiment/app# lines, death-date badge, and widow marker; clicking any thumbnail opens the OSD lightbox.
   - **6 new tests** in `tests/test_build_pensioncard_viewer.py` pin the contract (full suite now 1542 passing, 4 skipped).
 
 
