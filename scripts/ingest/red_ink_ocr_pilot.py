@@ -47,19 +47,36 @@ DEFAULT_OUT = Path("data/cards/red_ocr_results.json")
 DEFAULT_SUMMARY = Path("data/cards/red_ocr_summary.json")
 
 # Year bounds for plausibility. OK Confederate pensioners were alive
-# during/after the war; their death dates fall roughly 1865-1940 with
-# most 1900-1940. Anything outside this window is almost certainly
-# OCR noise (page numbers, regiment years, etc.).
+# during/after the war; their death dates fall roughly 1865-1955 with
+# most 1900-1950s. 2026-07-29 raised MAX_YEAR 1940 → 1955 after
+# issue #139 audit revealed widow cards legitimately have death
+# dates in the 1941-1955 range (e.g. Bond, Julia E. died 1942).
+# Anything above 1955 is still almost certainly OCR noise (page
+# numbers, regiment years, "By letter dated 19XX" stamps).
 MIN_YEAR = 1865
-MAX_YEAR = 1940
+MAX_YEAR = 1955
 
 # Precision filters (see docs/learnings/2026-07-28-red-ink-ocr-pilot.md).
 # These reject candidates that look like other-dates misread as death
 # dates. Each filter is a regex matched (case-insensitive) against
 # the context window around the chosen date.
+#
+# 2026-07-29 expansion: added MARRIED_RE (marriage dates picked as
+# death) and LETTER_RE (filing-stamp dates picked as death) after
+# issue #139 audit. Both bypassed the previous filter set.
 WAR_END_RE = re.compile(r"(?i)\b(paroled|surrendered|citronelle|appomattox)\b")
-GRANT_RE = re.compile(r"(?i)\b(granted|rejected|filed)\b")
+GRANT_RE = re.compile(r"(?i)\b(granted|rejected)\b")
+FILED_RE = re.compile(
+    r"(?i)\b(filed|by letter|letter dated|"
+    r"q/?\s*c\.?\s+of|qc of|on roll|"
+    r"cancelled|canceled|"
+    r"q/c|q\.\s*c\.?|filling|approval|approved)\b"
+)
 CAME_TO_RE = re.compile(r"(?i)\b(came to|arrived in|moved to)\b")
+MARRIED_RE = re.compile(
+    r"(?i)\b(married|wedded|wed\b|marriage|"
+    r"date of birth|d/o/b)\b"
+)
 
 # Death-context regexes. The word "Deceased" appears as the most
 # reliable anchor (saw it on the Andrews card); "died"/"death" are
@@ -84,9 +101,13 @@ DATE_PATTERNS = [
     (re.compile(r"\b(\d{4})[-/](\d{1,2})[-/](\d{1,2})\b"),
      lambda m: _try_date(int(m.group(1)), int(m.group(2)), int(m.group(3)))),
     # Jun 29 1935 / June 29, 1935
+    # 2026-07-29 loosened: "[\s,]?" instead of "\s+" before the
+    # year so "June 5,1902" (OCR dropped the space after the
+    # comma) still parses. Also added "[\.,]" between month-name
+    # suffix and day for "Jun. 29".
     (re.compile(
-        r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+"
-        r"(\d{1,2}),?\s+(\d{4})\b", re.I),
+        r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\.,]?\s+"
+        r"(\d{1,2}),?[\s,]?(\d{4})\b", re.I),
      lambda m: _try_date(
          int(m.group(3)), _month_to_int(m.group(1)), int(m.group(2)))),
     # 29 Jun 1935 / 29 June, 1935
@@ -95,6 +116,12 @@ DATE_PATTERNS = [
         r"[a-z]*\.?,?\s+(\d{4})\b", re.I),
      lambda m: _try_date(
          int(m.group(3)), _month_to_int(m.group(2)), int(m.group(1)))),
+    # 2-digit year on stamps: "Deceased 1-26-25" or "5-2-24".
+    # 2026-07-29 added per issue #139: many widow cards have
+    # only a 2-digit-year death stamp. Maps 2-digit years to
+    # 19xx (all pensioners died after 1900 in practice).
+    (re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](\d{2})\b"),
+     lambda m: _try_2digit_date(int(m.group(3)), int(m.group(1)), int(m.group(2)))),
     # bare 4-digit year (last-resort; only valid near a death keyword)
     (re.compile(r"\b(\d{4})\b"),
      lambda m: _try_year_only(int(m.group(1)))),
@@ -124,6 +151,25 @@ def _try_year_only(year: int) -> tuple | None:
     if MIN_YEAR <= year <= MAX_YEAR:
         return ("year-only", year, None, None, f"{year:04d}")
     return None
+
+
+def _try_2digit_date(year_2d: int, month: int, day: int) -> tuple | None:
+    """Map 2-digit year to 19xx and call _try_date.
+
+    All Confederate pensioners in this corpus died in 1900-1955
+    (the pension ran 1910s-1950s), so a 2-digit year on a death
+    stamp is unambiguously 19xx. 00-30 → 1900-1930; 31-99 →
+    1931-1999. We pick a midpoint split at 30 because anything
+    below 1931 (year 30) would predate the pension system.
+    """
+    if not (1 <= month <= 12):
+        return None
+    if not (1 <= day <= 31):
+        return None
+    full_year = 1900 + year_2d
+    if not (MIN_YEAR <= full_year <= MAX_YEAR):
+        return None
+    return ("date", full_year, month, day, _iso(full_year, month, day))
 
 
 def build_red_mask(img_rgb: Image.Image) -> Image.Image:
@@ -225,9 +271,15 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
     candidates.sort(key=score)
     chosen_info = None
     chosen_window = ""
+    # 2026-07-29 widened filter window from ±30 to ±60 chars
+    # (issue #139). Phrases like "came to Oklahoma Territory 1912"
+    # span ~40 chars; ±30 truncated "came to" off the window so
+    # the CAME_TO_RE filter missed the bad date. ±60 covers all
+    # known filter phrases.
+    WINDOW_PAD = 60
     for _match_text, info in candidates:
-        s = max(0, info["span"][0] - 30)
-        e = min(len(text), info["span"][1] + 30)
+        s = max(0, info["span"][0] - WINDOW_PAD)
+        e = min(len(text), info["span"][1] + WINDOW_PAD)
         window = text[s:e].replace("\n", " ").strip()
         # If a death keyword is anywhere in the text, a death
         # date SHOULD exist somewhere. Apply filters softly:
@@ -236,7 +288,11 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         has_kw_in_window = bool(DEATH_KEYWORDS.search(window))
         if GRANT_RE.search(window) and not has_kw_in_window:
             continue
+        if FILED_RE.search(window) and not has_kw_in_window:
+            continue
         if CAME_TO_RE.search(window) and not has_kw_in_window:
+            continue
+        if MARRIED_RE.search(window) and not has_kw_in_window:
             continue
         if info["year"] < 1870 and WAR_END_RE.search(window) \
                 and not has_kw_in_window:

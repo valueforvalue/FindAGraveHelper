@@ -7,7 +7,9 @@ Layout A — per-letter folder, index at bundle root:
     ├── all.json                 (master record map for programmatic use)
     ├── lib/
     │   ├── alpine.min.js        (vendored locally; CDN-free for offline)
-    │   └── openseadragon.min.js (deep-zoom viewer for pension images)
+    │   ├── leaflet.min.js       (pan/zoom image viewer; replaced OSD 2026-07-29)
+    │   ├── leaflet.css          (image-overlay CSS for Leaflet)
+    │   └── leaflet-images/      (PNG sprites referenced by leaflet.css)
     └── letters/
         ├── A/
         │   ├── viewer/A.html    (surname-letter page, Alpine-driven)
@@ -18,16 +20,23 @@ Layout A — per-letter folder, index at bundle root:
 
 Each letter page is fully self-contained — open
 ``letters/A/viewer/A.html`` from the HDD/USB and it can be reviewed
-offline. Click any thumbnail to expand into a fullscreen
-OpenSeadragon viewer (mouse-wheel zoom, pan, double-click to zoom,
-keyboard +/−/0). The Alpine.js layer wires the name filter, the
-lightbox state, and keyboard navigation. Image paths use ``../img/``
-relative to the page so per-letter extraction works regardless of
-where the bundle lives on the reviewer's filesystem.
+offline. Click any thumbnail to expand into a fullscreen Leaflet
+viewer using CRS.Simple (mouse-wheel zoom, drag-pan, double-click
+zoom, keyboard +/−/0/arrows). The Alpine.js layer wires the name
+filter, the lightbox state, and keyboard navigation. Image paths use
+``../img/`` relative to the page so per-letter extraction works
+regardless of where the bundle lives on the reviewer's filesystem.
 
 Image filenames in ``letters/{L}/img/`` are kept identical to the
 flat ``data/cards/img/{pcid}__{page}.jpg`` names so the bundler
 needs no filename rewriting.
+
+History: 2026-07-29 swapped OpenSeadragon → Leaflet because OSD's
+WebGL tile renderer failed in this environment (canvas stayed
+transparent until the user clicked the lightbox center). Leaflet
+with `CRS.Simple` draws the pension card via a single
+`L.imageOverlay` + `setView(center, 0)` for fit-to-frame; no WebGL,
+no tiles, no canvas drawing at all.
 
 Usage:
     python scripts/ingest/build_pensioncard_viewer.py
@@ -58,14 +67,24 @@ DEFAULT_INPUT_JSON = Path(
 DEFAULT_REPORT = Path("data/cards/enrichment_report.json")
 DEFAULT_IMG_DIR = Path("data/cards/img")
 DEFAULT_OUT_DIR = Path("data/cards/viewer")
-# Vendored Alpine.js + OpenSeadragon — copied into <out>/lib/ so the
+# Vendored Alpine.js + Leaflet — copied into <out>/lib/ so the
 # viewer is fully offline-capable.
+# History: 2026-07-29 swapped from OpenSeadragon → Leaflet because
+# OSD's WebGL tile renderer was failing ("Error creating texture in
+# WebGL") in this environment, leaving the pension-card image
+# invisible until the user clicked the lightbox center. Leaflet
+# with `CRS.Simple` + a single `L.imageOverlay` provides the same
+# pan/zoom UX on a plain <img> — no WebGL, no canvas, no
+# tile-source plumbing. The `leaflet-images/` folder is still copied
+# into the bundle because `leaflet.css` references
+# `images/marker-icon.png` etc; we don't use markers in our viewer
+# but the CSS may still try to load them, so ship them to avoid 404s.
 VENDOR_DIR = _SCRIPTS_DIR / "vendor"
-VENDORED_LIBS = ["alpine.min.js", "openseadragon.min.js"]
-# OpenSeadragon nav-button PNG sprites. OSD looks under its
-# `prefixUrl` for zoom.png / home.png / etc. We point at
-# `<out>/lib/openseadragon-images/` so these ship in the bundle and
-# the toolbar renders offline (no CDN).
+VENDORED_LIBS = ["alpine.min.js", "leaflet.min.js", "leaflet.css"]
+VENDORED_LEAFLET_IMAGES_DIR = VENDOR_DIR / "leaflet-images"
+# Legacy OSD sprite dir + prefix (kept so old bundles extracted by
+# an earlier version still resolve correctly; new builds don't copy
+# them).
 VENDORED_OSD_SPRITE_DIR = VENDOR_DIR / "openseadragon-images"
 VENDORED_OSD_PREFIX_REL = "lib/openseadragon-images/"
 
@@ -220,7 +239,7 @@ LETTER_CSS = INDEX_CSS + """\
   border: 1px solid var(--line); border-radius: var(--radius);
 }
 .controls .hint { font-size: 0.85em; color: var(--muted); }
-.records { display: flex; flex-direction: column; gap: 0.8em; }
+.records { flex-direction: column; gap: 0.8em; }
 .record {
   background: var(--paper); border: 1px solid var(--line); border-radius: var(--radius);
   padding: 1em; display: grid; grid-template-columns: 320px 1fr; gap: 1.25em;
@@ -257,6 +276,10 @@ LETTER_CSS = INDEX_CSS + """\
   position: fixed; inset: 0; z-index: 9999;
   background: rgba(0, 0, 0, 0.92);
   display: flex; align-items: stretch; justify-content: stretch;
+  /* let the absolutely-positioned canvas child participate in
+     flex sizing — without this OSD can mount with 0x0 dimensions
+     if it runs before layout settles, leaving the image invisible
+     until the first user click triggers a re-measure. */
 }
 .lightbox-overlay[hidden] { display: none; }
 .lightbox-toolbar {
@@ -272,7 +295,12 @@ LETTER_CSS = INDEX_CSS + """\
 }
 .lightbox-toolbar button:hover { background: rgba(255, 255, 255, 0.2); }
 .lightbox-canvas {
-  position: absolute; inset: 0; width: 100%; height: 100%;
+  /* Leaflet measures the container at init; the absolute + vw/vh
+     sizing gives it a definite box the moment the overlay opens.
+     Parent (.lightbox-overlay) is position:fixed inset:0, so vh/vw
+     tracks the visible viewport even when the toolbar/counter
+     shrink the visible area. */
+  position: absolute; inset: 0; width: 100vw; height: 100vh;
 }
 .lightbox-counter {
   position: absolute; bottom: 0; left: 0; right: 0; padding: 0.6em;
@@ -341,7 +369,6 @@ INDEX_PAGE_TEMPLATE = """<!doctype html>
   </div>
 </main>
 <script src="lib/alpine.min.js" defer></script>
-<script src="lib/openseadragon.min.js"></script>
 <script>
 function letterApp() {{
   return {{
@@ -392,7 +419,7 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
     <button @click="prevCard()" :disabled="visible.length === 0">\u2191 Prev</button>
     <button @click="nextCard()" :disabled="visible.length === 0">\u2193 Next</button>
   </div>
-  <div class="records" x-show="visible.length > 0">
+  <div class="records" x-show.important="visible.length > 0">
     <template x-for="rec in visible" :key="rec.pensioncard_id">
       <div class="record" :data-pcid="rec.pensioncard_id">
         <div class="thumb-stack">
@@ -426,13 +453,13 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
       </div>
     </template>
   </div>
-  <div class="empty-state" x-show="visible.length === 0">
+  <div class="empty-state" x-show.important="visible.length === 0">
     No records match <strong x-text="filter"></strong>.
   </div>
 </main>
 
 <!-- Lightbox overlay -->
-<div class="lightbox-overlay" x-show="lightbox.open"
+<div class="lightbox-overlay" x-show.important="lightbox.open"
      @click.self="closeLightbox()"
      x-cloak>
   <div class="lightbox-toolbar" @click.stop>
@@ -447,7 +474,7 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
       <button @click="closeLightbox()" title="Close (esc)">\u2715</button>
     </span>
   </div>
-  <div id="osd-canvas" class="lightbox-canvas" @click.stop></div>
+  <div id="leaflet-viewer" class="lightbox-canvas" @click.stop></div>
   <div class="lightbox-counter" @click.stop>
     Image <span x-text="(lightbox.idx ?? 0) + 1"></span> of <span x-text="lightbox.total"></span>
     &mdash; <kbd>+</kbd>/<kbd>\u2212</kbd>/<kbd>0</kbd> zoom,
@@ -457,26 +484,35 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
   </div>
 </div>
 
-<script src="../lib/alpine.min.js" defer></script>
-<script src="../lib/openseadragon.min.js"></script>
-<script src="app.js" defer></script>
+<script src="app.js"></script>
+<script src="../../../lib/alpine.min.js" defer></script>
+<script src="../../../lib/leaflet.min.js"></script>
+<link rel="stylesheet" href="../../../lib/leaflet.css">
 </body>
 </html>
 """
 
 LETTER_APP_JS = """\
-// Alpine + OpenSeadragon viewer app for one letter page.
+// Alpine + Leaflet viewer app for one letter page.
 // Reads the per-letter record list from window.__PCIDS__, which the
 // build script sets inside a <script> block in <head>. Keeping
 // records out of the x-data attribute sidesteps the
 // unescaped-quotes bug that broke the previous viewer build.
+//
+// History: 2026-07-29 swapped OpenSeadragon → Leaflet (see
+// build_pensioncard_viewer.py header for why). Leaflet with
+// CRS.Simple draws the pension card via a single L.imageOverlay
+// + map.setView(center, zoom) for fit-to-frame. No WebGL, no
+// tile-source plumbing, no canvas. Pan/zoom is built into Leaflet's
+// map controls.
 function letterApp() {
   return {
     records: (window.__PCIDS__ || []),
     filter: '',
     visible: [],
     lightbox: {open: false, idx: null, total: 0, rec: null},
-    osd: null,
+    map: null,
+    overlay: null,
     init() {
       this.recomputeVisible();
       this.$watch('filter', () => this.recomputeVisible());
@@ -519,32 +555,75 @@ function letterApp() {
     openLightbox(rec, idx) {
       this.lightbox = {open: true, idx: idx, total: rec.images.length,
                        rec: rec};
-      this.$nextTick(() => this.mountOSD());
+      // Wait for Alpine's reactive update + a paint frame so the
+      // overlay has laid out with non-zero dimensions, then mount
+      // Leaflet into the container. (Leaflet needs the container to
+      // have a size before it computes its initial center; unlike
+      // OSD, Leaflet handles resize events gracefully, so a single
+      // rAF is sufficient.)
+      this.$nextTick(() => {
+        requestAnimationFrame(() => {
+          this.mountLeaflet();
+        });
+      });
     },
     lightboxTitle() {
       const r = this.lightbox.rec;
       if (!r) return '';
       return r.name_raw + ' \u2014 pensioncard #' + r.pensioncard_id;
     },
-    mountOSD() {
+    mountLeaflet() {
       const r = this.lightbox.rec;
       const idx = this.lightbox.idx;
+      if (!r) return;
       const imgPath = '../img/' + r.images[idx];
-      // OpenSeadragon takes a "tileSources" object. For a single
-      // image with no server-side tiling, use `type: 'image'` +
-      // `url` pointing at the JPEG. Pan + zoom work natively.
-      this.osd = OpenSeadragon({
-        element: 'osd-canvas',
-        prefixUrl: '../lib/openseadragon-images/',
-        tileSources: {type: 'image', url: imgPath},
-        showNavigationControl: true,
-        gestureSettingsTouch: {pinchToZoom: true, flickEnabled: true},
-        animationTime: 0.5,
-        springStiffness: 7,
-      });
+
+      // Tear down any previous map (e.g. user re-opened while one
+      // was still alive) before building a new one. Leaflet maps
+      // own their DOM container, so reuse requires explicit remove.
+      if (this.map) {
+        this.map.remove();
+        this.map = null;
+        this.overlay = null;
+      }
+      // CRS.Simple treats pixel coordinates as map units. The
+      // bounds object below is sized to the actual image dimensions
+      // (load via a hidden <img> so Leaflet can fit-to-frame with
+      // the correct aspect ratio).
+      const imgEl = new Image();
+      imgEl.onload = () => {
+        const w = imgEl.naturalWidth;
+        const h = imgEl.naturalHeight;
+        const bounds = [[0, 0], [h, w]];
+        this.map = L.map('leaflet-viewer', {
+          crs: L.CRS.Simple,
+          minZoom: -3,
+          maxZoom: 4,
+          zoomSnap: 0.25,
+          zoomDelta: 0.5,
+          wheelDebounceTime: 20,
+          wheelPxPerZoomLevel: 80,
+          attributionControl: false,
+          zoomControl: false,
+        });
+        this.overlay = L.imageOverlay(imgPath, bounds).addTo(this.map);
+        this.map.fitBounds(bounds);
+        this.map.setMaxBounds([
+          [-h * 0.5, -w * 0.5],
+          [h * 1.5, w * 1.5],
+        ]);
+      };
+      imgEl.onerror = () => {
+        console.error('[lightbox] failed to load image:', imgPath);
+      };
+      imgEl.src = imgPath;
     },
     closeLightbox() {
-      if (this.osd) { this.osd.destroy(); this.osd = null; }
+      if (this.map) {
+        this.map.remove();
+        this.map = null;
+        this.overlay = null;
+      }
       this.lightbox = {open: false, idx: null, total: 0, rec: null};
     },
     step(delta) {
@@ -553,28 +632,44 @@ function letterApp() {
       let idx = (this.lightbox.idx + delta + r.images.length) % r.images.length;
       this.openLightbox(r, idx);
     },
-    zoomIn() { if (this.osd) this.osd.viewport.zoomBy(1.4); this.osd?.viewport.applyConstraints(); },
-    zoomOut() { if (this.osd) this.osd.viewport.zoomBy(1 / 1.4); this.osd?.viewport.applyConstraints(); },
-    zoomReset() { if (this.osd) this.osd.viewport.goHome(); },
-    rotate() { if (this.osd) this.osd.viewport.setRotation((this.osd.viewport.getRotation() || 0) + 90); },
+    zoomIn() {
+      if (this.map) this.map.zoomIn(0.5);
+    },
+    zoomOut() {
+      if (this.map) this.map.zoomOut(0.5);
+    },
+    zoomReset() {
+      // Re-fit to image bounds (Leaflet has no goHome equivalent)
+      if (!this.map || !this.overlay) return;
+      const b = this.overlay.getBounds();
+      this.map.fitBounds(b);
+    },
+    rotate() {
+      // Leaflet's CSS transform-based rotation isn't built-in;
+      // apply via inline style on the overlay's <img>.
+      if (!this.overlay) return;
+      const img = this.overlay.getElement();
+      const cur = (parseFloat(img.dataset.rotation) || 0) % 360;
+      const next = cur + 90;
+      img.dataset.rotation = next;
+      img.style.transform = `rotate(${next}deg)`;
+    },
     fullscreen() {
       const el = document.querySelector('.lightbox-overlay');
       if (document.fullscreenElement) { document.exitFullscreen(); }
       else if (el.requestFullscreen) { el.requestFullscreen(); }
     },
     screenshot() {
-      if (!this.osd) return;
-      // OSD doesn't expose a built-in screenshot; render the canvas
-      // to a PNG via toDataURL.
-      const canvas = this.osd.canvas;
-      if (!canvas) return;
-      const url = canvas.toDataURL('image/png');
-      const a = document.createElement('a');
-      a.href = url;
+      // Leaflet renders via <img>, so we can fetch the JPEG directly
+      // (no canvas conversion needed). Just download the image URL.
+      if (!this.overlay) return;
+      const url = this.overlay.getElement().src;
       const r = this.lightbox.rec;
       const safe = (r.name_raw || 'pension-' + r.pensioncard_id)
         .replace(/[^a-z0-9]+/gi, '_').toLowerCase();
-      a.download = safe + '_' + (this.lightbox.idx + 1) + '.png';
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = safe + '_' + (this.lightbox.idx + 1) + '.jpg';
       document.body.appendChild(a); a.click();
       setTimeout(() => document.body.removeChild(a), 0);
     },
@@ -620,7 +715,6 @@ function letterApp() {
 }
 """
 
-
 def safe_letter_filename(letter: str) -> str:
     return letter if letter.isalnum() else "_"
 
@@ -661,10 +755,10 @@ def render_letter(letter, recs, by_letter):
     next_html = ""
     if idx > 0:
         prev = sorted_letters[idx - 1]
-        prev_html = f'<a href="../{safe_letter_filename(prev)}/viewer/{safe_letter_filename(prev)}.html">\u2190 {prev}</a>'
+        prev_html = f'<a href="../../../{safe_letter_filename(prev)}/viewer/{safe_letter_filename(prev)}.html">\u2190 {prev}</a>'
     if idx >= 0 and idx < len(sorted_letters) - 1:
         nxt = sorted_letters[idx + 1]
-        next_html = f'<a href="../{safe_letter_filename(nxt)}/viewer/{safe_letter_filename(nxt)}.html">{nxt} \u2192</a>'
+        next_html = f'<a href="../../../{safe_letter_filename(nxt)}/viewer/{safe_letter_filename(nxt)}.html">{nxt} \u2192</a>'
 
     # Format the header chrome first (it has its own {PLACEHOLDERS}
     # that aren't related to the page template).
@@ -733,7 +827,7 @@ def place_letter_files(
 
 
 def vendor_libs(out_root: Path, log: logging.Logger):
-    """Copy vendored Alpine + OpenSeadragon (+ nav sprites) into
+    """Copy vendored Alpine + Leaflet (+ leaflet-images/) into
     <out>/lib/."""
     lib_dir = out_root / "lib"
     lib_dir.mkdir(parents=True, exist_ok=True)
@@ -747,21 +841,23 @@ def vendor_libs(out_root: Path, log: logging.Logger):
         log.info("vendored %s -> %s (%s)", src.name, dst,
                  human_bytes(dst.stat().st_size))
 
-    # OSD nav-button PNGs (45 files; ~50 KB total). Without these, the
-    # lightbox zoom/home/rotate toolbar renders blank or 404s when
-    # the reviewer is offline.
-    if VENDORED_OSD_SPRITE_DIR.exists():
-        sprite_dst = lib_dir / "openseadragon-images"
-        sprite_dst.mkdir(parents=True, exist_ok=True)
+    # Leaflet CSS references marker-icon.png / layers.png via
+    # `url(images/...)`. We don't actually use markers in our
+    # viewer (CRS.Simple + imageOverlay only), but the CSS may
+    # still try to fetch them at parse time, so ship them to avoid
+    # console 404s in offline review.
+    if VENDORED_LEAFLET_IMAGES_DIR.exists():
+        img_dst = lib_dir / "leaflet-images"
+        img_dst.mkdir(parents=True, exist_ok=True)
         n_copied = 0
-        for src in VENDORED_OSD_SPRITE_DIR.glob("*.png"):
-            shutil.copy2(src, sprite_dst / src.name)
+        for src in VENDORED_LEAFLET_IMAGES_DIR.glob("*.png"):
+            shutil.copy2(src, img_dst / src.name)
             n_copied += 1
-        log.info("vendored openseadragon-images -> %s (%d PNGs)",
-                 sprite_dst, n_copied)
+        log.info("vendored leaflet-images -> %s (%d PNGs)",
+                 img_dst, n_copied)
     else:
-        log.warning("missing OSD sprite folder: %s "
-                    "(toolbar icons will be missing offline)", VENDORED_OSD_SPRITE_DIR)
+        log.warning("missing leaflet-images folder: %s "
+                    "(CSS may 404 on marker sprites)", VENDORED_LEAFLET_IMAGES_DIR)
     return lib_dir
 
 

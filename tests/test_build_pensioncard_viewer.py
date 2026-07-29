@@ -10,8 +10,8 @@ Pins two contracts:
 2. Layout A — the viewer tree on disk has:
    - <out>/index.html  (top-level, alphabet grid)
    - <out>/all.json
-   - <out>/lib/{alpine.min.js, openseadragon.min.js,
-                 openseadragon-images/*.png}
+   - <out>/lib/{alpine.min.js, leaflet.min.js,
+                 leaflet.css, leaflet-images/*.png}
    - <out>/letters/{L}/viewer/{L}.html
    - <out>/letters/{L}/viewer/app.js
    - <out>/letters/{L}/{L}.json
@@ -104,8 +104,12 @@ def viewer_corpus(tmp_path):
     vendor = tmp_path / "scripts" / "ingest" / "vendor"
     vendor.mkdir(parents=True)
     (vendor / "alpine.min.js").write_text("// alpine", encoding="utf-8")
-    (vendor / "openseadragon.min.js").write_text(
-        "// osd", encoding="utf-8")
+    (vendor / "leaflet.min.js").write_text(
+        "// leaflet", encoding="utf-8")
+    (vendor / "leaflet.css").write_text(
+        "/* leaflet css */", encoding="utf-8")
+    (vendor / "leaflet-images").mkdir(parents=True, exist_ok=True)
+    (vendor / "leaflet-images" / "marker-icon.png").write_bytes(b"PNG")
 
     return {
         "src_root": tmp_path,
@@ -129,7 +133,7 @@ def test_letter_routing_records_to_correct_buckets(viewer_corpus):
     """`Costen A. J.` ends up in letter C, not '_'. Real 'Mrs.
     So-and-So' goes to '_'."""
     # Patch module's script-relative _SCRIPTS_DIR / VENDOR_DIR so
-    # vendor_libs() can find alpine.min.js + openseadragon.min.js in
+    # vendor_libs() can find alpine.min.js + leaflet.min.js + leaflet.css in
     # our tmp vendor dir.
     src_root = viewer_corpus["src_root"]
     mod = _load_module()
@@ -185,8 +189,9 @@ def test_layout_a_top_level_files(viewer_corpus):
     assert (out / "index.html").exists()
     assert (out / "all.json").exists()
     assert (out / "lib" / "alpine.min.js").exists()
-    assert (out / "lib" / "openseadragon.min.js").exists()
-    assert any((out / "lib" / "openseadragon-images").glob("*.png"))
+    assert (out / "lib" / "leaflet.min.js").exists()
+    assert (out / "lib" / "leaflet.css").exists()
+    assert any((out / "lib" / "leaflet-images").glob("*.png"))
 
 
 def test_layout_a_per_letter_subdirs(viewer_corpus):
@@ -231,7 +236,7 @@ def test_index_links_into_letter_pages(viewer_corpus):
             f"letter card for {L} must link into letters/{L}/viewer/{L}.html"
 
 
-def test_letter_page_html_uses_alpine_and_openseadragon(viewer_corpus):
+def test_letter_page_html_uses_alpine_and_leaflet(viewer_corpus):
     """Each letter page loads vendor libs and wires the lightbox."""
     src_root = viewer_corpus["src_root"]
     mod = _load_module()
@@ -245,9 +250,14 @@ def test_letter_page_html_uses_alpine_and_openseadragon(viewer_corpus):
         "--out-dir", str(viewer_corpus["out_dir"]),
     ])
     a_html = (viewer_corpus["out_dir"] / "letters" / "A" / "viewer" / "A.html").read_text(encoding="utf-8")
-    assert "../lib/alpine.min.js" in a_html
-    assert "../lib/openseadragon.min.js" in a_html
-    assert "OpenSeadragon" in a_html
+    assert "../../../lib/alpine.min.js" in a_html
+    assert "../../../lib/leaflet.min.js" in a_html
+    assert "leaflet.css" in a_html
     assert "lightbox-overlay" in a_html
-    # Image src uses ../img/ relative path
+    # The viewer factory (L.imageOverlay / mountLeaflet) lives in
+    # app.js, not the page template. Verify it's there too.
+    app_js = (viewer_corpus["out_dir"] / "letters" / "A" / "viewer" / "app.js").read_text(encoding="utf-8")
+    assert "L.imageOverlay" in app_js
+    # Image src uses ../img/ relative path (letters/A/img is a sibling of viewer/)
     assert "../img/" in a_html
+    assert "../../../index.html" in a_html

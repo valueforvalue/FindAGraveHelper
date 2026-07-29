@@ -79,6 +79,51 @@ INCLUDE_PATHS = [
 # folder rather than dumping files at the zip root.
 ARCHIVE_TOP = "pension-viewer-bundle"
 
+# A tiny launch page that lives at the extraction root and immediately
+# redirects to the viewer index. The reviewer unzips any letter zip
+# (or the index zip) into a folder and double-clicks START_HERE.html
+# — no need to dig into data/cards/viewer/ first.
+#
+# Written to every zip by collect_files_for_letter and
+# collect_index_files, so the page is present regardless of which
+# subset of zips a reviewer pulls.
+#
+# The collector signals the synthetic entry with src=Path("__start_here__")
+# (a non-existent path that write_letter_zip recognises and replaces
+# with the literal START_HERE_HTML). Keeps the file list type uniform
+# (Path, arcname) without needing a 3-tuple variant.
+START_HERE_ARC = f"{ARCHIVE_TOP}/START_HERE.html"
+_START_HERE_SENTINEL = Path("__start_here__")
+
+def _start_here_entry() -> tuple[Path, str]:
+    return (_START_HERE_SENTINEL, START_HERE_ARC)
+
+START_HERE_HTML = """<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pension Cards — Start Here</title>
+<meta http-equiv="refresh" content="0; url=data/cards/viewer/index.html">
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+         background: #f5f5f0; color: #1e293b; margin: 0;
+         display: flex; align-items: center; justify-content: center;
+         min-height: 100vh; text-align: center; padding: 2em; }
+  a { color: #2c3e50; }
+  .hint { color: #7f8c8d; margin-top: 1em; font-size: 0.9em; }
+</style>
+</head>
+<body>
+  <main>
+    <h1>Pension Cards — Viewer</h1>
+    <p>Redirecting to <a href="data/cards/viewer/index.html">data/cards/viewer/index.html</a> …</p>
+    <p class="hint">If nothing happens, click the link above. The
+      viewer runs entirely from local files; no internet needed.</p>
+  </main>
+</body>
+</html>
+"""
+
 DEFAULT_OUT = Path("data/pension-viewer-bundle.zip")
 
 # Files in the bundle that are NOT letter-specific (shared by every
@@ -240,6 +285,9 @@ def collect_files_for_letter(
             if p.is_file():
                 rel = f"lib/{p.relative_to(lib_dir).as_posix()}"
                 out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
+    # Synthetic launcher at the extraction root so the reviewer can
+    # double-click START_HERE.html after extracting any letter zip.
+    out.append(_start_here_entry())
     return out
 
 
@@ -261,6 +309,10 @@ def collect_index_files(root: Path) -> list[tuple[Path, str]]:
         src = root / rel
         if src.exists():
             out.append((src, f"{ARCHIVE_TOP}/{rel}"))
+    # Synthetic launcher at the extraction root. The index zip
+    # is the one reviewers usually start with, so the START_HERE
+    # file lands there even if no letter zips are unpacked yet.
+    out.append(_start_here_entry())
     return out
 
 
@@ -292,9 +344,24 @@ def write_letter_zip(
         for src, arc in files:
             if arc in existing_arcs:
                 continue
-            zf.write(src, arc)
-            raw_bytes += src.stat().st_size
-    partial.rename(out_path)
+            if arc == START_HERE_ARC:
+                # Synthetic launcher HTML — no source file, just write
+                # the literal string. writestr compresses to the same
+                # ZIP_DEFLATED that .write() uses.
+                zf.writestr(arc, START_HERE_HTML)
+                raw_bytes += len(START_HERE_HTML.encode("utf-8"))
+            else:
+                zf.write(src, arc)
+                raw_bytes += src.stat().st_size
+    # Crash-safe rename: if the final path already exists (from a
+    # previous crashed run that left the final zip but lost the
+    # partial — or because two zips racing each other), replace it
+    # atomically rather than erroring out. Same-directory rename
+    # is atomic on POSIX; on Windows os.replace handles overwrite.
+    if out_path.exists():
+        log.warning("%s already exists; replacing with newly-written zip",
+                    out_path.name)
+    partial.replace(out_path)
     return raw_bytes
 
 
@@ -361,13 +428,18 @@ def run_by_letter(args, root: Path, log: logging.Logger) -> int:
 
     if args.dry_run:
         log.info("dry-run: would write %d letter-zips", len(wanted))
+        def _entry_bytes(entry):
+            p, _arc = entry
+            if p == _START_HERE_SENTINEL:
+                return len(START_HERE_HTML.encode("utf-8"))
+            return p.stat().st_size
         for letter in sorted(wanted):
             files = collect_files_for_letter(root, letter, pcid_to_letter)
-            total = sum(p.stat().st_size for p, _ in files)
+            total = sum(_entry_bytes(e) for e in files)
             log.info("  %s.zip: %d files, %s raw",
                      letter, len(files), human_bytes(total))
         idx_files = collect_index_files(root)
-        idx_bytes = sum(p.stat().st_size for p, _ in idx_files)
+        idx_bytes = sum(_entry_bytes(e) for e in idx_files)
         log.info("  index.zip: %d files, %s raw",
                  len(idx_files), human_bytes(idx_bytes))
         return 0
