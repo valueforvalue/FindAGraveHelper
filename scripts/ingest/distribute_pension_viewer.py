@@ -314,8 +314,11 @@ def run_by_letter(args, root: Path, log: logging.Logger) -> int:
                 continue
             pcid = int(m.group(1))
             letter = pcid_to_letter.get(pcid, "?")
-            if letter != "?":
-                pcids_by_letter[letter].add(pcid)
+            pcids_by_letter[letter].add(pcid)
+    # The '?' bucket holds pensioners with no surname initial
+    # (pensioncard name starts with non-alpha, e.g. "Mrs.", "A. J.").
+    # The viewer maps those to '_' on disk (see safe_letter_filename),
+    # so surface them as a '_' letter-slice.
     present_letters = sorted(pcids_by_letter.keys())
     if wanted is None:
         wanted = set(present_letters)
@@ -361,7 +364,7 @@ def run_by_letter(args, root: Path, log: logging.Logger) -> int:
         if not files:
             log.warning("[%s] no files collected, skipping", letter)
             continue
-        out_path = stem.parent / f"{stem.name}.{letter}.zip"
+        out_path = stem.parent / f"{stem.name}.{safe_letter_filename(letter)}.zip"
         raw = write_letter_zip(out_path, files, log)
         written.append((out_path, raw))
         log.info("[%s] done -> %s (%d files, %s raw)",

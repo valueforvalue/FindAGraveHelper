@@ -221,8 +221,9 @@ def test_by_letter_emits_one_zip_per_letter(corpus_paths):
     rc = _run(src_root, out_dir, "--by-letter")
     assert rc == 0
     zips = sorted(p.name for p in out_dir.glob("*.zip"))
-    # A.zip, B.zip, index.zip
-    assert zips == ["bundle.A.zip", "bundle.B.zip", "bundle.index.zip"]
+    # A.zip, B.zip, _.zip (orphan bucket), index.zip
+    assert zips == ["bundle.A.zip", "bundle.B.zip",
+                    "bundle._.zip", "bundle.index.zip"]
 
 
 def test_by_letter_zip_contents_have_letter_page_only(corpus_paths):
@@ -236,12 +237,29 @@ def test_by_letter_zip_contents_have_letter_page_only(corpus_paths):
     assert any(n.endswith("A.json") for n in names)
     assert not any(n.endswith("B.html") for n in names)
     assert not any(n.endswith("B.json") for n in names)
-    # A-jpgs present, B-jpgs absent, orphan absent
+    # A-jpgs present, B-jpgs absent, orphan absent (orphan lives in _.zip)
     assert "pension-viewer-bundle/data/cards/img/101__1010.jpg" in names
     assert "pension-viewer-bundle/data/cards/img/102__1020.jpg" in names
     assert "pension-viewer-bundle/data/cards/img/102__1021.jpg" in names
     assert "pension-viewer-bundle/data/cards/img/201__2010.jpg" not in names
     assert "pension-viewer-bundle/data/cards/img/999__9990.jpg" not in names
+
+
+def test_by_letter_underscore_bucket_collects_unmapped_pcids(corpus_paths):
+    """Pensioners with no letter (orphan pcids) ship in _.zip with the
+    _.html / _.json page, so no jpgs are silently dropped."""
+    src_root = corpus_paths["src_root"]
+    out_dir = corpus_paths["out_dir"]
+    _run(src_root, out_dir, "--by-letter")
+    under = out_dir / "bundle._.zip"
+    assert under.exists(), "expected _.zip for orphan bucket"
+    with zipfile.ZipFile(under) as zf:
+        names = zf.namelist()
+    assert any(n.endswith("data/cards/viewer/_.html") for n in names)
+    assert any(n.endswith("data/cards/viewer/_.json") for n in names)
+    assert "pension-viewer-bundle/data/cards/img/999__9990.jpg" in names
+    # A-only jpgs must NOT bleed into the orphan bucket
+    assert "pension-viewer-bundle/data/cards/img/101__1010.jpg" not in names
 
 
 def test_by_letter_index_zip_has_full_viewer_no_images(corpus_paths):
@@ -250,9 +268,10 @@ def test_by_letter_index_zip_has_full_viewer_no_images(corpus_paths):
     _run(src_root, out_dir, "--by-letter")
     with zipfile.ZipFile(out_dir / "bundle.index.zip") as zf:
         names = zf.namelist()
-    # Every letter page present (both A and B)
+    # Every letter page present (both A and B, plus _ for the bucket)
     assert any(n.endswith("A.html") for n in names)
     assert any(n.endswith("B.html") for n in names)
+    assert any(n.endswith("_.html") for n in names)
     assert any(n.endswith("index.html") for n in names)
     assert any(n.endswith("all.json") for n in names)
     # NO images
@@ -266,8 +285,9 @@ def test_by_letter_respects_letters_subset(corpus_paths):
     assert rc == 0
     zips = sorted(p.name for p in out_dir.glob("*.zip"))
     assert zips == ["bundle.A.zip", "bundle.index.zip"]
-    # B.zip must NOT exist
+    # B.zip + _.zip must NOT exist (--letters restricted to A only)
     assert not (out_dir / "bundle.B.zip").exists()
+    assert not (out_dir / "bundle._.zip").exists()
 
 
 def test_by_letter_dry_run_writes_nothing(corpus_paths):
@@ -293,12 +313,14 @@ def test_by_letter_arcnames_use_bundle_prefix(corpus_paths):
     src_root = corpus_paths["src_root"]
     out_dir = corpus_paths["out_dir"]
     _run(src_root, out_dir, "--by-letter")
-    with zipfile.ZipFile(out_dir / "bundle.A.zip") as zf:
-        names = zf.namelist()
-    # Every arcname is under pension-viewer-bundle/ so extraction
-    # yields a self-contained folder.
-    for n in names:
-        assert n.startswith("pension-viewer-bundle/"), n
+    for zipname in ("bundle.A.zip", "bundle._.zip", "bundle.index.zip"):
+        with zipfile.ZipFile(out_dir / zipname) as zf:
+            names = zf.namelist()
+        # Every arcname is under pension-viewer-bundle/ so extraction
+        # yields a self-contained folder.
+        for n in names:
+            assert n.startswith("pension-viewer-bundle/"), \
+                f"{zipname}: bad arcname {n!r}"
 
 
 def test_unselected_letter_in_subset_skipped_with_warning(corpus_paths, caplog):
