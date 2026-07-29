@@ -416,6 +416,15 @@ def main(argv: list[str] | None = None) -> int:
             args.out.write_text(
                 json.dumps(results, indent=2), encoding="utf-8"
             )
+        # Heartbeat every 100 images — the OCR script has died
+        # silently in this session at least twice; the heartbeat
+        # lets external watchers confirm it's still alive.
+        if i % 100 == 0:
+            import os
+            import psutil  # type: ignore
+            rss_mb = psutil.Process(os.getpid()).memory_info().rss / 1e6
+            logging.info("heartbeat: %d/%d done, RSS=%.0fMB",
+                         i, len(new_images), rss_mb)
 
     args.out.write_text(json.dumps(results, indent=2), encoding="utf-8")
 
