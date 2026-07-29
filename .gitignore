@@ -79,3 +79,8 @@ data/cards/red_ocr_summary.json
 data/cards/download.log
 # Allow the enrichment report (small, useful for review):
 !data/cards/enrichment_report.json
+
+# HTML/JSON viewer — regenerable from
+# scripts/ingest/build_pensioncard_viewer.py. ~17 MB for the full
+# set. Keep local for browsing; the script is what we commit.
+data/cards/viewer/
