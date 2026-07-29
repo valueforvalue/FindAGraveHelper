@@ -84,3 +84,9 @@ data/cards/download.log
 # scripts/ingest/build_pensioncard_viewer.py. ~17 MB for the full
 # set. Keep local for browsing; the script is what we commit.
 data/cards/viewer/
+
+# Bundled zip output from distribute_pension_viewer.py (~5 GB).
+# Regenerable from the source data + viewer; the script is what
+# we commit.
+data/pension-viewer-bundle*.zip
+data/pension-viewer-bundle*.zip.partial
