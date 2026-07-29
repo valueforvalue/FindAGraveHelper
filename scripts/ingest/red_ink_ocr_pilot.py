@@ -77,6 +77,26 @@ MARRIED_RE = re.compile(
     r"(?i)\b(married|wedded|wed\b|marriage|"
     r"date of birth|d/o/b)\b"
 )
+# L3 follow-up (2026-07-29): address-change anti-keywords. A
+# date within ±60 chars of any of these phrases is an
+# address-change date, not a death. The inline filters in
+# find_death_date apply these on the cleaned-text window AFTER
+# strip_form_lines has dropped whole chunks; this catches cases
+# where the phrase and date are on adjacent chunks.
+ADDR_CHANGE_RE = re.compile(
+    r"(?i)\b(gives\b|gives:|changed\b|"
+    r"o\s*/\s*c\b|o\.\s*c\.\b|"
+    r"temp\.?\s+ad(?:dress)?\b|"
+    r"post\s+card\b|"
+    r"a/?c\s+|gc\s+|oy\s+|qc\s+|aw\s+)\s*[\d/.\-]+"
+)
+# L3 follow-up: "by letter" inline (when the chunk didn't get
+# stripped because the date appears AFTER the phrase on the
+# same line).
+LETTER_DATE_RE = re.compile(
+    r"(?i)\b(?:by\s+letter|letter\s+dated|letter\s+of)\b"
+    r"\s*[\d/.\-]+"
+)
 
 # 2026-07-29 added line-stripping helpers for Step L1 (issue
 # #139 follow-up). Real pension cards have many short form-field
@@ -98,6 +118,25 @@ LINE_STRIP_PATTERNS = [
     re.compile(r"(?i)\b(q/?\s*c\.?\s+of|q/c|on roll|widow on roll|"
                r"on the roll)\b"),
     re.compile(r"(?i)\b(cancel\w*|approved|approval|filling)\b"),
+    # L3 follow-up (2026-07-29): address-change entries. These are
+    # admin records where a date is paired with a phrase like
+    # 'gives Temp Address', 'Changed from X to Y', 'o/c X/X/XX
+    # gives ...'. Tesseract emits them on the same OCR block as
+    # the Deceased stamp; the date is the address-change date,
+    # NOT a death. The phrase 'gives' or 'Changed' on the same
+    # chunk is the discriminator. Drops the whole chunk if the
+    # phrase appears, even when a death keyword is also in the
+    # chunk (because the chunks get split on sentence-end so the
+    # address-change line is its own chunk).
+    re.compile(r"(?i)\b(gives\b|gives:|changed\b|"
+               r"o\s*/\s*c\b|o\.\s*c\.\b|"
+               r"temp\.?\s+ad(?:dress)?\b|"
+               r"post\s+card\b)"),
+    # L3 follow-up: short-form correspondence tokens. These show
+    # up at the start of admin chunks: 'a/c', 'ac', 'oy', 'gc'.
+    # 'a/c' (acknowledgment of correspondence) and 'gc' (general
+    # correspondence) are NOT death markers.
+    re.compile(r"(?i)\b(?:^|\s)(?:a/?c|gc|oy|qc|aw)\s+[\d/.\-]+"),
 ]
 # Lines containing one of these tokens are protected (NEVER
 # stripped) because they are likely the actual death stamp.
@@ -422,6 +461,16 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         if CAME_TO_RE.search(window) and not has_kw_in_window:
             continue
         if MARRIED_RE.search(window) and not has_kw_in_window:
+            continue
+        # L3 follow-up (2026-07-29): address-change / short-form
+        # correspondence anti-keywords. Catches 'gives Temp
+        # Address', 'Changed from X to Y', 'o/c X/X/XX', etc.
+        # Same logic as FILED_RE: only reject when no death
+        # keyword is in the immediate window (a Deceased stamp
+        # adjacent to the phrase should still be allowed).
+        if ADDR_CHANGE_RE.search(window) and not has_kw_in_window:
+            continue
+        if LETTER_DATE_RE.search(window) and not has_kw_in_window:
             continue
         if info["year"] < 1870 and WAR_END_RE.search(window) \
                 and not has_kw_in_window:

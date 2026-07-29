@@ -315,6 +315,109 @@ def test_strip_form_lines_preserves_dates_when_protected_token_present():
     assert "Deceased" in cleaned
     assert "GRANTED" in cleaned
 
+# ---------------------------------------------------------------------------
+# L3 follow-up (2026-07-29): address-change / correspondence-date false
+# positives. Pension-card OCR text is full of admin entries like
+# 'Letter 3/6/23 gives Temp Address', 'o/c 9/14/20 gives Mangum', 'Changed
+# from Hollis to Gould 9/18/19', 'ac 12/31-52 gives 3810 W. Park'. None of
+# these are deaths, but the no-keyword fallback in find_death_date was
+# picking them as the first plausible date. These tests pin the fix.
+# ---------------------------------------------------------------------------
+
+def test_strip_form_lines_drops_gives_temp_address():
+    """'gives Temp Address' is an address-change entry, not a
+    death. Whole chunk should be dropped by strip_form_lines."""
+    text = "o/c 9/14/20 gives Mangum, B-63  Deceased 4-13-1933"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "gives" not in cleaned
+    assert "Mangum" not in cleaned
+    assert "Deceased" in cleaned
+    assert "4-13-1933" in cleaned
+
+
+def test_strip_form_lines_drops_changed_from_to():
+    """'Changed from X to Y M/D/YY' is an address-change entry."""
+    text = ("9/18/19 Changed from Hollis to Gould.  "
+            "Deceased 5-12-1940")
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "Changed" not in cleaned
+    assert "Hollis" not in cleaned
+    assert "Gould" not in cleaned
+    assert "Deceased" in cleaned
+
+
+def test_strip_form_lines_drops_short_form_correspondence():
+    """'a/c X/X/XX', 'gc X/X/XX', 'ac X/X/XX' — short-form
+    correspondence markers. The pattern matches the token+date
+    combo and drops the whole chunk."""
+    text = "ac 12/31-52 gives Ry3  Deceased 7-5-1931"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "12/31-52" not in cleaned
+    assert "Ry3" not in cleaned
+    assert "Deceased" in cleaned
+
+
+def test_find_death_date_skips_letter_gives_address_no_keyword():
+    """When no death keyword is anywhere in the text, a date
+    preceded by 'Letter X/X/XX gives Address' must NOT be picked.
+    Without the L3 follow-up fix, this returned the letter date
+    as the death.
+    """
+    text = ("Letter 3/6/23 gives Temp Address: 412 East Columbia, "
+            "Colorado Springs, Colo.")
+    info, _ = pilot.find_death_date(text)
+    assert info is None, (
+        f"expected None (no death), got {info}"
+    )
+
+
+def test_find_death_date_skips_changed_from_when_no_keyword():
+    """'Changed from Hollis to Gould 9/18/19' with no death
+    keyword anywhere — must not be picked as death."""
+    text = "9/18/19 Changed from Hollis to Gould."
+    info, _ = pilot.find_death_date(text)
+    assert info is None, (
+        f"expected None, got year={info['year'] if info else None}"
+    )
+
+
+def test_find_death_date_keeps_real_death_stamp_amidst_address_changes():
+    """Integration: address-change entries mixed with a real
+    Deceased stamp. The Deceased stamp date should win."""
+    text = ("aX 3731-20 gives 601 BE. Pranck St.  "
+            "OY 7/23/20 gives Ryan B-65  "
+            "ac 12/31-52 gives Ry3, 5-25  "
+            "gc 1724/23 gives 6 1-E frank St., Norman  "
+            "Deceased 8-19-1955")
+    info, _ = pilot.find_death_date(text)
+    assert info is not None
+    assert info["year"] == 1955, (
+        f"expected 1955 (Deceased stamp), got {info['year']}"
+    )
+
+
+def test_find_death_date_keeps_real_death_when_gives_on_adjacent_chunk():
+    """When the Deceased stamp is on one chunk and an
+    address-change chunk is adjacent, the stamp should win.
+    """
+    text = ("o/c 9/14/20 gives Mangum, B-63  Qc 2/18  "
+            "Changed from Mangum to Elk City.  "
+            "DECEASED 5-29-17")
+    info, _ = pilot.find_death_date(text)
+    assert info is not None
+    assert info["year"] == 1917, (
+        f"expected 1917 (Deceased stamp), got {info['year']}"
+    )
+
+
+def test_find_death_date_still_returns_none_on_pure_admin_text():
+    """Edge case: a chunk that's pure admin (no death keyword,
+    no soldier name) should not yield a date."""
+    text = ("REJECTED 5/2/19. GRANTED OCT 7 1915. "
+            "FILED 6/3/15. Q/C of 8/15/16.")
+    info, _ = pilot.find_death_date(text, soldier_name="Smith")
+    assert info is None
+
 
 def test_find_death_date_skips_filed_stamp_after_strip():
     """Integration: a 'Filed 6/3/15' line shouldn't make
