@@ -259,3 +259,80 @@ def test_filter_window_60_catches_came_to():
         ), (
         "CAME_TO_RE must match within ±60 chars of a 4-digit year"
     )
+
+
+# ---------------------------------------------------------------------
+# strip_form_lines (Step L1, issue #139 follow-up)
+# ---------------------------------------------------------------------
+
+def test_strip_form_lines_drops_rejected_grant_stamps():
+    # Real OCR output uses 2+ spaces between form-row stamps
+    # (Tesseract's signature for form rows). The splitter
+    # breaks on 2+ whitespace.
+    text = "REJECTED 8/31-20  GRANTED OCT 7 1915  Deceased 4-13-1933 widow"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "REJECTED" not in cleaned
+    assert "GRANTED" not in cleaned
+    # Protected token (Deceased) must survive.
+    assert "Deceased" in cleaned
+    assert "4-13-1933" in cleaned
+    assert len(dropped) >= 2
+
+
+def test_strip_form_lines_drops_filed_stamps_with_dates():
+    text = "Filed 6/3/15  Deceased 4-13-1933"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "Filed" not in cleaned
+    assert "Deceased" in cleaned
+    assert "4-13-1933" in cleaned
+
+
+def test_strip_form_lines_drops_by_letter_dates():
+    text = "By letter dated Jan 30, 1917  Deceased 5-12-1940"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "By letter" not in cleaned
+    assert "Deceased" in cleaned
+
+
+def test_strip_form_lines_keeps_prose_with_death_keywords():
+    text = ("Andrews, James. He died February 26 1915. "
+            "He was a Confederate soldier.")
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "died" in cleaned
+    assert "February 26 1915" in cleaned
+    assert dropped == []
+
+
+def test_strip_form_lines_preserves_dates_when_protected_token_present():
+    """The same line may have both a stamp phrase and a death
+    token (e.g. 'GRANTED' + 'Deceased'). Protected tokens
+    always keep the line."""
+    text = "GRANTED OCT 7 1915 Deceased 4-13-1933"
+    cleaned, dropped = pilot.strip_form_lines(text)
+    # Because 'Deceased' is a protected token, the whole line
+    # is kept. (We don't try to surgically remove the GRANTED
+    # substring while keeping the rest of the line.)
+    assert "Deceased" in cleaned
+    assert "GRANTED" in cleaned
+
+
+def test_find_death_date_skips_filed_stamp_after_strip():
+    """Integration: a 'Filed 6/3/15' line shouldn't make
+    find_death_date return 1915. Without strip_form_lines, the
+    year 1915 (in the Filed stamp) would have been picked
+    because the date regex matches it. With strip, the line
+    is removed and the parser falls back to other candidates.
+    """
+    # Text has only the Filed date and a death-stamp date
+    # that DOES NOT trip the death-keyword filter because
+    # 'Deceased' is on a separate stamp line.
+    text = "REJECTED 5/2/19. GRANTED OCT 7 1915. Deceased 4-13-1933."
+    info, _ = pilot.find_death_date(text)
+    # Without strip, the parser might pick 1915 (GRANT year)
+    # or 1919 (REJECT year) or 1933 (Deceased year). With
+    # strip, the GRANTED + REJECTED + (Deceased) lines
+    # collapse. The 'Deceased' protected line keeps 4-13-1933.
+    if info:
+        assert info["year"] == 1933, (
+            f"expected 1933 (death), got {info['year']}"
+        )

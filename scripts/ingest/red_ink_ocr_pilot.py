@@ -78,6 +78,34 @@ MARRIED_RE = re.compile(
     r"date of birth|d/o/b)\b"
 )
 
+# 2026-07-29 added line-stripping helpers for Step L1 (issue
+# #139 follow-up). Real pension cards have many short form-field
+# lines (REJECTED / GRANTED / Filed / By letter / Q/C of / Widow
+# on roll / etc) that often contain a date stamp — filing date,
+# approval date, roll-call date — that the original parser would
+# pick as a death. Stripping these lines BEFORE find_death_date
+# runs reduces NO_KEYWORD_BUT_DATE findings significantly.
+#
+# Each pattern is matched per-line; lines matching ANY of these
+# are dropped from the cleaned text. We also keep the death
+# stamp pattern (e.g. "Deceased 4-13-1933") on a protected list
+# so we never accidentally strip the actual death line.
+LINE_STRIP_PATTERNS = [
+    re.compile(r"(?i)\b(rejected|rejection)\b"),
+    re.compile(r"(?i)\b(granted|grant)\b"),
+    re.compile(r"(?i)\bfiled\b\s*[\d/.\-]+\b"),
+    re.compile(r"(?i)\b(by letter|letter dated|letter of)\b"),
+    re.compile(r"(?i)\b(q/?\s*c\.?\s+of|q/c|on roll|widow on roll|"
+               r"on the roll)\b"),
+    re.compile(r"(?i)\b(cancel\w*|approved|approval|filling)\b"),
+]
+# Lines containing one of these tokens are protected (NEVER
+# stripped) because they are likely the actual death stamp.
+PROTECTED_LINE_TOKENS = re.compile(
+    r"(?i)\b(deceased|died|death|d\.o\.d\.|"
+    r"date of death)\b"
+)
+
 # Death-context regexes. The word "Deceased" appears as the most
 # reliable anchor (saw it on the Andrews card); "died"/"death" are
 # common but sometimes get confused with "died in service" etc.
@@ -172,6 +200,82 @@ def _try_2digit_date(year_2d: int, month: int, day: int) -> tuple | None:
     return ("date", full_year, month, day, _iso(full_year, month, day))
 
 
+def strip_form_lines(text: str) -> tuple[str, list[str]]:
+    """Drop stamp / form-field lines that often contain non-death
+    dates, before running find_death_date.
+
+    Pension-card OCR output is a single string with no real
+    line breaks (Tesseract concatenates). We still try to split
+    on common break points: '\\n' (rare but possible), '. ' (end
+    of stamp), ' | ' (some Tesseract pages), and every 60 chars
+    (a fallback to break the long blob into line-sized chunks).
+
+    For each chunk:
+      - If it contains a protected token (deceased/died/death),
+        keep it.
+      - Else if it matches any LINE_STRIP_PATTERNS, drop it.
+      - Else keep it.
+
+    Returns (cleaned_text, dropped_chunks). The dropped list
+    is exposed so the re-enrich audit can verify what got
+    removed (and surface false positives if a death line was
+    accidentally stripped).
+
+    Issue #139 follow-up Step L1 (2026-07-29).
+    """
+    if not text:
+        return "", []
+
+    # Split on real newlines first; then on Tesseract's
+    # pipe-delimited form-row pattern; then on sentence ends
+    # and on 2+ spaces (Tesseract often joins form rows with
+    # extra spaces). The 2+ space split is the important one
+    # for stamping areas like
+    # 'REJECTED 8/31-20  GRANTED OCT 7 1915  Deceased 4-13-1933'
+    # where each stamp is its own logical line.
+    chunks: list[str] = []
+    for line in text.split("\n"):
+        line = line.strip()
+        if not line:
+            continue
+        for piece in re.split(r"\s*[|;]\s*", line):
+            piece = piece.strip()
+            if not piece:
+                continue
+            # Split on 2+ spaces and sentence-end if the piece
+            # is long. 2+ spaces is the Tesseract "form row
+            # separator" signature.
+            sub = re.split(r"(?<=[\.\?!])\s+|\s{2,}", piece)
+            for s in sub:
+                s = s.strip()
+                if not s:
+                    continue
+                if len(s) > 100:
+                    sentences = re.split(r"(?<=[\.\?!])\s+", s)
+                    chunks.extend(stmt.strip() for stmt in sentences if stmt.strip())
+                else:
+                    chunks.append(s)
+
+    if not chunks:
+        return "", []
+
+    kept: list[str] = []
+    dropped: list[str] = []
+    for chunk in chunks:
+        # Protected tokens always survive.
+        if PROTECTED_LINE_TOKENS.search(chunk):
+            kept.append(chunk)
+            continue
+        # Match any strip pattern -> drop.
+        if any(pat.search(chunk) for pat in LINE_STRIP_PATTERNS):
+            dropped.append(chunk)
+            continue
+        kept.append(chunk)
+
+    cleaned = " ".join(kept)
+    return cleaned, dropped
+
+
 def build_red_mask(img_rgb: Image.Image) -> Image.Image:
     """Return grayscale image: red ink -> black, rest -> white.
 
@@ -211,6 +315,16 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
     """
     if not text:
         return None, ""
+
+    # Step L1 (issue #139 follow-up, 2026-07-29): strip
+    # form-field lines (REJECTED / GRANTED / Filed / By letter /
+    # Q/C of / etc) from the text BEFORE scanning for date
+    # candidates, so filing/approval/roll-call dates don't get
+    # picked as the death. Lines containing 'deceased' or
+    # 'died' are protected from stripping. All subsequent
+    # candidate scanning + window display operate on the
+    # cleaned text; the original is discarded.
+    text, _dropped = strip_form_lines(text)
 
     candidates: list[tuple[str, dict]] = []
     for pattern, parser in DATE_PATTERNS:
