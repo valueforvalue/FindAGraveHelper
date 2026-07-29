@@ -522,3 +522,43 @@ def test_l2_median_cluster_picks_inner_year():
         assert info["year"] == 1922, (
             f"expected 1922 (median), got {info['year']}"
         )
+
+# ---------------------------------------------------------------------------
+# L3 follow-up (2026-07-29): widow-strictness no-fallback. The L2 code had
+# an 'only candidate' escape hatch — when the soldier name wasn't near the
+# date, it would still accept the candidate if no other year was parsed.
+# That escape hatch was the source of slice B's 5 false positives: cards
+# where the only date parsed was a filing/correspondence date. Removed.
+# ---------------------------------------------------------------------------
+
+def test_l3_widow_strict_no_keyword_no_soldier_near_returns_none_single_cand():
+    """Single candidate, no death keyword, soldier name NOT
+    nearby — must return None. The L2 'only candidate' fallback
+    used to allow this; L3 removed it.
+    """
+    text = "Letter 3/6/23 gives Temp Address: 412 East Columbia"
+    info, _ = pilot.find_death_date(text, soldier_name="Gray")
+    assert info is None, (
+        f"expected None (no death context), got year={info['year']}"
+    )
+
+
+def test_l3_widow_strict_no_keyword_no_soldier_near_returns_none_changed():
+    """Address-change entry, no death keyword, soldier name not
+    nearby — must return None."""
+    text = "9/18/19 Changed from Hollis to Gould."
+    info, _ = pilot.find_death_date(text, soldier_name="Brown")
+    assert info is None
+
+
+def test_l3_widow_strict_keeps_when_soldier_name_nearby_no_keyword():
+    """When the soldier's name IS nearby (±120 chars) but no
+    death keyword, the candidate should still be picked. The
+    widow-name proximity is the second-line signal.
+    """
+    text = "Wood, Emma.  Died January 20, 1928.  Filed 6/9/15."
+    info, _ = pilot.find_death_date(text, soldier_name="Wood")
+    assert info is not None
+    assert info["year"] == 1928, (
+        f"expected 1928 (soldier-name nearby), got {info['year']}"
+    )

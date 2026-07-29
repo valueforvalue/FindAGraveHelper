@@ -500,12 +500,15 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
             ws = max(0, info["span"][0] - 120)
             we = min(len(text), info["span"][1] + 120)
             if soldier_lower not in text[ws:we].lower():
-                # Allow fall-through only if this is the only
-                # candidate at all (no other year was parsed).
-                if any(info2["year"] != info["year"]
-                       for _, info2 in candidates
-                       if info2 is not info and info2.get("year")):
-                    continue
+                # L3 follow-up (2026-07-29): dropped the
+                # 'only candidate' fallback. When there's no
+                # death keyword AND the soldier name isn't
+                # near the date, even a single candidate is
+                # still suspicious — most likely a filing,
+                # correspondence, or address-change date.
+                # Returning None forces manual review rather
+                # than a wrong-field date flowing downstream.
+                continue
         chosen_info = info
         chosen_window = window
         break
