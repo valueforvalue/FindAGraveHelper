@@ -140,9 +140,12 @@ def load_pcid_to_letter(root: Path,
                         log: logging.Logger) -> dict[int, str]:
     """Build pcid -> letter from the viewer's all.json master.
 
-    Falls back to '?' for pcids that aren't in the master (which
-    means no enriched record + no image — they wouldn't be in a
-    letter slice anyway).
+    all.json shape (build_pensioncard_viewer.py):
+        { "by_letter": { "A": [{"pensioncard_id": 101, ...}, ...],
+                          "B": [...], ... },
+          "rendered_letters": [...] }
+
+    Falls back to '?' for pcids that aren't in the master.
     """
     master = root / "data" / "cards" / "viewer" / "all.json"
     if not master.exists():
@@ -150,15 +153,14 @@ def load_pcid_to_letter(root: Path,
                     "letter slices will use '?' for every pcid", master)
         return {}
     data = json.loads(master.read_text(encoding="utf-8"))
-    by_pcid = data.get("by_pensioncard_id", {})
+    by_letter = data.get("by_letter") or {}
     out: dict[int, str] = {}
-    for pcid_str, rec in by_pcid.items():
-        letter = (rec.get("letter") or "?").upper()
-        if not letter or not letter[0].isalpha():
-            letter = "?"
-        else:
-            letter = letter[0]
-        out[int(pcid_str)] = letter
+    for letter, recs in by_letter.items():
+        for rec in recs:
+            pcid = rec.get("pensioncard_id")
+            if pcid is None:
+                continue
+            out[int(pcid)] = letter
     log.info("loaded letter mapping for %d pensioncard_ids", len(out))
     return out
 
@@ -175,36 +177,44 @@ def collect_files_for_letter(
 ) -> list[tuple[Path, str]]:
     """For a single letter, yield (abs_path, arcname) for:
 
-    - the matching viewer html+json
-    - all jpgs whose pcid maps to that letter
+    - the letter's viewer page (letters/{L}/viewer/{L}.html)
+    - the letter's sidecar JSON
+    - the letter's images (letters/{L}/img/*.jpg — each jpg is already
+      copied into that subdir by build_pensioncard_viewer.py, so we
+      just walk that tree instead of filtering the global img/ by
+      pcid range)
     - the shared metadata files
-    - the shared viewer index files (index.html, all.json)
+    - the shared viewer top-level files (index.html, all.json, lib/)
 
     Skips anything that doesn't exist on disk (with a warning).
     """
     safe = safe_letter_filename(letter)
     out: list[tuple[Path, str]] = []
+    letter_dir = root / "data" / "cards" / "viewer" / "letters" / safe
 
-    # 1) Letter-specific html + json
-    for name in (f"{safe}.html", f"{safe}.json"):
-        src = root / "data" / "cards" / "viewer" / name
+    # 1) Letter-specific html (viewer page), the page's app.js, and
+    # the sidecar JSON next to the letter.
+    letter_files = [
+        (letter_dir / "viewer" / f"{safe}.html",
+         f"letters/{safe}/viewer/{safe}.html"),
+        (letter_dir / "viewer" / "app.js",
+         f"letters/{safe}/viewer/app.js"),
+        (letter_dir / f"{safe}.json",
+         f"letters/{safe}/{safe}.json"),
+    ]
+    for src, rel in letter_files:
         if src.exists():
-            rel = f"data/cards/viewer/{name}"
-            out.append((src, f"{ARCHIVE_TOP}/{rel}"))
+            out.append((src, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
         else:
-            logging.warning("[%s] missing letter page: %s", letter, rel)
+            logging.warning("[%s] missing page file: %s", letter, rel)
 
-    # 2) Images whose pcid -> this letter
-    img_dir = root / "data" / "cards" / "img"
+    # 2) Images for this letter (already isolated by
+    # build_pensioncard_viewer.py into letters/{L}/img/)
+    img_dir = letter_dir / "img"
     if img_dir.exists():
-        for p in img_dir.glob("*.jpg"):
-            m = JPG_PCID_RE.match(p.name)
-            if not m:
-                continue
-            pcid = int(m.group(1))
-            if pcid_to_letter.get(pcid, "?") == letter:
-                rel = f"data/cards/img/{p.name}"
-                out.append((p, f"{ARCHIVE_TOP}/{rel}"))
+        for p in sorted(img_dir.glob("*.jpg")):
+            rel = f"letters/{safe}/img/{p.name}"
+            out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
     else:
         logging.warning("[%s] img dir missing: %s", letter, img_dir)
 
@@ -216,27 +226,37 @@ def collect_files_for_letter(
         else:
             logging.warning("[%s] missing metadata: %s", letter, rel)
 
-    # 4) Shared viewer index files (index.html + all.json) so the
-    # letter-zip is browseable on its own without the index zip.
+    # 4) Shared viewer top-level files (index.html + all.json + lib/)
+    # so the letter-zip is browseable on its own without the index zip.
+    viewer_root = root / "data" / "cards" / "viewer"
     for name in INDEX_SHARED_VIEWER_FILES:
-        src = root / "data" / "cards" / "viewer" / name
+        src = viewer_root / name
         if src.exists():
-            rel = f"data/cards/viewer/{name}"
-            out.append((src, f"{ARCHIVE_TOP}/{rel}"))
-
+            out.append((src, f"{ARCHIVE_TOP}/data/cards/viewer/{name}"))
+    # lib/ (alpine + OSD + sprites)
+    lib_dir = viewer_root / "lib"
+    if lib_dir.exists():
+        for p in lib_dir.rglob("*"):
+            if p.is_file():
+                rel = f"lib/{p.relative_to(lib_dir).as_posix()}"
+                out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
     return out
 
 
 def collect_index_files(root: Path) -> list[tuple[Path, str]]:
-    """Slim 'index' zip: full viewer (every {letter}.html + index.html
-    + all.json) + metadata, NO images."""
+    """Slim 'index' zip: full viewer (every letter page, the alphabet
+    grid, all.json, lib/) + metadata, NO images. Lets a reviewer
+    browse surnames before deciding which letter-zips to pull."""
     out: list[tuple[Path, str]] = []
     vdir = root / "data" / "cards" / "viewer"
     if vdir.exists():
         for p in vdir.rglob("*"):
             if p.is_file():
-                rel = f"data/cards/viewer/{p.relative_to(vdir).as_posix()}"
-                out.append((p, f"{ARCHIVE_TOP}/{rel}"))
+                # Skip everything under letters/*/img/ (heavy jpgs)
+                rel = p.relative_to(vdir).as_posix()
+                if rel.startswith("letters/") and "/img/" in rel:
+                    continue
+                out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
     for rel in SHARED_METADATA_GLOBS:
         src = root / rel
         if src.exists():
@@ -388,10 +408,11 @@ def run_by_letter(args, root: Path, log: logging.Logger) -> int:
         log.info("  %s (%s raw, %s on disk)",
                  p.name, human_bytes(raw),
                  human_bytes(p.stat().st_size))
-    log.info("open pension-viewer-bundle.index/data/cards/viewer/index.html "
-             "in a browser to browse letters, or open any "
-             "pension-viewer-bundle.{LETTER}/data/cards/viewer/{LETTER}.html "
-             "directly.")
+    log.info("after extracting any/all zips into the SAME folder, "
+             "open pension-viewer-bundle/data/cards/viewer/index.html "
+             "in a browser to browse letters, or "
+             "pension-viewer-bundle/data/cards/viewer/letters/{LETTER}/viewer/{LETTER}.html "
+             "to skip straight to a letter.")
     return 0
 
 
