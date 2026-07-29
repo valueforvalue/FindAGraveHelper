@@ -354,12 +354,27 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
                      for m in DEATH_KEYWORDS.finditer(text)]
     soldier_lower = soldier_name.strip().lower() if soldier_name else ""
 
-    def score(c: tuple[str, dict]) -> tuple[int, int, int, int]:
+    def score(c: tuple[str, dict]) -> tuple[int, int, int, int, int]:
         match_text, info = c
         ms, me = info["span"]
         if not keyword_spans:
-            # No keyword at all: deprioritize.
-            return (1, 0, 0, info["span"][0])
+            # No keyword at all: deprioritize. L2 (2026-07-29)
+            # adds a within-cluster-penalty so the chosen year
+            # is the one closest to the median of all candidates
+            # (catches a 1915 grant-stamp year when a 1929
+            # death year is also present in the OCR text).
+            years = [info2["year"] for _, info2 in candidates
+                     if info2.get("year")]
+            if years:
+                years_sorted = sorted(years)
+                median_year = years_sorted[len(years_sorted) // 2]
+                # Penalties for far-from-median; war-end and
+                # grant-stamp years (1865, 1915) typically end
+                # up as outliers in widow-card OCR text.
+                penalty = min(abs(info["year"] - median_year), 99)
+            else:
+                penalty = 0
+            return (1, 0, 0, info["span"][0], penalty)
         min_dist = min(min(abs(ms - ke), abs(me - ks))
                        for ks, ke in keyword_spans)
         # Widow-aware bonus: if the soldier's name appears
@@ -375,7 +390,7 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         we = min(len(text), me + 120)
         soldier_in_window = soldier_lower in text[ws:we].lower() \
             if soldier_lower else False
-        return (0, 0 if soldier_in_window else 1, 0, min_dist)
+        return (0, 0 if soldier_in_window else 1, 0, min_dist, 0)
 
     # Precision filters (post-sort, pre-pick). We try the best
     # candidate first; if it triggers a filter, fall through to
@@ -411,6 +426,37 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         if info["year"] < 1870 and WAR_END_RE.search(window) \
                 and not has_kw_in_window:
             continue
+        # L2 (2026-07-29) additional filters. When NO death
+        # keyword is anywhere in the text, the year 1915 is
+        # overwhelmingly the GRANTED stamp year (every card has
+        # 'GRANTED OCT 7 1915') — reject it unless the candidate
+        # is the only one. Same for 1865 (war-end parole /
+        # surrender) when other candidates exist.
+        if not keyword_spans:
+            other_years = [info2["year"] for _, info2 in candidates
+                           if info2 is not info and info2.get("year")]
+            if info["year"] == 1915 and other_years:
+                continue
+            if info["year"] == 1865 and other_years:
+                continue
+        # L2 (2026-07-29) widow strictness. On widow cards (soldier
+        # name supplied), if NO death keyword is present anywhere
+        # in the text AND the candidate isn't within ±120 chars of
+        # the soldier's name, the year is too suspicious to trust.
+        # Widow cards almost always mention the soldier in the
+        # 'Widow of <name>' header near the death date; if the
+        # parser can't find that adjacency, it's probably a
+        # wrong-field date (filing, marriage, came-to).
+        if not keyword_spans and soldier_lower:
+            ws = max(0, info["span"][0] - 120)
+            we = min(len(text), info["span"][1] + 120)
+            if soldier_lower not in text[ws:we].lower():
+                # Allow fall-through only if this is the only
+                # candidate at all (no other year was parsed).
+                if any(info2["year"] != info["year"]
+                       for _, info2 in candidates
+                       if info2 is not info and info2.get("year")):
+                    continue
         chosen_info = info
         chosen_window = window
         break
