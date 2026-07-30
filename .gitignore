@@ -61,6 +61,13 @@ docs/research/dixiedata/enrich_report.json
 data/results/*
 !data/results/run_2026_07_24_g10_stealth_swap_verification/
 !data/results/run_2026_07_24_g10_stealth_swap_verification/**
+# Audit + EasyOCR run outputs. Regenerable from the source data +
+# the corresponding script. The audit script writes
+# data/audit_death_dates_report.{json,md}; the long EasyOCR
+# run writes its .pid file + .log file.
+data/audit_death_dates_report.json
+data/audit_death_dates_report.md
+data/easyocr_full_run.pid
 # J5+ per-run output dirs (output/<runname>/). Same resume-safety as
 # data/results/ — these are regenerable from the pipeline + config.
 output/
@@ -93,6 +100,9 @@ data/cards/download.log
 # follow the same pattern as the cards: one JPEG per pensioner,
 # ~1.5GB total. Reproducible from digitalprairie.
 data/cards/applications/
+# Download summary sidecar from the applications downloader.
+# Regenerable from the source pensioners JSON + the script.
+data/cards/download_summary_applications.json
 # EasyOCR slice/sample artifacts (regenerable via the launcher
 # + a fresh --limit N). The smoke-test slice builds drop here
 # during local validation; the canonical red_ocr_results.json
