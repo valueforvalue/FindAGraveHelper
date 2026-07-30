@@ -1,6 +1,17 @@
 # Local tooling
 .antigravitycli/
 
+# Runtime log files produced by background scripts
+# (download_application_images, build_pensioncard_viewer,
+# distribute_pension_viewer, easyocr_pass, etc). Re-running
+# the script reproduces them; commit only the script.
+data/*.log
+data/applications_download.log
+data/build_viewer.log
+data/easyocr_install.log
+data/easyocr_slice_*.log
+data/zip_all_letters.log
+
 # Python bytecode
 __pycache__/
 *.pyc
@@ -77,6 +88,18 @@ data/cards/img/
 data/cards/red_ocr_results.json
 data/cards/red_ocr_summary.json
 data/cards/download.log
+# Application images (the original pension request forms) are
+# pulled by scripts/ingest/download_application_images.py and
+# follow the same pattern as the cards: one JPEG per pensioner,
+# ~1.5GB total. Reproducible from digitalprairie.
+data/cards/applications/
+# EasyOCR slice/sample artifacts (regenerable via the launcher
+# + a fresh --limit N). The smoke-test slice builds drop here
+# during local validation; the canonical red_ocr_results.json
+# is the only file that needs to persist.
+data/cards/easyocr_slice_*.json
+data/cards/parallel_smoke_*.json
+data/cards/img_sampled_50/
 # Allow the enrichment report (small, useful for review):
 !data/cards/enrichment_report.json
 

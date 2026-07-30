@@ -1,0 +1,14 @@
+{
+  "input": "data/cards/easyocr_slice_5_input.json",
+  "output": "data/cards/easyocr_slice_5_output.json",
+  "in_place": false,
+  "img_dir": "data/cards/img",
+  "include_soldiers": true,
+  "only_widows": false,
+  "priority_only": false,
+  "refresh": false,
+  "throttle": 0.25,
+  "workers": 1,
+  "limit": 5,
+  "run_name": "slice5_smoke"
+}

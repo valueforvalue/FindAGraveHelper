@@ -1,0 +1,31 @@
+{
+  "input": "data/cards/red_ocr_results.json",
+  "output": "data/cards/red_ocr_results.json",
+  "in_place": true,
+  "img_dir": "data/cards/img",
+  "include_soldiers": true,
+  "only_widows": false,
+  "priority_only": false,
+  "refresh": false,
+  "throttle": 0.25,
+  "workers": 1,
+  "limit": 0,
+  "run_name": "full_2026-07-29_resume",
+  "_provenance": {
+    "started": "2026-07-29T21:01:00Z",
+    "interrupted_at": "2026-07-30T08:01:09Z",
+    "interruption": "session close / hard kill (no traceback, no done line)",
+    "last_heartbeat": "i=632/6003 ok=632 fail=0 new_dates=110 rate=0.02/s eta=336610s workers=1",
+    "last_pid_file": "data/easyocr_full_run.pid=872 (gone)",
+    "last_log": "data/easyocr_full_run.log",
+    "files_at_2026-07-30T08:13": {
+      "easy_text_present": 836,
+      "death_date_present": 3410,
+      "records_total": 9436
+    },
+    "resume_skip": "easyocr_pass.py skips records with easy_text already set; 836 already done, ~6003 remain",
+    "settings_locked_from": "docs/learnings/2026-07-29-easyocr-slice-protocol.md",
+    "rate_at_interruption": "0.02-0.09/s (varies with image complexity)",
+    "eta_at_resume": "21-93h serial CPU (--workers 1, 8 cores, no CUDA)"
+  }
+}
