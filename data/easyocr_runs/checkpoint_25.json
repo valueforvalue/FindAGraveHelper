@@ -1,0 +1,16 @@
+{
+  "percent": 25,
+  "count": 1808,
+  "target": 5369,
+  "wall_time_utc": "2026-07-30T17:16:32Z",
+  "last_heartbeat": {
+    "ts": "2026-07-30 12:13:01",
+    "i": "964/5369",
+    "ok": "964",
+    "fail": "0",
+    "new_dates": "302",
+    "rate": "0.08/s",
+    "eta": "56016s",
+    "workers": "1"
+  }
+}
