@@ -300,11 +300,54 @@ of the card) to do better.
 
 **False-positive reduction: 5x** (3 vs 15 in v2 vs 30 in v1).
 
-**Final verdict:** the parser is ready for the 7h full run.
-Estimate: ~500-700 real death dates recovered from the 4891
+**Final verdict:** the parser is ready for the full run.
+Estimate: ~500-700 real death dates recovered from the 6000+
 no-date records (~10-15% real lift), with false positives
 acceptable as noise to be filtered by the manual review
 queue.
+
+## Parallel workers (--workers N) — does NOT help on CPU
+
+Added a `--workers N` flag using `ProcessPoolExecutor` to
+parallelize EasyOCR across cores (8-core box, 32GB RAM).
+Each worker process loads its own EasyOCR model (~1.5GB).
+Smoke-tested with `--workers 1, 2, 4, 6` on a 16-record
+slice: identical wall time (~171s) regardless of worker
+count.
+
+**Root cause:** torch internal threading contention. Each
+EasyOCR worker process initializes torch with the default
+`torch.set_num_threads()` = all CPU cores. With 4 workers
+spawned, you have 4 × N torch threads competing for N cores.
+The OS context-switches constantly; throughput stays flat.
+This is a known PyTorch-on-CPU limitation.
+
+**Fix options (not yet implemented):**
+
+1. **Set `torch.set_num_threads(1)` in `_worker_init`** so
+   each worker uses 1 core. May help if EasyOCR's per-image
+   work is parallelizable within a worker (CRAFT detector,
+   recognizer). Quick to try.
+2. **Limit torch MKL threads via `OMP_NUM_THREADS=1`
+   env var** at worker startup. Same effect as #1.
+3. **Image downscale** (1500×900 instead of 2932×1748) — 4x
+   fewer pixels = ~2x faster per-worker. Independent of #1
+   and #2; could combine.
+4. **GPU** (CUDA) — 5-10x speedup expected. The user has a
+   CUDA machine at home for finishing the run after this
+   CPU pre-run completes some records.
+
+**Decision (2026-07-29):** Keep the `--workers` code in
+place (small, tested, doesn't hurt) but run the full
+production pass with `--workers 1` on this box. The
+remaining 6000+ records can be finished on a CUDA machine
+where parallelism actually scales. The `--workers` flag
+will be useful there once `torch.set_num_threads` is set
+correctly in `_worker_init`.
+
+**Resume-safe:** records with `easy_text` already set are
+skipped on restart. As of 2026-07-29 21:01 UTC, 202 records
+have `easy_text` from the first attempt; 6003 remain.
 
 **Why this fix is conservative:** the new filters ONLY reject
 when no death keyword is in the immediate window. A real

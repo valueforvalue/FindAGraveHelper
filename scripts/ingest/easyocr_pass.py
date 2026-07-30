@@ -84,6 +84,76 @@ def easyocr_one(reader, img_path: Path) -> str:
     return "\n".join(lines)
 
 
+
+# ---- multiprocessing workers (added 2026-07-29 for --workers N) ----
+
+_WORKER_READER = None  # per-process EasyOCR reader, set in _worker_init
+
+
+def _worker_init():
+    """Initializer for each ProcessPoolExecutor worker. Loads the
+    EasyOCR model once per worker process. Sets up logging so
+    worker logs (WARNING level) get flushed to stderr.
+    """
+    global _WORKER_READER
+    import logging
+    import easyocr  # lazy import keeps torch out of the main process
+    # basicConfig is per-process; the parent already set it but
+    # workers don't inherit, so call again here. Idempotent.
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s %(levelname)s %(message)s",
+    )
+    _WORKER_READER = easyocr.Reader(["en"], gpu=False, verbose=False)
+
+
+def _worker_process_one(work_item: dict) -> dict:
+    """Process a single record in a worker process. Returns a
+    result dict the main process merges back into the canonical
+    record. Does NOT mutate any shared state.
+    """
+    from pathlib import Path as _Path
+    from scripts.ingest.red_ink_ocr_pilot import (
+        find_death_date, DEATH_KEYWORDS,
+    )
+    img_path = _Path(work_item["img_path"])
+    soldier_name = work_item.get("soldier_name") or ""
+    red_text = work_item.get("red_text") or ""
+    full_text = work_item.get("full_text") or ""
+    out = {"index": work_item["index"], "ok": False, "fail": False}
+    try:
+        text = easyocr_one(_WORKER_READER, img_path)
+        out["easy_text"] = text
+        out["easy_text_len"] = len(text)
+        out["ok"] = True
+        easy_parsed, _ = find_death_date(text, soldier_name)
+        combined = red_text + " " + full_text + " " + text
+        combined_parsed, _ = find_death_date(combined, soldier_name)
+        new_parsed = combined_parsed or easy_parsed
+        if new_parsed:
+            out["parsed"] = {
+                "kind": new_parsed["kind"],
+                "year": new_parsed["year"],
+                "month": new_parsed["month"],
+                "day": new_parsed["day"],
+                "iso": new_parsed["iso"],
+                "match": new_parsed.get("match"),
+                "span": new_parsed.get("span"),
+                "near_death_keyword": bool(
+                    DEATH_KEYWORDS.search(combined)
+                ),
+                "mentions_soldier_name": bool(
+                    soldier_name and soldier_name.lower()
+                    in combined[max(0, new_parsed["span"][0] - 30):
+                               min(len(combined), new_parsed["span"][1] + 30)].lower()
+                ),
+            }
+    except Exception as ex:
+        out["fail"] = True
+        out["error"] = str(ex)
+    return out
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", type=Path, default=DEFAULT_INPUT,
@@ -101,6 +171,14 @@ def main(argv=None) -> int:
                          "Intended for production runs only.")
     ap.add_argument("--img-dir", type=Path, default=DEFAULT_IMG_DIR,
                     help="directory containing the card jpegs")
+    ap.add_argument("--workers", type=int, default=1,
+                    help="number of parallel EasyOCR workers "
+                         "(default 1 = serial). Each worker loads "
+                         "its own EasyOCR model (~1.5GB RAM), so "
+                         "RAM usage scales linearly. Recommended: "
+                         "min(N_cpu - 2, 6). On an 8-core box with "
+                         "32GB RAM, --workers 6 is safe. "
+                         "Results are saved per-record; kill-safe.")
     ap.add_argument("--limit", type=int, default=0,
                     help="process at most N records (smoke test)")
     ap.add_argument("--only-widows", action="store_true", default=True,
@@ -216,98 +294,167 @@ def main(argv=None) -> int:
     last_save = started
     last_log = started
 
-    for i, rec in enumerate(targets, 1):
-        img_path = args.img_dir / rec["image"]
+    # Build work items once. Either consumed inline (--workers 1)
+    # or handed to a ProcessPoolExecutor (--workers N>1). Each
+    # work_item carries the bare minimum the worker needs to
+    # produce a result; the worker returns a dict the main process
+    # merges back into the records list.
+    work_items = []
+    targets_index = {}  # work_item["index"] -> rec (for merging)
+    for idx, rec in enumerate(targets):
         pcid = rec.get("pensioncard_id")
         pen = rec.get("pensioner") or {}
         soldier_name = pen.get("last_name") or ""
-        e = enriched_by_pcid.get(pcid, {})
         if not soldier_name:
             raw = (pen.get("name_raw") or "").split(",", 1)[0].strip()
             soldier_name = raw
+        img_path = args.img_dir / rec["image"]
+        work_items.append({
+            "index": idx,
+            "img_path": str(img_path),
+            "soldier_name": soldier_name,
+            "red_text": rec.get("red_text") or "",
+            "full_text": rec.get("full_text") or "",
+        })
+        targets_index[idx] = rec
 
-        try:
-            text = easyocr_one(reader, img_path)
-        except Exception as ex:
-            log.warning("easyocr failed for %s: %s", img_path.name, ex)
+    def _merge_result(result: dict):
+        """Apply a worker result dict to the corresponding record
+        in the shared `results` list. Updates counts + writes
+        death_date / easy_text / easy_disagreements."""
+        idx = result["index"]
+        rec = targets_index.get(idx)
+        if rec is None:
+            return
+        if result.get("fail"):
+            log.warning("easyocr failed for index %d: %s",
+                        idx, result.get("error", ""))
             counts["fail"] += 1
-            time.sleep(args.throttle)
-            continue
-
-        rec["easy_text"] = text
-        rec["easy_text_len"] = len(text)
+            return
+        if not result.get("ok"):
+            return
+        rec["easy_text"] = result["easy_text"]
+        rec["easy_text_len"] = result["easy_text_len"]
         counts["ok"] += 1
-
-        # Try the parser on the EasyOCR text alone.
-        easy_parsed, _ = find_death_date(text, soldier_name)
-        # And on EasyOCR + cached Tesseract text combined.
-        combined = (rec.get("red_text") or "") + " " + \
-                   (rec.get("full_text") or "") + " " + text
-        combined_parsed, _ = find_death_date(combined, soldier_name)
-
-        new_parsed = combined_parsed or easy_parsed
-        if new_parsed and rec.get("death_date") is None:
-            # Upgrade the record with a death date
-            old = rec.get("death_date")
-            rec["death_date"] = {
-                "kind": new_parsed["kind"],
-                "year": new_parsed["year"],
-                "month": new_parsed["month"],
-                "day": new_parsed["day"],
-                "iso": new_parsed["iso"],
-                "match": new_parsed.get("match"),
-                "span": new_parsed.get("span"),
-                "near_death_keyword": bool(
-                    DEATH_KEYWORDS.search(combined)
-                ),
-                "mentions_soldier_name": bool(
-                    soldier_name and soldier_name.lower()
-                    in combined[max(0, new_parsed["span"][0] - 30):
-                               min(len(combined), new_parsed["span"][1] + 30)].lower()
-                ),
-            }
+        parsed = result.get("parsed")
+        if parsed is None:
+            return
+        if rec.get("death_date") is None:
+            rec["death_date"] = parsed
             rec["source_pass"] = "easyocr"
             counts["new_dates"] += 1
-            if rec["death_date"]["mentions_soldier_name"]:
+            if parsed.get("mentions_soldier_name"):
                 counts["new_date_widow_soldier_match"] += 1
-        elif new_parsed and rec.get("death_date") and \
-             new_parsed["year"] != rec["death_date"].get("year"):
-            # Tesseract's parse disagrees with EasyOCR's — log
-            # the disagreement for audit. Don't overwrite.
+        elif parsed["year"] != rec["death_date"].get("year"):
             rec.setdefault("easy_disagreements", []).append({
                 "tesseract_year": rec["death_date"].get("year"),
-                "easyocr_year": new_parsed["year"],
+                "easyocr_year": parsed["year"],
             })
 
-        time.sleep(args.throttle)
-
-        # Save every 25 records (crash safety)
+    def _save_if_due(force: bool = False, i_hint: int = 0):
+        nonlocal last_save, last_log
         now = time.time()
-        if now - last_save > 60 or i == len(targets):
+        if force or now - last_save > 60:
             args.output.write_text(
                 json.dumps(results, indent=2, ensure_ascii=False),
                 encoding="utf-8",
             )
             last_save = now
-
-        # Heartbeat every 5 min
-        if now - last_log > 300:
+        if force or now - last_log > 300:
             elapsed = now - started
             rate = counts["ok"] / max(elapsed, 1)
-            eta_s = (len(targets) - i) / max(rate, 0.001)
+            eta_s = (len(targets) - i_hint) / max(rate, 0.001)
             log.info(
                 "heartbeat: i=%d/%d ok=%d fail=%d new_dates=%d "
-                "rate=%.2f/s eta=%.0fs",
-                i, len(targets), counts["ok"], counts["fail"],
-                counts["new_dates"], rate, eta_s,
+                "rate=%.2f/s eta=%.0fs workers=%d",
+                i_hint, len(targets), counts["ok"], counts["fail"],
+                counts["new_dates"], rate, eta_s, args.workers,
             )
             last_log = now
-        elif i % 50 == 0:
-            elapsed = now - started
-            rate = counts["ok"] / max(elapsed, 1)
-            log.info("i=%d/%d ok=%d new_dates=%d rate=%.2f/s",
-                     i, len(targets), counts["ok"],
-                     counts["new_dates"], rate)
+
+    n_workers = max(1, args.workers)
+    if n_workers == 1:
+        # Serial path. No pool overhead. Worker functions still
+        # exist but we call easyocr_one directly + reuse the
+        # in-process find_death_date. This keeps the existing
+        # behavior for --workers 1 (default).
+        from scripts.ingest.red_ink_ocr_pilot import (
+            find_death_date as _fdd, DEATH_KEYWORDS as _dkw,
+        )
+        for i, work_item in enumerate(work_items, 1):
+            try:
+                text = easyocr_one(reader, Path(work_item["img_path"]))
+            except Exception as ex:
+                log.warning("easyocr failed for %s: %s",
+                            work_item["img_path"], ex)
+                counts["fail"] += 1
+                time.sleep(args.throttle)
+                continue
+            soldier_name = work_item["soldier_name"]
+            easy_parsed, _ = _fdd(text, soldier_name)
+            combined = (work_item["red_text"] + " " +
+                        work_item["full_text"] + " " + text)
+            combined_parsed, _ = _fdd(combined, soldier_name)
+            new_parsed = combined_parsed or easy_parsed
+            result = {
+                "index": work_item["index"],
+                "ok": True,
+                "fail": False,
+                "easy_text": text,
+                "easy_text_len": len(text),
+            }
+            if new_parsed:
+                result["parsed"] = {
+                    "kind": new_parsed["kind"],
+                    "year": new_parsed["year"],
+                    "month": new_parsed["month"],
+                    "day": new_parsed["day"],
+                    "iso": new_parsed["iso"],
+                    "match": new_parsed.get("match"),
+                    "span": new_parsed.get("span"),
+                    "near_death_keyword": bool(_dkw.search(combined)),
+                    "mentions_soldier_name": bool(
+                        soldier_name and soldier_name.lower()
+                        in combined[max(0, new_parsed["span"][0] - 30):
+                                   min(len(combined), new_parsed["span"][1] + 30)].lower()
+                    ),
+                }
+            _merge_result(result)
+            time.sleep(args.throttle)
+            _save_if_due(i_hint=i)
+            if i % 50 == 0 and time.time() - last_log <= 300:
+                elapsed = time.time() - started
+    else:
+        # Parallel path. Each worker loads its own EasyOCR model.
+        log.info("starting %d worker processes (each loads its "
+                 "own ~1.5GB EasyOCR model)", n_workers)
+        from concurrent.futures import ProcessPoolExecutor, as_completed
+        with ProcessPoolExecutor(
+            max_workers=n_workers,
+            initializer=_worker_init,
+        ) as pool:
+            futures = {
+                pool.submit(_worker_process_one, wi): wi["index"]
+                for wi in work_items
+            }
+            done_count = 0
+            for fut in as_completed(futures):
+                done_count += 1
+                try:
+                    result = fut.result()
+                except Exception as ex:
+                    log.warning("worker raised: %s", ex)
+                    counts["fail"] += 1
+                    continue
+                _merge_result(result)
+                _save_if_due(i_hint=done_count)
+                if done_count % 50 == 0 and time.time() - last_log <= 300:
+                    elapsed = time.time() - started
+                    rate = counts["ok"] / max(elapsed, 1)
+                    log.info("i=%d/%d ok=%d new_dates=%d rate=%.2f/s",
+                             done_count, len(targets), counts["ok"],
+                             counts["new_dates"], rate)
+        _save_if_due(force=True, i_hint=len(targets))
 
     elapsed = time.time() - started
     log.info("done in %.1fs — ok=%d fail=%d new_dates=%d widow_soldier_match=%d",
