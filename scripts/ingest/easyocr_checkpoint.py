@@ -157,7 +157,8 @@ def fire_checkpoint(percent: int, count: int, target: int,
                         encoding="utf-8")
     _write_changelog_bullet(percent, count, target, heartbeat)
     _git("add", str(artifact).replace("\\", "/"),
-         "CHANGELOG.md")
+         "CHANGELOG.md",
+         str(_ROOT / "data" / "easyocr_runs" / "checkpoints.fired.json"))
     subject = (f"chore(ocr): L3 checkpoint at {percent}% "
                f"({count}/{target} records)")
     proc = _git("commit", "-m", subject, check=False)
@@ -238,7 +239,7 @@ def main(argv: list[str] | None = None) -> int:
                         f"({easy_text}/{target}) -> {sha}\n"
                     )
 
-        if len(fired) >= len(thresholds):
+        if all(t in fired for t in thresholds):
             sys.stderr.write("[checkpoint] all thresholds fired; exiting\n")
             return 0
         time.sleep(args.poll)
