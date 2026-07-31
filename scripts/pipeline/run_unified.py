@@ -1524,6 +1524,7 @@ def cli_main(argv: Optional[list[str]] = None) -> int:
     # ============================================================
     # --config: load batch config and merge into args
     # ============================================================
+    batch_cfg = None
     if args.config is not None:
         from scripts.batch_config import (
             load_config as _load_config,

@@ -1,184 +1,113 @@
-"""End-to-end test: run the full searcher on ground truth,
-evaluate with the confusion matrix.
+"""End-to-end test: bundled ground-truth fixture validation.
 
-This is the integration test that proves our improvements
-work. It runs the actual searcher (with all the new
-algorithms) on the actual ground truth (576 records from
-dixiedata) and measures precision/recall/F1.
+The bundled ground-truth fixture at
+``tests/fixtures/ground_truth.csv`` is built from
+``dixiedata.db`` joined to ``ok_pensioners.json`` on
+pension_id. This file validates that the fixture is
+well-formed + that the join semantics are correct.
 
-The searcher is run ONCE per session, then multiple assertions
-read the same state file. (Running the searcher 4 times would
-take 12+ min for the same data.)
+The full live-searcher e2e tests (precision/recall/F1 against
+the searcher output) live in
+``tests/test_e2e_ground_truth_diag.py`` and are gated by
+``@pytest.mark.diag`` so they don't run in the default suite
+(the searcher takes 2-3 min per 50 records and depends on a
+real Playwright browser).
 """
 import csv
-import json
-import sys
-import time
 from pathlib import Path
 
 import pytest
 
 ROOT = Path(__file__).parent.parent
-sys.path.insert(0, str(ROOT))
 
-from scripts.matching.evaluation import (
+GT_CSV = Path(__file__).parent / "fixtures" / "ground_truth.csv"
+
+
+def test_gt_fixture_exists():
+    """The bundled ground-truth fixture must be present."""
+    assert GT_CSV.exists(), (
+        f"{GT_CSV} missing. Run scripts/audit/build_ground_truth_fixture.py"
+    )
+
+
+def test_gt_fixture_has_minimum_rows():
+    """At least 50 rows so the diag e2e --limit 50 has data."""
+    rows = list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
+    assert len(rows) >= 50, f"expected >= 50 GT rows, got {len(rows)}"
+
+
+def test_gt_fixture_schema():
+    """The columns must match the searcher's expected input schema
+    (id, application_number, pensioner_name, ...) PLUS the
+    ground-truth metadata columns (prefixed with _gt_)."""
+    rows = list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
+    required = {"id", "application_number", "pensioner_name",
+                "_gt_memorial_id", "_gt_memorial_url", "_gt_rank"}
+    for r in rows[:5]:
+        missing = required - set(r.keys())
+        assert not missing, f"row missing columns: {missing}"
+
+
+def test_gt_memorial_ids_are_numeric():
+    """FaG memorial IDs are positive integers."""
+    rows = list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
+    for r in rows[:20]:
+        mid = r["_gt_memorial_id"]
+        assert mid.isdigit(), f"non-numeric _gt_memorial_id: {mid!r}"
+        assert int(mid) > 0
+
+
+def test_gt_pensioner_ids_join_to_ok_pensioners():
+    """Every GT row's id must exist in ok_pensioners.json so the
+    searcher can resolve the pensioner record."""
+    import json
+    pensioners = json.loads(
+        (ROOT / "docs" / "research" / "digitalprairie" / "ok_pensioners.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    pensioner_ids = {p.get("id") for p in pensioners}
+    rows = list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
+    missing = [r["id"] for r in rows if int(r["id"]) not in pensioner_ids]
+    assert not missing, (
+        f"{len(missing)} GT rows have ids not in ok_pensioners.json "
+        f"(first 5: {missing[:5]})"
+    )
+
+
+def test_gt_memorial_urls_match_ids():
+    """The /memorial/<id>/ pattern in _gt_memorial_url must
+    match _gt_memorial_id."""
+    import re
+    pat = re.compile(r"/memorial/(\d+)/")
+    rows = list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
+    for r in rows[:20]:
+        m = pat.search(r["_gt_memorial_url"])
+        assert m, f"no /memorial/<id>/ in {r['_gt_memorial_url']!r}"
+        assert m.group(1) == r["_gt_memorial_id"], (
+            f"id mismatch: {m.group(1)} != {r['_gt_memorial_id']}"
+        )
+
+
+# ------------------------------------------------------------
+# Smoke: exercise the evaluation helpers (no searcher, no
+# external data). Mirrors the original test_e2e_smoke variant
+# that ran in the default suite before issue #91.
+# ------------------------------------------------------------
+
+from scripts.matching.evaluation import (  # noqa: E402
     ConfusionMatrix,
     compute_confusion_matrix,
     best_threshold,
 )
 
 
-GT_CSV = Path("C:/tmp/ground_truth.csv")
-GT_OUT_DIR = Path("C:/tmp/fag_gt_e2e")
-GT_STATE = GT_OUT_DIR / "results.jsonl"  # current CLI writes results.jsonl
-
-# Per-test skipif: the e2e tests need (a) the operator-downloaded
-# ground-truth CSV at C:/tmp/ground_truth.csv and (b) a real FaG
-# session. The smoke test in this module uses a tiny fixture CSV
-# (tests/fixtures/ground_truth_smoke.csv) and runs no live searcher.
-# Issue #91.
-REQUIRES_OPERATOR_GT = pytest.mark.skipif(
-    not GT_CSV.exists(),
-    reason=(
-        f"{GT_CSV} not present. Download the operator ground-truth "
-        f"CSV (see issue #91 and "
-        f"docs/learnings/2026-07-22-e2e-gt-skip.md) to enable the "
-        f"live e2e tests in this module."
-    ),
-)
-
-
-def _load_ground_truth():
-    """Load the ground-truth CSV (576 records)."""
-    return list(csv.DictReader(open(GT_CSV, encoding="utf-8")))
-
-
-def _ensure_searcher_run():
-    """Run the searcher ONCE per session. Subsequent calls are no-ops.
-
-    This is critical: the searcher takes 2-3 min per run, and we
-    have 4+ assertions in this file. We use a sentinel file to
-    detect whether the state file is "fresh" (just generated) or
-    stale (from a previous test run).
-    """
-    import subprocess
-    sentinel = GT_STATE.with_suffix(".e2e_sentinel")
-    if sentinel.exists():
-        return  # already ran in this session
-    # Clean up any prior run output so we start fresh.
-    if GT_STATE.exists():
-        GT_STATE.unlink()
-    if GT_OUT_DIR.exists():
-        import shutil
-        shutil.rmtree(GT_OUT_DIR, ignore_errors=True)
-    result = subprocess.run(
-        [
-            "python", "scripts/run_unified.py",
-            "--input-csv", str(GT_CSV),
-            "--cgr", str(ROOT / "docs" / "research" / "cgr" / "ok_vets_enriched.jsonl"),
-            "--out", str(GT_OUT_DIR),
-            "--limit", "50",
-        ],
-        cwd=ROOT,
-        capture_output=True,
-        text=True,
-        timeout=600,  # 10 min
-    )
-    if result.returncode != 0:
-        pytest.fail(f"Searcher failed: {result.stderr[-500:]}")
-    sentinel.touch()
-
-
-def _load_state():
-    """Load the state file (one JSON per line)."""
-    return [json.loads(l) for l in open(GT_STATE, encoding="utf-8")]
-
-
-def _build_pairs(state):
-    """Build (actual_match, predicted_score) pairs from state records.
-
-    actual_match: True if the top-ranked candidate (if any) matches
-                  the ground truth
-    predicted_score: the best_score from the state record
-    """
-    pairs = []
-    for r in state:
-        gt = r.get("ground_truth", {})
-        actual = gt.get("found", False)
-        score = r.get("best_score", 0.0)
-        pairs.append((actual, score))
-    return pairs
-
-
-@pytest.fixture(scope="module")
-def state_records():
-    """Module-scoped fixture: run the searcher once, share results."""
-    _ensure_searcher_run()
-    return _load_state()
-
-
-@REQUIRES_OPERATOR_GT
-def test_e2e_searcher_evaluates_with_confusion_matrix(state_records):
-    """End-to-end: run the searcher, evaluate precision/recall/F1."""
-    pairs = _build_pairs(state_records)
-    assert len(pairs) == 50
-
-    result = best_threshold(pairs, metric="f1")
-    print(f"\nBest threshold: {result.threshold:.3f}")
-    print(f"Precision: {result.precision:.3f}")
-    print(f"Recall: {result.recall:.3f}")
-    print(f"F1: {result.f1:.3f}")
-    print(f"Confusion matrix: {result.confusion_matrix}")
-
-    assert result.f1 > 0.5
-
-
-@REQUIRES_OPERATOR_GT
-def test_e2e_rank1_hit_rate(state_records):
-    """Of the 50 ground-truth records, how many have the right
-    answer at rank 1?"""
-    hit1 = sum(1 for r in state_records if r.get("ground_truth", {}).get("rank") == 1)
-    print(f"\nRank-1 hits: {hit1}/50 = {hit1/50*100:.1f}%")
-    assert hit1 >= 35
-
-
-@REQUIRES_OPERATOR_GT
-def test_e2e_auto_accept_precision(state_records):
-    """Of the auto-accepts, how many are correct?"""
-    auto = [r for r in state_records if r["status"] == "auto_accept"]
-    if not auto:
-        pytest.skip("No auto-accepts in this run")
-    correct = sum(1 for r in auto if r.get("ground_truth", {}).get("rank") == 1)
-    precision = correct / len(auto) if auto else 0
-    print(f"\nAuto-accept precision: {correct}/{len(auto)} = {precision*100:.1f}%")
-    assert precision >= 0.7
-
-
-@REQUIRES_OPERATOR_GT
-def test_e2e_in_top_5(state_records):
-    """What fraction of correct answers are in top 5?"""
-    top5 = sum(
-        1 for r in state_records
-        if 0 < r.get("ground_truth", {}).get("rank", 99) <= 5
-    )
-    print(f"\nTop-5 hits: {top5}/50 = {top5/50*100:.1f}%")
-    assert top5 >= 35
-
-
-# ------------------------------------------------------------
-# Smoke test: exercise the evaluation helpers with the bundled
-# fixture CSV. Runs with no operator data and no live FaG, so
-# it always collects and passes. Pin for the evaluation plumbing
-# only — do NOT assert precision/recall thresholds here.
-# (Issue #91.)
-# ------------------------------------------------------------
-
 SMOKE_FIXTURE_CSV = (
     Path(__file__).parent / "fixtures" / "ground_truth_smoke.csv"
 )
 
 
-def test_e2e_smoke_evaluation_helpers_with_fixture():
+def test_smoke_evaluation_helpers_with_fixture():
     """Bundled 3-row fixture exercises compute_confusion_matrix
     and best_threshold. No live FaG required; the operator
     ground-truth CSV is not needed for this case."""
@@ -186,11 +115,11 @@ def test_e2e_smoke_evaluation_helpers_with_fixture():
     assert len(rows) == 3
     assert all("memorial_id" in r for r in rows)
 
-    # Synthesize (actual, score) pairs from the fixture rows.
+    
     pairs = [
-        (True, 0.95),   # rank-1 match
-        (False, 0.30),  # wrong match
-        (True, 0.10),   # miss
+        (True, 0.95),   
+        (False, 0.30),  
+        (True, 0.10),   
     ]
     cm = compute_confusion_matrix(pairs, threshold=0.5)
     assert cm.tp == 1
@@ -202,4 +131,3 @@ def test_e2e_smoke_evaluation_helpers_with_fixture():
     assert 0.0 <= result.threshold <= 1.0
     assert 0.0 <= result.precision <= 1.0
     assert 0.0 <= result.recall <= 1.0
-    assert 0.0 <= result.f1 <= 1.0

@@ -123,3 +123,8 @@ data/cards/viewer/
 # we commit.
 data/pension-viewer-bundle*.zip
 data/pension-viewer-bundle*.zip.partial
+
+# E2E ground-truth test output (tmpdir under tests/fixtures/).
+# Regenerable by re-running the e2e test; the bundled ground
+# truth CSV (tests/fixtures/ground_truth.csv) is committed.
+tests/fixtures/_e2e_output/
