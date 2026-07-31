@@ -171,6 +171,15 @@ def fire_checkpoint(percent: int, count: int, target: int,
         return ""
     sha = _git("rev-parse", "--short", "HEAD",
                check=False).stdout.strip()
+    
+    push = _git("push", "origin", "master", check=False)
+    if push.returncode != 0:
+        sys.stderr.write(
+            f"git push failed at {percent}% (commit {sha} "
+            f"landed locally): {push.stderr}\n"
+        )
+    else:
+        sys.stderr.write(f"[checkpoint] pushed {percent}% -> {sha}\n")
     return sha
 
 
