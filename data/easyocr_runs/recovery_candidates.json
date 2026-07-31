@@ -1,0 +1,6078 @@
+{
+  "min_confidence": 0.4,
+  "counts": {
+    "scanned": 9436,
+    "with_candidate": 207,
+    "high_conf": 0,
+    "review": 242,
+    "low_conf": 0
+  },
+  "records": [
+    {
+      "pensioncard_id": 104,
+      "image": "104__103.jpg",
+      "candidates": [
+        {
+          "text": "1026\nMain\nStito\n10/1/19\nChange\nto\nB-146",
+          "match": "10/1/19",
+          "year": 1919,
+          "month": 10,
+          "day": 1,
+          "iso": "1919-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            16,
+            23
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1066,
+      "image": "1066__1065.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n1/12/17\nadd\nchanged\nfron\nR 3 t\nGriggs\nR 1\nBx\n4\nBorn\nin Gentry Co.\nMissouri.\nCame\nto\nBeaver\nCo.\nOklahona .\nin\n1909.\nGray\n1841,\nGray ,",
+          "match": "1/12/17",
+          "year": 1917,
+          "month": 1,
+          "day": 12,
+          "iso": "1917-01-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1198,
+      "image": "1198__1197.jpg",
+      "candidates": [
+        {
+          "text": "Discont inued\nremoval\nfrom\nstate\nas\nper\nfile\nP-35\nletter\nof 11/22/15\nfror\nJ.F.Baker ,\n4304\n1.\n26th\nSt .\nKans .8\nMo .\nProof\nretudne d\nt0\npensioner\nat\nthat\naddre88\n11/23/15\nEnlisted\nin Confederate Army\nJan.1862 under\nGen\nSterling\nPrice.\nnever\nsurrendered\nfrom\nservice\nin\nRegular\nConfederat\nArmy .\nBorn\nin\nBoone\nCo.\ncame\nto\nTulsa\n1913\nCity,\nMo . , “| Sar he PEG 2 4 ie) ‘ Veer oe rN UP OA ‘ s x. . . _\n1) oe ee i ta he ow 2 4 LA con raf Ao be Be hy ¥ ocd ab wh I’ dass a) we wk & t:\nba ek 2 Lake in- 350 bts Utd woe LY OY he F\nee Oe heh ern Ly SU ae CIEL Db ey,\naw hid rae) ote oy oan) v 5 ae é bi ay ) ~ a is ‘f ts it bac YA u @)\n¥ yo° co“ a ra ae 2, 5 ‘ ae a * wlmee ” “4 ~ “ ~ f a “ \" t~\nPEL SLONOU 4b bli Aa OO Afcr; L y)",
+          "match": "11/23/15",
+          "year": 1915,
+          "month": 11,
+          "day": 23,
+          "iso": "1915-11-23",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            162,
+            170
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10981,
+      "image": "10981__10980.jpg",
+      "candidates": [
+        {
+          "text": "Born 1843\nin\nClark\nKentucky ,\ncame\nto\nCuster\nCo .\nOklahoma\n1910\nEnlisted\nOctober\n1863 inard ' 8\nCo.\nCol\nSlayback' s\nMissouri\nDivision.\nsurrendered May 26,\n1865\nat\nNew\nOrleans ,\nand\nwas\nparoled\nJune\n1865\nat\nShreveport ,\nCo. ,\n14,\nLa. ,\nLa. ,",
+          "match": "May 26,\n1865",
+          "year": 1865,
+          "month": 5,
+          "day": 26,
+          "iso": "1865-05-26",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year"
+          ],
+          "span": [
+            147,
+            159
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11546,
+      "image": "11546__11545.jpg",
+      "candidates": [
+        {
+          "text": "Born\nin Mississippi\nin\n1849 ,\ncame\nto\nOklahona\nPottewatomie 1895.\nEnlisted\nFebruary 1864.\nUnion\nprisoners\nof\nwar\nrecords\nshow\nthat\nJ.W.0.Davis\n9\nprivate,\nCo\nF.\n6th\nReg't Mississippi Cavalry\nwas\nsurrendered\nwith\nhis\ncompany May\n4,\n1865\nat Citronelle,\nAlabama\nand\npa\nparoled\n1865\nat\nGainesville,\nAAla.\nHis\nname\nis\nnot\nborne\non\nthe\nmusterOin\nroll\nof\nthe\ncompany\ndated\nOctober 31, 1863, only\nroll\non\nfile\nin\ntkxis\nthis\noffice.\nhe\ndid\nnot\nenlist\nuntil\n1864 .\n12 ,\nMay",
+          "match": "May\n4,\n1865",
+          "year": 1865,
+          "month": 5,
+          "day": 4,
+          "iso": "1865-05-04",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year"
+          ],
+          "span": [
+            223,
+            234
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7450,
+      "image": "7450__7449.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home\"\nPengion\nRo1l\n7/1/19\nto\nbegin\nwith\n4/1/\n19\nBy\nletter\nrecd\n7/1/16,\nadd . changed\nfrom\nGrandfield\nBx\n292\nto\nDewey ,\nBx\n281\nletter\nrecd\n9/12/16\nadd\nchanged\nback\nto\nGrandfield.\n3/28/17\nchanged\nfrom\nGrandfield\nTo\nDewey\nBy\nletter\n6/15/17\nadd\nchanged\nto\nGrandfield\nBorn\nin\nChickasaw\nMiss. ,1847 ,\ncame\nto\nOkla. ,\n1893,\nTillman\nenlisted\nFeb .\n1862\nwas\non\nlast\nroll\non\nfile\nFeb .\n1864\nnoted\nas\npresent .\nwas\nwounded\n22 ,\nin\nthe\nbattle\nof\nAtlanta\nBy\nCO. ,\nCo. ,\n28 ,\nJuly wes = mS\n— om 3 oe, 5 ’ Pd\nx, se t ’ . . ia\ncs ow om a a : Nee ee eeeen yg “oe\nmse ; ; .. RET, vty # : om blot phe wh mw 1 i re fo: :\nCre a na : . ‘ wy te a?\nms . TP Mey . F : -\n4, ae : we } :",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            30,
+            36
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10152,
+      "image": "10152__10151.jpg",
+      "candidates": [
+        {
+          "text": "Yc- 6\nletter 7/2/20\nEives\n2415\nE\nAdniral\nBlvd .\nPy",
+          "match": "7/2/20",
+          "year": 1920,
+          "month": 7,
+          "day": 2,
+          "iso": "1920-07-02",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            13,
+            19
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10173,
+      "image": "10173__10172.jpg",
+      "candidates": [
+        {
+          "text": "letter\n6/10/17\nadd\nchanged\nfron\nBokchito\nto\nBox 15,\nAtoka\nBy",
+          "match": "6/10/17",
+          "year": 1917,
+          "month": 6,
+          "day": 10,
+          "iso": "1917-06-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 101,
+      "image": "101__100.jpg",
+      "candidates": [
+        {
+          "text": "10/1/19\nChanged\nQc\nt\nGrove\n9\nFrom\nChelsea\n10/31/20\ngive8\nR- 2\nBe\n20\n% Felix Kidd\nChelsea\nletter\nreced\n2-24-16\nadd &\nchanged\nfrom\nChelsea,\nOkla\nto Edna\n9\nKansas,\nGen\nDel\nbut\nResidence\nis\nin\nOklahoma\nin\nCo\nOn\nq/0 2/16\nAddre88\nchanged\nfron\nEdan\nKans\nGen\nDel\n+0\nChelsea\nR\n2\nAdd\nchanged\nfrom Chelsea,\nR 2\n31,\nto\nWimer\n(q/c 1/17)\nQ/c\n2/17\nadd\nchanged\nfrom\nWiner\nR 1 c/0\nRicherd\nWest,\nto\nChealsea\nq/c\n3/18\n\"chenped efzge\n,Craig\nCo ,R-1\nB=\n31\nt0\nGrove\n0n\nfrom\nGrove\nDel\nCo\nto\n0\nDy\nUraig\nBx\nRogers",
+          "match": "10/31/20",
+          "year": 1920,
+          "month": 10,
+          "day": 31,
+          "iso": "1920-10-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            42,
+            50
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "10/1/19\nChanged\nQc\nt\nGrove\n9\nFrom\nChelsea\n10/31/20\ngive8\nR- 2\nBe\n20\n% Felix Kidd\nChelsea\nletter\nreced\n2-24-16\nadd &\nchanged\nfrom\nChelsea,\nOkla\nto Edna\n9\nKansas,\nGen\nDel\nbut\nResidence\nis\nin\nOklahoma\nin\nCo\nOn\nq/0 2/16\nAddre88\nchanged\nfron\nEdan\nKans\nGen\nDel\n+0\nChelsea\nR\n2\nAdd\nchanged\nfrom Chelsea,\nR 2\n31,\nto\nWimer\n(q/c 1/17)\nQ/c\n2/17\nadd\nchanged\nfrom\nWiner\nR 1 c/0\nRicherd\nWest,\nto\nChealsea\nq/c\n3/18\n\"chenped efzge\n,Craig\nCo ,R-1\nB=\n31\nt0\nGrove\n0n\nfrom\nGrove\nDel\nCo\nto\n0\nDy\nUraig\nBx\nRogers",
+          "match": "10/1/19",
+          "year": 1919,
+          "month": 10,
+          "day": 1,
+          "iso": "1919-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10212,
+      "image": "10212__10211.jpg",
+      "candidates": [
+        {
+          "text": "By\nLetter,2/19\nchenged\nfrom\nCoalgate, Coal\ncounty,\nto\nTishomingo, Johnston\nC/o\nH G\nRisinger.\nQc\n7/16/20\ngives Tishomingo\nB-\nLetter\n9/15-22\ngive8\nAltus,\n2\nAltus\nCot\nOil\nMi\nLetter\n4-10-23\ngive 8\nTishomingo ,\nR-l\nB-96\n%\nFannie\nRisinger\nCo ,\n581 Leit-\ncf a\nvo Pau 1\ncigii} : “\nie oe\nRisin ae\ney LE \" :\ncsr Tishor\nr1i1g0\n\nBeQ\nBe96",
+          "match": "4-10-23",
+          "year": 1923,
+          "month": 4,
+          "day": 10,
+          "iso": "1923-04-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            178,
+            185
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10269,
+      "image": "10269__10268.jpg",
+      "candidates": [
+        {
+          "text": "Re-iasue\nof\nP-341\n(Signed Appli\nmerk )\nVc\n1/18 From\nIndianola\nt0\nMellette\nVc.3-31-22.Change\nt0\nScipio .\nby",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            77,
+            84
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10687,
+      "image": "10687__10686.jpg",
+      "candidates": [
+        {
+          "text": "Vc\n7/15/20\nEives R-2,\nGould,",
+          "match": "7/15/20",
+          "year": 1920,
+          "month": 7,
+          "day": 15,
+          "iso": "1920-07-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10708,
+      "image": "10708__10706.jpg",
+      "candidates": [
+        {
+          "text": "Entered\nHome\n11-30-1933\nName\nBarrov,\nJanes\nR\nNo\nA\n4223\nDeeeased ,\n2-14-1934\nAddress\nMadill\nMarshall\nCo.\nB-26\nS\nWidow of)\nFiled\n4/17/20\nCompany\nA\nBattery\nm't\n57\nVa .\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n4/17/20\nNo_\nP\n3357\nRemarks:\n63\nto\n65\n(over)\nReg ed\nqk\nome 1\n+\nbao\ny= 1S\nD\nec\nC&ESEe\n“9 a\nc-]\nL4.—] :\neq\nras",
+          "match": "11-30-1933",
+          "year": 1933,
+          "month": 11,
+          "day": 30,
+          "iso": "1933-11-30",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            13,
+            23
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10711,
+      "image": "10711__10710.jpg",
+      "candidates": [
+        {
+          "text": "5/4/20\nchange\naddre8s\nto\nR-2\nB-6",
+          "match": "5/4/20",
+          "year": 1920,
+          "month": 5,
+          "day": 4,
+          "iso": "1920-05-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1072,
+      "image": "1072__1071.jpg",
+      "candidates": [
+        {
+          "text": "10/1/19 ,Changed\nfrom Lindsay\nTel\nmessage\nfrom\nCo .\nJudge\naddre88\n%\nJudge\nT.P.Pave,\nPurcell.\nLetter\n3/19/23\nEives Maysville “ ‘\na “a",
+          "match": "3/19/23",
+          "year": 1923,
+          "month": 3,
+          "day": 19,
+          "iso": "1923-03-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            100,
+            107
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10747,
+      "image": "10747__10745.jpg",
+      "candidates": [
+        {
+          "text": "EXPELLED\nFROM\nHome\n1/8-21.\nName\nSterke.\nJ B\nNo.\nA\n4771\nAddress\nArdmore,\nCarter-co\nConfederate\nHone\n(Widow of)\nFiled\nCompany\nBattery\nReg m't\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nPensioner\nonly)\n2920\nREJECTED\nGRANTED\nNo. P\nRemarks:\n(over)\nin EXPELLED Home 1/821, .\nconfederate ome\n(Pensioner in, Heme only) .\nbY AG 2920",
+          "match": "1/8-21",
+          "year": 1921,
+          "month": 1,
+          "day": 8,
+          "iso": "1921-01-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            19,
+            25
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10771,
+      "image": "10771__10770.jpg",
+      "candidates": [
+        {
+          "text": "By Letter,\n2/19\nChange\nWvlZth\nSt t0\ncare\nof\n5/18/20\nletter\nfrom\nMr\nFerris\nsend\n% of\nThomas Ferris,\nPlatt\nNational Park,\nSulphur_\nMoved\nto\nTex .\nlast\nof\n1941(exact\ndate\nunknown )\nCase\nclosed 8-25-1942.\nMary\nning.\nBy",
+          "match": "8-25-1942",
+          "year": 1942,
+          "month": 8,
+          "day": 25,
+          "iso": "1942-08-25",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            190,
+            199
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10777,
+      "image": "10777__10776.jpg",
+      "candidates": [
+        {
+          "text": "See\nletter\nof A\nP McCan\n26082/7/15\nSee\nhis\nwidow' s\npension See letter of A P MeCan of 12/7/15",
+          "match": "12/7/15",
+          "year": 1915,
+          "month": 12,
+          "day": 7,
+          "iso": "1915-12-07",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            87,
+            94
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10810,
+      "image": "10810__10809.jpg",
+      "candidates": [
+        {
+          "text": "6/30-22\ngive8\nNatl.\nBank\nDuncan\n7- (9\n24\n2 lst\nQC ; Lf we ra\nor\nPel\nf",
+          "match": "6/30-22",
+          "year": 1922,
+          "month": 6,
+          "day": 30,
+          "iso": "1922-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10813,
+      "image": "10813__10812.jpg",
+      "candidates": [
+        {
+          "text": "Qe\n6/30/21\ngive8\n1011\n8\nCincinneti\nAve\nTulsa,\n% WD\nAllen. noe\n- a",
+          "match": "6/30/21",
+          "year": 1921,
+          "month": 6,
+          "day": 30,
+          "iso": "1921-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10840,
+      "image": "10840__10839.jpg",
+      "candidates": [
+        {
+          "text": "letter\n10/23/16\nfrom\nWalter\nto Ryan\nR 2 Bx\n37\nto\nBx\n48\nroute\n2\nBy",
+          "match": "10/23/16",
+          "year": 1916,
+          "month": 10,
+          "day": 23,
+          "iso": "1916-10-23",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10843,
+      "image": "10843__10842.jpg",
+      "candidates": [
+        {
+          "text": "QC/12/31/21 _\nAdd\nSter\nR.",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10852,
+      "image": "10852__10851.jpg",
+      "candidates": [
+        {
+          "text": "Advice\nof\nJ L\nFortson,\nM- Da\n12/9/15",
+          "match": "12/9/15",
+          "year": 1915,
+          "month": 12,
+          "day": 9,
+          "iso": "1915-12-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            29,
+            36
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10876,
+      "image": "10876__10875.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home\"\nPension\nRoll 7/1/19\nto\nbegin\nwith\n4/1/19 as An an laid ee rn we} eet C7 ms an oa ' “\nuy it . deat _ Lei 4. Gg io [a\nOG te i 4 boue 2 ty wee whe yi",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            30,
+            36
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n\"Home\"\nPension\nRoll 7/1/19\nto\nbegin\nwith\n4/1/19 as An an laid ee rn we} eet C7 ms an oa ' “\nuy it . deat _ Lei 4. Gg io [a\nOG te i 4 boue 2 ty wee whe yi",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            51,
+            57
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10888,
+      "image": "10888__10887.jpg",
+      "candidates": [
+        {
+          "text": "Qc/12/31/21\nWaukomis. R-l.B-95.",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10918,
+      "image": "10918__10917.jpg",
+      "candidates": [
+        {
+          "text": "Entered\nConfederate\nHome\nat\nArdmore,\n5/5/16",
+          "match": "5/5/16",
+          "year": 1916,
+          "month": 5,
+          "day": 5,
+          "iso": "1916-05-05",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            37,
+            43
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10924,
+      "image": "10924__10923.jpg",
+      "candidates": [
+        {
+          "text": "Yi\n1/17\nchenged\nShawee\nt0\nTecumseh\nBox\n7\nVc 9/30/21\ngive8\nShawnee,\n1111\nE\nWhittaker.\ntc\nR-2_\nGeneral\nSeilvesy ,\nShawnee\nQC\ngives\nTecurseh",
+          "match": "9/30/21",
+          "year": 1921,
+          "month": 9,
+          "day": 30,
+          "iso": "1921-09-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            44,
+            51
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10945,
+      "image": "10945__10944.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n0\nHote\"\nPension\nRoll\n7/1/19\nto\nbegin\nwith\n4/1/19\nWithdrawn\n&\nburrendered by\npenaioner\n5/30/16 ,\nto\nenter\nConfed.\nHoxe\nat\nArdmore . : . i} “of Peery tt * dey ee * wa “le “oY ‘ ? a é “ C\nwe . - 0: oe i oa iran a\naa Nae vem eh whe de ff ate f OY",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            31,
+            37
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n0\nHote\"\nPension\nRoll\n7/1/19\nto\nbegin\nwith\n4/1/19\nWithdrawn\n&\nburrendered by\npenaioner\n5/30/16 ,\nto\nenter\nConfed.\nHoxe\nat\nArdmore . : . i} “of Peery tt * dey ee * wa “le “oY ‘ ? a é “ C\nwe . - 0: oe i oa iran a\naa Nae vem eh whe de ff ate f OY",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            52,
+            58
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n0\nHote\"\nPension\nRoll\n7/1/19\nto\nbegin\nwith\n4/1/19\nWithdrawn\n&\nburrendered by\npenaioner\n5/30/16 ,\nto\nenter\nConfed.\nHoxe\nat\nArdmore . : . i} “of Peery tt * dey ee * wa “le “oY ‘ ? a é “ C\nwe . - 0: oe i oa iran a\naa Nae vem eh whe de ff ate f OY",
+          "match": "5/30/16",
+          "year": 1916,
+          "month": 5,
+          "day": 30,
+          "iso": "1916-05-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            96,
+            103
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10957,
+      "image": "10957__10956.jpg",
+      "candidates": [
+        {
+          "text": "9/c\n2/17\nchange\nfrom\nR 3\nto R\n\"B\"\n10/1/19\nChenged\nfrom\nR\n\"B\"\nto\nStar\nRoute",
+          "match": "10/1/19",
+          "year": 1919,
+          "month": 10,
+          "day": 1,
+          "iso": "1919-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            34,
+            41
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 10972,
+      "image": "10972__10971.jpg",
+      "candidates": [
+        {
+          "text": "Letter 4/7/17\nchanged\nrom\nCorrine\nto\nIda",
+          "match": "4/7/17",
+          "year": 1917,
+          "month": 4,
+          "day": 7,
+          "iso": "1917-04-07",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11029,
+      "image": "11029__11028.jpg",
+      "candidates": [
+        {
+          "text": "By- letter\nrecd\n4/19/16\nadd .\nchanged\nfror\nBokhora\nto\nBenington",
+          "match": "4/19/16",
+          "year": 1916,
+          "month": 4,
+          "day": 19,
+          "iso": "1916-04-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            16,
+            23
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11056,
+      "image": "11056__11055.jpg",
+      "candidates": [
+        {
+          "text": "Qc\n2\n17\nchanged\nfron\nRoff\nto\nHickory\nCalled\nat\noffice\n7/20/20\nchange\nto\n822\n8\nWalker\nOkla\nCity.\n12/31/20\n412\nChoctaw\nOkla. ,\nCity_\nVerbal\nchange Hickory.\n3/24/21",
+          "match": "3/24/21",
+          "year": 1921,
+          "month": 3,
+          "day": 24,
+          "iso": "1921-03-24",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            154,
+            161
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Qc\n2\n17\nchanged\nfron\nRoff\nto\nHickory\nCalled\nat\noffice\n7/20/20\nchange\nto\n822\n8\nWalker\nOkla\nCity.\n12/31/20\n412\nChoctaw\nOkla. ,\nCity_\nVerbal\nchange Hickory.\n3/24/21",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            96,
+            104
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11065,
+      "image": "11065__11064.jpg",
+      "candidates": [
+        {
+          "text": "Vc 12/31/20\ngive8\nFlet cher\nR-3\nB-162",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11080,
+      "image": "11080__11079.jpg",
+      "candidates": [
+        {
+          "text": "Canceled\n6/27/16\nabsence\nfrom\nOkla.\n(in\nBloss0m,\nTexas )\nsince 11/25/15,\nbyorder\nof\nW D Matthers",
+          "match": "11/25/15",
+          "year": 1915,
+          "month": 11,
+          "day": 25,
+          "iso": "1915-11-25",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            63,
+            71
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11089,
+      "image": "11089__11088.jpg",
+      "candidates": [
+        {
+          "text": "letter\n4/15/21\ngive8\nOkla\nCity,\nR-8\nB-23\nVc 6/30/21\ngives\nOkla\nCity,\nR-3\nB-23.\nIn\nPerson\nchange\nto\nApache\nR-3\nLetter\n10/19-22\ngive8\nMeers .\nBy",
+          "match": "10/19-22",
+          "year": 1922,
+          "month": 10,
+          "day": 19,
+          "iso": "1922-10-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            117,
+            125
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11092,
+      "image": "11092__11091.jpg",
+      "candidates": [
+        {
+          "text": "Card\n8/17-22\ngive8\nR-l,\n8-61",
+          "match": "8/17-22",
+          "year": 1922,
+          "month": 8,
+          "day": 17,
+          "iso": "1922-08-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            5,
+            12
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11095,
+      "image": "11095__11094.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n01\nHore\"\nPension\nRoll\n7/1/19\nto\nin\nwith\n4/1/19\nbeg ‘ . iG ' ¥ ” e : ot ge\n.s ) we A ee Oar te we ae ‘ 7 athe ; an A",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            32,
+            38
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n01\nHore\"\nPension\nRoll\n7/1/19\nto\nin\nwith\n4/1/19\nbeg ‘ . iG ' ¥ ” e : ot ge\n.s ) we A ee Oar te we ae ‘ 7 athe ; an A",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            50,
+            56
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1120,
+      "image": "1120__1119.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home\nPension\nRoll\n7/1/19\nto\nbegin\nvrith\n4/1/19 Placed on \"Home ¢ 4 Pension Roll 7/1/19\nto begin with () 4/1/19",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            29,
+            35
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n\"Home\nPension\nRoll\n7/1/19\nto\nbegin\nvrith\n4/1/19 Placed on \"Home ¢ 4 Pension Roll 7/1/19\nto begin with () 4/1/19",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            51,
+            57
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11233,
+      "image": "11233__11232.jpg",
+      "candidates": [
+        {
+          "text": "Born 1839\nin\nDale\nCounty,\nAlabama ,\ncame\nto\nInd.\nTer .\n1893.now Pittsburg,\nCo _\nEnlisted\nAugust\n9 ,\n1862 .\nwas\nat\nAppomattox\nwhen\nGeneral\nLee\nsurrendered\nApril\n9,\n1865.\n#e4\n77-09",
+          "match": "April\n9,\n1865",
+          "year": 1865,
+          "month": 4,
+          "day": 9,
+          "iso": "1865-04-09",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year"
+          ],
+          "span": [
+            154,
+            167
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11245,
+      "image": "11245__11244.jpg",
+      "candidates": [
+        {
+          "text": "letter,\n8/29/19 Changed fron Ckickeeha\nt0\nMiami\nBy",
+          "match": "8/29/19",
+          "year": 1919,
+          "month": 8,
+          "day": 29,
+          "iso": "1919-08-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            8,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11360,
+      "image": "11360__11359.jpg",
+      "candidates": [
+        {
+          "text": "deceaaecl 4\n22 - 9,3\nv6\nxoq\nTz-08/6 . . re : : Pra\n’ . fo? oo *",
+          "match": "deceaaecl 4\n22",
+          "year": 1922,
+          "month": 12,
+          "day": 4,
+          "iso": "1922-12-04",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11468,
+      "image": "11468__11467.jpg",
+      "candidates": [
+        {
+          "text": "decaaed 12\n24 e\n. * , . a\nt : : ra ; a j",
+          "match": "decaaed 12\n24",
+          "year": 1924,
+          "month": 12,
+          "day": 12,
+          "iso": "1924-12-12",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11471,
+      "image": "11471__11470.jpg",
+      "candidates": [
+        {
+          "text": "On\nAppli\nrecd\n3/25/16\nAdd\nchanged\nfrom Caney;\nAtoka\nCo\nto Randlett,\nR-1\nBy\nletter\nrecd\n9/2/16\nadd .\nchgd\nfrom\nRan-\ndlett\n9\nt0\nAtoka ,\nOkla.\n2\nBox\n215\nSup",
+          "match": "9/2/16",
+          "year": 1916,
+          "month": 9,
+          "day": 2,
+          "iso": "1916-09-02",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            87,
+            93
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11483,
+      "image": "11483__11481.jpg",
+      "candidates": [
+        {
+          "text": "Name\nDunn,\nDECEASED\nNo.\nA\n499\nAddress\nTamaha\nHaskell\nCo_\n(Widow of)\nFiled\n6412/15\nCompany\nPhelanLs\nBattery\nReg' m't\nBattalion\nInfantry\nCavalry\nArtillery\nPvt\nNavy\nREJECTED\nGRANTED 0 47 - 1916\nNo_\nP\n260\n62\nto\n65\nFed .\nRec .\nRemarks:\n(over) DECEASED 4 /¢ /& HOY",
+          "match": "1916",
+          "year": 1916,
+          "month": null,
+          "day": null,
+          "iso": "1916",
+          "kind": "year-only",
+          "confidence": 0.4,
+          "reasoning": [
+            "year_only",
+            "death_keyword_in_window"
+          ],
+          "span": [
+            186,
+            190
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": true
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11603,
+      "image": "11603__11602.jpg",
+      "candidates": [
+        {
+          "text": "Letter 8/29/19\nClanged\nfromOklahona @#jy\n1114\nN\nShartell\nto\nShawnee, 131\nSouth\nCenter\nSt\naddress\nto\n1131\nE.\nWalnut_\ng1ves\n325\nN .\nPenneylvania\nAve , ,\nBy ‘\nzy\ni",
+          "match": "8/29/19",
+          "year": 1919,
+          "month": 8,
+          "day": 29,
+          "iso": "1919-08-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11612,
+      "image": "11612__11611.jpg",
+      "candidates": [
+        {
+          "text": "By\n1etter\n12/20-21\nchange\nto\nHenryetta,\n521\nMain,\n%\nBell\n&\nGcmela\nFurniture",
+          "match": "12/20-21",
+          "year": 1921,
+          "month": 12,
+          "day": 20,
+          "iso": "1921-12-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            10,
+            18
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11657,
+      "image": "11657__11656.jpg",
+      "candidates": [
+        {
+          "text": "By\nletter\n5/25/20\nchange\nfrom\nOlney\nt0\n605 E\n14th,\nSt _\nAda .\nLetter\n3/26/23",
+          "match": "3/26/23",
+          "year": 1923,
+          "month": 3,
+          "day": 26,
+          "iso": "1923-03-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            69,
+            76
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11690,
+      "image": "11690__11689.jpg",
+      "candidates": [
+        {
+          "text": "0lece\n&ed 3/3/20\"",
+          "match": "3/3/20",
+          "year": 1920,
+          "month": 3,
+          "day": 3,
+          "iso": "1920-03-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            10,
+            16
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11696,
+      "image": "11696__11695.jpg",
+      "candidates": [
+        {
+          "text": "5/22/20\nChange\nt0\n303\nFredonia\nSt\nMuskogee.",
+          "match": "5/22/20",
+          "year": 1920,
+          "month": 5,
+          "day": 22,
+          "iso": "1920-05-22",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 116,
+      "image": "116__115.jpg",
+      "candidates": [
+        {
+          "text": "Letter\nWith\nC-12/31-19\nchanged\nt0\nTulse,\n525\nN\nDenver ‘N\n‘",
+          "match": "12/31-19",
+          "year": 1919,
+          "month": 12,
+          "day": 31,
+          "iso": "1919-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            14,
+            22
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11702,
+      "image": "11702__11701.jpg",
+      "candidates": [
+        {
+          "text": "6/17/20\nChange\nTo\nShavee\nR-5\nB-125",
+          "match": "6/17/20",
+          "year": 1920,
+          "month": 6,
+          "day": 17,
+          "iso": "1920-06-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11798,
+      "image": "11798__11797.jpg",
+      "candidates": [
+        {
+          "text": "12/30-22\nadds\n1001\nKansas\nAve\n96 -\np0 mee ie } ‘ ,\n’ t\ne we / | we ’\nf ae",
+          "match": "12/30-22",
+          "year": 1922,
+          "month": 12,
+          "day": 30,
+          "iso": "1922-12-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            8
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11888,
+      "image": "11888__11887.jpg",
+      "candidates": [
+        {
+          "text": "10/1/19 Changed\nTyler, lershall\nt0\nQc.12/31/21\nChange-Carter.\n4-16-23\ngives\nCarter\nR-3\nB-5l\nZTT-d\n4\"Cuog\nJOj\nuO\nfrom\nCo\nCo",
+          "match": "10/1/19",
+          "year": 1919,
+          "month": 10,
+          "day": 1,
+          "iso": "1919-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11906,
+      "image": "11906__11905.jpg",
+      "candidates": [
+        {
+          "text": "Vc 9/30/21\ngive8\nVano 88,\nB-4",
+          "match": "9/30/21",
+          "year": 1921,
+          "month": 9,
+          "day": 30,
+          "iso": "1921-09-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11942,
+      "image": "11942__11941.jpg",
+      "candidates": [
+        {
+          "text": "4/6/20\nchange\nto\n701\n8.\nNevejo",
+          "match": "4/6/20",
+          "year": 1920,
+          "month": 4,
+          "day": 6,
+          "iso": "1920-04-06",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11972,
+      "image": "11972__11971.jpg",
+      "candidates": [
+        {
+          "text": "Vc\n2/18\nfrom\nTupelo\nto\nCentrahoma\nc/c\n1/19\nChanged\nfrom\nto\nTupelo .\n10/1/19\nChanged\nfron Tupelo\nback\nto\nCentrahona\nV/c 3/31/21\nEives\nTupelo. ,\nB-95 C/O i/iy9 Cnanged from ventraz:oma to Tupelo.",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            119,
+            126
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 11981,
+      "image": "11981__11980.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/17/17\nchanged\nadd\nfrom\nBennington\nt0\nBosw\nV/c 3/31/21\nChange\nto\nBennington.\nQC\n9/30-22\ngives B-ll6",
+          "match": "12/17/17",
+          "year": 1917,
+          "month": 12,
+          "day": 17,
+          "iso": "1917-12-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1207,
+      "image": "1207__1206.jpg",
+      "candidates": [
+        {
+          "text": "letter\n9/20/17\nchange\nfrom\nDoxey\nt0\nSayre",
+          "match": "9/20/17",
+          "year": 1917,
+          "month": 9,
+          "day": 20,
+          "iso": "1917-09-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12185,
+      "image": "12185__12185.jpg",
+      "candidates": [
+        {
+          "text": "ASoln? 1.1-23\n4679\nName\nNo. A\nAddress\n415\nN.\nTownbend\nAda\n(Pontotoc\nCo . )\n(Widow of)\nFiled\n10/13-21\nCompany E.\nBattery\nReg' m  t\n8th\nMisgouri\nInf.\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n11/14-21\nNO.\nP\n3841\n61-65\nRemarks :\n(Over}\nV DECHASEN 2-11-23\n3841",
+          "match": "2-11-23",
+          "year": 1923,
+          "month": 2,
+          "day": 11,
+          "iso": "1923-02-11",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            265,
+            272
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12203,
+      "image": "12203__12203.jpg",
+      "candidates": [
+        {
+          "text": "Name\nVence.\nJohn\nD\nNo.\n4299\nAddress\nChickesha.\nGrady\nCo)\n320\nChickasha\nAve.\n(Widow 0f)\nFiled\nCompany\nB&G\nBattery\nReg 'm 't\nZnd\nTenn\nCav ,\nBattalion\nInfantry\nCavalry\nPvt\nArtillery\nNavy\nREJECTED\nGRANTED\n10/11-21\nNo_\nP\n3821\nRemarks:\n61\nto\n65\n(over) KO Veacxetsk — $2220\nJ\n10/11-21 3921",
+          "match": "10/11-21",
+          "year": 1921,
+          "month": 10,
+          "day": 11,
+          "iso": "1921-10-11",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            269,
+            277
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12262,
+      "image": "12262__12261.jpg",
+      "candidates": [
+        {
+          "text": "9/12/19\nChanged\nftom\n220\nW\nWalnut\nt0\n711\n8\nouth\nCinnatti\nSt",
+          "match": "9/12/19",
+          "year": 1919,
+          "month": 9,
+          "day": 12,
+          "iso": "1919-09-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12313,
+      "image": "12313__12312.jpg",
+      "candidates": [
+        {
+          "text": "By\nletter\nrecd\n3/16-21\nchange\nto\nArdmore ,\n3rd\nAve .\n& K\nSt _\nN .\nE.\nletter\n6/15-21\nchanged\nt0\nAda ,\n428\nWT. 4th.",
+          "match": "3/16-21",
+          "year": 1921,
+          "month": 3,
+          "day": 16,
+          "iso": "1921-03-16",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            15,
+            22
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "By\nletter\nrecd\n3/16-21\nchange\nto\nArdmore ,\n3rd\nAve .\n& K\nSt _\nN .\nE.\nletter\n6/15-21\nchanged\nt0\nAda ,\n428\nWT. 4th.",
+          "match": "6/15-21",
+          "year": 1921,
+          "month": 6,
+          "day": 15,
+          "iso": "1921-06-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            76,
+            83
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12337,
+      "image": "12337__12336.jpg",
+      "candidates": [
+        {
+          "text": "Vc 9/30/21\ngivee\nBoswell.",
+          "match": "9/30/21",
+          "year": 1921,
+          "month": 9,
+          "day": 30,
+          "iso": "1921-09-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1255,
+      "image": "1255__1254.jpg",
+      "candidates": [
+        {
+          "text": "4/22/20\nchange\nto\nBurneyville.",
+          "match": "4/22/20",
+          "year": 1920,
+          "month": 4,
+          "day": 22,
+          "iso": "1920-04-22",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12567,
+      "image": "12567__12567.jpg",
+      "candidates": [
+        {
+          "text": "37\nName\nREBECCA\nNo. A\n5852\nAddress\nGADDO\nBRYA)-Co .\n(Widow of)\nJames\nHanilton_\nFiled\n7-l-l924\nCempany\nBattery\nLF\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n4-29-1931.\nNO. P\n6045\nEffective\n4-1-1931\nRemarks:\n(Over) 7 AL LOOM eek. cl, GF ~ / a - 37\noe ee ce | v04u\nfe  sffecvive 4-1-1951 ©",
+          "match": "4-1-1951",
+          "year": 1951,
+          "month": 4,
+          "day": 1,
+          "iso": "1951-04-01",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            292,
+            300
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1264,
+      "image": "1264__1263.jpg",
+      "candidates": [
+        {
+          "text": "Q/c\n1-18\nchanged\nMarietta\nto\nBerwyn\nCarter\nCo .\nPlaced\non\nHome\"Pe nsion\nRoll\n7/1/19\nto\nbegin\nwith 4/1/19 ae ISS BE a\ni\n4\n4",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            77,
+            83
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Q/c\n1-18\nchanged\nMarietta\nto\nBerwyn\nCarter\nCo .\nPlaced\non\nHome\"Pe nsion\nRoll\n7/1/19\nto\nbegin\nwith 4/1/19 ae ISS BE a\ni\n4\n4",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            98,
+            104
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12874,
+      "image": "12874__12873.jpg",
+      "candidates": [
+        {
+          "text": "Fo te\nCC\n6/30-22\nsives\nD-1\nFazon",
+          "match": "6/30-22",
+          "year": 1922,
+          "month": 6,
+          "day": 30,
+          "iso": "1922-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            9,
+            16
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 12933,
+      "image": "12933__12932.jpg",
+      "candidates": [
+        {
+          "text": "V/c.3-31-22.Cives,R-5.B-81 .\nAde P",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            4,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1467,
+      "image": "1467__1466.jpg",
+      "candidates": [
+        {
+          "text": "9/24/19\nAdd\n311\nFlynn\nAve",
+          "match": "9/24/19",
+          "year": 1919,
+          "month": 9,
+          "day": 24,
+          "iso": "1919-09-24",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 146,
+      "image": "146__145.jpg",
+      "candidates": [
+        {
+          "text": "4/17/17\nchanged\nfron\n503\nto\n71 6 A\nSt\nN E a",
+          "match": "4/17/17",
+          "year": 1917,
+          "month": 4,
+          "day": 17,
+          "iso": "1917-04-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1524,
+      "image": "1524__1523.jpg",
+      "candidates": [
+        {
+          "text": "3/31-20\neives\n509\nAdams\nAve\n9\n801\nSt _\nMcAlester.\nNo ,",
+          "match": "3/31-20",
+          "year": 1920,
+          "month": 3,
+          "day": 31,
+          "iso": "1920-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1551,
+      "image": "1551__1550.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/16-19\nchanged\nt0\n723\nLaneing\nSt\nLetter\nrec'd\n5/1/20\nchange\nt0 1415\nS.\nTrenton\nLetter\n1/12/21\nEives\nDrunright\nLetter\n4/19/21\ngives\nTulsa.\nLetter\n7/9/21\ngives\n1 508\n8\nDetroit ,\nTulsa.\n9/25-21\ngives\n1227\n8 .\nDetroit,\n12/9-21\ngives\n1845SBoston\nSt .\nQC\n6/30-22\ngives\n260 5 E. 6th\nTulsa\nQc\n12731-22\ngives\nTulsa\n(1eave\noff\nSt.&\nno . ) 5\nal ome\n¢",
+          "match": "5/1/20",
+          "year": 1920,
+          "month": 5,
+          "day": 1,
+          "iso": "1920-05-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            55,
+            61
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n12/16-19\nchanged\nt0\n723\nLaneing\nSt\nLetter\nrec'd\n5/1/20\nchange\nt0 1415\nS.\nTrenton\nLetter\n1/12/21\nEives\nDrunright\nLetter\n4/19/21\ngives\nTulsa.\nLetter\n7/9/21\ngives\n1 508\n8\nDetroit ,\nTulsa.\n9/25-21\ngives\n1227\n8 .\nDetroit,\n12/9-21\ngives\n1845SBoston\nSt .\nQC\n6/30-22\ngives\n260 5 E. 6th\nTulsa\nQc\n12731-22\ngives\nTulsa\n(1eave\noff\nSt.&\nno . ) 5\nal ome\n¢",
+          "match": "12/16-19",
+          "year": 1919,
+          "month": 12,
+          "day": 16,
+          "iso": "1919-12-16",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 1566,
+      "image": "1566__1565.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n11/20-22\nchenge\nto\n116\nE.Newton, Tulsa",
+          "match": "11/20-22",
+          "year": 1922,
+          "month": 11,
+          "day": 20,
+          "iso": "1922-11-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 158,
+      "image": "158__157.jpg",
+      "candidates": [
+        {
+          "text": "V/c\n7/15/20\nCives\nleeker\nB-5",
+          "match": "7/15/20",
+          "year": 1920,
+          "month": 7,
+          "day": 15,
+          "iso": "1920-07-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            4,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 173,
+      "image": "173__172.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/33-19\nchanged\nt0\nHominy, Sect ion\n8\nLetter\nrec'd 4/6/20\nchange\nfrom Hominy\nto\nTulga\nB-835",
+          "match": "4/6/20",
+          "year": 1920,
+          "month": 4,
+          "day": 6,
+          "iso": "1920-04-06",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            59,
+            65
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 224,
+      "image": "224__223.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n11/4/16\nchanges\nadd\nfrom\nMesser\nto R 4\nHugo",
+          "match": "11/4/16",
+          "year": 1916,
+          "month": 11,
+          "day": 4,
+          "iso": "1916-11-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 236,
+      "image": "236__235.jpg",
+      "candidates": [
+        {
+          "text": "4/10/20\nchange\nt0\nOlustee",
+          "match": "4/10/20",
+          "year": 1920,
+          "month": 4,
+          "day": 10,
+          "iso": "1920-04-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 239,
+      "image": "239__238.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n9/16-22\nchange\nt0\nB-336 ,\nWilson.\n&tul r . “sy . . . °",
+          "match": "9/16-22",
+          "year": 1922,
+          "month": 9,
+          "day": 16,
+          "iso": "1922-09-16",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 2436,
+      "image": "2436__2435.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\nHome\"\nPen-\nsion\nRoll\nto\nbegin\nwith\n4/1/19\n9 Sacroorel 7~ %- 2 t",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            45,
+            51
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 2448,
+      "image": "2448__2446.jpg",
+      "candidates": [
+        {
+          "text": "A\n153\nName\nBottons ,\nJames\nNo.\nA\nAddress\nAda\nPontotoc\nCo\nR-2\nB-28\n(Widow of)\nFiled\n6/1/15\nCompany\nBattery\nReg'm't\nl5th\nTenn.\nBattalion\nInfantry\nCavalry\nPyt\nArtillery\nNavy\nREJECTED\nGRANTED\n7/25/19\nNo_\nP\n2908\n63\nto\n65\nFed .\nRec ,\nRemarks:\n(over) ) 20 c_@ AL —2O—~2 Lotte aR ‘\n<7. ol & Schags A cd\n7/25/19 2908,",
+          "match": "7/25/19",
+          "year": 1919,
+          "month": 7,
+          "day": 25,
+          "iso": "1919-07-25",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            295,
+            302
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 2448,
+      "image": "2448__2447.jpg",
+      "candidates": [
+        {
+          "text": "10/16/19\nAdd\nR-22B-28 _ oe\nne\n‘\n. i\nc\na Ww",
+          "match": "10/16/19",
+          "year": 1919,
+          "month": 10,
+          "day": 16,
+          "iso": "1919-10-16",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            8
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 251,
+      "image": "251__250.jpg",
+      "candidates": [
+        {
+          "text": "Vc 3/31/21\nEives Mangum,\n703\nNT\nCaroline",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 2563,
+      "image": "2563__2562.jpg",
+      "candidates": [
+        {
+          "text": "Ietter\n5/28-21 cives\nWilburton,\nOkla.\n8 b (\n0.6\nl",
+          "match": "5/28-21",
+          "year": 1921,
+          "month": 5,
+          "day": 28,
+          "iso": "1921-05-28",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 3044,
+      "image": "3044__3044.jpg",
+      "candidates": [
+        {
+          "text": "Name\nstevens,\nJ.\nK.\nNo\nA\n2665\nAddress\nAfton,\nOttawa\nCo .\nBx\n25\n(Widow of)\n9/9/15\nC\nCompany\nBattery\nReg m't\n8th\nMo\nBattalion\nInfantry\nCavalry\nPvt\nArtillery\nNavy\nREJECTED\nGRANTED\nMAR 6\n1917\nNo.\nP\n1765\n62\n65\nRemarks:\nEligible\nNo.\n138\n(over) ” * ws:\n\ng FN Eee .\n\n~_ Me we B 3\n. i of we * j t",
+          "match": "9/9/15",
+          "year": 1915,
+          "month": 9,
+          "day": 9,
+          "iso": "1915-09-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            74,
+            80
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 35,
+      "image": "35__34.jpg",
+      "candidates": [
+        {
+          "text": "letter\n2-3-16\nwithdrawn\napplicant\na/c\nhis\nremoval\nto\nConcho ,\nTexas ,\nBy,\nby",
+          "match": "2-3-16",
+          "year": 1916,
+          "month": 2,
+          "day": 3,
+          "iso": "1916-02-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 3614,
+      "image": "3614__3613.jpg",
+      "candidates": [
+        {
+          "text": "Lecter\n11/12-22\ncnange\nt0\nR-c,\nB-134\n9\nFrederick.\n2 kx /",
+          "match": "11/12-22",
+          "year": 1922,
+          "month": 11,
+          "day": 12,
+          "iso": "1922-11-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 3742,
+      "image": "3742__3741.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n6/13-21 sites\nBox\n2564 ’",
+          "match": "6/13-21",
+          "year": 1921,
+          "month": 6,
+          "day": 13,
+          "iso": "1921-06-13",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 3773,
+      "image": "3773__3772.jpg",
+      "candidates": [
+        {
+          "text": "9/29/19\nUhanged\nfrom\ncare\nSanta\nEating House\nto\nR-l.",
+          "match": "9/29/19",
+          "year": 1919,
+          "month": 9,
+          "day": 29,
+          "iso": "1919-09-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 3975,
+      "image": "3975__3975.jpg",
+      "candidates": [
+        {
+          "text": "Name\nIhiteman,\nMary\nNo. A\n5634\nDe cease\n9-22-1930\nAddress\nHaworth\nDcCurtain-Co\n(Widow of)\nDakid\n0\nIhitemn\nFiled\n1223-23\nBattery\nReg m't\nKst\nTexas\nLegion\nBattalion\n3, | .\n^\n4X\nInfantry\nTex\nCavalry\nArtillery\nNavy\n1-1-24\n4568\nREJECTED\n61to\n65\nGKANTED\nNO.P\nRemarks :\n365\n(Over) pecease, Qedcdelvo0",
+          "match": "9-22-1930",
+          "year": 1930,
+          "month": 9,
+          "day": 22,
+          "iso": "1930-09-22",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            40,
+            49
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 4455,
+      "image": "4455__4455.jpg",
+      "candidates": [
+        {
+          "text": "MOVED\nTO\nARK\n1-1-1928\nName\nRobertson,\nC .\nN .\nNo\nA\n4396\nAddress\n3.685,\nIdabel,\n(McCurtain\nCo .)\n(Widow of)\nFiled\n12/13-20\nCompany\nBattery\nMcAnally ' 8\nReg m't\nOk\nBattalion\nBlockerLe\nArtil\nInfantry\nCavalry\nArtillery\nPvt\nNavy\nREJECTED\nGRANTED\n12/13-20\nNo\nP\n3553\nRemarks:\n63-65\n(over MOVED TO ARK lele-1928\nDv\n3553",
+          "match": "1-1-1928",
+          "year": 1928,
+          "month": 1,
+          "day": 1,
+          "iso": "1928-01-01",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            13,
+            21
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 4488,
+      "image": "4488__4488.jpg",
+      "candidates": [
+        {
+          "text": "Name\nWF.\nNo.\nA\n4372\nWithdrew\nfrom\nHome\n4-15-27\nAddress\nMilton\nFloze,\nCe\n(Widow of)\nFiled\n10/20/20\nCompany\nBattery\nReg' m't\n4th\nMiss\nBattalion\nInfantry\nCavalry\nPvt\nArtillery\nNavy\nREJECTED\nGRANTED\n10/27/20\nNo_\nP\n3523\nRemarks:\n61\nt0\n65\n(over)\nLe a) oe LM Rb Arne 6D J om / woos > Cc\nWithdrew from Home 4-15-27",
+          "match": "4-15-27",
+          "year": 1927,
+          "month": 4,
+          "day": 15,
+          "iso": "1927-04-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            299,
+            306
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5050,
+      "image": "5050__5050.jpg",
+      "candidates": [
+        {
+          "text": "Deceaged\n4-20-1928\nName\nJORRO\nMARY\nNo. A\n5816\nAddress\nSALINA\nOKLA\nB-27\n(Widow of)\nJohn\nB.\nMorro\nFiled\n5-23-1924\nCompany\nBattery\nReg'm't\nSee\nArk.\ncertificate\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n7-1-1924\nNO.P\n4717\nRemarks :\nve veceasea 4eZuvuelyes\naa\njooece (EER UL bervte",
+          "match": "4-20-1928",
+          "year": 1928,
+          "month": 4,
+          "day": 20,
+          "iso": "1928-04-20",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            9,
+            18
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5348,
+      "image": "5348__5347.jpg",
+      "candidates": [
+        {
+          "text": "Vc 12/31/20\ngive8\n1424\nW\n1st ,\nSt .\nTulga.\nC\nVes\nTul\nN\nsedel e\nSt\nC.\nJ B.Haney.\ngives\n108\n8.Ro se\ndole\nSt .\nTulsa\ngiveg\n1307\nS\nMaybell ,\nTulga\n88, y\nPa we a",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5375,
+      "image": "5375__5374.jpg",
+      "candidates": [
+        {
+          "text": "V/c 12/31/20\ngive8\nR-l\nMcAlester.",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            4,
+            12
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5396,
+      "image": "5396__5395.jpg",
+      "candidates": [
+        {
+          "text": "V/c.3-31-22, Givee,1 509 ,\n9\nAdmiral-Place.Tulsa .\ns € - f oe io ” «! “ ws a o% a“\n3 F. é\n&",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            4,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5533,
+      "image": "5533__5532.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n7/27-22\nchange\nt0\nR-5 ,\nSallisaw_",
+          "match": "7/27-22",
+          "year": 1922,
+          "month": 7,
+          "day": 27,
+          "iso": "1922-07-27",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 565,
+      "image": "565__565.jpg",
+      "candidates": [
+        {
+          "text": "NAME\nFEATHERSTON ,\nMARY\n€\nNo_\nA\n7184\nADDRESS\nSALLISAW\n(WIDOW\nOF)\nCLEMEN T\nf.\nFEA THERS TONFILED\n7-28-1930\nCOMPANY\n\"K\"\nBATTERY\nREG'M'T\n32nd\nTenn,\nInf\nBATTALION\nINFANTRY\nCAVALRY\nARTILLERY\nNAVY\nREJECTED\nGRANTED\nNO.P\nREMARKS:\n(OVER)",
+          "match": "7-28-1930",
+          "year": 1930,
+          "month": 7,
+          "day": 28,
+          "iso": "1930-07-28",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            96,
+            105
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 5926,
+      "image": "5926__5926.jpg",
+      "candidates": [
+        {
+          "text": "1320\nName\nPipes\nSarah\nJaneDECEASED\n12-15-16\nA\nAddress\nHewitt\nCarter\nCo\n(Widow of)\nAbner\nPipes\nFiled\n7/2/15\nCompany\nBattery\nReg m't\n22nd\nTexa\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\n684\nREJECTED\nGRANTED\nNo. P\nRemarks:\nt0\n65\nFed .\nRec .\n(over)\n62 “pmowasmp 12-15-15 becO »",
+          "match": "12-15-15",
+          "year": 1915,
+          "month": 12,
+          "day": 15,
+          "iso": "1915-12-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            257,
+            265
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6043,
+      "image": "6043__6042.jpg",
+      "candidates": [
+        {
+          "text": "Q/.3-31-22.Give8,R-2.B-34.Poteau.",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6055,
+      "image": "6055__6054.jpg",
+      "candidates": [
+        {
+          "text": "letter\n10/1/20\nEives\nDuncan.\nStar\nR.\nB-2\nVc.%S1-2/21/21:Change\nChange-R-l.B-l.\nR, Duncan\nBy",
+          "match": "2/21/21",
+          "year": 1921,
+          "month": 2,
+          "day": 21,
+          "iso": "1921-02-21",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            48,
+            55
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "letter\n10/1/20\nEives\nDuncan.\nStar\nR.\nB-2\nVc.%S1-2/21/21:Change\nChange-R-l.B-l.\nR, Duncan\nBy",
+          "match": "10/1/20",
+          "year": 1920,
+          "month": 10,
+          "day": 1,
+          "iso": "1920-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6079,
+      "image": "6079__6078.jpg",
+      "candidates": [
+        {
+          "text": "9/12/19\nAdd\nR-3\nB-5A A\ni |",
+          "match": "9/12/19",
+          "year": 1919,
+          "month": 9,
+          "day": 12,
+          "iso": "1919-09-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6112,
+      "image": "6112__6111.jpg",
+      "candidates": [
+        {
+          "text": "6/15/20\nletter\n9\nmoved\nt0\nMagnolia\nArk.\nBy",
+          "match": "6/15/20",
+          "year": 1920,
+          "month": 6,
+          "day": 15,
+          "iso": "1920-06-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6121,
+      "image": "6121__6120.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home\"\nPen -\nsion\nRol1\n7/1/19\nto\nbegin\n2ith 4/1/19 Placed on \"Home\" Pen- sion Roll 7/1/19\nto begin 2ith 4/1/19 ( ;",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            33,
+            39
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Placed\non\n\"Home\"\nPen -\nsion\nRol1\n7/1/19\nto\nbegin\n2ith 4/1/19 Placed on \"Home\" Pen- sion Roll 7/1/19\nto begin 2ith 4/1/19 ( ;",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            54,
+            60
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6334,
+      "image": "6334__6334.jpg",
+      "candidates": [
+        {
+          "text": "Entered\nHome\n8-16-1926\nName\nJohn\nCLASS\n\"A\"\nNo.\nA\n1866\nAddress\nstonewall,\nPontotoc\nCo. ,\nR2\n(Widow of)\nFiled\n6/34115\nCompany\nE\nBattery\nReg' m't\n8th\nArk,\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n00T 7 - 1915\nNo\nP\n964\n61\nto\n85\nFed.Rec .\nRemarks:\n(over) ee a ee FE mb\n1 Open G-16< en ce gh GE - *\n4",
+          "match": "8-16-1926",
+          "year": 1926,
+          "month": 8,
+          "day": 16,
+          "iso": "1926-08-16",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            13,
+            22
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6487,
+      "image": "6487__6487.jpg",
+      "candidates": [
+        {
+          "text": "Deccased\n1-9-23\n3628\nName\nKutoh,\nBenjamin\nCLASS\nA\nA\nAddress\nCloud\nChief,\nWeshita-co\nR-3\n(Widow of)\nFiled\n3/18/18\nCompany\nBattery\nReg m't\nTexas\nState\nRangers\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\nNo\nP\n2630\nRemarks:\n12\nmonths\n(over) . pe wae lh ~ oo —La~u mn oe ,\nLUouscane on CTS oA",
+          "match": "1-9-23",
+          "year": 1923,
+          "month": 1,
+          "day": 9,
+          "iso": "1923-01-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            9,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6712,
+      "image": "6712__6711.jpg",
+      "candidates": [
+        {
+          "text": "4/13/20\nchange\naddres8\nt0\n1734\nW .\n1Oth.",
+          "match": "4/13/20",
+          "year": 1920,
+          "month": 4,
+          "day": 13,
+          "iso": "1920-04-13",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6730,
+      "image": "6730__6729.jpg",
+      "candidates": [
+        {
+          "text": "Q/c\n4/17\nchanged\nfror\nMiami\nto\nYale\nfc\n4/18 En8ngeal Gr8a\nto\nMiaianio\nStilwell, Okla.\n9/15/19\nChanged\nfron\nSt ilwekto luskoge\n328\nN C\nSt\n11/3/19\nChanged\nfrom Muskogee\nto\nYale\nB-613\nQ/c\n3/31-20 gives\nN. _\nC. Sta, c/\nMrs .\nChas\nB .\nWalters ,\nMuskogee.\n4/16/20\ngives\naddress\n417\nN. K.\nSt .\nQ/c 12/31/20\nsives B-613,\nYale.\nQc 3/31/21\ngives Muskogee,\n417\nN K\nSt\n% R J\nWatters.\n+***\nQC\n1/24/23\ngives\n407\nC\nSt . S. V .\nKiami\n328\na8, qg/C 1/19 Changed from Miami to Stilwell,Okla.",
+          "match": "9/15/19",
+          "year": 1919,
+          "month": 9,
+          "day": 15,
+          "iso": "1919-09-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            86,
+            93
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6781,
+      "image": "6781__6780.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n4/10/17\nck\ned\nfrom\n532\nW\nWashingtor\nto\n535\nW\nGral+\nletter 10/19/16\nadd\nchanged\nfrom\n15\nE.\nJefferson\nto\n532\nWashington,\nUcAlester\nVc\n4/17\nchanged\nfrom\n535\nW\nGrand\nto\n414\nN\n1stnSt .\nChanged\n1719\n2/19\nchenged\nfrom\nMcAlester\n414\nN\nlst\nSt\nt0\nHartshorne,\nOkla .\nChange\nfrom\nHart shorne\nto\nMcAlester\nGivez\nHartshorne.\nBy\nOn lst St. Changed 1/19",
+          "match": "4/10/17",
+          "year": 1917,
+          "month": 4,
+          "day": 10,
+          "iso": "1917-04-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6832,
+      "image": "6832__6831.jpg",
+      "candidates": [
+        {
+          "text": "Q/c 4/18\nfrom\nCourtney,Jefferdon\nCo\nto\nMeyers ,\nPushmatoha\nC0\nV/c\nChanged\nfrom Mayers\nto\nShawnee , Okle.\nLetter\nrec'd\n4/12/20\nchange\nfrom\nShawee\nto\nPauls Valley\nR-3'\nQc/\n12/31/21\nAdd\nB\n18 .",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            170,
+            178
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6838,
+      "image": "6838__6837.jpg",
+      "candidates": [
+        {
+          "text": "letter\n1-24-16\nadd\n8\nchanged\nfrom\ngum\n9\nGreer\nCo .\nto\nReason,\nEllisCo .\nR/c\nChanged\nfrom Reason\nt0\nArnett ,Ellis\nCo.\nQ/cc2/19\nAdd\nR-3\nt0\naddress.\n4/8/20\nchange\nto\nHarmon.\nFergo .\nBy\nMan",
+          "match": "4/8/20",
+          "year": 1920,
+          "month": 4,
+          "day": 8,
+          "iso": "1920-04-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            146,
+            152
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 683,
+      "image": "683__683.jpg",
+      "candidates": [
+        {
+          "text": "Name\nCQUNTI SS,\nMARY\nNo. A\n5440\nAddress\nWaurika\n1\n'Okla .\n(Widow of)\nHosea\nWashington\nCounti  iled\n7-26-23\nCompany\nBattery\nReg 'm't\n4Znd\nInft.\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\nNO.P\nServed\n32\nyears.\nRemarks:\n(Over)",
+          "match": "7-26-23",
+          "year": 1923,
+          "month": 7,
+          "day": 26,
+          "iso": "1923-07-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            99,
+            106
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6853,
+      "image": "6853__6852.jpg",
+      "candidates": [
+        {
+          "text": "4/4/17\nletter\nchange\nrom\nCowlingon\nt0\nQuinton .\nqfc .\n1/18\nFrom\nQuinton\nto\nCowlington",
+          "match": "4/4/17",
+          "year": 1917,
+          "month": 4,
+          "day": 4,
+          "iso": "1917-04-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 6874,
+      "image": "6874__6874.jpg",
+      "candidates": [
+        {
+          "text": "DBCEASED\n10-27-1908\nName\n@homas\nNo.\nA\n2245\nAddress\nBear\nHughes\nCo\n(Widow of)\nFiled\n8410415\nCompany\nBattery\nReg'm't\nFreenanle\nAk:\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\nOCZ -\nNo. P\n536\nRemarks:\n63\n40\n65\n(over)\n1915 », . ‘J ¥ a\na iS",
+          "match": "10-27-1908",
+          "year": 1908,
+          "month": 10,
+          "day": 27,
+          "iso": "1908-10-27",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            9,
+            19
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7000,
+      "image": "7000__6999.jpg",
+      "candidates": [
+        {
+          "text": "Qc.12/31/21.Altus-413-W.Live\n0g615\nSt\nOak\n9\nAltus\nQC\nQC",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 712,
+      "image": "712__712.jpg",
+      "candidates": [
+        {
+          "text": "Deceasea\n8-27-27\nName\nElliey\nSofrona\nC\nNo.\nA\n524\nAddress\nMuskogee,\nMuskogee\nCo\n2212\nDenison\nSt\n(Widow of)\nJahn\nEllia\nFiled\n7/10/15\nCompany\nA\nBattery\n3rd\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\n00T 7 -1915\nREJECTED\nGRANTED\nNo_\nP\n23.\nRemarks:\n61\nt0\n65\nFed .\nRec .\n(over) pe 5 - yo ar:\nH@eCELSER Ooms reg!\nay,\n\" (&\na",
+          "match": "8-27-27",
+          "year": 1927,
+          "month": 8,
+          "day": 27,
+          "iso": "1927-08-27",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            9,
+            16
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7279,
+      "image": "7279__7278.jpg",
+      "candidates": [
+        {
+          "text": "4/17/20\nLetter\nrec 'd,\nchange\nfrom\nDill\nt0\nLeedey\nR-2\n0/ c\n12/31/20\nEives\nLeedey",
+          "match": "4/17/20",
+          "year": 1920,
+          "month": 4,
+          "day": 17,
+          "iso": "1920-04-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "4/17/20\nLetter\nrec 'd,\nchange\nfrom\nDill\nt0\nLeedey\nR-2\n0/ c\n12/31/20\nEives\nLeedey",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            59,
+            67
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7306,
+      "image": "7306__7305.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/6-19\nchanged\nt0\nCoalgate,\nB\nBy\nletter\nrec 'd\n3/25/20\nchanged\nfrom\nCoalgate\nt0\nManngville\n% La\nW .\nHillis\nR-l\nB-l3\nV/c .7/15/20\nEives\nB-15\nBy\nletter\n4/9/21\ngive8\nR-l\nB-l5\n% L W Hillie\nManneville.\n56 .",
+          "match": "12/6-19",
+          "year": 1919,
+          "month": 12,
+          "day": 6,
+          "iso": "1919-12-06",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7312,
+      "image": "7312__7311.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrec'd\n6/22/20\nchange\nto\nBigheart\n32/2\nBy",
+          "match": "6/22/20",
+          "year": 1920,
+          "month": 6,
+          "day": 22,
+          "iso": "1920-06-22",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            13,
+            20
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7372,
+      "image": "7372__7371.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home\"\nPen-\nsion\nRoll\nto\nbegin\nwith\n4/1/19 . ee\n——\nss",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            46,
+            52
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7426,
+      "image": "7426__7425.jpg",
+      "candidates": [
+        {
+          "text": "On\nQ/ c\n3/19\nchanged\nArdmore\nto\nOklahoma\n315 E B\nc/o\nMrs\nR € Hall.\n4/29/20\nchange\nto\nArdmore\n319\nG\nSt .\nN. B.\n7\nMrs .\nT .\nSalisbury.\nfrom\nOkla,\nCity\nSt ,",
+          "match": "4/29/20",
+          "year": 1920,
+          "month": 4,
+          "day": 29,
+          "iso": "1920-04-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            67,
+            74
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7471,
+      "image": "7471__7470.jpg",
+      "candidates": [
+        {
+          "text": "4/8/20\nChange\naddre88\nto\n730\nN\nBeard B-652\nQ/v.3-31-22.Change\nt0\n1303-N.Bwdy.B-652 .",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            47,
+            54
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "4/8/20\nChange\naddre88\nto\n730\nN\nBeard B-652\nQ/v.3-31-22.Change\nt0\n1303-N.Bwdy.B-652 .",
+          "match": "4/8/20",
+          "year": 1920,
+          "month": 4,
+          "day": 8,
+          "iso": "1920-04-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7480,
+      "image": "7480__7479.jpg",
+      "candidates": [
+        {
+          "text": "detter\n7/4/20\nChange\nto\nMarlow -\nBy",
+          "match": "7/4/20",
+          "year": 1920,
+          "month": 7,
+          "day": 4,
+          "iso": "1920-07-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7624,
+      "image": "7624__7623.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n4/9/17\nadd\nnged\nfrom\nLone\nWolf\nto\nDill\n4-7-23\ngive8\n406\nH St\nHugo\nCity",
+          "match": "4-7-23",
+          "year": 1923,
+          "month": 4,
+          "day": 7,
+          "iso": "1923-04-07",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            46,
+            52
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n4/9/17\nadd\nnged\nfrom\nLone\nWolf\nto\nDill\n4-7-23\ngive8\n406\nH St\nHugo\nCity",
+          "match": "4/9/17",
+          "year": 1917,
+          "month": 4,
+          "day": 9,
+          "iso": "1917-04-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7639,
+      "image": "7639__7638.jpg",
+      "candidates": [
+        {
+          "text": "Note\nrec'd\n5/20-22\nchange\nto\nAlma _\n0 4",
+          "match": "5/20-22",
+          "year": 1922,
+          "month": 5,
+          "day": 20,
+          "iso": "1922-05-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            11,
+            18
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7648,
+      "image": "7648__7647.jpg",
+      "candidates": [
+        {
+          "text": "On\nV/c 3/16\nadd\nchanged\nfrom\nPaoli ,\nto\nPauls\nValley,\nGarvin\nCo\n213\nN .\nOak\nSt.\nChanged\nfrom\nPauls\nVelley\nto\nChickasha\n812\nIdaho\nAve\nq/c\n4/16\ncencelled\nat\nrequest\n0f\npensioner\non\nacc ount\nof\nincome\nof\n8200 .\nreceived\nfrom\nChurch\nBoard.\nReingtated 7/1/19\non\naccount\no f\n\"income\nlimit\nbeing\nraised\nto\n8300 .\nby\nnew\npension\nlaW . . an . e",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            247,
+            253
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7666,
+      "image": "7666__7664.jpg",
+      "candidates": [
+        {
+          "text": "DECBASED\n12-28-1928\nName\nJone8,\nLaura\nA.\nCLASS\nNo.\nA\nAddress\nMcCurtein,\nHaskell\nCo\nBx\n102\n(Widow of)\nIeaac\nNeuton\nLones\nFiled\n6/2415\nCompany\nA\nBattery\nReg m't\n1st\nBattalion\nInfantry\nCavalryi\nArtillery\nNavy\nREJECTED\nNo\nP\n463\n64\nto\n65\nRemarks:\nGae oe as Or ae eeenee rs ae ba ee wine tt\n. a oy ¢ 5\ncof a 8\ne\n|\n“4",
+          "match": "12-28-1928",
+          "year": 1928,
+          "month": 12,
+          "day": 28,
+          "iso": "1928-12-28",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            9,
+            19
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7672,
+      "image": "7672__7671.jpg",
+      "candidates": [
+        {
+          "text": "On\n0/ c\n10/14/15\naddress\nchenged\nfrom\nMerietta\nto\nLEON\nOKLA",
+          "match": "10/14/15",
+          "year": 1915,
+          "month": 10,
+          "day": 14,
+          "iso": "1915-10-14",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            8,
+            16
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7693,
+      "image": "7693__7692.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n1/5/18\nadd\nchanged\nfron Kemp\nto\nMt\nPark ,\nR-2\nLetter.12-27-21.Give8, R-2.Geronimo .",
+          "match": "12-27-21",
+          "year": 1921,
+          "month": 12,
+          "day": 27,
+          "iso": "1921-12-27",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            60,
+            68
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n1/5/18\nadd\nchanged\nfron Kemp\nto\nMt\nPark ,\nR-2\nLetter.12-27-21.Give8, R-2.Geronimo .",
+          "match": "1/5/18",
+          "year": 1918,
+          "month": 1,
+          "day": 5,
+          "iso": "1918-01-05",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7711,
+      "image": "7711__7710.jpg",
+      "candidates": [
+        {
+          "text": "12/31-22\naaas\nB-401",
+          "match": "12/31-22",
+          "year": 1922,
+          "month": 12,
+          "day": 31,
+          "iso": "1922-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            8
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7843,
+      "image": "7843__7842.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n5/20-22\ngive8 Bethany_",
+          "match": "5/20-22",
+          "year": 1922,
+          "month": 5,
+          "day": 20,
+          "iso": "1922-05-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7879,
+      "image": "7879__7878.jpg",
+      "candidates": [
+        {
+          "text": "Wetumka\n% J.\nW .\nOdom\nR-3 B-36\nQc.3-31-22.Giveg.\nJ ,W _\nODOM \nR-2.4 ,",
+          "match": "3-31-22",
+          "year": 1922,
+          "month": 3,
+          "day": 31,
+          "iso": "1922-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            34,
+            41
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7942,
+      "image": "7942__7941.jpg",
+      "candidates": [
+        {
+          "text": "9/13/19\nBy\nletter\nreguested\nto\nleave\noff\nR-1 B-60, &nd\nsend\nt0\nStigler.\nLetter\n2/10 8ives\nStigler\nville\nLetter\n9/26-22\ngives\n219\nS, Seminole, Barties\nQC\n12/31-22\ngives\nStigler .\nES",
+          "match": "9/13/19",
+          "year": 1919,
+          "month": 9,
+          "day": 13,
+          "iso": "1919-09-13",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7990,
+      "image": "7990__7989.jpg",
+      "candidates": [
+        {
+          "text": "4/8/20\nletter\nSpencerville\nt0\nHammon.\nR-2\n12/31/20\ngive8\nHammon\nY8 6738721\ngive8 Lindsay,\nB-601 .",
+          "match": "4/8/20",
+          "year": 1920,
+          "month": 4,
+          "day": 8,
+          "iso": "1920-04-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "4/8/20\nletter\nSpencerville\nt0\nHammon.\nR-2\n12/31/20\ngive8\nHammon\nY8 6738721\ngive8 Lindsay,\nB-601 .",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            42,
+            50
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 7996,
+      "image": "7996__7995.jpg",
+      "candidates": [
+        {
+          "text": "10/4/19\nletter\ndirected\nt0\nsend\nt0\nHaynesville,La, care\nPost\nlaster\nCerl\nC\nBrown\nTemporarily.\n4/17/20\nter,\naddre8s-\n% Mrs .\nLou\nOna\nDeLany\nNo rman.\n12/31726\ngives\nWh ite\nSt\nNo rman\nQ/c 3/31/21\ngives\n745\nAek;\n% L 0\nDelaney\nNormane\nBy\n51 6",
+          "match": "4/17/20",
+          "year": 1920,
+          "month": 4,
+          "day": 17,
+          "iso": "1920-04-17",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            94,
+            101
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "10/4/19\nletter\ndirected\nt0\nsend\nt0\nHaynesville,La, care\nPost\nlaster\nCerl\nC\nBrown\nTemporarily.\n4/17/20\nter,\naddre8s-\n% Mrs .\nLou\nOna\nDeLany\nNo rman.\n12/31726\ngives\nWh ite\nSt\nNo rman\nQ/c 3/31/21\ngives\n745\nAek;\n% L 0\nDelaney\nNormane\nBy\n51 6",
+          "match": "10/4/19",
+          "year": 1919,
+          "month": 10,
+          "day": 4,
+          "iso": "1919-10-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8011,
+      "image": "8011__8010.jpg",
+      "candidates": [
+        {
+          "text": "Qc.12/31/21.Add.1203-Cherokee-Ave.",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8026,
+      "image": "8026__8025.jpg",
+      "candidates": [
+        {
+          "text": "9/15/19\nChanged\nfron Wapanucke\nto\nAda\n413\nE\n14\"\nSt\nChange\nto\n712\nE\nMain\nAde",
+          "match": "9/15/19",
+          "year": 1919,
+          "month": 9,
+          "day": 15,
+          "iso": "1919-09-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8080,
+      "image": "8080__8079.jpg",
+      "candidates": [
+        {
+          "text": "4/26/20\nHart shorne B-605 % Mrs\nA.\nW .\nLoden.",
+          "match": "4/26/20",
+          "year": 1920,
+          "month": 4,
+          "day": 26,
+          "iso": "1920-04-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8083,
+      "image": "8083__8082.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n2/20-22\nchanged\nt0\n417\nDa\nSt\nSE\nArdmore, 4",
+          "match": "2/20-22",
+          "year": 1922,
+          "month": 2,
+          "day": 20,
+          "iso": "1922-02-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8089,
+      "image": "8089__8088.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n5/7/20\ngiveg\nTem)\naddre8s\n565\nN.\n3rd\n8t\nMemphi8\nTenn.",
+          "match": "5/7/20",
+          "year": 1920,
+          "month": 5,
+          "day": 7,
+          "iso": "1920-05-07",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            13
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8107,
+      "image": "8107__8106.jpg",
+      "candidates": [
+        {
+          "text": "By\nletter\nfro m\nJudge\nBrow  8/1-21,\naddress\nchenged\nto\nArpelar_",
+          "match": "8/1-21",
+          "year": 1921,
+          "month": 8,
+          "day": 1,
+          "iso": "1921-08-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            28,
+            34
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8131,
+      "image": "8131__8130.jpg",
+      "candidates": [
+        {
+          "text": "12/20-22\nTemporarily\n% W-R.Wood ,\nPhoenix,Ariz.\nArrived\nin\nArizona\n12/11-22) jAsaivea 46 ATIZ0ua 12/119-Kz)",
+          "match": "12/20-22",
+          "year": 1922,
+          "month": 12,
+          "day": 20,
+          "iso": "1922-12-20",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            8
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "12/20-22\nTemporarily\n% W-R.Wood ,\nPhoenix,Ariz.\nArrived\nin\nArizona\n12/11-22) jAsaivea 46 ATIZ0ua 12/119-Kz)",
+          "match": "12/11-22",
+          "year": 1922,
+          "month": 12,
+          "day": 11,
+          "iso": "1922-12-11",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            67,
+            75
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8167,
+      "image": "8167__8166.jpg",
+      "candidates": [
+        {
+          "text": "Qv 12/31-21\naddFarrie Ra ,\n%\nChas .\nBagwell\n6/30-22\ngive8\n8-15\nDarwin\nQC",
+          "match": "6/30-22",
+          "year": 1922,
+          "month": 6,
+          "day": 30,
+          "iso": "1922-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            44,
+            51
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Qv 12/31-21\naddFarrie Ra ,\n%\nChas .\nBagwell\n6/30-22\ngive8\n8-15\nDarwin\nQC",
+          "match": "12/31-21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8176,
+      "image": "8176__8175.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n11/28-22\nchange\nto\n429\nW.Lincoln,\nMangum.",
+          "match": "11/28-22",
+          "year": 1922,
+          "month": 11,
+          "day": 28,
+          "iso": "1922-11-28",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8182,
+      "image": "8182__8181.jpg",
+      "candidates": [
+        {
+          "text": "Card 4/5/23\nEives\nwithdrew\nfrom\nHome,\nPe0. Ad\nSimmon",
+          "match": "4/5/23",
+          "year": 1923,
+          "month": 4,
+          "day": 5,
+          "iso": "1923-04-05",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            5,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8209,
+      "image": "8209__8207.jpg",
+      "candidates": [
+        {
+          "text": "RichardsoPE\n'CTASED 3-27-1929\n4862\nName\n9\nNo- A\nAddress\nErick\n(Beckhan\nCo .\n(Widow of)\nFiled\n4\nI27-22\nCompany\n3\nBattery\nReg m't\nLaa\nCav .\nBattalion\nInfantry\nCavalry\nPvt\nArtillery\nNavy\nREJECTED\nGRANTED\n5/11-22\nNO. P\n4038\nRemarks:\n64-65\n(Over} DECHASHD “esol Lowe\na)\n4030",
+          "match": "3-27-1929",
+          "year": 1929,
+          "month": 3,
+          "day": 27,
+          "iso": "1929-03-27",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            20,
+            29
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8278,
+      "image": "8278__8277.jpg",
+      "candidates": [
+        {
+          "text": "Vc 12/31/20\ngive8\nElk\nCity B-68\n% Planter8\nGin\nCo .\n8892/31-22\ngive8\nBokchito.\nBBi344",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8332,
+      "image": "8332__8331.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrecd\n5/15/16\nadd\nchanged\nfrox\nRush\nSpringe\nto\nFranks\nletter\n2/3/17\nadd\nchanged\nfron\nFrank :\nt0\nStonewall\nBy\nBy",
+          "match": "2/3/17",
+          "year": 1917,
+          "month": 2,
+          "day": 3,
+          "iso": "1917-02-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            67,
+            73
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "letter\nrecd\n5/15/16\nadd\nchanged\nfrox\nRush\nSpringe\nto\nFranks\nletter\n2/3/17\nadd\nchanged\nfron\nFrank :\nt0\nStonewall\nBy\nBy",
+          "match": "5/15/16",
+          "year": 1916,
+          "month": 5,
+          "day": 15,
+          "iso": "1916-05-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            12,
+            19
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8401,
+      "image": "8401__8400.jpg",
+      "candidates": [
+        {
+          "text": "7\n(4\n4/29/20\nchange\naddress\nto\n129\nC\nSt .\nf .",
+          "match": "4/29/20",
+          "year": 1920,
+          "month": 4,
+          "day": 29,
+          "iso": "1920-04-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            5,
+            12
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8410,
+      "image": "8410__8409.jpg",
+      "candidates": [
+        {
+          "text": "9/10/19\nAdd\n\"Star\nRoute.",
+          "match": "9/10/19",
+          "year": 1919,
+          "month": 9,
+          "day": 10,
+          "iso": "1919-09-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8419,
+      "image": "8419__8418.jpg",
+      "candidates": [
+        {
+          "text": "Left\nHome 4/1/40\nReturned\nOctober\n1,\n1940 : ; 1\n» :\nwet - bd .\nv",
+          "match": "October\n1,\n1940",
+          "year": 1940,
+          "month": 10,
+          "day": 1,
+          "iso": "1940-10-01",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year"
+          ],
+          "span": [
+            26,
+            41
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Left\nHome 4/1/40\nReturned\nOctober\n1,\n1940 : ; 1\n» :\nwet - bd .\nv",
+          "match": "4/1/40",
+          "year": 1940,
+          "month": 4,
+          "day": 1,
+          "iso": "1940-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            10,
+            16
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8455,
+      "image": "8455__8454.jpg",
+      "candidates": [
+        {
+          "text": "1-3-16\nCan celled\n1/3/16.\nRestored\nMa i1\nunclaimed\n4/6/17\nand\nadd\nchanged\nfrom\nR 1\nto R 2\nBx 36 ,\nStigler\nletter\n3/31/17\nLetter\n2/23/18\nadd\nchanged\nfrom\n8tigler\nto\nKeota.\nby 1\nt . ‘ ‘ fo. ew g@ eo. es ~\n. t ° mo . \" *. aes west\nys we : . , . “ - 7 E\na } ao : tk : a . pot . to ; ¢ : : f\nA “ . “ woe . “ 4 . . ph . . B . - woe . ra A a at",
+          "match": "1-3-16",
+          "year": 1916,
+          "month": 1,
+          "day": 3,
+          "iso": "1916-01-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8473,
+      "image": "8473__8472.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrecd\n5/6/18\nadd .\nchanged\nfrom\n3012\nN\nHudson ,\nOkla\nCity,\nOkla.\nto\nThackervil]\nPlaced\non\nHome\"\nPension\nRoll\n7/1/19\nto\nbegin\nith\n4/1/19\nBy are) . by mee i aye ° we ” mm é \"4 rr\nar a ie aor oN or af TO pte eee 4 Vv) cane ne ee : fo i ‘y ff ’ i a\nwh Lk a ik i Ld wie kD Wn Na dae whe a he hs i / wie / atee af\nwe Ad wi Qe atte to ade Wk Ve abe fie Uf",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            115,
+            121
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "letter\nrecd\n5/6/18\nadd .\nchanged\nfrom\n3012\nN\nHudson ,\nOkla\nCity,\nOkla.\nto\nThackervil]\nPlaced\non\nHome\"\nPension\nRoll\n7/1/19\nto\nbegin\nith\n4/1/19\nBy are) . by mee i aye ° we ” mm é \"4 rr\nar a ie aor oN or af TO pte eee 4 Vv) cane ne ee : fo i ‘y ff ’ i a\nwh Lk a ik i Ld wie kD Wn Na dae whe a he hs i / wie / atee af\nwe Ad wi Qe atte to ade Wk Ve abe fie Uf",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            135,
+            141
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8476,
+      "image": "8476__8474.jpg",
+      "candidates": [
+        {
+          "text": "Entered\nHore\n4-26-28\nName\nSkagg8 ;\nFranklin\nMa\nCLASS\nA\nNo.\nA\n2180\nAddress\nSavanna,\nPitts\nCo .\n(Widow of)\nFiled\n8/5/15\nCompany\nI\nBattery\nReg m't\nBuster' 8 ,\nArk.\nBattalion\nInfantry\nCavalry\n#\nArtillery\nNavy\n0CT7 - 1915\n804\nREJECTED\nGRANTED\nNo\nP\nRemarks:\nEnliet\nMay\n61\n(over\nburg\n65\nMav_ Bntered Home 4<-<20-<6\n/\n\\. : Bt Og t :",
+          "match": "4-26-28",
+          "year": 1928,
+          "month": 4,
+          "day": 26,
+          "iso": "1928-04-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            13,
+            20
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8509,
+      "image": "8509__8508.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n6/19/17\nchange \nrom\n414 E 5\nOkla City\nto\nBritton\nLetter\n11/28/17\nadd\nchanged\nfrom Britton,\nto\n711\nE\n6th\nst\nOkla\nV/c\nChanged\nfrom\n711\n1 6\nSt\nt0\n20\nStiles\nPark\nBy telephone\n4/24/20\nchange\nt0\n1114\nN\nHudson_\nBy\nletter 8/27/21\ngives\nBritton.\ncity x",
+          "match": "6/19/17",
+          "year": 1917,
+          "month": 6,
+          "day": 19,
+          "iso": "1917-06-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8524,
+      "image": "8524__8523.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n9/23-22\nSi\nes\nKaw City\nLetter\n3/26/23\ngive8\newitt *",
+          "match": "3/26/23",
+          "year": 1923,
+          "month": 3,
+          "day": 26,
+          "iso": "1923-03-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            37,
+            44
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n9/23-22\nSi\nes\nKaw City\nLetter\n3/26/23\ngive8\newitt *",
+          "match": "9/23-22",
+          "year": 1922,
+          "month": 9,
+          "day": 23,
+          "iso": "1922-09-23",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8536,
+      "image": "8536__8535.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/3-19\nchanged\nt0\nSapulpa,\n703\nE .\nLincoln\n4/9/20\nchange\naddress\nto\n223\n8 .\nBirch\n7/24/20\nEives\n225\n8 Birch,\nSapulpa .",
+          "match": "4/9/20",
+          "year": 1920,
+          "month": 4,
+          "day": 9,
+          "iso": "1920-04-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            51,
+            57
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n12/3-19\nchanged\nt0\nSapulpa,\n703\nE .\nLincoln\n4/9/20\nchange\naddress\nto\n223\n8 .\nBirch\n7/24/20\nEives\n225\n8 Birch,\nSapulpa .",
+          "match": "7/24/20",
+          "year": 1920,
+          "month": 7,
+          "day": 24,
+          "iso": "1920-07-24",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            90,
+            97
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n12/3-19\nchanged\nt0\nSapulpa,\n703\nE .\nLincoln\n4/9/20\nchange\naddress\nto\n223\n8 .\nBirch\n7/24/20\nEives\n225\n8 Birch,\nSapulpa .",
+          "match": "12/3-19",
+          "year": 1919,
+          "month": 12,
+          "day": 3,
+          "iso": "1919-12-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8539,
+      "image": "8539__8538.jpg",
+      "candidates": [
+        {
+          "text": "6/30-22\ngive8\nR-1.B-144\nst ilwell\nQC",
+          "match": "6/30-22",
+          "year": 1922,
+          "month": 6,
+          "day": 30,
+          "iso": "1922-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8560,
+      "image": "8560__8558.jpg",
+      "candidates": [
+        {
+          "text": "Aeceaeo 6-24-26\nName\nSarah\nAs\nNo. A\n4872\nAddress\nHenryetta\nOkmulgee\nCo\n(Widow of)\nAndrev\nI\nIlening\nFiled\n5/20-22\nCompany\nBattery\nReg m't 3rd\nAlabana\nCav\nBattalion\nInfantry\nCavalry\npvt\nArtillery\nNavy\nREJECTED\nGRANTED\n5L23222\nNO:P\n40.50\nRemarks :\n62-65\n(Over \\,\n\\",
+          "match": "6-24-26",
+          "year": 1926,
+          "month": 6,
+          "day": 24,
+          "iso": "1926-06-24",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            8,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8569,
+      "image": "8569__8568.jpg",
+      "candidates": [
+        {
+          "text": "9/30-22\ngive8 B- 575\nDavi8\nct\nQC",
+          "match": "9/30-22",
+          "year": 1922,
+          "month": 9,
+          "day": 30,
+          "iso": "1922-09-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8659,
+      "image": "8659__8658.jpg",
+      "candidates": [
+        {
+          "text": "12/8/16\nletter--Isom\n1ngs\nP.0 .\n18\ndiscontin-\nued;\nsend\nmail\nto\nEno s ,\nOkla.",
+          "match": "12/8/16",
+          "year": 1916,
+          "month": 12,
+          "day": 8,
+          "iso": "1916-12-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8665,
+      "image": "8665__8664.jpg",
+      "candidates": [
+        {
+          "text": "Vc 3/31/21\ngivee\nTahlequah,\nR-l\nB-40",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8749,
+      "image": "8749__8748.jpg",
+      "candidates": [
+        {
+          "text": "By\nletter\nrec 'd 3/15/20\nchanged\naddre8s\nfrom\n1538\n8\nNorfolk\nAve .\nto\n1147\n3\nNewport\nAve\nTulsa",
+          "match": "3/15/20",
+          "year": 1920,
+          "month": 3,
+          "day": 15,
+          "iso": "1920-03-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            17,
+            24
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8758,
+      "image": "8758__8757.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/26-22\nchange\nto\nClarita-",
+          "match": "12/26-22",
+          "year": 1922,
+          "month": 12,
+          "day": 26,
+          "iso": "1922-12-26",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8764,
+      "image": "8764__8763.jpg",
+      "candidates": [
+        {
+          "text": "Vc.12/31/21. Change-Long.",
+          "match": "12/31/21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8791,
+      "image": "8791__8790.jpg",
+      "candidates": [
+        {
+          "text": "letter\n3/31/17\ncha\nfrom\nTecumseh\nR 2\nto\nShawnee\nR 6\nY/c\n4/17\nchan\nfrom\nShawnee\nt0\nTecum seh\n0/c\n7/16/20\ngive8\nTecuseh\nR-2\nB-98\ngivee\nShawnee,\nR-2\n537\nElm\nSt\nGives, R-2.B-4\nShawnee.\nged",
+          "match": "3/31/17",
+          "year": 1917,
+          "month": 3,
+          "day": 31,
+          "iso": "1917-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8833,
+      "image": "8833__8831.jpg",
+      "candidates": [
+        {
+          "text": "Name\nMilliron,\nMertha\n@\nCLASS\n\"A\"\nNo.\nA\n1154\nAddress\nPerry,\nNoble\nCo.818\nC\nSt\n(Widow of)\nWilliam\nLeftridge\nWillironFiled\n6/10/15\nCompany\nWu\nBattery\nReg' m't\n42nd\nJa.\nBattalion\nInfantry\nCavalry\nArtillery\nNavy\n00*7 - 1916\n601\nREJECTED\nGRANTED\nNo\nP\nRemarks:\n61\nto\n65\nFed ,\nRec.\nover hat wtadd BRD A? it i ti4G\ndee -& & a op",
+          "match": "6/10/15",
+          "year": 1915,
+          "month": 6,
+          "day": 10,
+          "iso": "1915-06-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            121,
+            128
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8932,
+      "image": "8932__8931.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n2723-22\nchan\nt0\nSapulpe.\ngives\nfrom McLoud ,\nR-1\nto\nCouncilhill\nMuskogee\nCo .\nas\nadvised\nin\nletter,\nBy\nletter\nrecd\n7/25/16\nadd\nchanged\nfrom\nCouncil\nHill\nto\nHoffman,\nR\n1.\nq/c\n1-18\nAdd .\nchanged\nfrom\nHoffman\n9\nMc Intosh\nCoa\nRa 1\nto\nCounc11\nHill,\nMuskogee\n4\nV/c?Changed\nfrom\nCouncil\nHill\nt0\nHoffman .\n9/2/19\nchanged\nback\nt0\nCouncil\nHill.\n8/30/20\nletter\nchanze\nt0\nFitchita\n11/4-21\nletter\nchange\nto\nluskogee,2630\n98\nWest\nBroadvay .\n11/18-21\nletter\nchange\nto\n2630\nWa okmulgee\nR-l\n3\nQC L1/4ece) letter coenge to Dusks: ee, 2030\n, a wen -—~ n . FT an _\n, ~~ . uy",
+          "match": "11/4-21",
+          "year": 1921,
+          "month": 11,
+          "day": 4,
+          "iso": "1921-11-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            376,
+            383
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n2723-22\nchan\nt0\nSapulpe.\ngives\nfrom McLoud ,\nR-1\nto\nCouncilhill\nMuskogee\nCo .\nas\nadvised\nin\nletter,\nBy\nletter\nrecd\n7/25/16\nadd\nchanged\nfrom\nCouncil\nHill\nto\nHoffman,\nR\n1.\nq/c\n1-18\nAdd .\nchanged\nfrom\nHoffman\n9\nMc Intosh\nCoa\nRa 1\nto\nCounc11\nHill,\nMuskogee\n4\nV/c?Changed\nfrom\nCouncil\nHill\nt0\nHoffman .\n9/2/19\nchanged\nback\nt0\nCouncil\nHill.\n8/30/20\nletter\nchanze\nt0\nFitchita\n11/4-21\nletter\nchange\nto\nluskogee,2630\n98\nWest\nBroadvay .\n11/18-21\nletter\nchange\nto\n2630\nWa okmulgee\nR-l\n3\nQC L1/4ece) letter coenge to Dusks: ee, 2030\n, a wen -—~ n . FT an _\n, ~~ . uy",
+          "match": "11/18-21",
+          "year": 1921,
+          "month": 11,
+          "day": 18,
+          "iso": "1921-11-18",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            434,
+            442
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Letter\n2723-22\nchan\nt0\nSapulpe.\ngives\nfrom McLoud ,\nR-1\nto\nCouncilhill\nMuskogee\nCo .\nas\nadvised\nin\nletter,\nBy\nletter\nrecd\n7/25/16\nadd\nchanged\nfrom\nCouncil\nHill\nto\nHoffman,\nR\n1.\nq/c\n1-18\nAdd .\nchanged\nfrom\nHoffman\n9\nMc Intosh\nCoa\nRa 1\nto\nCounc11\nHill,\nMuskogee\n4\nV/c?Changed\nfrom\nCouncil\nHill\nt0\nHoffman .\n9/2/19\nchanged\nback\nt0\nCouncil\nHill.\n8/30/20\nletter\nchanze\nt0\nFitchita\n11/4-21\nletter\nchange\nto\nluskogee,2630\n98\nWest\nBroadvay .\n11/18-21\nletter\nchange\nto\n2630\nWa okmulgee\nR-l\n3\nQC L1/4ece) letter coenge to Dusks: ee, 2030\n, a wen -—~ n . FT an _\n, ~~ . uy",
+          "match": "8/30/20",
+          "year": 1920,
+          "month": 8,
+          "day": 30,
+          "iso": "1920-08-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            342,
+            349
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8950,
+      "image": "8950__8949.jpg",
+      "candidates": [
+        {
+          "text": "On\nq/c\nrecd\n13-34-15\nappearg: \"T.H.Goodwin\ni\nalmost\nblind\nand\nvery\nfeeble.\nHe\nwriteg-hi8\nname\nfrom\nmemory\nrather\nthan\nby- seeing.\nHe\nlivea\nin &\ntent\none\nblock\nnorth\nof\nFYRE\n8\nat\nthe\ncity\nlimits\nin\nthe\nNorthwest\ngection\nof\nthe\nCity\nof\nMarietta ,\nOkla.\n(Above\nappearg\nt0\nbe\nin\nof\nCo .\nJudge\nHaye ,\nwho\nacknowledged\nthe\nBy\nPostal\nrecd 1/1/18\nsend\nhig\nmail\nc/0 J H\nadvice\nCo .\nJudge8o:Juidge\nin\nHaye , tives in = tent one block north of FYRE'S\n“L1L at the city limits in the Yorth est section\nof the City of arietta, Okla.",
+          "match": "1/1/18",
+          "year": 1918,
+          "month": 1,
+          "day": 1,
+          "iso": "1918-01-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            332,
+            338
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 8971,
+      "image": "8971__8970.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n11/9/16\nchanged\nadd.\nfrom\nDill\nto\n305\nN Market\nSt.\nCordell",
+          "match": "11/9/16",
+          "year": 1916,
+          "month": 11,
+          "day": 9,
+          "iso": "1916-11-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9031,
+      "image": "9031__9030.jpg",
+      "candidates": [
+        {
+          "text": "10/3/16\nSurrendered\npensioner\na/c\nhis\nre-\nmoval\nfrom\nstate\ndue\nto\nhis\nhealth.\nVc\nletter\nMar\n13,19\nFronChoteau\nto\nto\nSt ilwell\nq/c\n3/31-20 ,\nBox.132\nBy\nletter\nrec 'd 3/20/20\nchanged\nfrom\nSt ilwell\nt0\nVien\n7/9/20\nChange\nto\nGore\nB-92\nQc 8/11/20\ngiveg\nChoteau.\nB-71\nV/c.3-31-22.Gives,B-71\nChoteau\nby\nBy\nVc -",
+          "match": "10/3/16",
+          "year": 1916,
+          "month": 10,
+          "day": 3,
+          "iso": "1916-10-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9037,
+      "image": "9037__9036.jpg",
+      "candidates": [
+        {
+          "text": "De ceased\nJan\n23,\n1916.\nWido W\napplied\non\nA\n3142\nRe issued\nto\nher\n38 P\n1043",
+          "match": "Jan\n23,\n1916",
+          "year": 1916,
+          "month": 1,
+          "day": 23,
+          "iso": "1916-01-23",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "mon_day_year"
+          ],
+          "span": [
+            10,
+            22
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9097,
+      "image": "9097__9096.jpg",
+      "candidates": [
+        {
+          "text": "letter 9/11/20\nchange\nt0\nBokchito\nR-l,\n%\nJ_\nP.\nReines.\nV/c 3/31/21\ngive8\nCaddo ,\nR-3\nBy",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            59,
+            66
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "letter 9/11/20\nchange\nt0\nBokchito\nR-l,\n%\nJ_\nP.\nReines.\nV/c 3/31/21\ngive8\nCaddo ,\nR-3\nBy",
+          "match": "9/11/20",
+          "year": 1920,
+          "month": 9,
+          "day": 11,
+          "iso": "1920-09-11",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9103,
+      "image": "9103__9102.jpg",
+      "candidates": [
+        {
+          "text": "oleceaaecl 1/1/14 ig a . . oo\n’ !\nRy . ,\neal 4\ni\n;\n|\n4\n4\n: Ven ®,\neer als te Z\nae\nmo, Alea",
+          "match": "1/1/14",
+          "year": 1914,
+          "month": 1,
+          "day": 1,
+          "iso": "1914-01-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            11,
+            17
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9154,
+      "image": "9154__9153.jpg",
+      "candidates": [
+        {
+          "text": "On\nq/c\n1-16\nAdd\nchanged\nfrom\nReagan,\nJohnston\nCo .\nt0\nCaddo ,\nAtoka\nCo .\nR-3\nBx-45\n5/14/18\nLetter\nrecd\ngaying\nhe\n18\ngoing\nto\napply\nfor\npension\nin\nArkangas\n&\nmove\ntheze.",
+          "match": "5/14/18",
+          "year": 1918,
+          "month": 5,
+          "day": 14,
+          "iso": "1918-05-14",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            83,
+            90
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9169,
+      "image": "9169__9168.jpg",
+      "candidates": [
+        {
+          "text": "By\nletter\nrec 'd 3/23/20 Lenna\nBox\n16\nhce i }",
+          "match": "3/23/20",
+          "year": 1920,
+          "month": 3,
+          "day": 23,
+          "iso": "1920-03-23",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            17,
+            24
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9190,
+      "image": "9190__9189.jpg",
+      "candidates": [
+        {
+          "text": "letter\n7/28/20\ngive8\n334\n1 F\nAve .\nOkla\nBy\ncity",
+          "match": "7/28/20",
+          "year": 1920,
+          "month": 7,
+          "day": 28,
+          "iso": "1920-07-28",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9199,
+      "image": "9199__9198.jpg",
+      "candidates": [
+        {
+          "text": "4/9/20\nwo rd\nrec\nchange\nfrom\nHoldenville\nto\nRandlett\nB- 595\n'd,",
+          "match": "4/9/20",
+          "year": 1920,
+          "month": 4,
+          "day": 9,
+          "iso": "1920-04-09",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9241,
+      "image": "9241__9240.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrecd.\n8/31/16\nadd .\nchgd.\nfrom\nMcAlester ,\nOkla. ,\nt0\nCornish,\n%\nGen .\nDel .\n1-18\nAdd .\nchanged\nfrom\nCornish\nto\nRingling\nVc 12/31/20\ngive8 McAlester,\nR-3\nB-26\nq/c\n4-6-23\ngives\nB-24 ,\nR-3\nBy",
+          "match": "8/31/16",
+          "year": 1916,
+          "month": 8,
+          "day": 31,
+          "iso": "1916-08-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            13,
+            20
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9250,
+      "image": "9250__9249.jpg",
+      "candidates": [
+        {
+          "text": "5/22/20\nR-6\nB=\n2526\nFeirmont\nAve .\nTul &a\n564",
+          "match": "5/22/20",
+          "year": 1920,
+          "month": 5,
+          "day": 22,
+          "iso": "1920-05-22",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9259,
+      "image": "9259__9258.jpg",
+      "candidates": [
+        {
+          "text": "6/8/20\nchange\nbox\nnumber\nto\n103",
+          "match": "6/8/20",
+          "year": 1920,
+          "month": 6,
+          "day": 8,
+          "iso": "1920-06-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9265,
+      "image": "9265__9264.jpg",
+      "candidates": [
+        {
+          "text": "Vc/6/15/20\n6ive8\naddress\n08\n303\nEast\nCherokee",
+          "match": "6/15/20",
+          "year": 1920,
+          "month": 6,
+          "day": 15,
+          "iso": "1920-06-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9268,
+      "image": "9268__9267.jpg",
+      "candidates": [
+        {
+          "text": "6/12/20\nchange\nbox\nt0\n394",
+          "match": "6/12/20",
+          "year": 1920,
+          "month": 6,
+          "day": 12,
+          "iso": "1920-06-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            7
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9310,
+      "image": "9310__9309.jpg",
+      "candidates": [
+        {
+          "text": "Appointed\nCommissioner\n4/10/39\nResigned\nas\nCommissioner\n7/1/40 Appointed Commissioner 4/10/39\nResigned as Commissioner 7/1/40",
+          "match": "7/1/40",
+          "year": 1940,
+          "month": 7,
+          "day": 1,
+          "iso": "1940-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            56,
+            62
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Appointed\nCommissioner\n4/10/39\nResigned\nas\nCommissioner\n7/1/40 Appointed Commissioner 4/10/39\nResigned as Commissioner 7/1/40",
+          "match": "4/10/39",
+          "year": 1939,
+          "month": 4,
+          "day": 10,
+          "iso": "1939-04-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            23,
+            30
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9328,
+      "image": "9328__9327.jpg",
+      "candidates": [
+        {
+          "text": "Qc/12-31-21.Add 916Pecan\n&\n10\nth\nSt",
+          "match": "12-31-21",
+          "year": 1921,
+          "month": 12,
+          "day": 31,
+          "iso": "1921-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            11
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9343,
+      "image": "9343__9342.jpg",
+      "candidates": [
+        {
+          "text": "Add _\nchanged\nletter\n2-29-16\nfrom\nDurant\nt0\nAda\n9/13/16\nadd\nchanged\nfromn\nAde ,\nPontotoc\nto\nDurant\n4-7-23\ngives\n322\n15th\nAda\nby\nCo ,",
+          "match": "2-29-16",
+          "year": 1916,
+          "month": 2,
+          "day": 29,
+          "iso": "1916-02-29",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            21,
+            28
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9427,
+      "image": "9427__9425.jpg",
+      "candidates": [
+        {
+          "text": "Name\nMc Abee .\nWarren\nF\nDeceased\n5/21/180\nA\n2619\nAddress\nClinton\nTus ter Co .\n411\nFrisco\n(Widow of)\nFiled\n9715\nCompany\nD\nBattery\nReg' m't\n60th\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\nNos\nP\n561\n61\nto\n65\nRemarks:\n(over)\nGa “~, fy ge oF .\n- eo F 2 4\n. . tot oy Fy + 3\nom CR t > “RN Hs ‘ ra Lue wins wey\nthie 4 > ROLE a\n: io cad Ao hoete LS, Y",
+          "match": "Deceased\n5/21",
+          "year": 1921,
+          "month": 12,
+          "day": 5,
+          "iso": "1921-12-05",
+          "kind": "date",
+          "confidence": 0.65,
+          "reasoning": [
+            "mon_day_2digit_slash",
+            "death_keyword_in_window",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            24,
+            37
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": true
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9442,
+      "image": "9442__9441.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n7/19/21\ngive8\nDuncan,\nB- 533",
+          "match": "7/19/21",
+          "year": 1921,
+          "month": 7,
+          "day": 19,
+          "iso": "1921-07-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9454,
+      "image": "9454__9453.jpg",
+      "candidates": [
+        {
+          "text": "Detter\n7/12/21\nin\napplication\ngive8\nStar\nRoute,\nCarnegie.\n8 € -\nh1 ? H a\n« ’\nt",
+          "match": "7/12/21",
+          "year": 1921,
+          "month": 7,
+          "day": 12,
+          "iso": "1921-07-12",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9526,
+      "image": "9526__9525.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrecd\n5/8/16\nadd.\nchanged\nfrox\nKogoma ,\nPushmataha\nCo .\nto\nSkiatook.\nletter\n9/4/16\nadd.\nchanged\nfron\nSkiatook\nto\nKosoma .\ncllecl u UG\nQecd\n0\nBy\nBy",
+          "match": "5/8/16",
+          "year": 1916,
+          "month": 5,
+          "day": 8,
+          "iso": "1916-05-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            12,
+            18
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "letter\nrecd\n5/8/16\nadd.\nchanged\nfrox\nKogoma ,\nPushmataha\nCo .\nto\nSkiatook.\nletter\n9/4/16\nadd.\nchanged\nfron\nSkiatook\nto\nKosoma .\ncllecl u UG\nQecd\n0\nBy\nBy",
+          "match": "9/4/16",
+          "year": 1916,
+          "month": 9,
+          "day": 4,
+          "iso": "1916-09-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            82,
+            88
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9529,
+      "image": "9529__9528.jpg",
+      "candidates": [
+        {
+          "text": "Add\nchanged\non\nSup\nAppli\n10/10/16\nfrom\nRattan,\nPush\nmataha\nto\nBelzoni\nCo ,",
+          "match": "10/10/16",
+          "year": 1916,
+          "month": 10,
+          "day": 10,
+          "iso": "1916-10-10",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            25,
+            33
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9579,
+      "image": "9579__9578.jpg",
+      "candidates": [
+        {
+          "text": "Bobzet\nletter\n7/11/17\nJanged\nfrom\nto\n123\nW\n2d\nSt\nOklahoma City\nV/C\n3/17\nchanged\nfrom\nOkla. City\nto\nHobart\n821\nLincoln\nQc\n6730/21'\ngive8\nHobert\nR-3\nB-22.\nQ/c\n9/30/21\ngive8 Ho bart ,\n821\n8\nLincoln. t\naad ‘",
+          "match": "7/11/17",
+          "year": 1917,
+          "month": 7,
+          "day": 11,
+          "iso": "1917-07-11",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            14,
+            21
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9582,
+      "image": "9582__9581.jpg",
+      "candidates": [
+        {
+          "text": "Detter\n4-19-23\ngive8\nFarris\nOkla ‘\nid",
+          "match": "4-19-23",
+          "year": 1923,
+          "month": 4,
+          "day": 19,
+          "iso": "1923-04-19",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9591,
+      "image": "9591__9590.jpg",
+      "candidates": [
+        {
+          "text": "Placed\non\n\"Home?\nPension\nRoll\n7/1/19\nto\nbegin\nwith\n4/1/19\ncard\nrecd\n828/16 ,\nadd .\nchanged\nfrom\nHolden -\nville\nto\nBear\n2\nHughe s\nCo ,\nLetter 11/27/17,\ndiscontinued\norder\nof\nPensioner.\nLetter\n0 f\n12/13/17\nreenstated\n38\nper\nrequest\n0 f\npensioner\nReinstated\non\nRolls\nand\ndpopped\nfrom\n00\nHone\"\nRoll\n10/1/19\nt0\nChecotah\nC\ngives\nR.\n1\n'3342928\n20\nchange\nt0 Holdenyille.\ngive8\nLamar\nR-i\nBy\nby\n2280\nQZc Ayr y ow a Boe 4 5 « oe ‘ yo Pee Pr. as\ni rn 4 SG i £ aE ; bin : i Pd : 7? f : 3\nA wee he a Ke Nee Pk & re aren nee OP pF ke ae ow AA wha ote j 7 whey nme\nsd ie Ne, adn si he rs Va see o ee a oy f\n. ¢ : ’\ni x ‘ hac py : : fo oPrroy ? i ? Me\nee er re Lae. Ce ode . wet ee man ine aoe . re aod . ses Sm me mt we wf",
+          "match": "12/13/17",
+          "year": 1917,
+          "month": 12,
+          "day": 13,
+          "iso": "1917-12-13",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            195,
+            203
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9627,
+      "image": "9627__9626.jpg",
+      "candidates": [
+        {
+          "text": "Cn\nq/c\n1/16\nAdd\nchanged\nfrom\nMountain\nPark ,\nKiowa\nCo .\nto\nRosevelt\nR-3\nletter\n3/31\nchanged\nfrom\nRoosevelt\nR 3\nto\nIndiahoma\nR F\nD\"B\"\nq/c\n1-18\nAdd\nchanged\nfrom\nIndiahoma\nR\n'B'\nto\n1306\nW .\n8th\nSt .\nOklahoma\nGity\n10/1/19\nChanged to\nMt\nPark\nfrom\nBy\nletter 12/17/20\nchange\nt0\nTuttle\nTriplett\nBy\nletter\nrec'd\n2/4/21\nve\nLawton\n403\nPark.\nLetter\n8h17-2+%ives\nDuncan.\n% W.La Thomas,\nDuncan.\n~21\ncitcs\ng1",
+          "match": "2/4/21",
+          "year": 1921,
+          "month": 2,
+          "day": 4,
+          "iso": "1921-02-04",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            303,
+            309
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9630,
+      "image": "9630__9628.jpg",
+      "candidates": [
+        {
+          "text": "Deceaged\n9-8-26\nHome\n1-13-1926\n42'7\nName\nDavig\nA\nNo.\nA\nAddress\nAler\nGarvin\nCo .\n(Widow of)\nFiled\n64 1/15\nCompany\nA\nBattery\nReg m't\n5th\nArk.\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n7-3-6\nNo. P\n2172\n61\nt0\n64\nFed .\nRec .\nRemarks:\n(over)\nH.\nA. veceased 9-8e25 ater pions de-Lo-LG. € cyte\n: td",
+          "match": "1-13-1926",
+          "year": 1926,
+          "month": 1,
+          "day": 13,
+          "iso": "1926-01-13",
+          "kind": "date",
+          "confidence": 0.55,
+          "reasoning": [
+            "strict_mdY"
+          ],
+          "span": [
+            21,
+            30
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Deceaged\n9-8-26\nHome\n1-13-1926\n42'7\nName\nDavig\nA\nNo.\nA\nAddress\nAler\nGarvin\nCo .\n(Widow of)\nFiled\n64 1/15\nCompany\nA\nBattery\nReg m't\n5th\nArk.\nBattalion\nInfantry\nPvt\nCavalry\nArtillery\nNavy\nREJECTED\nGRANTED\n7-3-6\nNo. P\n2172\n61\nt0\n64\nFed .\nRec .\nRemarks:\n(over)\nH.\nA. veceased 9-8e25 ater pions de-Lo-LG. € cyte\n: td",
+          "match": "9-8-26",
+          "year": 1926,
+          "month": 9,
+          "day": 8,
+          "iso": "1926-09-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            9,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9636,
+      "image": "9636__9635.jpg",
+      "candidates": [
+        {
+          "text": "q/c\n1-18\nAdd .\nChan\nfrom\nAshland\nto\nHaywood\nQ/c 3/31-20\ngives\nddress\nCairo.\nLetter\nrec 'd 4/7/20 change\nfrom\nCairo\nt0\nCoalgate,\nR-l\nB-42\nVc 6/30/21\ngive 8\nCoalgate,\nR-l B-58",
+          "match": "6/30/21",
+          "year": 1921,
+          "month": 6,
+          "day": 30,
+          "iso": "1921-06-30",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            140,
+            147
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9750,
+      "image": "9750__9749.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/15/16\nadd\ncnanged\nfrom\nSterling\nto\nRush\nVc\n2/18\nfrom\nRush\nSprings\nto\nBronide\nOn\nQ/ ce2/19\nchanged\nfrom\nBromide\nto:\nLawt0n,1115\n2nd\n10/1/19\nChanged\nto\nMarlow\nR-4\nfrom\nLawt on\n6/22/20\nletter\nchange\nto\nDavis.\nIeu\nCo\nSprings\nBy\n8.2 4 : ‘ aé x i af }\nF F :",
+          "match": "12/15/16",
+          "year": 1916,
+          "month": 12,
+          "day": 15,
+          "iso": "1916-12-15",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9753,
+      "image": "9753__9752.jpg",
+      "candidates": [
+        {
+          "text": "letter\n2/21-22\nChange\nt0 Lenigh,\nR-ie\nBy",
+          "match": "2/21-22",
+          "year": 1922,
+          "month": 2,
+          "day": 21,
+          "iso": "1922-02-21",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9774,
+      "image": "9774__9773.jpg",
+      "candidates": [
+        {
+          "text": "Cancelled\nBd .\naction\n11/17/15\na/c\nremo ved\nfrom\nstate .\nSee\nhia\nletter.\nRestored\nto\nthe\nroll\nfrom\ndate\nof\n1/1/16 ,\nat\nBd .\nmeet\n4/3/16.\nby",
+          "match": "1/1/16",
+          "year": 1916,
+          "month": 1,
+          "day": 1,
+          "iso": "1916-01-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            107,
+            113
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Cancelled\nBd .\naction\n11/17/15\na/c\nremo ved\nfrom\nstate .\nSee\nhia\nletter.\nRestored\nto\nthe\nroll\nfrom\ndate\nof\n1/1/16 ,\nat\nBd .\nmeet\n4/3/16.\nby",
+          "match": "4/3/16",
+          "year": 1916,
+          "month": 4,
+          "day": 3,
+          "iso": "1916-04-03",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            129,
+            135
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9801,
+      "image": "9801__9800.jpg",
+      "candidates": [
+        {
+          "text": "Q\nC\n3-17\nAdd\nchanged\nfrom\n317\nD\nSt _\nto\n710\nD\nSt _\nS E\nArdmore\nPlaced\non\n\"Home\"\nPension\nRoll\n7/1/19\nto\nin\nwith 4/1/19\nbes ‘\nae “ iPoror z oy > woe ae tem, Po han fom ees\nfoe ee iy : Log ot poe i ‘ : :\nAe ate Te Nef Bo wh Ne AL wk ka ED i ak th ioe Ve wh oe bf ote fo we\nf “ ‘ »\n\n° . 7 5 “4 ae Sow .\n\niB tr , : : feos é : a\n\net et “et whee 2 whe ad he ie wie of eles 7\n\nf .",
+          "match": "7/1/19",
+          "year": 1919,
+          "month": 7,
+          "day": 1,
+          "iso": "1919-07-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            93,
+            99
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "Q\nC\n3-17\nAdd\nchanged\nfrom\n317\nD\nSt _\nto\n710\nD\nSt _\nS E\nArdmore\nPlaced\non\n\"Home\"\nPension\nRoll\n7/1/19\nto\nin\nwith 4/1/19\nbes ‘\nae “ iPoror z oy > woe ae tem, Po han fom ees\nfoe ee iy : Log ot poe i ‘ : :\nAe ate Te Nef Bo wh Ne AL wk ka ED i ak th ioe Ve wh oe bf ote fo we\nf “ ‘ »\n\n° . 7 5 “4 ae Sow .\n\niB tr , : : feos é : a\n\net et “et whee 2 whe ad he ie wie of eles 7\n\nf .",
+          "match": "4/1/19",
+          "year": 1919,
+          "month": 4,
+          "day": 1,
+          "iso": "1919-04-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            111,
+            117
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9873,
+      "image": "9873__9872.jpg",
+      "candidates": [
+        {
+          "text": "letter\n6/28/16\nada\nchanged\nfron Simpson,\nHas\nall\nCo .\nto\nSentinel,\nWashita\nC\n0 ,\nq/c\n2/18\nChanged\nfrom\nSentinel\nt0\nLone\nWolf\nq/c\n3/18\nfrom\nLone\nWolf\nto\nSentinel\nWeshita\nCo .\nVc\nChanged\nfrom\nSentinel\nto\nLone\nWo lf\nOn\nadd\nR-4\nBi;\nand_drop\n40\nQC\n9/30-22 gives\nLone\nWoif\nBy",
+          "match": "6/28/16",
+          "year": 1916,
+          "month": 6,
+          "day": 28,
+          "iso": "1916-06-28",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            14
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9882,
+      "image": "9882__9881.jpg",
+      "candidates": [
+        {
+          "text": "letter\nrecd,\n9/30/\n16,\nadd.\nchanged\nfrom\nStratford,\nGarvin\nCo\nt0\nPontotoc\nCpunty,\n214\nStockton\nAve .\n9/c\nadd\nchanged\nfrom\n214\nStockton\nto\n412\nw 13th\nSt _\nec\n4/17\nchan\nfrom\n412\n13th\nSt\nt0\nBox\n297\n10/1/19 Changed\nAda\nto\nRavia\nBy\nAda ,\nged\nfrom",
+          "match": "10/1/19",
+          "year": 1919,
+          "month": 10,
+          "day": 1,
+          "iso": "1919-10-01",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            195,
+            202
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9897,
+      "image": "9897__9896.jpg",
+      "candidates": [
+        {
+          "text": "12/31/20\nEives\nR-A,\nSulphur\n88\n3/31/21\ngivee\nRussett",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            31,
+            38
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        },
+        {
+          "text": "12/31/20\nEives\nR-A,\nSulphur\n88\n3/31/21\ngivee\nRussett",
+          "match": "12/31/20",
+          "year": 1920,
+          "month": 12,
+          "day": 31,
+          "iso": "1920-12-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            8
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9927,
+      "image": "9927__9926.jpg",
+      "candidates": [
+        {
+          "text": "4/8/20\nword\nrec'd\nto\nchange\nfrom\nStratford\nto\nAda\n301\nW .\n1 5th.\nQc 12/31/20\ngives\nSt ratfoxd.\n83 -17/ .",
+          "match": "4/8/20",
+          "year": 1920,
+          "month": 4,
+          "day": 8,
+          "iso": "1920-04-08",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            0,
+            6
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9930,
+      "image": "9930__9929.jpg",
+      "candidates": [
+        {
+          "text": "Letter\n12/18-19\nchanged\nt0\nPoolville ,\nTex.",
+          "match": "12/18-19",
+          "year": 1919,
+          "month": 12,
+          "day": 18,
+          "iso": "1919-12-18",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            7,
+            15
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9960,
+      "image": "9960__9959.jpg",
+      "candidates": [
+        {
+          "text": "Vc 3/31/21\nEives\nCaddo ,\nBox\n36",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            3,
+            10
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    },
+    {
+      "pensioncard_id": 9996,
+      "image": "9996__9995.jpg",
+      "candidates": [
+        {
+          "text": "18/8\n3-17\nAdd .\nchanged\nfrom\n920\nGeary\nt0\nW\n4th\nst .\n0/c\n4/17\nchanged\nfrom\n210\nWT\n4th\nto\n507p\nW\n3rd.\nQc\n4/18\nfrom\n5073\nW .\n3rd\nto\n211\nW .\n4th\nst.\nVc\n1/19\nOklahoma\nCity,508\nWa 3rd , 8t _\nVc 3/31/21\ngive8\n507\nW\n3rd,\nOkla\nCity. A/C ifly Oklanoma City,50% W. grd,St.",
+          "match": "3/31/21",
+          "year": 1921,
+          "month": 3,
+          "day": 31,
+          "iso": "1921-03-31",
+          "kind": "date",
+          "confidence": 0.5,
+          "reasoning": [
+            "2digit_year",
+            "2digit_year_assumed_19xx"
+          ],
+          "span": [
+            189,
+            196
+          ],
+          "anti_keywords_in_window": [],
+          "has_death_keyword": false
+        }
+      ]
+    }
+  ]
+}
