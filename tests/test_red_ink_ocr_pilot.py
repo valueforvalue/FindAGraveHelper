@@ -562,3 +562,168 @@ def test_l3_widow_strict_keeps_when_soldier_name_nearby_no_keyword():
     assert info["year"] == 1928, (
         f"expected 1928 (soldier-name nearby), got {info['year']}"
     )
+
+
+# --------------------------------------------------------------
+# Issue #139 follow-up: orphan-stamp-date stripper.
+#
+# When L1 strips the GRANTED keyword line, the GRANTED stamp
+# date (OCT 7 = 1915, OCT7 - 1915, ON7=1915, ...) ends up on an
+# orphan line with no marker. The orphan 1915 becomes the only
+# candidate year; the L2 'year==1915 and other_years: skip' rule
+# doesn't fire because there's no other year, and a wrong year
+# gets picked.
+#
+# These tests pin the new ORPHAN_STAMP_RE pattern in
+# strip_form_lines that drops the orphan date fragments.
+# --------------------------------------------------------------
+
+
+def test_strip_form_lines_drops_orphan_oct_1915():
+    """The 'OCT 7 = 1915' orphan date fragment must be dropped
+    even when GRANTED is on a different (stripped) line."""
+    text = (
+        "REJECTED\n"
+        "GRANTED OCT 7 = 1915 No. P 25 61 to 65\n"
+        "Remarks: filed by his widow\n"
+    )
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "1915" not in cleaned, (
+        f"orphan 1915 survived in cleaned text: {cleaned!r}"
+    )
+    assert any("1915" in d for d in dropped), (
+        f"orphan 1915 not captured in dropped: {dropped}"
+    )
+
+
+def test_strip_form_lines_drops_orphan_oct_no_space():
+    """Variant: 'OCT7 - 1915' (no space between OCT and day)."""
+    text = (
+        "REJECTED | GRANTED 00T7 - 1915 No. P 110 63 to 65\n"
+    )
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "1915" not in cleaned, (
+        f"orphan 1915 survived: {cleaned!r}"
+    )
+
+
+def test_strip_form_lines_drops_orphan_on7_1915():
+    """Variant: 'ON7=1915' (GRANTED ON JULY 7, 1915 munged)."""
+    text = (
+        "REJECTED | GRANTED ON7=1915 No. P 17 61 to 65\n"
+    )
+    cleaned, dropped = pilot.strip_form_lines(text)
+    assert "1915" not in cleaned
+
+
+def test_strip_form_lines_drops_orphan_war_end_1865():
+    """War-end 1865 parole/surrender stamps appear in a similar
+    orphan pattern. When the war-end keyword line is stripped
+    but the year token survives on an adjacent line, the
+    orphan 1865 must also be dropped."""
+    # WAR_END_RE covers paroled/surrendered/Citronelle/Appomattox.
+    # When the stripper drops a WAR_END keyword line, the
+    # remaining line is just the bare 1865 digit with no
+    # context — it must be caught by the ORPHAN pattern.
+    text = (
+        "Address Citronelle, Ala.\n"
+        "1865 paroled at Appomattox\n"
+        "GRANTED OCT 7 = 1915\n"
+    )
+    cleaned, dropped = pilot.strip_form_lines(text)
+    # After strip: GRANTED line drops, WAR_END line drops,
+    # bare 1865 token is now an orphan with no context.
+    assert "1865" not in cleaned, (
+        f"orphan 1865 survived in cleaned: {cleaned!r}"
+    )
+
+
+def test_strip_form_lines_keeps_real_death_year_1915_with_keyword():
+    """If 1915 IS a legitimate death year (death keyword in the
+    window), it must NOT be dropped. The stripper should not
+    over-strip."""
+    text = (
+        "Anderson, W. C. Sr.  DECEASED 4 Nov 1915\n"
+        "GRANTED OCT 7 = 1915 No. P 25\n"
+    )
+    cleaned, dropped = pilot.strip_form_lines(text)
+    
+    assert "DECEASED" in cleaned or "Deceased" in cleaned
+    assert "1915" in cleaned
+
+
+def test_find_death_date_rejects_orphan_1915_stamp():
+    """End-to-end: text containing only GRANTED+1915 stamp and
+    no death keyword should yield None. This was the regression
+    behind the 1915 NO_KEYWORD_BUT_DATE cluster (136 records)."""
+
+    text = (
+        "Name Anderson, W. C, Sr, DECEASED 4 Noa\n"
+        "Address Terral, Jefferson\n"
+        "REJECTED | GRANTED () (110 7 x [915 No. P 17 61 to 65\n"
+    )
+    info, _ = pilot.find_death_date(text, soldier_name="Anderson")
+    assert info is None, (
+        f"orphan 1915 stamp should not be picked; got {info}"
+    )
+
+
+def test_find_death_date_rejects_1915_when_only_year_in_cleaned():
+    """When the cleaned text has 1915 as the ONLY year candidate
+    AND the stripper dropped a chunk containing GRANTED, reject
+    the pick. This catches the post-strip orphan pattern that
+    the line-level stripper misses (e.g. 'ON7=1915' survives as
+    its own chunk). The death keyword MUST be absent so the
+    stamp check fires."""
+    
+    text = (
+        "Name Anderson\n"
+        "REJECTED\n"
+        "GRANTED\n"
+        "ON7=1915\n"
+    )
+    info, _ = pilot.find_death_date(text, soldier_name="Anderson")
+    assert info is None, (
+        f"only-1915-after-granted-strip should be None; got {info}"
+    )
+
+
+def test_find_death_date_rejects_1865_when_only_year_in_cleaned():
+    """Same pattern for war-end 1865 — dropped parole/surrender
+    keywords plus a surviving bare 1865 should yield None."""
+    text = (
+        "Name Anderson\n"
+        "paroled at Appomattox\n"
+        "1865\n"
+    )
+    info, _ = pilot.find_death_date(text, soldier_name="Anderson")
+    assert info is None, (
+        f"only-1865-after-war-end-strip should be None; got {info}"
+    )
+
+
+def test_find_death_date_keeps_real_1915_with_death_keyword():
+    """Counter-test: when 1915 IS the death year AND there's a
+    death keyword in the cleaned text, keep it. The orphan-only
+    rule should NOT over-strip legitimate 1915 deaths."""
+    text = (
+        "Anderson DECEASED 7 Nov 1915\n"
+        "GRANTED OCT 7 1915\n"
+    )
+    info, _ = pilot.find_death_date(text, soldier_name="Anderson")
+    assert info is not None
+    assert info["year"] == 1915
+
+
+def test_find_death_date_keeps_1915_when_other_year_present():
+    """When 1915 is one of multiple year candidates (not the
+    only one), L2's '1915 if other_years: skip' rule fires
+    before the new orphan check. So if a real death year
+    appears alongside 1915, the real year wins, not 1915."""
+    text = (
+        "Anderson DECEASED 7 Nov 1928\n"
+        "GRANTED OCT 7 1915\n"
+    )
+    info, _ = pilot.find_death_date(text, soldier_name="Anderson")
+    assert info is not None
+    assert info["year"] == 1928

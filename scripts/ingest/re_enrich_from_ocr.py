@@ -65,6 +65,23 @@ DEFAULT_OUTPUT = Path("data/cards/red_ocr_results.json")
 DEFAULT_SUMMARY = Path("data/cards/red_ocr_summary.json")
 
 
+def _score_candidate(parsed):
+    """Pick the best death_date among red/full/easy parsed dicts.
+
+    Score (ascending tuple, lower is better):
+      - prefer full-date over year-only
+      - prefer near_death_keyword over not
+      - prefer mentions_soldier_name over not
+    Returns a sort key tuple; the caller's `min()` picks the best.
+    """
+    if parsed is None:
+        return (1, 1, 1, 1)
+    kind_rank = 0 if parsed.get("kind") == "date" else 1
+    kw_rank = 0 if parsed.get("near_death_keyword") else 1
+    name_rank = 0 if parsed.get("mentions_soldier_name") else 1
+    return (kind_rank, kw_rank, name_rank, 0)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--input", type=Path, default=DEFAULT_INPUT,
@@ -95,10 +112,13 @@ def main(argv=None) -> int:
         "total": len(results),
         "with_red_text": 0,
         "with_full_text": 0,
+        "with_easy_text": 0,
         "red_parsed": 0,
         "full_parsed": 0,
+        "easy_parsed": 0,
         "red_picked": 0,
         "full_picked": 0,
+        "easy_picked": 0,
         "no_date": 0,
         "year_only": 0,
         "full_date": 0,
@@ -110,10 +130,13 @@ def main(argv=None) -> int:
     for rec in results:
         red_text = rec.get("red_text", "") or ""
         full_text = rec.get("full_text", "") or ""
+        easy_text = rec.get("easy_text", "") or ""
         if red_text:
             counts["with_red_text"] += 1
         if full_text:
             counts["with_full_text"] += 1
+        if easy_text:
+            counts["with_easy_text"] += 1
 
         # Re-extract from the cached red text and the cached full
         # text. We pass the soldier name from the record's
@@ -130,21 +153,35 @@ def main(argv=None) -> int:
                 soldier_name = raw.split(",", 1)[0].strip()
 
         old_death = rec.get("death_date")
+        old_source_pass = rec.get("source_pass")
         red_parsed, red_window = find_death_date(red_text, soldier_name)
         full_parsed, full_window = find_death_date(full_text, soldier_name)
-        # Red-pass result wins if it exists (it was drawn from the
-        # masked red ink, more specific to the death stamp); else
-        # fall back to full-text.
-        chosen = red_parsed if red_parsed else full_parsed
+        easy_parsed, easy_window = find_death_date(easy_text, soldier_name)
         if red_parsed:
             counts["red_parsed"] += 1
         if full_parsed:
             counts["full_parsed"] += 1
-        if chosen:
-            # Mirror the schema used by red_ink_ocr_pilot.py
-            # (kind / year / month / day / match) but write a
-            # compact dict so enrich_pensioners_with_death_dates
-            # picks it up correctly.
+        if easy_parsed:
+            counts["easy_parsed"] += 1
+
+        # Pick the best candidate across all three text sources.
+        # Issue #139 follow-up: easy_text was previously ignored,
+        # leaving the L3 EasyOCR pass results stale. We now score
+        # by (full-date > year-only) x (near_death_keyword) x
+        # (mentions_soldier_name) and tie-break by source order
+        # (red > full > easy). This means easy_text can PROMOTE
+        # a record that red/full couldn't parse, but won't
+        # OVERRIDE a red/full death date that's already correct.
+        candidates = [
+            ("red", red_parsed),
+            ("full", full_parsed),
+            ("easy", easy_parsed),
+        ]
+        cands = [(src, c) for src, c in candidates if c is not None]
+        if cands:
+            cands.sort(key=lambda sc: _score_candidate(sc[1]))
+            chosen_src, chosen = cands[0]
+
             new_death = {
                 "kind": chosen["kind"],
                 "year": chosen["year"],
@@ -152,20 +189,37 @@ def main(argv=None) -> int:
                 "day": chosen["day"],
                 "iso": chosen["iso"],
                 "match": chosen.get("match"),
+                "near_death_keyword": chosen.get(
+                    "near_death_keyword", False
+                ),
+                "mentions_soldier_name": chosen.get(
+                    "mentions_soldier_name", False
+                ),
             }
             rec["death_date"] = new_death
+            # Update source_pass to reflect which text source
+            # the picked candidate came from. The downstream
+            # audit uses this to flag PASS_RED_BUT_LOW_TEXT etc.
+            rec["source_pass"] = (
+                "red" if chosen_src == "red"
+                else "full-fallback" if chosen_src == "full"
+                else "easyocr"
+            )
             if new_death["kind"] == "date":
                 counts["full_date"] += 1
             else:
                 counts["year_only"] += 1
-            if red_parsed:
+            if chosen_src == "red":
                 counts["red_picked"] += 1
-            else:
+            elif chosen_src == "full":
                 counts["full_picked"] += 1
-            if old_death != new_death:
+            else:
+                counts["easy_picked"] += 1
+            if old_death != new_death or old_source_pass != rec["source_pass"]:
                 changed += 1
         else:
             rec["death_date"] = None
+            rec["source_pass"] = None
             counts["no_date"] += 1
             if old_death is not None:
                 changed += 1
@@ -174,10 +228,13 @@ def main(argv=None) -> int:
     log.info("re-extracted %d records in %.1fs", len(results), elapsed)
     log.info("  with red text:     %d", counts["with_red_text"])
     log.info("  with full text:    %d", counts["with_full_text"])
+    log.info("  with easy text:    %d", counts["with_easy_text"])
     log.info("  red-pass parsed:   %d", counts["red_parsed"])
     log.info("  full-text parsed:  %d", counts["full_parsed"])
+    log.info("  easy-text parsed:  %d", counts["easy_parsed"])
     log.info("  red-pass picked:   %d", counts["red_picked"])
     log.info("  full-text picked:  %d", counts["full_picked"])
+    log.info("  easy-pass picked:  %d", counts["easy_picked"])
     log.info("  year-only:         %d", counts["year_only"])
     log.info("  full date:         %d", counts["full_date"])
     log.info("  no date:           %d", counts["no_date"])
@@ -202,11 +259,17 @@ def main(argv=None) -> int:
         "total_images": len(results),
         "with_red_text": counts["with_red_text"],
         "with_full_text": counts["with_full_text"],
+        "with_easy_text": counts["with_easy_text"],
         "red_parsed": counts["red_parsed"],
         "full_parsed": counts["full_parsed"],
+        "easy_parsed": counts["easy_parsed"],
         "red_picked": counts["red_picked"],
         "full_picked": counts["full_picked"],
-        "with_death_date": counts["red_picked"] + counts["full_picked"],
+        "easy_picked": counts["easy_picked"],
+        "with_death_date": (
+            counts["red_picked"] + counts["full_picked"]
+            + counts["easy_picked"]
+        ),
         "year_only": counts["year_only"],
         "full_date": counts["full_date"],
         "no_date": counts["no_date"],

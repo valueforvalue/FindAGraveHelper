@@ -137,7 +137,24 @@ LINE_STRIP_PATTERNS = [
     # 'a/c' (acknowledgment of correspondence) and 'gc' (general
     # correspondence) are NOT death markers.
     re.compile(r"(?i)\b(?:^|\s)(?:a/?c|gc|oy|qc|aw)\s+[\d/.\-]+"),
+    re.compile(r"(?i)\b(?:paroled|surrendered|citronelle|appomattox)\b"),
 ]
+
+
+ORPHAN_STAMP_RE = re.compile(
+    r"(?i)"
+    
+    r"\b(?:[OC]?[OC]?T|N[OC]V|NUV|0N|00T|NOV)\s*[\d\s=.\-]{1,6}\d{4}\b"
+    r"|"
+    
+    r"\b(?:NOVEMBER|OCTOBER|NOV|OCT)\s*[\d\s=.\-]{1,4}\d{4}\b"
+    r"|"
+    
+    r"\b[A-Z]?\d\s*[=\-]\s*\d{4}\b"
+    r"|"
+    
+    r"\b\d\s*[=\-]\s*\d{4}\b"
+)
 # Lines containing one of these tokens are protected (NEVER
 # stripped) because they are likely the actual death stamp.
 PROTECTED_LINE_TOKENS = re.compile(
@@ -309,6 +326,10 @@ def strip_form_lines(text: str) -> tuple[str, list[str]]:
         if any(pat.search(chunk) for pat in LINE_STRIP_PATTERNS):
             dropped.append(chunk)
             continue
+        
+        if ORPHAN_STAMP_RE.search(chunk):
+            dropped.append(chunk)
+            continue
         kept.append(chunk)
 
     cleaned = " ".join(kept)
@@ -364,6 +385,8 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
     # candidate scanning + window display operate on the
     # cleaned text; the original is discarded.
     text, _dropped = strip_form_lines(text)
+    
+    _dropped_text = " ".join(_dropped)
 
     candidates: list[tuple[str, dict]] = []
     for pattern, parser in DATE_PATTERNS:
@@ -439,6 +462,28 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
     candidates.sort(key=score)
     chosen_info = None
     chosen_window = ""
+    # Issue #139 follow-up: when the only year in cleaned text
+    # is 1915 (or 1865) AND the stripper dropped chunks
+    # containing GRANTED/REJECTED (or war-end keywords), the
+    # surviving 1915 (or 1865) is almost certainly a stamp
+    # fragment that escaped the line-level strip. Reject it
+    # so the pensioner goes to manual review instead of
+    # getting a wrong death year downstream.
+    if (
+        _dropped_text
+        and len(candidates) == 1
+        and not keyword_spans
+    ):
+        only_year = candidates[0][1]["year"]
+        stamp_dropped = (
+            GRANT_RE.search(_dropped_text)
+            or FILED_RE.search(_dropped_text)
+        )
+        war_dropped = WAR_END_RE.search(_dropped_text)
+        if only_year == 1915 and stamp_dropped:
+            return None, ""
+        if only_year == 1865 and war_dropped:
+            return None, ""
     # 2026-07-29 widened filter window from ±30 to ±60 chars
     # (issue #139). Phrases like "came to Oklahoma Territory 1912"
     # span ~40 chars; ±30 truncated "came to" off the window so
