@@ -66,6 +66,10 @@ DEFAULT_INPUT_JSON = Path(
 )
 DEFAULT_REPORT = Path("data/cards/enrichment_report.json")
 DEFAULT_IMG_DIR = Path("data/cards/img")
+DEFAULT_APPLICATIONS_DIR = Path("data/cards/applications")
+DEFAULT_APPLICATIONS_SUMMARY = Path(
+    "data/cards/download_summary_applications.json"
+)
 DEFAULT_OUT_DIR = Path("data/cards/viewer")
 # Vendored Alpine.js + Leaflet — copied into <out>/lib/ so the
 # viewer is fully offline-capable.
@@ -110,6 +114,27 @@ def load_data(args, log):
         except Exception:
             continue
 
+    # Application images: keyed by pensioner_id (the digitalprairie
+    # `id` field, NOT pensioncard_id). The downloader writes
+    # `data/cards/applications/<pensioner_id>.jpg`. Some pensioners
+    # have no application record at digitalprairie (~158 of 7709
+    # returned 404 in the L4 download run); those just won't have
+    # an application_image field, and the viewer will show a
+    # "no application" badge for them.
+    app_by_pensioner_id: dict[int, str] = {}
+    if args.applications_dir.exists():
+        for img in args.applications_dir.glob("*.jpg"):
+            try:
+                pid = int(img.stem)
+                app_by_pensioner_id[pid] = img.name
+            except ValueError:
+                continue
+    log.info(
+        "applications: %d jpgs on disk (%d missing-404 expected)",
+        len(app_by_pensioner_id),
+        max(0, len(rows) - len(app_by_pensioner_id)),
+    )
+
     pcid_to_pensioner = {}
     for r in rows:
         pcid = r.get("pensioncard_id")
@@ -125,13 +150,9 @@ def load_data(args, log):
         enr = enriched_by_pcid.get(pcid)
         last_name = (pensioner.get("last_name") or "").strip()
         raw = (pensioner.get("name_raw") or "").strip()
-        # Letter choice:
-        # 1) explicit last_name field (most common)
-        # 2) first comma-separated token of name_raw ("Mooney James W
-        #    a1176 p1458.pdf" → "Mooney"; "Mrs. J. R." → "Mrs." which
-        #    is alphabetic but not surname-like, so bucket = "_")
-        # 3) first whitespace-separated token of name_raw
-        # 4) raw begins with '(' or non-alpha → bucket = "_"
+        pid = pensioner.get("id")
+        app_img_name = app_by_pensioner_id.get(pid) if pid is not None else None
+        
         candidate = ""
         if last_name:
             candidate = last_name
@@ -139,7 +160,7 @@ def load_data(args, log):
             candidate = raw.split(",", 1)[0].strip()
         elif raw:
             candidate = raw.split()[0].strip()
-        # Title-only prefixes that aren't surnames — route to "_".
+        
         title_only = {"Mrs", "Mr", "Miss", "Dr", "Sir", "Madam"}
         first_word = candidate.split()[0] if candidate else ""
         if not candidate or not candidate[0].isalpha() \
@@ -151,7 +172,7 @@ def load_data(args, log):
                 letter = ORPHAN_LETTER
         records.append({
             "pensioncard_id": pcid,
-            "pensioner_id": pensioner.get("id"),
+            "pensioner_id": pid,
             "letter": letter,
             "last_name": last_name,
             "first_name": pensioner.get("first_name", ""),
@@ -167,6 +188,9 @@ def load_data(args, log):
             "mentions_soldier_name": enr.get("mentions_soldier_name", False) if enr else False,
             "is_widow_card": enr.get("is_widow_card", False) if enr else bool(pensioner.get("spouse_name_raw", "").strip()),
             "images": sorted(images),
+            
+            "application_image": app_img_name,
+            "application_available": app_img_name is not None,
         })
 
     log.info("loaded %d pensioner records with images or death data",
@@ -311,6 +335,37 @@ LETTER_CSS = INDEX_CSS + """\
   background: rgba(255,255,255,0.15); padding: 0.1em 0.4em; border-radius: 3px;
   margin: 0 0.1em; font-family: monospace;
 }
+.lightbox-toolbar .view-toggle {
+  display: inline-flex; gap: 0.4em; align-items: center;
+  margin: 0 1em;
+}
+.lightbox-toolbar .view-toggle button {
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.2);
+  color: white; padding: 0.3em 0.7em; border-radius: 3px;
+  font-size: 0.85em; margin-left: 0;
+}
+.lightbox-toolbar .view-toggle button.active {
+  background: rgba(255,255,255,0.25); border-color: rgba(255,255,255,0.6);
+  font-weight: 600;
+}
+.lightbox-toolbar .view-toggle button:disabled {
+  opacity: 0.35; cursor: not-allowed;
+}
+.lightbox-toolbar .view-toggle button kbd {
+  background: rgba(255,255,255,0.15); padding: 0.05em 0.3em; border-radius: 2px;
+  margin-left: 0.3em; font-family: monospace; font-size: 0.85em;
+}
+
+.record .app-badge {
+  display: inline-block; font-size: 0.7em; padding: 0.1em 0.5em;
+  border-radius: 3px; margin-left: 0.5em; vertical-align: middle;
+}
+.record .app-badge.has {
+  background: #3498db; color: white;
+}
+.record .app-badge.missing {
+  background: #ecf0f1; color: var(--muted); font-style: italic;
+}
 """
 
 INDEX_HEADER_HTML = """\
@@ -432,7 +487,15 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
           </template>
         </div>
         <div>
-          <div class="name" x-text="rec.name_raw"></div>
+          <div class="name">
+            <span x-text="rec.name_raw"></span>
+            <template x-if="rec.application_available">
+              <span class="app-badge has" title="Original pension application on file">App</span>
+            </template>
+            <template x-if="!rec.application_available && rec.pensioner_id !== undefined">
+              <span class="app-badge missing" title="No application found at digitalprairie">no app</span>
+            </template>
+          </div>
           <div class="info">
             <template x-for="line in infoLines(rec)" :key="line"><div x-text="line"></div></template>
           </div>
@@ -464,6 +527,20 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
      x-cloak>
   <div class="lightbox-toolbar" @click.stop>
     <span class="title" x-text="lightboxTitle()"></span>
+    <span class="view-toggle">
+      <button @click="switchView('card')"
+              :class="lightbox.view === 'card' ? 'active' : ''"
+              :disabled="!lightbox.open || !lightbox.rec || !lightbox.rec.images.length"
+              title="Card front/back (c)">
+        Card <kbd>c</kbd>
+      </button>
+      <button @click="switchView('application')"
+              :class="lightbox.view === 'application' ? 'active' : ''"
+              :disabled="!hasApplication(lightbox.rec)"
+              title="Application form (a)">
+        Application <kbd>a</kbd>
+      </button>
+    </span>
     <span>
       <button @click="zoomOut()" title="Zoom out (-)">\u2212</button>
       <button @click="zoomIn()" title="Zoom in (+)">+</button>
@@ -476,10 +553,19 @@ LETTER_PAGE_TEMPLATE_HEAD = """<!doctype html>
   </div>
   <div id="leaflet-viewer" class="lightbox-canvas" @click.stop></div>
   <div class="lightbox-counter" @click.stop>
-    Image <span x-text="(lightbox.idx ?? 0) + 1"></span> of <span x-text="lightbox.total"></span>
-    &mdash; <kbd>+</kbd>/<kbd>\u2212</kbd>/<kbd>0</kbd> zoom,
+    <span x-show="lightbox.view === 'card'">
+      Image <span x-text="(lightbox.idx ?? 0) + 1"></span>
+      of <span x-text="lightbox.total"></span> &mdash;
+    </span>
+    <span x-show="lightbox.view === 'application'">
+      Original application form &mdash;
+    </span>
+    <kbd>+</kbd>/<kbd>\u2212</kbd>/<kbd>0</kbd> zoom,
     <kbd>f</kbd> fullscreen, <kbd>r</kbd> rotate,
-    <kbd>\u2190</kbd>/<kbd>\u2192</kbd> step, <kbd>s</kbd> save PNG,
+    <kbd>\u2190</kbd>/<kbd>\u2192</kbd> step,
+    <kbd>s</kbd> save PNG,
+    <kbd>c</kbd> card,
+    <kbd>a</kbd> application,
     <kbd>esc</kbd> close
   </div>
 </div>
@@ -510,7 +596,8 @@ function letterApp() {
     records: (window.__PCIDS__ || []),
     filter: '',
     visible: [],
-    lightbox: {open: false, idx: null, total: 0, rec: null},
+    lightbox: {open: false, idx: null, total: 0, rec: null,
+                view: 'card'},
     map: null,
     overlay: null,
     init() {
@@ -570,13 +657,40 @@ function letterApp() {
     lightboxTitle() {
       const r = this.lightbox.rec;
       if (!r) return '';
-      return r.name_raw + ' \u2014 pensioncard #' + r.pensioncard_id;
+      const viewLabel = this.lightbox.view === 'application'
+        ? ' \u2014 APPLICATION'
+        : ' \u2014 pensioncard #' + r.pensioncard_id;
+      return r.name_raw + viewLabel;
+    },
+    hasApplication(rec) {
+      return !!(rec && rec.application_available && rec.application_image);
+    },
+    switchView(target) {
+      // Toggle between 'card' (front/back of the pension card) and
+      // 'application' (the original pension request form). Issue
+      // #140 wires both into the lightbox so a reviewer can verify
+      // that the application name matches the card name, that the
+      // filing dates line up, etc. - all without leaving the
+      // lightbox.
+      const r = this.lightbox.rec;
+      if (!r) return;
+      if (target === 'application' && !this.hasApplication(r)) return;
+      if (target === this.lightbox.view) return;
+      this.lightbox.view = target;
+      // Reset zoom + re-mount Leaflet on the new image.
+      this.mountLeaflet();
     },
     mountLeaflet() {
       const r = this.lightbox.rec;
       const idx = this.lightbox.idx;
       if (!r) return;
-      const imgPath = '../img/' + r.images[idx];
+      
+      let imgPath;
+      if (this.lightbox.view === 'application' && this.hasApplication(r)) {
+        imgPath = '../applications/' + r.application_image;
+      } else {
+        imgPath = '../img/' + r.images[idx];
+      }
 
       // Tear down any previous map (e.g. user re-opened while one
       // was still alive) before building a new one. Leaflet maps
@@ -624,7 +738,8 @@ function letterApp() {
         this.map = null;
         this.overlay = null;
       }
-      this.lightbox = {open: false, idx: null, total: 0, rec: null};
+      this.lightbox = {open: false, idx: null, total: 0, rec: null,
+                       view: 'card'};
     },
     step(delta) {
       const r = this.lightbox.rec;
@@ -688,6 +803,8 @@ function letterApp() {
         case 'ArrowRight': this.step(1); break;
         case 'f': case 'F': this.fullscreen(); break;
         case 's': case 'S': this.screenshot(); break;
+        case 'c': case 'C': this.switchView('card'); break;
+        case 'a': case 'A': this.switchView('application'); break;
         case 'Escape': this.closeLightbox(); break;
       }
     },
@@ -790,6 +907,7 @@ def place_letter_files(
     html: str,
     records: list[dict],
     img_dir: Path,
+    applications_dir: Path = DEFAULT_APPLICATIONS_DIR,
 ):
     """Write letters/{L}/viewer/{L}.html + sidecar JSON. Returns
     dict of (pcid, page) basenames that should be copied into
@@ -798,6 +916,7 @@ def place_letter_files(
     letter_dir = out_root / "letters" / safe
     (letter_dir / "viewer").mkdir(parents=True, exist_ok=True)
     (letter_dir / "img").mkdir(parents=True, exist_ok=True)
+    (letter_dir / "applications").mkdir(parents=True, exist_ok=True)
     (letter_dir / "viewer" / f"{safe}.html").write_text(html, encoding="utf-8")
     (letter_dir / "viewer" / "app.js").write_text(LETTER_APP_JS, encoding="utf-8")
     (letter_dir / f"{safe}.json").write_text(
@@ -805,6 +924,9 @@ def place_letter_files(
             "letter": letter,
             "count": len(records),
             "with_death_date": sum(1 for r in records if r.get("death_year")),
+            "with_application": sum(
+                1 for r in records if r.get("application_available")
+            ),
             "records": records,
         }, indent=2, ensure_ascii=False),
         encoding="utf-8",
@@ -823,7 +945,21 @@ def place_letter_files(
             if src.exists():
                 shutil.copy2(src, dst)
                 copied.append(name)
-    return copied
+
+    
+    apps_copied = []
+    apps_seen = set()
+    for rec in records:
+        app_name = rec.get("application_image")
+        if not app_name or app_name in apps_seen:
+            continue
+        apps_seen.add(app_name)
+        src = applications_dir / app_name
+        dst = letter_dir / "applications" / app_name
+        if src.exists():
+            shutil.copy2(src, dst)
+            apps_copied.append(app_name)
+    return copied, apps_copied
 
 
 def vendor_libs(out_root: Path, log: logging.Logger):
@@ -913,6 +1049,22 @@ def main(argv=None):
     ap.add_argument("--input", type=Path, default=DEFAULT_INPUT_JSON)
     ap.add_argument("--report", type=Path, default=DEFAULT_REPORT)
     ap.add_argument("--img-dir", type=Path, default=DEFAULT_IMG_DIR)
+    ap.add_argument(
+        "--applications-dir", type=Path,
+        default=DEFAULT_APPLICATIONS_DIR,
+        help="directory of application jpegs (one per pensioner, "
+             "named <pensioner_id>.jpg); issue #140 wires these into "
+             "the viewer so reviewers can flip between card and "
+             "application inside the same lightbox.",
+    )
+    ap.add_argument(
+        "--applications-summary", type=Path,
+        default=DEFAULT_APPLICATIONS_SUMMARY,
+        help="JSON summary written by download_application_images.py; "
+             "ships inside the bundle so reviewers can see which "
+             "pensioners are missing applications without re-querying "
+             "digitalprairie.",
+    )
     ap.add_argument("--out-dir", type=Path, default=DEFAULT_OUT_DIR)
     ap.add_argument("--letters", type=str, default="",
                     help="comma-separated subset of letters to render (default: all)")
@@ -954,10 +1106,14 @@ def main(argv=None):
         if not recs:
             continue
         html_doc = render_letter(letter, recs, by_letter)
-        copied = place_letter_files(args.out_dir, letter, html_doc, recs,
-                                    args.img_dir)
-        log.info("  %s: %d records, %d images copied", letter, len(recs),
-                 len(copied))
+        copied, apps_copied = place_letter_files(
+            args.out_dir, letter, html_doc, recs,
+            args.img_dir, args.applications_dir,
+        )
+        log.info(
+            "  %s: %d records, %d card images, %d application images",
+            letter, len(recs), len(copied), len(apps_copied),
+        )
 
     write_all_json(args.out_dir, by_letter, len(records), set(by_letter.keys()))
 

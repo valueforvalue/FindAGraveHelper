@@ -66,11 +66,13 @@ ROOT = _SCRIPTS_DIR.parent.parent
 # (source path relative to repo root) for everything in the bundle
 INCLUDE_PATHS = [
     "data/cards/img/",
+    "data/cards/applications/",
     "data/cards/viewer/",
     "data/cards/enrichment_report.json",
     "data/cards/red_ocr_results.json",
     "data/cards/red_ocr_summary.json",
     "data/cards/download_summary.json",
+    "data/cards/download_summary_applications.json",
     "docs/research/digitalprairie/ok_pensioners.json",
     "docs/research/digitalprairie/ok_pensioners.with_death_dates.json",
 ]
@@ -134,6 +136,7 @@ SHARED_METADATA_GLOBS = [
     "data/cards/red_ocr_results.json",
     "data/cards/red_ocr_summary.json",
     "data/cards/download_summary.json",
+    "data/cards/download_summary_applications.json",
     "docs/research/digitalprairie/ok_pensioners.json",
     "docs/research/digitalprairie/ok_pensioners.with_death_dates.json",
 ]
@@ -263,6 +266,16 @@ def collect_files_for_letter(
     else:
         logging.warning("[%s] img dir missing: %s", letter, img_dir)
 
+    
+    apps_dir = letter_dir / "applications"
+    if apps_dir.exists():
+        for p in sorted(apps_dir.glob("*.jpg")):
+            rel = f"letters/{safe}/applications/{p.name}"
+            out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
+    else:
+        logging.info("[%s] no applications/ dir (run "
+                     "build_pensioncard_viewer.py first)", letter)
+
     # 3) Shared metadata
     for rel in SHARED_METADATA_GLOBS:
         src = root / rel
@@ -301,9 +314,13 @@ def collect_index_files(root: Path) -> list[tuple[Path, str]]:
         for p in vdir.rglob("*"):
             if p.is_file():
                 # Skip everything under letters/*/img/ (heavy jpgs)
+                # and letters/*/applications/ (heavy jpgs). The
+                # index zip is the slim "browse before pulling"
+                # view; per-letter zips carry the heavy images.
                 rel = p.relative_to(vdir).as_posix()
-                if rel.startswith("letters/") and "/img/" in rel:
-                    continue
+                if rel.startswith("letters/"):
+                    if "/img/" in rel or "/applications/" in rel:
+                        continue
                 out.append((p, f"{ARCHIVE_TOP}/data/cards/viewer/{rel}"))
     for rel in SHARED_METADATA_GLOBS:
         src = root / rel

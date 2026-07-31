@@ -152,6 +152,66 @@ def corpus_paths(corpus):
     return corpus
 
 
+@pytest.fixture
+def corpus_with_applications(corpus):
+    """Same as corpus, plus:
+    - data/cards/applications/{1,2,3,4}.jpg (applications downloaded)
+    - data/cards/download_summary_applications.json (the summary)
+    - letters/{L}/applications/{1,2,3,4}.jpg (already copied by
+      build_pensioncard_viewer.py)
+    """
+    src_root = corpus["src_root"]
+
+    
+    apps_dir = src_root / "data" / "cards" / "applications"
+    apps_dir.mkdir(parents=True, exist_ok=True)
+    for pid in (1, 2, 3, 4):
+        (apps_dir / f"{pid}.jpg").write_bytes(f"APP-{pid}".encode("utf-8"))
+
+    
+    (src_root / "data" / "cards" / "download_summary_applications.json").write_text(
+        json.dumps({
+            "ok": 4, "skip": 0, "missing_source": 0,
+            "fetch_failed": 0, "empty_response": 0,
+            "records": [
+                {"pensioner_id": pid, "status": "ok",
+                 "path": f"applications\\{pid}.jpg", "bytes": 13}
+                for pid in (1, 2, 3, 4)
+            ],
+        }),
+        encoding="utf-8",
+    )
+
+    
+    for letter in ("A", "B", "_"):
+        ldir = src_root / "data" / "cards" / "viewer" / "letters" / letter
+        (ldir / "applications").mkdir(parents=True, exist_ok=True)
+    
+    letter_payloads = corpus["letter_pcid_payloads"]
+    
+    letter_to_pids = {
+        "A": list(letter_payloads["A"].keys()),
+        "B": list(letter_payloads["B"].keys()),
+        "_": list(letter_payloads["_"].keys()),
+    }
+    pids = [pid for letter in letter_to_pids.values()
+            for pid in letter]
+    next_pid = max(pids) + 1 if pids else 100
+    apps_for_letter = {
+        "A": [next_pid, next_pid + 1],
+        "B": [next_pid + 2, next_pid + 3],
+        "_": [],
+    }
+    for letter, pid_list in apps_for_letter.items():
+        ldir = src_root / "data" / "cards" / "viewer" / "letters" / letter
+        for pid in pid_list:
+            (ldir / "applications" / f"{pid}.jpg").write_bytes(
+                f"APP-{pid}".encode("utf-8"))
+
+    corpus["app_pid_to_letter"] = apps_for_letter
+    return corpus
+
+
 # ============================================================
 # Helpers
 # ============================================================
@@ -393,3 +453,72 @@ def test_by_letter_merges_clean_into_one_folder(corpus_paths, tmp_path):
     assert (merge / "pension-viewer-bundle" / "data" / "cards" / "viewer" / "letters" / "A" / "img" / "101__1010.jpg").exists()
     assert (merge / "pension-viewer-bundle" / "data" / "cards" / "viewer" / "letters" / "B" / "img" / "201__2010.jpg").exists()
     assert (merge / "pension-viewer-bundle" / "data" / "cards" / "viewer" / "letters" / "_" / "img" / "999__9990.jpg").exists()
+
+
+def test_by_letter_zip_includes_application_jpgs(corpus_with_applications):
+    """Issue #140: each letter-zip must include the matching
+    letters/{L}/applications/*.jpg so reviewers can flip from
+    card to application in the lightbox offline."""
+    src_root = corpus_with_applications["src_root"]
+    out_dir = corpus_with_applications["out_dir"]
+    _run(src_root, out_dir, "--by-letter")
+    with zipfile.ZipFile(out_dir / "bundle.A.zip") as zf:
+        names = zf.namelist()
+    
+    a_app_pids = corpus_with_applications["app_pid_to_letter"]["A"]
+    for pid in a_app_pids:
+        expected = f"pension-viewer-bundle/data/cards/viewer/letters/A/applications/{pid}.jpg"
+        assert expected in names, (
+            f"letter A zip missing application jpg: {expected}"
+        )
+        with zipfile.ZipFile(out_dir / "bundle.A.zip") as zf:
+            assert zf.read(expected) == f"APP-{pid}".encode("utf-8")
+    
+    with zipfile.ZipFile(out_dir / "bundle.B.zip") as zf:
+        names_b = zf.namelist()
+    b_app_pids = corpus_with_applications["app_pid_to_letter"]["B"]
+    for pid in b_app_pids:
+        expected = f"pension-viewer-bundle/data/cards/viewer/letters/B/applications/{pid}.jpg"
+        assert expected in names_b
+
+
+def test_index_zip_excludes_application_jpgs(corpus_with_applications):
+    """Slim index zip must NOT carry heavy application jpgs
+    (reviewers pull the per-letter zips for those)."""
+    src_root = corpus_with_applications["src_root"]
+    out_dir = corpus_with_applications["out_dir"]
+    _run(src_root, out_dir, "--by-letter")
+    with zipfile.ZipFile(out_dir / "bundle.index.zip") as zf:
+        names = zf.namelist()
+    assert not any("applications/" in n for n in names), (
+        f"index zip must NOT carry applications jpgs, but found: "
+        f"{[n for n in names if 'applications/' in n][:3]}"
+    )
+
+
+def test_download_summary_applications_ships_in_letter_zip(corpus_with_applications):
+    """download_summary_applications.json must be in every
+    letter-zip so reviewers can see which pensioners are missing
+    applications without re-querying digitalprairie."""
+    src_root = corpus_with_applications["src_root"]
+    out_dir = corpus_with_applications["out_dir"]
+    _run(src_root, out_dir, "--by-letter")
+    with zipfile.ZipFile(out_dir / "bundle.A.zip") as zf:
+        names = zf.namelist()
+    assert "pension-viewer-bundle/data/cards/download_summary_applications.json" in names
+
+
+def test_applications_dir_in_full_bundle(corpus_with_applications):
+    """The full-bundle path (not --by-letter) must also include
+    the global data/cards/applications/ tree."""
+    src_root = corpus_with_applications["src_root"]
+    out_dir = corpus_with_applications["out_dir"]
+    rc = _run(src_root, out_dir)
+    assert rc == 0
+    with zipfile.ZipFile(out_dir / "bundle.zip") as zf:
+        names = zf.namelist()
+    for pid in (1, 2, 3, 4):
+        assert (
+            f"pension-viewer-bundle/data/cards/applications/{pid}.jpg"
+            in names
+        ), f"missing applications/{pid}.jpg in full bundle"

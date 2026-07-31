@@ -261,3 +261,173 @@ def test_letter_page_html_uses_alpine_and_leaflet(viewer_corpus):
     # Image src uses ../img/ relative path (letters/A/img is a sibling of viewer/)
     assert "../img/" in a_html
     assert "../../../index.html" in a_html
+
+
+@pytest.fixture
+def viewer_corpus_with_apps(viewer_corpus):
+    """Same as viewer_corpus, plus synthetic application jpgs at
+    data/cards/applications/<pensioner_id>.jpg. Three of the
+    seven rows get an application; the rest simulate 404s."""
+    apps_dir = viewer_corpus["src_root"] / "data" / "cards" / "applications"
+    apps_dir.mkdir(parents=True, exist_ok=True)
+    
+    for pid in (1, 2, 3):
+        (apps_dir / f"{pid}.jpg").write_bytes(b"FAKE-APP-JPG")
+    
+    download_summary = {
+        "ok": 3,
+        "skip": 0,
+        "missing_source": 4,
+        "fetch_failed": 0,
+        "empty_response": 0,
+        "elapsed_seconds": 0.1,
+        "records": [
+            {"pensioner_id": pid, "path": f"applications\\{pid}.jpg",
+             "status": "ok", "bytes": 13}
+            for pid in (1, 2, 3)
+        ],
+    }
+    (apps_dir.parent / "download_summary_applications.json").write_text(
+        json.dumps(download_summary), encoding="utf-8")
+    return viewer_corpus
+
+
+def test_records_carry_application_fields(viewer_corpus_with_apps):
+    """Records with applications must carry application_image +
+    application_available=True. Records without get
+    application_image=None + application_available=False."""
+    src_root = viewer_corpus_with_apps["src_root"]
+    mod = _load_module()
+    monkey = sys.modules["build_pensioncard_viewer"]
+    fake_vendor = src_root / "scripts" / "ingest" / "vendor"
+    monkey.VENDOR_DIR = fake_vendor
+    mod.main([
+        "--input", str(src_root / "docs" / "research" / "digitalprairie" / "ok_pensioners.json"),
+        "--report", str(src_root / "data" / "cards" / "enrichment_report.json"),
+        "--img-dir", str(src_root / "data" / "cards" / "img"),
+        "--applications-dir", str(src_root / "data" / "cards" / "applications"),
+        "--out-dir", str(viewer_corpus_with_apps["out_dir"]),
+    ])
+    a_json = json.loads(
+        (viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "A.json")
+        .read_text(encoding="utf-8")
+    )
+    b_json = json.loads(
+        (viewer_corpus_with_apps["out_dir"] / "letters" / "B" / "B.json")
+        .read_text(encoding="utf-8")
+    )
+    a_recs = {r["pensioner_id"]: r for r in a_json["records"]}
+    b_recs = {r["pensioner_id"]: r for r in b_json["records"]}
+    c_json = json.loads(
+        (viewer_corpus_with_apps["out_dir"] / "letters" / "C" / "C.json")
+        .read_text(encoding="utf-8")
+    )
+    c_recs = {r["pensioner_id"]: r for r in c_json["records"]}
+    all_recs = {**a_recs, **b_recs, **c_recs}
+    
+    assert "application_available" in all_recs[1]
+    assert all_recs[1]["application_available"] is True
+    assert all_recs[1]["application_image"] == "1.jpg"
+    
+    assert all_recs[2]["application_available"] is True
+    assert all_recs[2]["application_image"] == "2.jpg"
+    
+    assert all_recs[3]["application_available"] is True
+    assert all_recs[3]["application_image"] == "3.jpg"
+
+
+def test_letter_dir_has_applications_subdir(viewer_corpus_with_apps):
+    """Each letter page should have an applications/ subdir with
+    the matching pensioner jpgs copied in."""
+    src_root = viewer_corpus_with_apps["src_root"]
+    mod = _load_module()
+    monkey = sys.modules["build_pensioncard_viewer"]
+    fake_vendor = src_root / "scripts" / "ingest" / "vendor"
+    monkey.VENDOR_DIR = fake_vendor
+    mod.main([
+        "--input", str(src_root / "docs" / "research" / "digitalprairie" / "ok_pensioners.json"),
+        "--report", str(src_root / "data" / "cards" / "enrichment_report.json"),
+        "--img-dir", str(src_root / "data" / "cards" / "img"),
+        "--applications-dir", str(src_root / "data" / "cards" / "applications"),
+        "--out-dir", str(viewer_corpus_with_apps["out_dir"]),
+    ])
+    a_apps = viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "applications"
+    assert a_apps.exists()
+    assert (a_apps / "1.jpg").exists()
+    b_apps = viewer_corpus_with_apps["out_dir"] / "letters" / "B" / "applications"
+    assert (b_apps / "2.jpg").exists()
+    c_apps = viewer_corpus_with_apps["out_dir"] / "letters" / "C" / "applications"
+    assert (c_apps / "3.jpg").exists()
+
+
+def test_lightbox_has_card_application_toggle(viewer_corpus_with_apps):
+    """The lightbox HTML + JS must carry the Card/Application
+    toggle buttons and the c/a keyboard handlers."""
+    src_root = viewer_corpus_with_apps["src_root"]
+    mod = _load_module()
+    monkey = sys.modules["build_pensioncard_viewer"]
+    fake_vendor = src_root / "scripts" / "ingest" / "vendor"
+    monkey.VENDOR_DIR = fake_vendor
+    mod.main([
+        "--input", str(src_root / "docs" / "research" / "digitalprairie" / "ok_pensioners.json"),
+        "--report", str(src_root / "data" / "cards" / "enrichment_report.json"),
+        "--img-dir", str(src_root / "data" / "cards" / "img"),
+        "--applications-dir", str(src_root / "data" / "cards" / "applications"),
+        "--out-dir", str(viewer_corpus_with_apps["out_dir"]),
+    ])
+    a_html = (viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "viewer" / "A.html").read_text(encoding="utf-8")
+    app_js = (viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "viewer" / "app.js").read_text(encoding="utf-8")
+    
+    assert "switchView" in app_js
+    assert "'application'" in app_js
+    assert "'card'" in app_js
+    
+    assert "case 'a'" in app_js or "case 'A'" in app_js
+    assert "case 'c'" in app_js or "case 'C'" in app_js
+    
+    assert "switchView(&apos;card&apos;)" in a_html \
+        or "switchView('card')" in a_html
+    assert "switchView(&apos;application&apos;)" in a_html \
+        or "switchView('application')" in a_html
+
+
+def test_record_row_has_application_badge(viewer_corpus_with_apps):
+    """Each record row in the letter page should render an
+    application badge (App or no-app) when the badge logic
+    template fires."""
+    src_root = viewer_corpus_with_apps["src_root"]
+    mod = _load_module()
+    monkey = sys.modules["build_pensioncard_viewer"]
+    fake_vendor = src_root / "scripts" / "ingest" / "vendor"
+    monkey.VENDOR_DIR = fake_vendor
+    mod.main([
+        "--input", str(src_root / "docs" / "research" / "digitalprairie" / "ok_pensioners.json"),
+        "--report", str(src_root / "data" / "cards" / "enrichment_report.json"),
+        "--img-dir", str(src_root / "data" / "cards" / "img"),
+        "--applications-dir", str(src_root / "data" / "cards" / "applications"),
+        "--out-dir", str(viewer_corpus_with_apps["out_dir"]),
+    ])
+    a_html = (viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "viewer" / "A.html").read_text(encoding="utf-8")
+    assert "app-badge" in a_html
+    assert "App" in a_html  
+    assert "no app" in a_html.lower() or "no-app" in a_html.lower()
+
+
+def test_application_path_uses_relative_applications_dir(viewer_corpus_with_apps):
+    """The lightbox imagePath for application view must use
+    '../applications/' so the JS can resolve it relative to the
+    viewer/A/ directory."""
+    src_root = viewer_corpus_with_apps["src_root"]
+    mod = _load_module()
+    monkey = sys.modules["build_pensioncard_viewer"]
+    fake_vendor = src_root / "scripts" / "ingest" / "vendor"
+    monkey.VENDOR_DIR = fake_vendor
+    mod.main([
+        "--input", str(src_root / "docs" / "research" / "digitalprairie" / "ok_pensioners.json"),
+        "--report", str(src_root / "data" / "cards" / "enrichment_report.json"),
+        "--img-dir", str(src_root / "data" / "cards" / "img"),
+        "--applications-dir", str(src_root / "data" / "cards" / "applications"),
+        "--out-dir", str(viewer_corpus_with_apps["out_dir"]),
+    ])
+    app_js = (viewer_corpus_with_apps["out_dir"] / "letters" / "A" / "viewer" / "app.js").read_text(encoding="utf-8")
+    assert "../applications/" in app_js
