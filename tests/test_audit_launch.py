@@ -41,7 +41,8 @@ def test_defaults_filled():
     empty: dict = {}
     args = launch.build_argv(empty)
     assert "--enriched" in args
-    assert "ok_pensioners.with_death_dates.json" in args
+    assert (args[args.index("--enriched") + 1]
+            == "docs/research/digitalprairie/ok_pensioners.with_death_dates.json")
     assert "--enrichment" in args
     assert "--ocr" in args
     assert "--out-json" in args

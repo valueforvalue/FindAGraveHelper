@@ -33,7 +33,8 @@ def test_defaults_filled():
     empty: dict = {}
     args = launch.build_argv(empty)
     assert "--input" in args
-    assert "ok_pensioners.json" in args
+    assert (args[args.index("--input") + 1]
+            == "docs/research/digitalprairie/ok_pensioners.json")
     assert "--out" in args
     assert "--summary" in args
     assert "--throttle" in args
