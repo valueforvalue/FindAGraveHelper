@@ -170,6 +170,106 @@ DEATH_KEYWORDS = re.compile(
     r"date of death|d\.o\.d\.|d\/d)\b"
 )
 
+
+def _levenshtein(a: str, b: str) -> int:
+    """Standard Levenshtein edit distance. Used by
+    fuzzy_death_keyword to detect OCR-misread variants of
+    DECEASED. Tiny implementation to avoid pulling in a
+    third-party lib (the text is short, edit-distance is
+    fine inline)."""
+    if len(a) < len(b):
+        return _levenshtein(b, a)
+    if len(b) == 0:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a):
+        cur = [i + 1]
+        for j, cb in enumerate(b):
+            ins = cur[j] + 1
+            dele = prev[j + 1] + 1
+            sub = prev[j] + (ca != cb)
+            cur.append(min(ins, dele, sub))
+        prev = cur
+    return prev[-1]
+
+
+# Words we know are common OCR misreads of DECEASED on these
+# pension cards. Spot-checked from the 221 NO_KEYWORD_BUT_DATE
+# residuals after the L4 stamp-fragment fix (issue #139 follow-up
+# 2026-07-31). Listed explicitly rather than via Levenshtein
+# because the misreads are stylistically specific (Tesseract
+# char-swap patterns) and a small fixed list is more
+# auditable than a fuzzy threshold.
+DEATH_KEYWORD_OCR_MISREADS = frozenset({
+    "peceased", "peceaged", "dededsed", "deceasea", "deczased",
+    "dechashd", "dechased", "dseeased", "dbcbasbd",
+    "vecoa", "vecoad", "amceased", "ceceased",
+    "deceased", "deceaged", "dece", "decea", "ceased",
+    "dccascd", "dcd",
+})
+
+
+def fuzzy_death_keyword(text: str) -> bool:
+    """Return True if text contains a death keyword OR a known
+    OCR misread of one.
+
+    The strict `DEATH_KEYWORDS` regex misses common OCR
+    mistakes like 'peceased', 'Dededsed', 'Decea sed',
+    'DBCBASBD', 'DECHASHD', 'DECZASED', 'vecoa'. Without
+    this fuzzy pass, real death dates get flagged as
+    NO_KEYWORD_BUT_DATE in the audit (the L4 follow-up
+    residual set).
+
+    The matcher:
+    1. Checks strict DEATH_KEYWORDS first (cheap, exact).
+    2. Tokenizes, lowercases each 4-10 letter word.
+    3. Accepts if the word is in DEATH_KEYWORD_OCR_MISREADS.
+    4. Accepts if the word starts with dec/dea/ded/die AND
+       is within Levenshtein distance 2 of 'deceased' or
+       'died' (catches novel future misreads).
+
+    The threshold (distance 2, length 4-10) is tight enough
+    to avoid false matches on words like 'address', 'company',
+    'rejected', 'remarks' that share letters with the death
+    keywords.
+    """
+    return _fuzzy_keyword_match(text) is not None
+
+
+def _fuzzy_keyword_match(text: str) -> tuple[int, int] | None:
+    """Like fuzzy_death_keyword but returns the (start, end)
+    span of the matched word (or the first strict DEATH_KEYWORDS
+    match span). Returns None if no match.
+
+    Used by find_death_date to compute `keyword_spans` for the
+    proximity-to-death-keyword scoring without re-implementing
+    the fuzzy rules.
+    """
+    if not text:
+        return None
+    m = DEATH_KEYWORDS.search(text)
+    if m:
+        return (m.start(), m.end())
+    for wm in re.finditer(r"[A-Za-z]{3,12}", text):
+        w = wm.group(0)
+        wl = w.lower()
+        if wl in DEATH_KEYWORD_OCR_MISREADS:
+            return (wm.start(), wm.end())
+        if len(wl) < 4 or len(wl) > 10:
+            continue
+        if not (
+            wl.startswith("dec") or wl.startswith("dea")
+            or wl.startswith("ded") or wl.startswith("die")
+        ):
+            continue
+        target = (
+            "deceased" if wl.startswith(("dec", "dea", "ded"))
+            else "died"
+        )
+        if _levenshtein(wl, target) <= 2:
+            return (wm.start(), wm.end())
+    return None
+
 # Date regexes. We try several common formats the OCR will produce.
 # Each pattern yields (regex, parser_fn). parser_fn takes the matched
 # string and returns (year, month, day, iso) or None on failure.
@@ -412,8 +512,18 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         return None, ""
 
     # Prefer dates that appear within ~40 chars of a death keyword.
-    keyword_spans = [(m.start(), m.end())
-                     for m in DEATH_KEYWORDS.finditer(text)]
+    # Use the fuzzy matcher (strict regex + known OCR misreads +
+    # Levenshtein-2 for novel variants) so we don't miss real
+    # death dates where OCR garbled the word (issue #139 follow-up).
+    keyword_spans = []
+    cursor = 0
+    while cursor < len(text):
+        m = _fuzzy_keyword_match(text[cursor:])
+        if m is None:
+            break
+        s, e = m
+        keyword_spans.append((cursor + s, cursor + e))
+        cursor = cursor + e
     soldier_lower = soldier_name.strip().lower() if soldier_name else ""
 
     def score(c: tuple[str, dict]) -> tuple[int, int, int, int, int]:
@@ -498,7 +608,7 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         # date SHOULD exist somewhere. Apply filters softly:
         # reject only when the filter phrase is in the immediate
         # window AND no death keyword is in that same window.
-        has_kw_in_window = bool(DEATH_KEYWORDS.search(window))
+        has_kw_in_window = fuzzy_death_keyword(window)
         if GRANT_RE.search(window) and not has_kw_in_window:
             continue
         if FILED_RE.search(window) and not has_kw_in_window:
@@ -595,8 +705,8 @@ def process_image(path: Path, soldier_name: str = "") -> dict:
     if chosen is not None:
         chosen = dict(chosen)
         combined_text = (red_text or "") + " " + (full_text or "")
-        chosen["near_death_keyword"] = bool(
-            DEATH_KEYWORDS.search(combined_text)
+        chosen["near_death_keyword"] = fuzzy_death_keyword(
+            combined_text
         )
         # Widow-aware tag: does the chosen window mention the
         # soldier's name? If yes, it's likely the soldier's death

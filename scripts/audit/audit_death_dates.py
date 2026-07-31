@@ -120,8 +120,18 @@ def main(argv=None) -> int:
         name = enr.get("name_raw", "")
         # Cross-reference OCR for the death-keyword / source_pass flags
         ocr_recs = ocr_by_pcid.get(pcid, []) if pcid is not None else []
-        # union: any image with a keyword
-        has_kw = any(r.get("near_death_keyword") for r in ocr_recs)
+        # union: any image with a keyword. Issue #139 follow-up
+        # (2026-07-31): the re-enrich driver now writes the
+        # near_death_keyword flag INSIDE death_date (matching
+        # process_image's schema), not at the top level of the
+        # OCR record. Read from both locations for backward
+        # compatibility with older records that pre-date the
+        # schema change.
+        has_kw = any(
+            r.get("near_death_keyword")
+            or (r.get("death_date") or {}).get("near_death_keyword")
+            for r in ocr_recs
+        )
         # source_pass = the pass that produced the final date for this pcid
         passes = [r.get("source_pass") for r in ocr_recs if r.get("source_pass")]
         source_pass = passes[0] if passes else None

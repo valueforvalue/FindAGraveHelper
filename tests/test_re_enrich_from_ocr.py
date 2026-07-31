@@ -162,7 +162,7 @@ def test_idempotent_re_enrich_no_changes():
     death_date values the second time around."""
     import subprocess
     import tempfile
-    
+
     with tempfile.NamedTemporaryFile(
         suffix=".json", mode="w", delete=False, encoding="utf-8"
     ) as f:
@@ -202,10 +202,59 @@ def test_idempotent_re_enrich_no_changes():
         out2 = json.loads(
             Path(tmp_path + ".out").read_text(encoding="utf-8")
         )
-        
+
         for a, b in zip(out1, out2):
             assert a["death_date"] == b["death_date"]
             assert a["source_pass"] == b["source_pass"]
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+        Path(tmp_path + ".out").unlink(missing_ok=True)
+        Path(tmp_path + ".summary").unlink(missing_ok=True)
+
+
+def test_near_death_keyword_set_when_easy_text_has_deceased():
+    """Issue #139 follow-up: when easy_text contains a death
+    keyword like DECEASED and that's where the date came from,
+    the re-enriched death_date must carry near_death_keyword=True
+    so the audit doesn't false-positive NO_KEYWORD_BUT_DATE."""
+    
+    easy = "Name Brown DECEASED 3-13-1928 Address Some"
+    rec = _make_record(
+        red_text="",
+        full_text="",
+        easy_text=easy,
+        prior_death_date={
+            "kind": "year-only", "year": 1928,
+            "month": None, "day": None, "iso": "1928",
+        },
+        prior_source_pass="easyocr",
+    )
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(
+        suffix=".json", mode="w", delete=False, encoding="utf-8"
+    ) as f:
+        json.dump([rec], f)
+        tmp_path = f.name
+    try:
+        cmd = [
+            sys.executable,
+            str(_ROOT / "scripts" / "ingest" / "re_enrich_from_ocr.py"),
+            "--input", tmp_path,
+            "--output", tmp_path + ".out",
+            "--summary", tmp_path + ".summary",
+        ]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        assert r.returncode == 0
+        out = json.loads(
+            Path(tmp_path + ".out").read_text(encoding="utf-8")
+        )
+        dd = out[0]["death_date"]
+        assert dd is not None
+        assert dd["near_death_keyword"] is True, (
+            f"DECEASED in easy_text should set near_death_keyword=True; "
+            f"got {dd}"
+        )
     finally:
         Path(tmp_path).unlink(missing_ok=True)
         Path(tmp_path + ".out").unlink(missing_ok=True)

@@ -727,3 +727,67 @@ def test_find_death_date_keeps_1915_when_other_year_present():
     info, _ = pilot.find_death_date(text, soldier_name="Anderson")
     assert info is not None
     assert info["year"] == 1928
+
+
+# --------------------------------------------------------------
+# Issue #139 follow-up: fuzzy death-keyword detection.
+#
+# OCR commonly mis-reads the word DECEASED on pension cards:
+# - 'peceased' (lowercase p, OCR got the cap wrong)
+# - 'Dededsed' (char-swap)
+# - 'Decea sed' (space inserted mid-word)
+# - 'DBCBASBD', 'DSEEASED', 'DECZASED', 'DECHASHD' (heavy garble)
+# - 'vecoa', 'amceased' (leading chars mangled)
+# These are all legitimate death stamps that the strict
+# DEATH_KEYWORDS regex misses, causing them to be flagged as
+# NO_KEYWORD_BUT_DATE in the audit even when the death year is
+# correct.
+# --------------------------------------------------------------
+
+
+def test_fuzzy_death_keyword_catches_ocr_variants():
+    """The fuzzy matcher should accept the common OCR
+    mis-reads of DECEASED so the parser doesn't drop these
+    real death stamps."""
+    fuzzy = pilot.fuzzy_death_keyword
+    assert fuzzy("peceased August 6, 1920")
+    assert fuzzy("Dededsed 4-11-1935")
+    assert fuzzy("Decea sed 23 . 9 1926")
+    assert fuzzy("Deceasea March 2, 1928")
+    assert fuzzy("DBCBASBD 11-19-1927")
+    assert fuzzy("DSEEASED October 16, 1921")
+    assert fuzzy("DECZASED 1-10-1926")
+    assert fuzzy("DECHASHD 5-24-1929")
+    assert fuzzy("vecoa 1922")
+    assert fuzzy("Amceased 1-13-1926")
+
+
+def test_fuzzy_death_keyword_accepts_strict_form():
+    """The fuzzy matcher should accept the canonical forms."""
+    fuzzy = pilot.fuzzy_death_keyword
+    assert fuzzy("DECEASED 4 Nov 1915")
+    assert fuzzy("Deceased January 1, 1928")
+    assert fuzzy("died 1920")
+    assert fuzzy("died January 15, 1925")
+    assert fuzzy("death date 1928")
+
+
+def test_fuzzy_death_keyword_rejects_unrelated_words():
+    """The fuzzy matcher should NOT match unrelated words,
+    even those starting with similar prefixes."""
+    fuzzy = pilot.fuzzy_death_keyword
+    assert not fuzzy("Entered Home August 1922")
+    assert not fuzzy("Company A Battery")
+    assert not fuzzy("Address Terral Jefferson")
+    assert not fuzzy("Filed 6/9/15")
+    assert not fuzzy("Rejected Granted")
+    assert not fuzzy("HonER 1925")
+    assert not fuzzy("Class A No. 206")
+
+
+def test_fuzzy_death_keyword_handles_mixed_case():
+    """OCR commonly produces mixed case. The matcher should
+    accept those too."""
+    fuzzy = pilot.fuzzy_death_keyword
+    assert fuzzy("Peceased March 1922")
+    assert fuzzy("DECEASED Mar 1922")

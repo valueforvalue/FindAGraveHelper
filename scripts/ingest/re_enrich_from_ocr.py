@@ -58,7 +58,29 @@ if str(_ROOT) not in sys.path:
 from scripts.ingest.red_ink_ocr_pilot import (  # noqa: E402
     find_death_date,
     DEATH_KEYWORDS,
+    fuzzy_death_keyword,
 )
+
+
+def _annotate(chosen, src_text, soldier_name):
+    """Compute near_death_keyword and mentions_soldier_name for
+    the chosen candidate by re-scanning the text source that
+    produced it.
+
+    `find_death_date` returns a candidate dict WITHOUT these
+    fields; they're added by `process_image` for the original
+    red/full path. The re-enrich driver picks from three text
+    sources (red, full, easy), so it must compute the
+    annotations from the picked source's text.
+    """
+    if chosen is None:
+        return False, False
+    if not src_text:
+        return False, False
+    has_kw = fuzzy_death_keyword(src_text)
+    name_lower = soldier_name.strip().lower() if soldier_name else ""
+    has_name = bool(name_lower and name_lower in src_text.lower())
+    return has_kw, has_name
 
 DEFAULT_INPUT = Path("data/cards/red_ocr_results.json")
 DEFAULT_OUTPUT = Path("data/cards/red_ocr_results.json")
@@ -182,6 +204,14 @@ def main(argv=None) -> int:
             cands.sort(key=lambda sc: _score_candidate(sc[1]))
             chosen_src, chosen = cands[0]
 
+            
+            src_text = {
+                "red": red_text, "full": full_text, "easy": easy_text
+            }[chosen_src]
+            has_kw, has_name = _annotate(
+                chosen, src_text, soldier_name
+            )
+
             new_death = {
                 "kind": chosen["kind"],
                 "year": chosen["year"],
@@ -189,12 +219,8 @@ def main(argv=None) -> int:
                 "day": chosen["day"],
                 "iso": chosen["iso"],
                 "match": chosen.get("match"),
-                "near_death_keyword": chosen.get(
-                    "near_death_keyword", False
-                ),
-                "mentions_soldier_name": chosen.get(
-                    "mentions_soldier_name", False
-                ),
+                "near_death_keyword": has_kw,
+                "mentions_soldier_name": has_name,
             }
             rec["death_date"] = new_death
             # Update source_pass to reflect which text source
