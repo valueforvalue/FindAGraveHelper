@@ -50,7 +50,7 @@ DEFAULT_FIRED = DEFAULT_ARTIFACT_DIR / "checkpoints.fired.json"
 # Default thresholds. The resumed run has 5369 targets
 # (9436 records - 836 already done - 3410 already-dated -
 # some missing images = 5369). 25/50/75 land at 1343/2685/4027.
-DEFAULT_THRESHOLDS = (25, 50, 75)
+DEFAULT_THRESHOLDS = (25, 50, 75, 100)
 
 
 def _read_count(path: Path) -> tuple[int, int, int]:
@@ -159,8 +159,10 @@ def fire_checkpoint(percent: int, count: int, target: int,
     _git("add", str(artifact).replace("\\", "/"),
          "CHANGELOG.md",
          str(_ROOT / "data" / "easyocr_runs" / "checkpoints.fired.json"))
-    subject = (f"chore(ocr): L3 checkpoint at {percent}% "
-               f"({count}/{target} records)")
+    subject = (
+        f"chore(ocr): L3 {'complete' if percent == 100 else f'checkpoint at ' + str(percent) + '%'} "
+        f"({count}/{target} records)"
+    )
     proc = _git("commit", "-m", subject, check=False)
     if proc.returncode != 0:
         sys.stderr.write(
