@@ -1,0 +1,15 @@
+{
+  "input": "docs/research/digitalprairie/ok_pensioners.json",
+  "out": "data/cards/applications",
+  "summary": "data/cards/download_summary_applications.json",
+  "throttle": 0.25,
+  "refresh": false,
+  "limit": 0,
+  "run_name": "applications_2026-07-29",
+  "_provenance": {
+    "started": "2026-07-29",
+    "intent": "full corpus download of the original pension application tiles",
+    "smoke_run": "2026-07-29 first 100 records: 104.3s, 0 misses, 0 fails",
+    "throttle_rationale": "Digital Prairie is a static CDN with no observed rate limits; 0.25s is courtesy"
+  }
+}
