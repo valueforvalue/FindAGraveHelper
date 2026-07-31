@@ -1,0 +1,28 @@
+{
+  "enriched": "docs/research/digitalprairie/ok_pensioners.with_death_dates.json",
+  "enrichment": "data/cards/enrichment_report.json",
+  "ocr": "data/cards/red_ocr_results.json",
+  "out_json": "data/audit_death_dates_report.json",
+  "out_md": "data/audit_death_dates_report.md",
+  "strict": false,
+  "run_name": "2026-07-31_l3_postrun",
+  "_provenance": {
+    "intent": "post-L3 run audit refresh",
+    "l3_run_commits": [
+      "9e85f53 (L3 complete)",
+      "986ea2a (L3 results + sidecar refresh)"
+    ],
+    "expected_finding_categories": [
+      "OUT_OF_RANGE_YEAR",
+      "ISO_YEAR_MISMATCH",
+      "FULL_DATE_BUT_YEAR_ONLY",
+      "NO_KEYWORD_BUT_DATE",
+      "WIDOW_BUT_NO_DATE",
+      "CONFLICTING_DATES",
+      "SUSPECT_MONTH_DAY",
+      "PASS_RED_BUT_LOW_TEXT",
+      "DUPLICATE_PENSIONER_ID",
+      "NON_NUMERIC_YEAR"
+    ]
+  }
+}

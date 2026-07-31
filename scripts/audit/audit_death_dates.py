@@ -67,14 +67,29 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--strict", action="store_true",
                     help="exit 1 if any findings (for CI gating)")
+    ap.add_argument("--enriched", type=Path, default=None,
+                    help="path to ok_pensioners.with_death_dates.json "
+                         "(default: docs/research/digitalprairie/)")
+    ap.add_argument("--enrichment", type=Path, default=None,
+                    help="path to data/cards/enrichment_report.json")
+    ap.add_argument("--ocr", type=Path, default=None,
+                    help="path to data/cards/red_ocr_results.json")
+    ap.add_argument("--out-json", type=Path, default=None,
+                    help="output JSON path (default: "
+                         "data/audit_death_dates_report.json)")
+    ap.add_argument("--out-md", type=Path, default=None,
+                    help="output markdown path (default: "
+                         "data/audit_death_dates_report.md)")
     args = ap.parse_args(argv)
 
     base = _ROOT / "data"
     docs = _ROOT / "docs" / "research" / "digitalprairie"
 
-    enriched_path = docs / "ok_pensioners.with_death_dates.json"
-    enrichment_path = base / "cards" / "enrichment_report.json"
-    ocr_path = base / "cards" / "red_ocr_results.json"
+    enriched_path = args.enriched or (docs / "ok_pensioners.with_death_dates.json")
+    enrichment_path = args.enrichment or (base / "cards" / "enrichment_report.json")
+    ocr_path = args.ocr or (base / "cards" / "red_ocr_results.json")
+    out_json = args.out_json or (_ROOT / "data" / "audit_death_dates_report.json")
+    out_md = args.out_md or (_ROOT / "data" / "audit_death_dates_report.md")
 
     print(f"loading {enriched_path.name}...", file=sys.stderr)
     enriched = load_json(enriched_path)
@@ -382,8 +397,6 @@ def main(argv=None) -> int:
     }
     print(json.dumps(summary, indent=2))
 
-    out_json = _ROOT / "data" / "audit_death_dates_report.json"
-    out_md = _ROOT / "data" / "audit_death_dates_report.md"
     out_json.write_text(json.dumps({"summary": summary, "findings": findings},
                                    indent=2),
                         encoding="utf-8")
