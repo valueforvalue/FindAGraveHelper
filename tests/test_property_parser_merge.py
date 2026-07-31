@@ -59,11 +59,55 @@ def test_no_boilerplate_survives(text: str):
 )
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_normal_names_pass_through(first: str, last: str):
-    """Normal name text must not be altered by the filter."""
+    """Normal name text must not be altered by the filter.
+
+    Note: the alphabet is restricted to plain letters and the
+    test asserts each token appears in the result. As of
+    2026-07-25, _FAG_BOILERPLATE_STRS includes short tokens
+    like 'HONORING' that are also real names (e.g. memorial
+    for "HONORING John Smith"). For those cases, the filter
+    strips the tribute header correctly. This property test
+    documents the simpler case: tokens that are NOT in the
+    boilerplate list pass through.
+    """
+    
+    bp_lower = {b.lower() for b in _FAG_BOILERPLATE_STRS}
+    if first.lower() in bp_lower or last.lower() in bp_lower:
+        return
     text = f"{first} {last}"
     result = _strip_fag_boilerplate(text)
     assert first in result, f"'{first}' lost from: {result!r}"
     assert last in result, f"'{last}' lost from: {result!r}"
+
+
+@given(
+    boilerplate=st.sampled_from(
+        ["HONORING", "IN MEMORY OF", "IN LOVING MEMORY OF",
+         "IN HONOR OF", "REST IN PEACE", "Flowers have been left"]
+    ),
+    real_name=st.text(
+        min_size=2, max_size=20,
+        alphabet="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz",
+    ),
+)
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+def test_boilerplate_phrase_stripped(boilerplate: str, real_name: str):
+    """Tribute headers and FaG display noise MUST be stripped
+    by the filter (commit eec6865 added HONORING/IN MEMORY OF
+    etc.; this property documents the strip guarantee).
+    """
+    
+    bp_lower = {b.lower() for b in _FAG_BOILERPLATE_STRS}
+    if real_name.lower() in bp_lower:
+        return
+    text = f"{boilerplate} {real_name}"
+    result = _strip_fag_boilerplate(text)
+    assert boilerplate not in result, (
+        f"'{boilerplate}' survived in: {result!r}"
+    )
+    assert real_name in result, (
+        f"'{real_name}' lost when stripping '{boilerplate}': {result!r}"
+    )
 
 
 # ── Property 4: apply_location_filter always sets locationId ─
