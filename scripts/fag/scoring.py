@@ -211,6 +211,31 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
                 death_score = 0.4
             elif diff <= 5:
                 death_score = 0.2
+            elif diff <= 10:
+
+                death_score = 0.1
+            elif diff <= 20:
+
+                death_score = 0.05
+            # Issue #138: widow-specific death-year scoring.
+            # On a widow card, local_dy is the SOLDIER's death
+            # year (extracted from the pension card). The
+            # candidate IS the widow, so a candidate who died
+            # BEFORE the soldier cannot be the widow. Reward
+            # candidates whose death year is after the soldier's,
+            # with stronger signal for closer proximity.
+            if is_widow:
+                gap_after = d_cand - d_local
+                if gap_after < 0:
+                    death_score = 0.0
+                elif gap_after <= 5:
+                    death_score = max(death_score, 0.45)
+                elif gap_after <= 15:
+                    death_score = max(death_score, 0.35)
+                elif gap_after <= 40:
+                    death_score = max(death_score, 0.25)
+                elif gap_after <= 60:
+                    death_score = max(death_score, 0.15)
         except (ValueError, TypeError):
             pass
     elif is_widow and cand_dy:

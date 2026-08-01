@@ -175,6 +175,263 @@ def test_pensioner_id_lookup_filter_works():
     )
 
 
+# ============================================================
+# Issue #138 follow-up: death-year-window narrowing in scoring.
+#
+# When the local pensioner has a known death_year, candidates
+# whose death year is far from the pensioner's should be heavily
+# down-weighted (not just zeroed). This protects against the
+# common "same surname, different era" false positive (e.g. a
+# modern namesake).
+# ============================================================
+
+
+def test_death_year_window_penalises_far_off_candidates():
+    """When local_dy=1920 and cand_dy=1960 (40 years off), the
+    candidate's score should be reduced compared to a cand_dy=1920
+    exact match. The L1 ±25y window is the soft penalty band;
+    beyond that the candidate should score very low but not 0
+    (preserves name-match signal for tie-breaking)."""
+    from scripts.fag.scoring import score_candidate
+
+    base_local = {
+        "first_name": "John", "middle_name": "",
+        "last_name": "Smith", "_state_abbr": "OK",
+        "_death_year": "1920", "_is_widow": False,
+    }
+    cand_close = {
+        "name": "John Smith", "slug": "john-smith",
+        "details": {"is_veteran": True, "death_year": "1920",
+                    "birth_year": "1880", "state": "OK"},
+    }
+    cand_far = {
+        "name": "John Smith", "slug": "john-smith",
+        "details": {"is_veteran": False, "death_year": "1960",
+                    "birth_year": "1925", "state": "OK"},
+    }
+    score_close, _ = score_candidate(base_local, cand_close)
+    score_far, _ = score_candidate(base_local, cand_far)
+    assert score_close > score_far, (
+        f"close-death-year ({cand_close['details']['death_year']}) "
+        f"score {score_close:.3f} should beat far-death-year "
+        f"({cand_far['details']['death_year']}) score {score_far:.3f}"
+    )
+    
+    assert score_far < 0.3, (
+        f"far-death-year candidate scored {score_far:.3f}; "
+        f"expected <0.3 (heavy penalty beyond ±25y window)"
+    )
+
+
+def test_death_year_window_proximity_bonus_tiers():
+    """Death-year proximity bonus should follow a smooth decay
+    curve: 0y=0.5, 1-2y=0.4, 3-5y=0.2, 6-10y=0.1, 11-20y=0.05,
+    >20y=penalty. Verify the intermediate tiers."""
+    from scripts.fag.scoring import score_candidate
+
+    def _score(cand_dy: str) -> float:
+        local = {
+            "first_name": "X", "middle_name": "",
+            "last_name": "Y", "_state_abbr": "OK",
+            "_death_year": "1920", "_is_widow": False,
+        }
+        cand = {
+            "name": "X Y", "slug": "x-y",
+            "details": {"is_veteran": False, "death_year": cand_dy,
+                        "birth_year": "1880", "state": "OK"},
+        }
+        s, _ = score_candidate(local, cand)
+        return s
+
+    s0 = _score("1920")
+    s2 = _score("1922")
+    s5 = _score("1925")
+    s10 = _score("1930")
+    s20 = _score("1940")
+    s40 = _score("1960")
+    
+    assert s0 > s2 > s5 > s10 > s20 > s40, (
+        f"score should monotonically decrease with death-year "
+        f"distance: s0={s0:.3f} s2={s2:.3f} s5={s5:.3f} "
+        f"s10={s10:.3f} s20={s20:.3f} s40={s40:.3f}"
+    )
+
+
+def test_death_year_window_handles_missing_cand_year():
+    """When the candidate has no death_year but the local does,
+    the death_score should be 0 (no signal) but the name-match
+    score should be preserved (we don't penalise for missing data)."""
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "John", "middle_name": "",
+        "last_name": "Smith", "_state_abbr": "OK",
+        "_death_year": "1920", "_is_widow": False,
+    }
+    cand_no_year = {
+        "name": "John Smith", "slug": "john-smith",
+        "details": {"is_veteran": True, "state": "OK"},
+        
+    }
+    s, breakdown = score_candidate(local, cand_no_year)
+    assert s > 0.0
+    assert breakdown["death"] == 0.0
+
+
+def test_death_year_window_skipped_for_widows():
+    """On widow cards, the local death_year is the SOLDIER's
+    death, not the widow's. The candidate search is looking for
+    the widow (or the soldier). The window narrowing should be
+    softer for widows because the candidate's death year is the
+    widow's and may be 20-50 years after the soldier's."""
+    from scripts.fag.scoring import score_candidate
+
+    local_widow = {
+        "first_name": "Mary", "middle_name": "",
+        "last_name": "Smith", "_state_abbr": "OK",
+        "_death_year": "1890", "_is_widow": True,
+    }
+    
+    cand_widow_correct_era = {
+        "name": "Mary Smith", "slug": "mary-smith",
+        "details": {"is_veteran": False, "death_year": "1935",
+                    "birth_year": "1865", "state": "OK"},
+    }
+    cand_widow_too_early = {
+        "name": "Mary Smith", "slug": "mary-smith",
+        "details": {"is_veteran": False, "death_year": "1880",
+                    "birth_year": "1840", "state": "OK"},
+    }
+    s_ok, _ = score_candidate(local_widow, cand_widow_correct_era)
+    s_bad, _ = score_candidate(local_widow, cand_widow_too_early)
+    assert s_ok > s_bad, (
+        f"widow with death 45y after soldier ({cand_widow_correct_era['details']['death_year']}) "
+        f"score {s_ok:.3f} should beat widow with death 10y before "
+        f"soldier ({cand_widow_too_early['details']['death_year']}) score {s_bad:.3f}"
+    )
+
+
+def test_death_year_window_respects_acw_soft_gate():
+    """Issue #138 + J13: the death-year window narrowing must
+    compose with the existing ACW soft date gate. A candidate
+    with by=1949, dy=2020 (out of ACW window) should still be
+    heavily penalised by the ACW gate, NOT just by the
+    window-narrowing tier."""
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "John", "middle_name": "",
+        "last_name": "Smith", "_state_abbr": "OK",
+        "_death_year": "1920", "_is_widow": False,
+    }
+    cand_outside_window = {
+        "name": "John Smith", "slug": "john-smith",
+        "details": {"is_veteran": False, "death_year": "2020",
+                    "birth_year": "1949", "state": "OK"},
+    }
+    cand_in_window_close = {
+        "name": "John Smith", "slug": "john-smith",
+        "details": {"is_veteran": True, "death_year": "1925",
+                    "birth_year": "1880", "state": "OK"},
+    }
+    s_outside, b_outside = score_candidate(local, cand_outside_window)
+    s_inside, _ = score_candidate(local, cand_in_window_close)
+    assert s_outside < s_inside
+    assert b_outside.get("_date_penalty") == 1.0, (
+        f"out-of-ACW-window candidate must carry _date_penalty flag, "
+        f"got {b_outside}"
+    )
+
+
+def test_issue_138_realistic_pick():
+    """Issue #138: the new death-year tiers should pick the
+    right candidate in a realistic 4-way contest. Pensioner
+    died 1920; we have 4 same-surname candidates with
+    different death years. The 1920 candidate should win.
+
+    This is a miniature version of the issue's claim that the
+    new scoring would push era-appropriate candidates above
+    modern namesakes."""
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "William", "middle_name": "B",
+        "last_name": "Adair", "_state_abbr": "OK",
+        "_death_year": "1920", "_is_widow": False,
+    }
+    candidates = {
+        "1920_right_era": {
+            "name": "William B Adair", "slug": "william-b-adair",
+            "details": {"is_veteran": True, "death_year": "1920",
+                        "birth_year": "1875", "state": "OK"},
+        },
+        "1925_close_era": {
+            "name": "William B Adair", "slug": "william-b-adair",
+            "details": {"is_veteran": True, "death_year": "1925",
+                        "birth_year": "1880", "state": "OK"},
+        },
+        "1940_modern_namesake": {
+            "name": "William B Adair", "slug": "william-b-adair",
+            "details": {"is_veteran": False, "death_year": "1940",
+                        "birth_year": "1900", "state": "OK"},
+        },
+        "1980_far_modern": {
+            "name": "William B Adair", "slug": "william-b-adair",
+            "details": {"is_veteran": False, "death_year": "1980",
+                        "birth_year": "1950", "state": "OK"},
+        },
+    }
+    scored = sorted(
+        ((name, score_candidate(local, c)[0]) for name, c in candidates.items()),
+        key=lambda x: -x[1],
+    )
+    winner = scored[0][0]
+    assert winner == "1920_right_era", (
+        f"expected 1920 candidate to win, got {winner}. "
+        f"Top-3: {scored[:3]}"
+    )
+    
+    assert scored[0][1] - scored[2][1] > 0.1, (
+        f"top-1 should beat top-3 by >0.1 in this contest. "
+        f"Scores: {scored}"
+    )
+
+
+def test_issue_138_widow_pick_against_pretender():
+    """Issue #138 widow case: pensioner is a widow whose soldier
+    died 1893. The right FaG candidate is the widow herself
+    (died 1935). A same-name pretender who died 1880 (before
+    the soldier) should NOT win. Without the new widow-specific
+    branch, the 1880 candidate might match equally because the
+    non-widow proximity tier is 0.0-0.5 regardless of
+    pre/post-soldier direction."""
+    from scripts.fag.scoring import score_candidate
+
+    local = {
+        "first_name": "Sarah", "middle_name": "E",
+        "last_name": "Adair", "_state_abbr": "OK",
+        "_death_year": "1893", "_is_widow": True,
+    }
+    cand_widow = {
+        "name": "Sarah E Adair", "slug": "sarah-e-adair",
+        "details": {"is_veteran": False, "death_year": "1935",
+                    "birth_year": "1865", "state": "OK"},
+    }
+    cand_pretender = {
+        "name": "Sarah E Adair", "slug": "sarah-e-adair",
+        "details": {"is_veteran": False, "death_year": "1880",
+                    "birth_year": "1840", "state": "OK"},
+    }
+    s_widow, b_widow = score_candidate(local, cand_widow)
+    s_pretender, b_pretender = score_candidate(local, cand_pretender)
+    assert s_widow > s_pretender, (
+        f"widow (1935) score {s_widow:.3f} should beat "
+        f"pretender (1880) score {s_pretender:.3f}. "
+        f"death tiers: widow death_score={b_widow.get('death')} "
+        f"pretender death_score={b_pretender.get('death')}"
+    )
+
+
 def test_scoring_zeroes_pre_acw_match():
     """A candidate with death_year=1850 (pre-Civil War) must
     also score zero."""
