@@ -3,6 +3,10 @@
 #
 # What goes in:
 #   - Full git history + working tree (excluding gitignored runtime noise)
+#   - .git/                               (full git dir - history, refs,
+#                                         remote tracking, hooks, packed
+#                                         objects; ~13 MB; ships so the
+#                                         target is a true clone)
 #   - data/cards/img/                    (4.8 GB - pension card JPEGs)
 #   - data/cards/applications/           (2.1 GB - application form JPEGs)
 #   - data/cards/red_ocr_results.json    (12 MB - OCR output)
@@ -99,14 +103,20 @@ echo "HEAD $LOCAL_SHA matches origin/master."
 echo "--- creating destination ---"
 mkdir -p "$DEST"
 
+echo "--- copy .git/ (history, refs, hooks, packed objects, ~13 MB) ---"
+# checkout-index deliberately skips .git; ship the real git dir so
+# the target is a true working clone (git status/log/diff all work
+# out of the box, no `git init` + re-push needed).
+# cp -a preserves permissions, timestamps, symlinks, and keeps the
+# single pack file intact (faster than 3500+ loose objects).
+cp -a "$ROOT/.git" "$DEST/.git"
+
 echo "--- copy tracked files + tracked runtime exceptions ---"
 echo "    (this includes code, tests, docs, tracked research," 
 echo "     dixiedata.db, and run_2026_07_24_g10_stealth_swap_verification/)"
 git -C "$ROOT" checkout-index -a -f --prefix="$DEST/"
 
-# git checkout-index leaves the .git metadata behind but does NOT
-# pull the .git directory itself, so we don't ship the local history.
-# (The destination can still init its own git later with `git init`.)
+# .git/ was already copied above as a single tree.
 
 echo "--- copy data/cards/img/ (pension cards, ~4.8 GB) ---"
 if [[ -d "$ROOT/data/cards/img" ]]; then
@@ -145,4 +155,4 @@ echo
 echo "Done. Next steps on the target machine:"
 echo "  cd $DEST"
 echo "  python scripts/ingest/build_pensioncard_viewer.py    # ~1 min, 6.7 GB"
-echo "  pytest tests/                                        # ~30 sec, should be 1674 passed"
+echo "  pytest tests/                                        # ~30 sec, should be ~1,381 passed"

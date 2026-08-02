@@ -1,0 +1,22 @@
+# Dev-time / audit-only deps.
+#
+# Kept SEPARATE from runtime because:
+#   - Runtime is intentionally stdlib + a small, well-known set
+#     (see requirements-ci.txt header). EasyOCR is a ~2 GB audit
+#     tool, not part of the production search/match pipeline.
+#   - The thumbdrive copy script (scripts/copy_to_thumbdrive.sh)
+#     ships the source tree but does NOT install deps on the
+#     target. Operators who want to re-run the spot-check on the
+#     target machine `pip install -r requirements-dev.txt`.
+#   - GPU torch requires a matching CUDA driver on the host. CPU
+#     fallback works but is 10-30x slower; don't ship it as a
+#     default in CI.
+#
+# Pin upper bounds so security/bug-fix releases land automatically;
+# major bumps via PR.
+
+# GPU OCR for the death-date audit spot-check
+# (scripts/ingest/spot_check_ocr.py).
+# Pinned together: easyocr requires a specific torch + cuda range.
+torch>=2.3,<3
+easyocr>=1.7,<2
