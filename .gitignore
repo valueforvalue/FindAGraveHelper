@@ -128,3 +128,6 @@ data/pension-viewer-bundle*.zip.partial
 # Regenerable by re-running the e2e test; the bundled ground
 # truth CSV (tests/fixtures/ground_truth.csv) is committed.
 tests/fixtures/_e2e_output/
+# Re-OCR slice for #144 spot-check (regenerable from audit + sidecar)
+data/cards/ocr_reocr_slice*.json
+data/cards/ocr_reocr_slice*.json
