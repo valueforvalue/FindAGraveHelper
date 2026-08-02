@@ -212,6 +212,73 @@ def test_idempotent_re_enrich_no_changes():
         Path(tmp_path + ".summary").unlink(missing_ok=True)
 
 
+def test_easy_with_death_keyword_beats_full_without_issue_144():
+    """full_text has a FILED-style date near a 'GRANTED' stamp,
+    no death keyword in its window. easy_text has the actual
+    DECEASED stamp. Pick should be easy, not full.
+
+    Regression for Murphy, S. H. (pcid=6424): card says
+    DECEASED 1-12-1926, easyocr read it as 'DECZASED 1-10-1926',
+    but full_text OCR garbled the stamp into 'DECBASED Llelesivco'
+    and the parser fell back to the '8/9/15' FILED date. With the
+    old sort logic the full_text pick won (source-order tie-break);
+    with the fix, easy_text wins on near_death_keyword=True.
+
+    Uses the actual cached OCR text from pcid=6424 to pin the
+    real-world failure mode (synthetic well-formed text doesn't
+    reproduce it).
+    """
+    import json as _json
+    ocr_path = _ROOT / "data" / "cards" / "red_ocr_results.json"
+    ocr = _json.loads(ocr_path.read_text(encoding="utf-8", errors="replace"))
+    real = next(r for r in ocr if r.get("pensioncard_id") == 6424)
+    rec = {
+        "image": real["image"],
+        "pensioncard_id": 6424,
+        "pensioner": {"last_name": "Murphy", "name_raw": "Murphy, S. H."},
+        "soldier_name_used": "Murphy",
+        "is_widow_card": True,
+        "red_text": real.get("red_text", ""),
+        "full_text": real.get("full_text", ""),
+        "easy_text": real.get("easy_text", ""),
+        "death_date": None,
+        "source_pass": None,
+    }
+    import subprocess
+    import tempfile
+    with tempfile.NamedTemporaryFile(
+        suffix=".json", mode="w", delete=False, encoding="utf-8"
+    ) as f:
+        json.dump([rec], f)
+        tmp_path = f.name
+    try:
+        cmd = [
+            sys.executable,
+            str(_ROOT / "scripts" / "ingest" / "re_enrich_from_ocr.py"),
+            "--input", tmp_path,
+            "--output", tmp_path + ".out",
+            "--summary", tmp_path + ".summary",
+        ]
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+        assert r.returncode == 0, f"stderr: {r.stderr}"
+        out = json.loads(
+            Path(tmp_path + ".out").read_text(encoding="utf-8")
+        )
+        dd = out[0]["death_date"]
+        assert dd is not None, "parser should have picked a death date"
+        assert dd["year"] == 1926, (
+            f"expected 1926 (easy_text DECZASED stamp), got {dd['year']}"
+        )
+        assert out[0]["source_pass"] == "easyocr", (
+            f"expected source_pass=easyocr, got {out[0]['source_pass']}"
+        )
+        assert dd["near_death_keyword"] is True
+    finally:
+        Path(tmp_path).unlink(missing_ok=True)
+        Path(tmp_path + ".out").unlink(missing_ok=True)
+        Path(tmp_path + ".summary").unlink(missing_ok=True)
+
+
 def test_near_death_keyword_set_when_easy_text_has_deceased():
     """Issue #139 follow-up: when easy_text contains a death
     keyword like DECEASED and that's where the date came from,

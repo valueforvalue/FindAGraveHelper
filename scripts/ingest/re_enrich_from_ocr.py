@@ -82,6 +82,28 @@ def _annotate(chosen, src_text, soldier_name):
     has_name = bool(name_lower and name_lower in src_text.lower())
     return has_kw, has_name
 
+
+def _annotate_window(chosen, window, soldier_name):
+    """Window-scoped variant of _annotate (issue #144 fix).
+
+    ``_annotate`` scans the WHOLE source text, so a death
+    keyword anywhere in full_text (even a garbled stamp on a
+    different line) sets has_kw=True. That's fine for the
+    post-pick annotation (broad signal), but wrong for the
+    pre-sort score: a FILED-date candidate with no keyword in
+    its ±60-char window would tie with a DECEASED-stamp
+    candidate that has the keyword in-window, and the
+    source-order tie-break would pick the wrong one.
+
+    This variant checks the window only.
+    """
+    if chosen is None or not window:
+        return False, False
+    has_kw = fuzzy_death_keyword(window)
+    name_lower = soldier_name.strip().lower() if soldier_name else ""
+    has_name = bool(name_lower and name_lower in window.lower())
+    return has_kw, has_name
+
 DEFAULT_INPUT = Path("data/cards/red_ocr_results.json")
 DEFAULT_OUTPUT = Path("data/cards/red_ocr_results.json")
 DEFAULT_SUMMARY = Path("data/cards/red_ocr_summary.json")
@@ -95,6 +117,13 @@ def _score_candidate(parsed):
       - prefer near_death_keyword over not
       - prefer mentions_soldier_name over not
     Returns a sort key tuple; the caller's `min()` picks the best.
+
+    DEPRECATED as of issue #144 fix (2026-08-01): the
+    ``near_death_keyword`` and ``mentions_soldier_name`` fields
+    are never set on parser-output dicts, so kw_rank and
+    name_rank were always 1 here. Kept for callers that still
+    pass an enriched dict; new code should use
+    ``_score_annotated(parsed, has_kw, has_name)``.
     """
     if parsed is None:
         return (1, 1, 1, 1)
@@ -102,6 +131,28 @@ def _score_candidate(parsed):
     kw_rank = 0 if parsed.get("near_death_keyword") else 1
     name_rank = 0 if parsed.get("mentions_soldier_name") else 1
     return (kind_rank, kw_rank, name_rank, 0)
+
+
+def _score_annotated(parsed, has_kw: bool, has_name: bool):
+    """Sort key for pre-annotated candidates (issue #144 fix).
+
+    Same ranking as ``_score_candidate`` but takes the kw and
+    name flags as explicit args (computed upfront by the caller
+    via ``_annotate``) rather than reading them off the parser
+    output dict, where they are never set.
+
+    Tie-break by source order: red > full > easy. Source order
+    is encoded as a 4th tuple element passed by the caller; the
+    canonical way is to wrap this in a closure that adds the
+    source index. The main loop uses sorted() with a key
+    function that closes over the source index.
+    """
+    if parsed is None:
+        return (1, 1, 1, 1, 99)
+    kind_rank = 0 if parsed.get("kind") == "date" else 1
+    kw_rank = 0 if has_kw else 1
+    name_rank = 0 if has_name else 1
+    return (kind_rank, kw_rank, name_rank, 0, 99)
 
 
 def main(argv=None) -> int:
@@ -194,23 +245,53 @@ def main(argv=None) -> int:
         # (red > full > easy). This means easy_text can PROMOTE
         # a record that red/full couldn't parse, but won't
         # OVERRIDE a red/full death date that's already correct.
+        # Issue #144 fix (2026-08-01): the prior implementation
+        # sorted by (kind_rank, kw_rank, name_rank) where
+        # ``kw_rank`` always equalled 1 because the parser's
+        # candidate dict never carries a ``near_death_keyword``
+        # field — that annotation was added AFTER the sort.
+        # Result: the death-keyword tie-break was effectively
+        # inert; only source ordering decided ties. The fix
+        # computes ``near_death_keyword`` and
+        # ``mentions_soldier_name`` for each candidate BEFORE
+        # the sort, so the score actually uses those signals.
         candidates = [
-            ("red", red_parsed),
-            ("full", full_parsed),
-            ("easy", easy_parsed),
+            ("red", red_parsed, red_text, red_window),
+            ("full", full_parsed, full_text, full_window),
+            ("easy", easy_parsed, easy_text, easy_window),
         ]
-        cands = [(src, c) for src, c in candidates if c is not None]
+        cands = []
+        source_order = {"red": 0, "full": 1, "easy": 2}
+        for src, parsed, src_text, win in candidates:
+            if parsed is None:
+                continue
+            # Issue #144: use window-scoped annotation for the
+            # sort so a FILED date with no kw in its window
+            # doesn't tie with a DECEASED-stamp date that has.
+            has_kw, has_name = _annotate_window(parsed, win, soldier_name)
+            cands.append((src, parsed, has_kw, has_name, src_text))
         if cands:
-            cands.sort(key=lambda sc: _score_candidate(sc[1]))
-            chosen_src, chosen = cands[0]
-
-            
-            src_text = {
-                "red": red_text, "full": full_text, "easy": easy_text
-            }[chosen_src]
-            has_kw, has_name = _annotate(
-                chosen, src_text, soldier_name
-            )
+            # Sort by (kind, kw, name, source_order) — lower is
+            # better. Annotated kw/name flags now actually decide
+            # ties (vs. the prior inert 1/1/1/0 key that fell
+            # through to source_order alone).
+            cands.sort(key=lambda sc: (
+                0 if sc[1].get("kind") == "date" else 1,
+                0 if sc[2] else 1,
+                0 if sc[3] else 1,
+                source_order[sc[0]],
+            ))
+            chosen_src, chosen, has_kw, has_name, chosen_src_text = cands[0]
+            # Post-pick annotation stays BROAD (whole src_text)
+            # for the stored death_date record: downstream audit
+            # expects near_death_keyword to reflect the source
+            # text, not just the window. If window-scope says True,
+            # broad is also True (substring superset), so this
+            # only widens the flag, never narrows it.
+            if not has_kw:
+                has_kw, _ = _annotate(chosen, chosen_src_text, soldier_name)
+            if not has_name:
+                _, has_name = _annotate(chosen, chosen_src_text, soldier_name)
 
             new_death = {
                 "kind": chosen["kind"],

@@ -1,9 +1,9 @@
 {
   "total_pensioners": 7709,
-  "enriched": 3551,
-  "enriched_with_death_keyword": 2747,
-  "enriched_with_full_date": 2658,
-  "skipped": 4158,
+  "enriched": 3574,
+  "enriched_with_death_keyword": 2797,
+  "enriched_with_full_date": 2676,
+  "skipped": 4135,
   "changed": [
     {
       "pensioner_id": 3,
@@ -24,8 +24,8 @@
       "death_year": "1924",
       "death_date_iso": "1924-05-02",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 6,
@@ -443,7 +443,7 @@
       "death_date_iso": "1900-03-18",
       "near_death_keyword": true,
       "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 64,
@@ -575,7 +575,7 @@
       "death_date_iso": "1915-06-17",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "red"
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 89,
@@ -1136,7 +1136,7 @@
       "death_date_iso": "1881-08-31",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 180,
@@ -1469,17 +1469,6 @@
       "source_pass": "red"
     },
     {
-      "pensioner_id": 242,
-      "pensioncard_id": 8335,
-      "name_raw": "Dickey, M. A.",
-      "is_widow_card": true,
-      "death_year": "1930",
-      "death_date_iso": "1930-04-10",
-      "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
-    },
-    {
       "pensioner_id": 243,
       "pensioncard_id": 11372,
       "name_raw": "Dickinson, M. E.",
@@ -1550,11 +1539,11 @@
       "pensioncard_id": 10756,
       "name_raw": "Donnell, Mollie H.",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-06-09",
+      "death_year": "1933",
+      "death_date_iso": "1933-05-13",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 258,
@@ -1638,11 +1627,11 @@
       "pensioncard_id": 9834,
       "name_raw": "Eddleman, Bettie",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-08-31",
+      "death_year": "1919",
+      "death_date_iso": "1919-03-30",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 278,
@@ -1836,11 +1825,11 @@
       "pensioncard_id": 7696,
       "name_raw": "Folsom, Martha",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-01",
+      "death_year": "1928",
+      "death_date_iso": "1928-10-27",
       "near_death_keyword": true,
-      "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": false,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 317,
@@ -1916,8 +1905,8 @@
       "death_year": "1915",
       "death_date_iso": "1915-11-24",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 334,
@@ -2026,19 +2015,19 @@
       "death_year": "1915",
       "death_date_iso": "1915-11-12",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 359,
       "pensioncard_id": 6361,
       "name_raw": "Hall, Fannie W.",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-27",
+      "death_year": "1932",
+      "death_date_iso": "1932-09-12",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 361,
@@ -2234,9 +2223,9 @@
       "is_widow_card": false,
       "death_year": "1919",
       "death_date_iso": "1919-11-14",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 404,
@@ -2639,11 +2628,11 @@
       "pensioncard_id": 11341,
       "name_raw": "Kenemore, Sallie A.",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915",
+      "death_year": "1928",
+      "death_date_iso": "1928",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 488,
@@ -2675,8 +2664,8 @@
       "death_year": "1917",
       "death_date_iso": "1917-12-08",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 495,
@@ -2895,8 +2884,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-03-04",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 545,
@@ -3291,8 +3280,8 @@
       "death_year": "1920",
       "death_date_iso": "1920-04-17",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 644,
@@ -3321,11 +3310,11 @@
       "pensioncard_id": 6424,
       "name_raw": "Murphy, Samuel H.",
       "is_widow_card": false,
-      "death_year": "1915",
-      "death_date_iso": "1915-08-09",
+      "death_year": "1926",
+      "death_date_iso": "1926-01-10",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 650,
@@ -3343,11 +3332,11 @@
       "pensioncard_id": 8455,
       "name_raw": "Nall, W. H.",
       "is_widow_card": false,
-      "death_year": "1920",
-      "death_date_iso": "1920-04-19",
+      "death_year": "1918",
+      "death_date_iso": "1918-04-18",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 655,
@@ -3365,11 +3354,11 @@
       "pensioncard_id": 3412,
       "name_raw": "Newman, T. J.",
       "is_widow_card": false,
-      "death_year": "1910",
-      "death_date_iso": "1910-01-02",
+      "death_year": "1918",
+      "death_date_iso": "1918-01-02",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 657,
@@ -3420,11 +3409,11 @@
       "pensioncard_id": 6008,
       "name_raw": "Northcutt, Nancy C.",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-05",
+      "death_year": "1930",
+      "death_date_iso": "1930-01-23",
       "near_death_keyword": true,
       "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 663,
@@ -3533,8 +3522,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-03-03",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 686,
@@ -3829,9 +3818,9 @@
       "is_widow_card": false,
       "death_year": "1919",
       "death_date_iso": "1919-08-03",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 768,
@@ -3862,9 +3851,9 @@
       "is_widow_card": false,
       "death_year": "1919",
       "death_date_iso": "1919-01-30",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 780,
@@ -4202,10 +4191,10 @@
       "name_raw": "Surface, Jacob",
       "is_widow_card": false,
       "death_year": "1918",
-      "death_date_iso": "1918-03-09",
+      "death_date_iso": "1918-08-09",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 872,
@@ -4336,8 +4325,8 @@
       "death_year": "1920",
       "death_date_iso": "1920-04-02",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 975,
@@ -4400,10 +4389,10 @@
       "name_raw": "Beck, Mary",
       "is_widow_card": true,
       "death_year": "1915",
-      "death_date_iso": "1915-09-18",
+      "death_date_iso": "1915-09-03",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 1032,
@@ -5579,8 +5568,8 @@
       "death_year": "1916",
       "death_date_iso": "1916-12-31",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2148,
@@ -5711,8 +5700,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-07-01",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2326,
@@ -6051,6 +6040,17 @@
       "is_widow_card": false,
       "death_year": "1925",
       "death_date_iso": "1925",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
+      "pensioner_id": 2471,
+      "pensioncard_id": 9547,
+      "name_raw": "Branum, Ann",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930-12-10",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "easyocr"
@@ -6441,6 +6441,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 2547,
+      "pensioncard_id": 9873,
+      "name_raw": "Howell, Mary T.",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 2548,
       "pensioncard_id": 9451,
       "name_raw": "Hudson, Lieu",
@@ -6450,6 +6461,17 @@
       "near_death_keyword": true,
       "mentions_soldier_name": false,
       "source_pass": "red"
+    },
+    {
+      "pensioner_id": 2549,
+      "pensioncard_id": 11675,
+      "name_raw": "Huff, Kate J.",
+      "is_widow_card": true,
+      "death_year": "1935",
+      "death_date_iso": "1935-10-16",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2552,
@@ -6810,9 +6832,9 @@
       "is_widow_card": false,
       "death_year": "1916",
       "death_date_iso": "1916-06-13",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2637,
@@ -7039,11 +7061,11 @@
       "pensioncard_id": 2039,
       "name_raw": "Corntassell, Jennie",
       "is_widow_card": true,
-      "death_year": "1927",
-      "death_date_iso": "1927-03-09",
-      "near_death_keyword": false,
+      "death_year": "1936",
+      "death_date_iso": "1936-04-26",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2680,
@@ -7149,11 +7171,22 @@
       "pensioncard_id": 5985,
       "name_raw": "Dandridge, James",
       "is_widow_card": false,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-23",
-      "near_death_keyword": false,
+      "death_year": "1930",
+      "death_date_iso": "1930-03-29",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
+    },
+    {
+      "pensioner_id": 2704,
+      "pensioncard_id": 3155,
+      "name_raw": "Daniel, John M.",
+      "is_widow_card": false,
+      "death_year": "1918",
+      "death_date_iso": "1918-10-10",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2705,
@@ -7371,9 +7404,9 @@
       "is_widow_card": false,
       "death_year": "1918",
       "death_date_iso": "1918-06-10",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2747,
@@ -7457,11 +7490,11 @@
       "pensioncard_id": 2442,
       "name_raw": "Bentley, Harriet J.",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-01",
+      "death_year": "1923",
+      "death_date_iso": "1923-01-26",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 2977,
@@ -7691,8 +7724,8 @@
       "death_year": "1926",
       "death_date_iso": "1926-02-13",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3032,
@@ -8029,11 +8062,11 @@
       "pensioncard_id": 11945,
       "name_raw": "Waits, Barbe E.",
       "is_widow_card": true,
-      "death_year": "1916",
-      "death_date_iso": "1916-01-01",
-      "near_death_keyword": false,
+      "death_year": "1930",
+      "death_date_iso": "1930-02-23",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3099,
@@ -8340,8 +8373,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-05-04",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3156,
@@ -8494,8 +8527,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-02-15",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 3180,
@@ -8637,8 +8670,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-09-11",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3201,
@@ -8722,11 +8755,11 @@
       "pensioncard_id": 6454,
       "name_raw": "Hill, Joe W.",
       "is_widow_card": false,
-      "death_year": "1917",
-      "death_date_iso": "1917-03-20",
+      "death_year": "1919",
+      "death_date_iso": "1919-03-20",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3213,
@@ -8876,11 +8909,11 @@
       "pensioncard_id": 11083,
       "name_raw": "Jackson, Mrs. Axie",
       "is_widow_card": true,
-      "death_year": "1905",
-      "death_date_iso": "1905-07-03",
-      "near_death_keyword": false,
+      "death_year": "1920",
+      "death_date_iso": "1920-11-05",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3243,
@@ -8978,8 +9011,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-03-16",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3270,
@@ -9074,11 +9107,11 @@
       "pensioncard_id": 7405,
       "name_raw": "Kyler, J. T.",
       "is_widow_card": false,
-      "death_year": "1910",
-      "death_date_iso": "1910-12-11",
+      "death_year": "1917",
+      "death_date_iso": "1917-12-11",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3296,
@@ -9638,8 +9671,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-02-23",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3392,
@@ -10500,6 +10533,17 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 3558,
+      "pensioncard_id": 8812,
+      "name_raw": "Ralph, William W.",
+      "is_widow_card": false,
+      "death_year": "1933",
+      "death_date_iso": "1933-02-20",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 3559,
       "pensioncard_id": 6022,
       "name_raw": "Ramsey, Abagail G.",
@@ -10879,10 +10923,10 @@
       "name_raw": "Briley, John",
       "is_widow_card": false,
       "death_year": "1918",
-      "death_date_iso": "1918-06-13",
+      "death_date_iso": "1918-08-13",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3638,
@@ -10999,11 +11043,11 @@
       "pensioncard_id": 6351,
       "name_raw": "Burchett, Sarah",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-26",
-      "near_death_keyword": false,
+      "death_year": "1927",
+      "death_date_iso": "1927-08-08",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3659,
@@ -11376,8 +11420,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-03-10",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 3723,
@@ -11633,6 +11677,17 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 3772,
+      "pensioncard_id": 4468,
+      "name_raw": "Allen, John W.",
+      "is_widow_card": false,
+      "death_year": "1930",
+      "death_date_iso": "1930-04-18",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 3775,
       "pensioncard_id": 5186,
       "name_raw": "Armstrong, Isaac H.",
@@ -11695,8 +11750,8 @@
       "death_year": "1940",
       "death_date_iso": "1940-07-07",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 3788,
@@ -11747,11 +11802,11 @@
       "pensioncard_id": 4546,
       "name_raw": "Bacon, Queen V.",
       "is_widow_card": true,
-      "death_year": "1910",
-      "death_date_iso": "1910-02-16",
+      "death_year": "1939",
+      "death_date_iso": "1939-02-16",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 3799,
@@ -12139,6 +12194,17 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 3883,
+      "pensioncard_id": 4824,
+      "name_raw": "Blackwell, Elmore",
+      "is_widow_card": false,
+      "death_year": "1933",
+      "death_date_iso": "1933-06-23",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 3886,
       "pensioncard_id": 5160,
       "name_raw": "Blake, William G.",
@@ -12476,6 +12542,17 @@
       "death_year": "1925",
       "death_date_iso": "1925",
       "near_death_keyword": false,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
+      "pensioner_id": 3935,
+      "pensioncard_id": 5161,
+      "name_raw": "Brents, Thomas E.",
+      "is_widow_card": false,
+      "death_year": "1934",
+      "death_date_iso": "1934-12-13",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "full-fallback"
     },
@@ -12902,11 +12979,11 @@
       "pensioncard_id": 3539,
       "name_raw": "Canterberry, Georgia A.",
       "is_widow_card": true,
-      "death_year": "1923",
-      "death_date_iso": "1923-08-27",
+      "death_year": "1933",
+      "death_date_iso": "1933-10-25",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 4014,
@@ -13653,8 +13730,8 @@
       "death_year": "1940",
       "death_date_iso": "1940-06-24",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 4168,
@@ -13833,6 +13910,17 @@
       "source_pass": "easyocr"
     },
     {
+      "pensioner_id": 4200,
+      "pensioncard_id": 12714,
+      "name_raw": "Dawson, Sarah J.",
+      "is_widow_card": true,
+      "death_year": "1934",
+      "death_date_iso": "1934-08-05",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 4201,
       "pensioncard_id": 5275,
       "name_raw": "Day, Georgia",
@@ -13870,11 +13958,11 @@
       "pensioncard_id": 3491,
       "name_raw": "Denley, Lizzie",
       "is_widow_card": true,
-      "death_year": "1923",
-      "death_date_iso": "1923-08-29",
-      "near_death_keyword": false,
+      "death_year": "1931",
+      "death_date_iso": "1931-01-23",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 4207,
@@ -14346,8 +14434,8 @@
       "death_year": "1940",
       "death_date_iso": "1940-02-21",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 4289,
@@ -15083,8 +15171,8 @@
       "death_year": "1932",
       "death_date_iso": "1932-08-26",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 4526,
@@ -15190,11 +15278,11 @@
       "pensioncard_id": 9355,
       "name_raw": "Gauntt, William J.",
       "is_widow_card": false,
-      "death_year": "1929",
-      "death_date_iso": "1929-04-01",
-      "near_death_keyword": false,
+      "death_year": "1931",
+      "death_date_iso": "1931-09-19",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 4542,
@@ -15300,11 +15388,11 @@
       "pensioncard_id": 5331,
       "name_raw": "Gibson, Sarah J.",
       "is_widow_card": true,
-      "death_year": "1924",
-      "death_date_iso": "1924-10-21",
-      "near_death_keyword": false,
+      "death_year": "1928",
+      "death_date_iso": "1928-12-22",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 4558,
@@ -16286,6 +16374,17 @@
       "source_pass": "easyocr"
     },
     {
+      "pensioner_id": 4767,
+      "pensioncard_id": 12855,
+      "name_raw": "Hill, Martha",
+      "is_widow_card": true,
+      "death_year": "1933",
+      "death_date_iso": "1933-07-14",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 4768,
       "pensioncard_id": 5294,
       "name_raw": "Henson, Susan J.",
@@ -16820,6 +16919,17 @@
       "is_widow_card": true,
       "death_year": "1940",
       "death_date_iso": "1940-08-29",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
+      "pensioner_id": 4889,
+      "pensioncard_id": 4064,
+      "name_raw": "Johnson, Minnie I.",
+      "is_widow_card": false,
+      "death_year": "1931",
+      "death_date_iso": "1931-11-04",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "full-fallback"
@@ -18977,8 +19087,8 @@
       "death_year": "1925",
       "death_date_iso": "1925-10-27",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5302,
@@ -19443,6 +19553,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 5393,
+      "pensioncard_id": 2881,
+      "name_raw": "Peavy, Ella",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930-04-18",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 5394,
       "pensioncard_id": 4146,
       "name_raw": "Peck, Elizabeth",
@@ -19513,22 +19634,22 @@
       "pensioncard_id": 12204,
       "name_raw": "Peringer, Amanda",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-09-08",
+      "death_year": "1921",
+      "death_date_iso": "1921-07-22",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5406,
       "pensioncard_id": 8026,
       "name_raw": "Payne, Mary V.",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-07-11",
+      "death_year": "1929",
+      "death_date_iso": "1929-04-27",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5407,
@@ -20268,6 +20389,17 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 5533,
+      "pensioncard_id": 10101,
+      "name_raw": "Roberts, Frances C.",
+      "is_widow_card": true,
+      "death_year": "1935",
+      "death_date_iso": "1935-08-19",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 5534,
       "pensioncard_id": 12818,
       "name_raw": "Roberts, George W.",
@@ -20779,10 +20911,10 @@
       "name_raw": "Serner, Zack T.",
       "is_widow_card": false,
       "death_year": "1919",
-      "death_date_iso": "1919-05-20",
+      "death_date_iso": "1919-05-30",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5628,
@@ -20928,6 +21060,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 5654,
+      "pensioncard_id": 5233,
+      "name_raw": "Shoemake, Cyrena P.",
+      "is_widow_card": true,
+      "death_year": "1934",
+      "death_date_iso": "1934-07-20",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 5657,
       "pensioncard_id": 2849,
       "name_raw": "Sheets, Martha E.",
@@ -20983,6 +21126,17 @@
       "source_pass": "easyocr"
     },
     {
+      "pensioner_id": 5665,
+      "pensioncard_id": 4095,
+      "name_raw": "Simon, Margaret A.",
+      "is_widow_card": true,
+      "death_year": "1932",
+      "death_date_iso": "1932-11-16",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 5666,
       "pensioncard_id": 2336,
       "name_raw": "Simpson, Susan L.",
@@ -21009,11 +21163,11 @@
       "pensioncard_id": 3782,
       "name_raw": "Sipe, Mary",
       "is_widow_card": true,
-      "death_year": "1917",
-      "death_date_iso": "1917-09-13",
-      "near_death_keyword": false,
+      "death_year": "1936",
+      "death_date_iso": "1936-02-11",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5673,
@@ -21681,10 +21835,10 @@
       "name_raw": "Stripling, J. W. G.",
       "is_widow_card": false,
       "death_year": "1926",
-      "death_date_iso": "1926-01-05",
+      "death_date_iso": "1926-01-03",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5786,
@@ -21911,11 +22065,11 @@
       "pensioncard_id": 3853,
       "name_raw": "Tate, Elizabeth J.",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-10-01",
+      "death_year": "1936",
+      "death_date_iso": "1936-11-26",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 5832,
@@ -22043,11 +22197,11 @@
       "pensioncard_id": 5259,
       "name_raw": "Thompson, John W.",
       "is_widow_card": false,
-      "death_year": "1919",
-      "death_date_iso": "1919-10-17",
+      "death_year": "1920",
+      "death_date_iso": "1920-10-17",
       "near_death_keyword": true,
       "mentions_soldier_name": false,
-      "source_pass": "red"
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 5859,
@@ -22538,11 +22692,11 @@
       "pensioncard_id": 6278,
       "name_raw": "Vowel, Harriett",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-06-18",
-      "near_death_keyword": false,
+      "death_year": "1928",
+      "death_date_iso": "1928-04-26",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 5956,
@@ -22563,8 +22717,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-02-05",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 5959,
@@ -23707,8 +23861,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-06-19",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 6165,
@@ -23880,11 +24034,11 @@
       "pensioncard_id": 12551,
       "name_raw": "Bearden, Mary J",
       "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-12-26",
-      "near_death_keyword": false,
+      "death_year": "1929",
+      "death_date_iso": "1929-02-27",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6189,
@@ -25075,17 +25229,6 @@
       "source_pass": "easyocr"
     },
     {
-      "pensioner_id": 6389,
-      "pensioncard_id": 7285,
-      "name_raw": "Grigsby, Linnie",
-      "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-03-20",
-      "near_death_keyword": false,
-      "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
-    },
-    {
       "pensioner_id": 6391,
       "pensioncard_id": 3253,
       "name_raw": "Grisson, William T",
@@ -25343,11 +25486,11 @@
       "pensioncard_id": 7306,
       "name_raw": "Hartwell, Edward N",
       "is_widow_card": false,
-      "death_year": "1919",
-      "death_date_iso": "1919-07-01",
+      "death_year": "1926",
+      "death_date_iso": "1926-03-10",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6432,
@@ -26116,8 +26259,8 @@
       "death_year": "1917",
       "death_date_iso": "1917-10-31",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6557,
@@ -26520,11 +26663,11 @@
       "pensioncard_id": 12381,
       "name_raw": "Maddox, Lizzie E",
       "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-08-09",
+      "death_year": "1931",
+      "death_date_iso": "1931-01-18",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6633,
@@ -26736,6 +26879,28 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 6658,
+      "pensioncard_id": 3464,
+      "name_raw": "Pool, Mary L.",
+      "is_widow_card": true,
+      "death_year": "1928",
+      "death_date_iso": "1928-05-22",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
+      "pensioner_id": 6659,
+      "pensioncard_id": 3435,
+      "name_raw": "McDonnell, Elizabeth",
+      "is_widow_card": true,
+      "death_year": "1935",
+      "death_date_iso": "1935-07-18",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 6662,
       "pensioncard_id": 2199,
       "name_raw": "McMullen, Frances E",
@@ -26754,8 +26919,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-03-12",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6667,
@@ -27136,11 +27301,11 @@
       "pensioncard_id": 6014,
       "name_raw": "Pack, Arminta",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-06-22",
+      "death_year": "1935",
+      "death_date_iso": "1935-03-25",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6738,
@@ -27169,11 +27334,11 @@
       "pensioncard_id": 3458,
       "name_raw": "Pennington, A. L.",
       "is_widow_card": false,
-      "death_year": "1916",
-      "death_date_iso": "1916",
+      "death_year": "1927",
+      "death_date_iso": "1927",
       "near_death_keyword": true,
       "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6763,
@@ -27191,11 +27356,11 @@
       "pensioncard_id": 8518,
       "name_raw": "Parker, Ella",
       "is_widow_card": true,
-      "death_year": "1930",
-      "death_date_iso": "1930-07-17",
-      "near_death_keyword": false,
+      "death_year": "1915",
+      "death_date_iso": "1915-08-17",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6774,
@@ -27491,8 +27656,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-11-09",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6891,
@@ -27623,8 +27788,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-03-13",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6905,
@@ -28085,8 +28250,8 @@
       "death_year": "1922",
       "death_date_iso": "1922-11-27",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 6989,
@@ -28291,11 +28456,11 @@
       "pensioncard_id": 6658,
       "name_raw": "Smith, Mary F",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-08-09",
+      "death_year": "1914",
+      "death_date_iso": "1914-10-18",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7021,
@@ -28324,11 +28489,11 @@
       "pensioncard_id": 1773,
       "name_raw": "Smith, Sarah P",
       "is_widow_card": true,
-      "death_year": "1918",
-      "death_date_iso": "1918-12-20",
-      "near_death_keyword": false,
+      "death_year": "1928",
+      "death_date_iso": "1928-03-30",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7025,
@@ -28701,8 +28866,8 @@
       "death_year": "1925",
       "death_date_iso": "1925-12-20",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7073,
@@ -28749,6 +28914,28 @@
       "source_pass": null
     },
     {
+      "pensioner_id": 7082,
+      "pensioncard_id": 3531,
+      "name_raw": "Thomason, Melvina L",
+      "is_widow_card": true,
+      "death_year": "1931",
+      "death_date_iso": "1931",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
+      "pensioner_id": 7083,
+      "pensioncard_id": 2823,
+      "name_raw": "Thomason, William W",
+      "is_widow_card": false,
+      "death_year": "1935",
+      "death_date_iso": "1935-03-20",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 7085,
       "pensioncard_id": 6205,
       "name_raw": "Thompson, Allen C",
@@ -28756,8 +28943,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-03-02",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7088,
@@ -28837,6 +29024,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 7100,
+      "pensioncard_id": 2983,
+      "name_raw": "Trippe, Susan C.",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
       "pensioner_id": 7101,
       "pensioncard_id": 12498,
       "name_raw": "Trotter, Sallie F",
@@ -28857,6 +29055,17 @@
       "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "full-fallback"
+    },
+    {
+      "pensioner_id": 7105,
+      "pensioncard_id": 10591,
+      "name_raw": "Turner, Alice C",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930-02-16",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7109,
@@ -29006,11 +29215,11 @@
       "pensioncard_id": 3597,
       "name_raw": "Walker, John T",
       "is_widow_card": false,
-      "death_year": "1926",
-      "death_date_iso": "1926-04-08",
+      "death_year": "1928",
+      "death_date_iso": "1928-04-08",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7128,
@@ -29255,6 +29464,17 @@
       "source_pass": "full-fallback"
     },
     {
+      "pensioner_id": 7178,
+      "pensioncard_id": 2709,
+      "name_raw": "Willis, Louisa S",
+      "is_widow_card": true,
+      "death_year": "1919",
+      "death_date_iso": "1919-03-28",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 7179,
       "pensioncard_id": 12500,
       "name_raw": "Willis, Nancy E",
@@ -29369,22 +29589,22 @@
       "pensioncard_id": 1782,
       "name_raw": "Wilson, Elliott K",
       "is_widow_card": false,
-      "death_year": "1919",
-      "death_date_iso": "1919-07-01",
+      "death_year": "1920",
+      "death_date_iso": "1920-04-02",
       "near_death_keyword": true,
-      "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": false,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7204,
       "pensioncard_id": 12497,
       "name_raw": "Wooton, Sarah C",
       "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-12-11",
+      "death_year": "1932",
+      "death_date_iso": "1932-08-12",
       "near_death_keyword": true,
       "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7208,
@@ -29550,6 +29770,17 @@
       "near_death_keyword": true,
       "mentions_soldier_name": false,
       "source_pass": "full-fallback"
+    },
+    {
+      "pensioner_id": 7228,
+      "pensioncard_id": 12527,
+      "name_raw": "Brown, Priscilla J",
+      "is_widow_card": true,
+      "death_year": "1930",
+      "death_date_iso": "1930",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7231,
@@ -29779,6 +30010,17 @@
       "death_year": "1922",
       "death_date_iso": "1922-02-20",
       "near_death_keyword": false,
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
+    },
+    {
+      "pensioner_id": 7270,
+      "pensioncard_id": 12478,
+      "name_raw": "Killingsworth, Mary D",
+      "is_widow_card": true,
+      "death_year": "1931",
+      "death_date_iso": "1931-08-22",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "easyocr"
     },
@@ -30142,8 +30384,8 @@
       "death_year": "1926",
       "death_date_iso": "1926-01-03",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7336,
@@ -30678,11 +30920,11 @@
       "pensioncard_id": 12473,
       "name_raw": "Smith, Mary L",
       "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-12-23",
-      "near_death_keyword": false,
+      "death_year": "1932",
+      "death_date_iso": "1932-06-13",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7418,
@@ -30890,8 +31132,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-02-19",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7447,
@@ -30942,11 +31184,11 @@
       "pensioncard_id": 12113,
       "name_raw": "Carlisle, William H",
       "is_widow_card": false,
-      "death_year": "1928",
-      "death_date_iso": "1928-10-22",
+      "death_year": "1922",
+      "death_date_iso": "1922-10-22",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7458,
@@ -31316,11 +31558,11 @@
       "pensioncard_id": 2063,
       "name_raw": "Biggs,  Mrs. M. E.",
       "is_widow_card": true,
-      "death_year": "1921",
-      "death_date_iso": "1921-07-02",
-      "near_death_keyword": false,
+      "death_year": "1928",
+      "death_date_iso": "1928-08-17",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7524,
@@ -31631,6 +31873,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 7566,
+      "pensioncard_id": 5241,
+      "name_raw": "Dye, Callie S.",
+      "is_widow_card": true,
+      "death_year": "1882",
+      "death_date_iso": "1882",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 7568,
       "pensioncard_id": 4517,
       "name_raw": "Farris, Alvin",
@@ -31789,11 +32042,11 @@
       "pensioncard_id": 2289,
       "name_raw": "Fielder, Nancy E",
       "is_widow_card": true,
-      "death_year": "1921",
-      "death_date_iso": "1921-03-07",
-      "near_death_keyword": false,
+      "death_year": "1929",
+      "death_date_iso": "1929-01-26",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7595,
@@ -32636,22 +32889,22 @@
       "pensioncard_id": 5564,
       "name_raw": "Pierson, Azlee E",
       "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-03-21",
-      "near_death_keyword": false,
+      "death_year": "1927",
+      "death_date_iso": "1927-07-11",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 7728,
       "pensioncard_id": 12138,
       "name_raw": "Poindexter, Amanda",
       "is_widow_card": true,
-      "death_year": "1915",
-      "death_date_iso": "1915-02-29",
+      "death_year": "1928",
+      "death_date_iso": "1928-02-29",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 7730,
@@ -32698,6 +32951,17 @@
       "source_pass": "red"
     },
     {
+      "pensioner_id": 7735,
+      "pensioncard_id": 8551,
+      "name_raw": "Patterson, Rebecca T",
+      "is_widow_card": true,
+      "death_year": "1926",
+      "death_date_iso": "1926-12-07",
+      "near_death_keyword": true,
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
+    },
+    {
       "pensioner_id": 7737,
       "pensioncard_id": 5557,
       "name_raw": "Read, Ola",
@@ -32718,17 +32982,6 @@
       "near_death_keyword": true,
       "mentions_soldier_name": true,
       "source_pass": "easyocr"
-    },
-    {
-      "pensioner_id": 7740,
-      "pensioncard_id": 5478,
-      "name_raw": "Piercy, Ada",
-      "is_widow_card": true,
-      "death_year": "1922",
-      "death_date_iso": "1922-09-13",
-      "near_death_keyword": true,
-      "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 7742,
@@ -33428,11 +33681,11 @@
       "pensioncard_id": 9118,
       "name_raw": "Jackson, John",
       "is_widow_card": false,
-      "death_year": "1922",
-      "death_date_iso": "1922-02-25",
+      "death_year": "1923",
+      "death_date_iso": "1923-02-25",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8115,
@@ -33824,11 +34077,11 @@
       "pensioncard_id": 12247,
       "name_raw": "Strode, Sarah E",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-07-01",
+      "death_year": "1929",
+      "death_date_iso": "1929-07-15",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8182,
@@ -35070,8 +35323,8 @@
       "death_year": "1923",
       "death_date_iso": "1923-06-28",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 8364,
@@ -35353,11 +35606,11 @@
       "pensioncard_id": 10705,
       "name_raw": "Wells, Mary V",
       "is_widow_card": true,
-      "death_year": "1920",
-      "death_date_iso": "1920-04-14",
+      "death_year": "1939",
+      "death_date_iso": "1939-02-22",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8407,
@@ -35411,8 +35664,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-02-04",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "full-fallback"
     },
     {
       "pensioner_id": 8417,
@@ -35430,11 +35683,11 @@
       "pensioncard_id": 6416,
       "name_raw": "White,  Mrs. M. E.",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-01-30",
+      "death_year": "1918",
+      "death_date_iso": "1918-01-30",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8419,
@@ -35606,11 +35859,11 @@
       "pensioncard_id": 6364,
       "name_raw": "Wilson, J. J.",
       "is_widow_card": false,
-      "death_year": "1910",
-      "death_date_iso": "1910-02-01",
+      "death_year": "1918",
+      "death_date_iso": "1918-09-01",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8447,
@@ -35751,9 +36004,9 @@
       "is_widow_card": false,
       "death_year": "1925",
       "death_date_iso": "1925-12-16",
-      "near_death_keyword": false,
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8476,
@@ -36981,11 +37234,11 @@
       "pensioncard_id": 1724,
       "name_raw": "Bennett, James H",
       "is_widow_card": false,
-      "death_year": "1915",
-      "death_date_iso": "1915-07-30",
+      "death_year": "1918",
+      "death_date_iso": "1918-02-19",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8698,
@@ -37113,11 +37366,11 @@
       "pensioncard_id": 3199,
       "name_raw": "Driver, William C",
       "is_widow_card": false,
-      "death_year": "1928",
-      "death_date_iso": "1928-05-11",
+      "death_year": "1930",
+      "death_date_iso": "1930-01-13",
       "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8722,
@@ -37215,8 +37468,8 @@
       "death_year": "1919",
       "death_date_iso": "1919-06-30",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8742,
@@ -37300,11 +37553,11 @@
       "pensioncard_id": 5803,
       "name_raw": "Lowery, Nancy E",
       "is_widow_card": true,
-      "death_year": "1919",
-      "death_date_iso": "1919-10-29",
-      "near_death_keyword": false,
+      "death_year": "1931",
+      "death_date_iso": "1931-03-16",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8759,
@@ -37499,10 +37752,10 @@
       "name_raw": "Simpson, William T.",
       "is_widow_card": false,
       "death_year": "1923",
-      "death_date_iso": "1923-01-26",
+      "death_date_iso": "1923-01-28",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8793,
@@ -37598,10 +37851,10 @@
       "name_raw": "Turner, Sarah M",
       "is_widow_card": true,
       "death_year": "1919",
-      "death_date_iso": "1919-10-01",
-      "near_death_keyword": false,
+      "death_date_iso": "1919-12-19",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8805,
@@ -38180,11 +38433,11 @@
       "pensioncard_id": 1820,
       "name_raw": "Shumate, James P.",
       "is_widow_card": false,
-      "death_year": "1919",
-      "death_date_iso": "1919-07-01",
+      "death_year": "1931",
+      "death_date_iso": "1931-01-17",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8915,
@@ -38392,19 +38645,19 @@
       "death_year": "1926",
       "death_date_iso": "1926-01-08",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8947,
       "pensioncard_id": 9987,
       "name_raw": "Chastaine, Elizabeth B.",
       "is_widow_card": true,
-      "death_year": "1917",
-      "death_date_iso": "1917-07-02",
-      "near_death_keyword": false,
+      "death_year": "1928",
+      "death_date_iso": "1928-02-19",
+      "near_death_keyword": true,
       "mentions_soldier_name": true,
-      "source_pass": "full-fallback"
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 8953,
@@ -38876,8 +39129,8 @@
       "death_year": "1921",
       "death_date_iso": "1921-06-26",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "full-fallback"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 9283,
@@ -38997,8 +39250,8 @@
       "death_year": "1918",
       "death_date_iso": "1918-07-03",
       "near_death_keyword": true,
-      "mentions_soldier_name": false,
-      "source_pass": "red"
+      "mentions_soldier_name": true,
+      "source_pass": "easyocr"
     },
     {
       "pensioner_id": 9308,
