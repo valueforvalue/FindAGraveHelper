@@ -40,8 +40,10 @@ def test_year_range_includes_post_1940_widow_deaths():
     )
 
 
-def test_year_range_lower_bound_still_1865():
-    assert pilot.MIN_YEAR == 1865
+def test_year_range_lower_bound_is_1860():
+    # Issue #144: lowered from 1865 to 1860 to catch Civil War
+    # death dates on widow cards (soldiers who died 1860-1864).
+    assert pilot.MIN_YEAR == 1860
 
 
 # ---------------------------------------------------------------------
@@ -835,3 +837,47 @@ def test_find_death_date_keeps_deceased_after_entered_home():
     assert parsed["year"] == 1935, (
         f"expected 1935 (Deceased date), got {parsed['year']}"
     )
+
+
+# ---------------------------------------------------------------------------
+# Issue #144: H6 fallback — stamp present but parser missed the date
+# ---------------------------------------------------------------------------
+
+def test_find_death_date_fallback_finds_year_near_keyword_issue_144():
+    """When the parser's strict date regex fails but a death
+    keyword is present with a 4-digit year nearby, fall back to
+    a year-only extraction near the keyword.
+
+    Regression for Williford, H. C. (pcid=6319): card says
+    'DECEASED January 1, 1940' but easyocr produced garbled
+    text that the strict regex missed. The year 1940 is near
+    the keyword 'DECEASED' — a relaxed scan should find it.
+    """
+    # Simulate the garbled OCR: keyword present, year present,
+    # but no parseable M-D-Y or Y-M-D pattern.
+    text = "DECEASED Janury 1 1940 Name Williford H C"
+    parsed, _ = pilot.find_death_date(text, "Williford")
+    assert parsed is not None, (
+        "fallback should find year 1940 near DECEASED keyword"
+    )
+    assert parsed["year"] == 1940
+
+
+def test_find_death_date_fallback_picks_closest_year_to_keyword():
+    """When multiple years are near the keyword, the fallback
+    should pick the closest one."""
+    text = "DECEASED 1940 some garbage 1915 GRANTED"
+    parsed, _ = pilot.find_death_date(text, "Smith")
+    assert parsed is not None
+    assert parsed["year"] == 1940, (
+        f"expected 1940 (closest to DECEASED), got {parsed['year']}"
+    )
+
+
+def test_find_death_date_fallback_no_year_returns_none():
+    """When a death keyword is present but NO year is nearby,
+    the fallback should still return None."""
+    text = "DECEASED Name Smith John Address Tulsa"
+    parsed, _ = pilot.find_death_date(text, "Smith")
+    # No year in text at all → None is correct
+    assert parsed is None or parsed.get("year") is None

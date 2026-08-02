@@ -53,7 +53,7 @@ DEFAULT_SUMMARY = Path("data/cards/red_ocr_summary.json")
 # dates in the 1941-1955 range (e.g. Bond, Julia E. died 1942).
 # Anything above 1955 is still almost certainly OCR noise (page
 # numbers, regiment years, "By letter dated 19XX" stamps).
-MIN_YEAR = 1865
+MIN_YEAR = 1860
 MAX_YEAR = 1955
 
 # Precision filters (see docs/learnings/2026-07-28-red-ink-ocr-pilot.md).
@@ -85,6 +85,8 @@ MARRIED_RE = re.compile(
 ENTERED_HOME_RE = re.compile(
     r"(?i)\b(entered\s+(?:the\s+)?home|ent(?:d|ered)\s+home)\b"
 )
+# Issue #144 (2026-08-01): enlistment anti-keyword.
+ENLISTED_RE = re.compile(r"(?i)\benlist\w*\b")
 # L3 follow-up (2026-07-29): address-change anti-keywords. A
 # date within ±60 chars of any of these phrases is an
 # address-change date, not a death. The inline filters in
@@ -146,6 +148,10 @@ LINE_STRIP_PATTERNS = [
     # correspondence) are NOT death markers.
     re.compile(r"(?i)\b(?:^|\s)(?:a/?c|gc|oy|qc|aw)\s+[\d/.\-]+"),
     re.compile(r"(?i)\b(?:paroled|surrendered|citronelle|appomattox)\b"),
+    # Issue #144 (2026-08-01): enlistment dates. 'Enlisted May 5th
+    # 1862' is the enlistment date, NOT a death date. Common on
+    # widow cards that record the soldier's service history.
+    re.compile(r"(?i)\benlist\w*\b"),
 ]
 
 
@@ -314,6 +320,17 @@ DATE_PATTERNS = [
     # 19xx (all pensioners died after 1900 in practice).
     (re.compile(r"\b(\d{1,2})[-/](\d{1,2})[-/](\d{2})\b"),
      lambda m: _try_2digit_date(int(m.group(3)), int(m.group(1)), int(m.group(2)))),
+    # Issue #144 (2026-08-01): Month YYYY without day. Widow
+    # cards often record the soldier's death as 'he died June
+    # 1863' (Civil War deaths have no exact day on the card).
+    # Year-only kind but month is preserved for scoring.
+    (re.compile(
+        r"\b(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\.,]?\s+"
+        r"(\d{4})\b", re.I),
+     lambda m: (
+         "year-only", int(m.group(2)), _month_to_int(m.group(1)),
+         None, str(int(m.group(2)))
+     ) if MIN_YEAR <= int(m.group(2)) <= MAX_YEAR else None),
     # bare 4-digit year (last-resort; only valid near a death keyword)
     (re.compile(r"\b(\d{4})\b"),
      lambda m: _try_year_only(int(m.group(1)))),
@@ -655,6 +672,13 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
             ) if keyword_spans else False
             if eh_before and (kw_after or not has_kw_in_window):
                 continue
+        # Issue #144 (2026-08-01): enlistment anti-keyword. With
+        # MIN_YEAR lowered to 1860, Civil War enlistment dates
+        # like 'enlisted May 5th 1862' become parseable. Reject
+        # them the same way as CAME_TO / MARRIED: only when no
+        # death keyword is in the immediate window.
+        if ENLISTED_RE.search(window) and not has_kw_in_window:
+            continue
         # L2 (2026-07-29) additional filters. When NO death
         # keyword is anywhere in the text, the year 1915 is
         # overwhelmingly the GRANTED stamp year (every card has

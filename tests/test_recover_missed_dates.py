@@ -150,10 +150,13 @@ def test_keyword_nearby_boosts_confidence():
 
 # ---- 4. Year range boundary ------------------------------------------
 
-def test_pre_1865_year_rejected():
-    cands = recover.extract_candidates("Deceased 4-14-1860")
-    assert not any(c.year and c.year < 1865 for c in cands), (
-        "pre-1865 years (Civil War start) must be rejected"
+def test_pre_1860_year_rejected():
+    # Issue #144: MIN_YEAR lowered from 1865 to 1860 to catch
+    # Civil War death dates. Pre-1860 years (birth, marriage)
+    # must still be rejected.
+    cands = recover.extract_candidates("Deceased 4-14-1859")
+    assert not any(c.year and c.year < 1860 for c in cands), (
+        "pre-1860 years must be rejected"
     )
 
 

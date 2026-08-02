@@ -58,7 +58,7 @@ DEFAULT_OUT_JSON = Path(
 )
 DEFAULT_REPORT = Path("data/cards/enrichment_report.json")
 
-MIN_YEAR = 1865
+MIN_YEAR = 1860  # Issue #144: lowered from 1865 to catch Civil War deaths
 MAX_YEAR = 1940
 
 
