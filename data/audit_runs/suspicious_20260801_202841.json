@@ -1,0 +1,1066 @@
+{
+  "counts": {
+    "FILE_DATE_TOO_FAR": 1,
+    "GRANTED_PICK": 77,
+    "MULTI_CANDIDATE": 31,
+    "NUMERIC_SUBSTITUTION": 1,
+    "EMPTY_BUT_STAMP_PRESENT": 5
+  },
+  "findings": [
+    {
+      "pensioner_id": 3,
+      "pensioncard_id": 98,
+      "name_raw": "Adair, R. W.",
+      "is_widow": false,
+      "cached_death_year": "1893",
+      "cached_death_date_iso": "1893",
+      "flags": [
+        {
+          "tag": "FILE_DATE_TOO_FAR",
+          "confidence": "medium",
+          "note": "claimed 1893 but filed_year≈1915; gap 22y > 6y threshold"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 219 with year 1915 in window; cached=1893"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 228 with year 1915 in window; cached=1893"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 985 with year 1916 in window; cached=1893"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 994 with year 1916 in window; cached=1893"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1893 but parser also surfaced 1927; competing candidates: [1863, 1927]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 5,
+      "pensioncard_id": 2377,
+      "name_raw": "Akers, Hugh H.",
+      "is_widow": true,
+      "cached_death_year": "1924",
+      "cached_death_date_iso": "1924-05-02",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 255 with year 1915 in window; cached=1924"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 730 with year 1915 in window; cached=1924"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 739 with year 1915 in window; cached=1924"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 9,
+      "pensioncard_id": 2418,
+      "name_raw": "Alexander, W. A.",
+      "is_widow": false,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915-02-06",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 272 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 282 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1915 but parser also surfaced 1930; competing candidates: [1930]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 11,
+      "pensioncard_id": 1063,
+      "name_raw": "Adams, Sarah E.",
+      "is_widow": true,
+      "cached_death_year": "1896",
+      "cached_death_date_iso": "1896-09-10",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 335 with year 1915 in window; cached=1896"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 346 with year 1915 in window; cached=1896"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 943 with year 1915 in window; cached=1896"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 952 with year 1915 in window; cached=1896"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1896 but parser also surfaced 1872; competing candidates: [1872, 1927]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 13,
+      "pensioncard_id": 2391,
+      "name_raw": "Adkisson, Thomas Y.",
+      "is_widow": false,
+      "cached_death_year": "1916",
+      "cached_death_date_iso": "1916",
+      "flags": [
+        {
+          "tag": "NUMERIC_SUBSTITUTION",
+          "confidence": "high",
+          "note": "cached 1916 has ±1 variant 1915 with death keyword nearby; OCR likely misread digit"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 280 with year 1915 in window; cached=1916"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 289 with year 1915 in window; cached=1916"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 883 with year 1916 in window; cached=1916"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 892 with year 1916 in window; cached=1916"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1916 but parser also surfaced 1915; competing candidates: [1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 14,
+      "pensioncard_id": 2374,
+      "name_raw": "Aker, Johnson B.",
+      "is_widow": false,
+      "cached_death_year": "1925",
+      "cached_death_date_iso": "1925",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 253 with year 1915 in window; cached=1925"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 262 with year 1915 in window; cached=1925"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 1004 with year 1915 in window; cached=1925"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 1013 with year 1915 in window; cached=1925"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1925 but parser also surfaced 1865; competing candidates: [1865]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 17,
+      "pensioncard_id": 11194,
+      "name_raw": "Allen, Tabitha",
+      "is_widow": true,
+      "cached_death_year": "1867",
+      "cached_death_date_iso": "1867",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 318 with year 1915 in window; cached=1867"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 327 with year 1915 in window; cached=1867"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 687 with year 1915 in window; cached=1867"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 696 with year 1915 in window; cached=1867"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1867 but parser also surfaced 1915; competing candidates: [1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 23,
+      "pensioncard_id": 1084,
+      "name_raw": "Anderson, W. C. Sr.",
+      "is_widow": false,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 734 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 743 with year 1915 in window; cached=1915"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 26,
+      "pensioncard_id": 1093,
+      "name_raw": "Andrews, Robert W.",
+      "is_widow": false,
+      "cached_death_year": "1935",
+      "cached_death_date_iso": "1935-04-11",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 315 with year 1915 in window; cached=1935"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 30,
+      "pensioncard_id": 8641,
+      "name_raw": "Asbill, J. H.",
+      "is_widow": false,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915-08-19",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 296 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 927 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 936 with year 1915 in window; cached=1915"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 36,
+      "pensioncard_id": 1171,
+      "name_raw": "Avery, C. M.",
+      "is_widow": false,
+      "cached_death_year": "1919",
+      "cached_death_date_iso": "1919",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 262 with year 1915 in window; cached=1919"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 37,
+      "pensioncard_id": 1177,
+      "name_raw": "Ayres, Addie",
+      "is_widow": true,
+      "cached_death_year": "1913",
+      "cached_death_date_iso": "1913-11-25",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 210 with year 1915 in window; cached=1913"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 219 with year 1915 in window; cached=1913"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 795 with year 1915 in window; cached=1913"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 804 with year 1915 in window; cached=1913"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1913 but parser also surfaced 1872; competing candidates: [1872, 1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 38,
+      "pensioncard_id": 11299,
+      "name_raw": "Bagwell, Mary E.",
+      "is_widow": true,
+      "cached_death_year": "1902",
+      "cached_death_date_iso": "1902-06-05",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 778 with year 1915 in window; cached=1902"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1902 but parser also surfaced 1915; competing candidates: [1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 39,
+      "pensioncard_id": 1180,
+      "name_raw": "Bailey, G. T.",
+      "is_widow": false,
+      "cached_death_year": "1919",
+      "cached_death_date_iso": "1919-12-11",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1919 but parser also surfaced 1865; competing candidates: [1865]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 40,
+      "pensioncard_id": 1183,
+      "name_raw": "Bailey, Lewis Jasper",
+      "is_widow": true,
+      "cached_death_year": "1925",
+      "cached_death_date_iso": "1925-01-26",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 951 with year 1910 in window; cached=1925"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 960 with year 1910 in window; cached=1925"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 41,
+      "pensioncard_id": 1186,
+      "name_raw": "Bailey, Rachel H.",
+      "is_widow": true,
+      "cached_death_year": "1897",
+      "cached_death_date_iso": "1897",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 935 with year 1915 in window; cached=1897"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 944 with year 1915 in window; cached=1897"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1897 but parser also surfaced 1906; competing candidates: [1862, 1869, 1906]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 42,
+      "pensioncard_id": 1189,
+      "name_raw": "Bailey, Sarah J.",
+      "is_widow": true,
+      "cached_death_year": "1892",
+      "cached_death_date_iso": "1892-03-25",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 876 with year 1915 in window; cached=1892"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 885 with year 1915 in window; cached=1892"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1892 but parser also surfaced 1865; competing candidates: [1863, 1865]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 44,
+      "pensioncard_id": 12077,
+      "name_raw": "Baker, Dora",
+      "is_widow": true,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915-02-26",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 280 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 289 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1915 but parser also surfaced 1928; competing candidates: [1928]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 45,
+      "pensioncard_id": 1195,
+      "name_raw": "Baker, George M.",
+      "is_widow": false,
+      "cached_death_year": "1918",
+      "cached_death_date_iso": "1918-03-03",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1918 but parser also surfaced 1916; competing candidates: [1916]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 49,
+      "pensioncard_id": 9175,
+      "name_raw": "Barber, Maggie A.",
+      "is_widow": true,
+      "cached_death_year": "1895",
+      "cached_death_date_iso": "1895-04-23",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 320 with year 1915 in window; cached=1895"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 329 with year 1915 in window; cached=1895"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1895 but parser also surfaced 1933; competing candidates: [1933]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 53,
+      "pensioncard_id": 1216,
+      "name_raw": "Barrett, Roswell B.",
+      "is_widow": false,
+      "cached_death_year": "1919",
+      "cached_death_date_iso": "1919-04-19",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 812 with year 1915 in window; cached=1919"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 821 with year 1915 in window; cached=1919"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 54,
+      "pensioncard_id": 1219,
+      "name_raw": "Barry, Mrs. Henry Potillo",
+      "is_widow": true,
+      "cached_death_year": "1898",
+      "cached_death_date_iso": "1898-01-18",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 817 with year 1915 in window; cached=1898"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 826 with year 1915 in window; cached=1898"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1898 but parser also surfaced 1924; competing candidates: [1863, 1924]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 57,
+      "pensioncard_id": 1228,
+      "name_raw": "Basden, Martha J.",
+      "is_widow": true,
+      "cached_death_year": "1913",
+      "cached_death_date_iso": "1913-04-02",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1913 but parser also surfaced 1916; competing candidates: [1916]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 61,
+      "pensioncard_id": 1473,
+      "name_raw": "Bean, Mary T.",
+      "is_widow": true,
+      "cached_death_year": "1900",
+      "cached_death_date_iso": "1900-03-18",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1900 but parser also surfaced 1942; competing candidates: [1942]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 62,
+      "pensioncard_id": 1476,
+      "name_raw": "Beard, Charles L.",
+      "is_widow": false,
+      "cached_death_year": "",
+      "cached_death_date_iso": "",
+      "flags": [
+        {
+          "tag": "EMPTY_BUT_STAMP_PRESENT",
+          "confidence": "high",
+          "note": "death_year empty; DECEASED/DEATH/DIED substring found in cached OCR text"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 64,
+      "pensioncard_id": 1479,
+      "name_raw": "Bearden, Mary E.",
+      "is_widow": true,
+      "cached_death_year": "1901",
+      "cached_death_date_iso": "1901-04-21",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1901 but parser also surfaced 1930; competing candidates: [1930]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 67,
+      "pensioncard_id": 1482,
+      "name_raw": "Beckett, James",
+      "is_widow": false,
+      "cached_death_year": "1917",
+      "cached_death_date_iso": "1917",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 228 with year 1915 in window; cached=1917"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 237 with year 1915 in window; cached=1917"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 68,
+      "pensioncard_id": 1485,
+      "name_raw": "Beeler, John W.",
+      "is_widow": false,
+      "cached_death_year": "",
+      "cached_death_date_iso": "",
+      "flags": [
+        {
+          "tag": "EMPTY_BUT_STAMP_PRESENT",
+          "confidence": "high",
+          "note": "death_year empty; DECEASED/DEATH/DIED substring found in cached OCR text"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 71,
+      "pensioncard_id": 1494,
+      "name_raw": "Bell, James E.",
+      "is_widow": false,
+      "cached_death_year": "1917",
+      "cached_death_date_iso": "1917",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 207 with year 1915 in window; cached=1917"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 907 with year 1915 in window; cached=1917"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 916 with year 1915 in window; cached=1917"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 72,
+      "pensioncard_id": 1500,
+      "name_raw": "Bennett, Mary J.",
+      "is_widow": true,
+      "cached_death_year": "1901",
+      "cached_death_date_iso": "1901-06-21",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 222 with year 1915 in window; cached=1901"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1901 but parser also surfaced 1915; competing candidates: [1868, 1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 78,
+      "pensioncard_id": 9226,
+      "name_raw": "Birdwell, John H.",
+      "is_widow": false,
+      "cached_death_year": "1922",
+      "cached_death_date_iso": "1922",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 1005 with year 1915 in window; cached=1922"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 1014 with year 1915 in window; cached=1922"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1922 but parser also surfaced 1865; competing candidates: [1865]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 81,
+      "pensioncard_id": 12086,
+      "name_raw": "Blake, Elizabeth S.",
+      "is_widow": true,
+      "cached_death_year": "1908",
+      "cached_death_date_iso": "1908-01-21",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 947 with year 1915 in window; cached=1908"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 956 with year 1915 in window; cached=1908"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1908 but parser also surfaced 1867; competing candidates: [1867, 1925]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 85,
+      "pensioncard_id": 11173,
+      "name_raw": "Blanton, William H.",
+      "is_widow": false,
+      "cached_death_year": "1927",
+      "cached_death_date_iso": "1927-06-05",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 293 with year 1915 in window; cached=1927"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 87,
+      "pensioncard_id": 9049,
+      "name_raw": "Bohannan, Caroline",
+      "is_widow": true,
+      "cached_death_year": "1896",
+      "cached_death_date_iso": "1896",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 1019 with year 1915 in window; cached=1896"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1896 but parser also surfaced 1915; competing candidates: [1864, 1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 88,
+      "pensioncard_id": 12101,
+      "name_raw": "Boozman, P. A.",
+      "is_widow": true,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915-06-17",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 280 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 293 with year 1915 in window; cached=1915"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1915 but parser also surfaced 1954; competing candidates: [1934, 1954]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 89,
+      "pensioncard_id": 12104,
+      "name_raw": "Bothwell, Cunningham W.",
+      "is_widow": false,
+      "cached_death_year": "1924",
+      "cached_death_date_iso": "1924-05-14",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 241 with year 1915 in window; cached=1924"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 250 with year 1915 in window; cached=1924"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 994 with year 1915 in window; cached=1924"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1924 but parser also surfaced 1922; competing candidates: [1922]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 90,
+      "pensioncard_id": 12107,
+      "name_raw": "Bottoms, Sarah A.",
+      "is_widow": true,
+      "cached_death_year": "1908",
+      "cached_death_date_iso": "1908",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 209 with year 1915 in window; cached=1908"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 920 with year 1945 in window; cached=1908"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 929 with year 1945 in window; cached=1908"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1908 but parser also surfaced 1915; competing candidates: [1861, 1915]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 93,
+      "pensioncard_id": 7495,
+      "name_raw": "Boyd, R. Anderson",
+      "is_widow": false,
+      "cached_death_year": "1925",
+      "cached_death_date_iso": "1925-03-09",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 812 with year 1916 in window; cached=1925"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 95,
+      "pensioncard_id": 7528,
+      "name_raw": "Brackett, Sarah C.",
+      "is_widow": true,
+      "cached_death_year": "1914",
+      "cached_death_date_iso": "1914-07-16",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1914 but parser also surfaced 1938; competing candidates: [1938]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 99,
+      "pensioncard_id": 11188,
+      "name_raw": "Brock, William",
+      "is_widow": false,
+      "cached_death_year": "",
+      "cached_death_date_iso": "",
+      "flags": [
+        {
+          "tag": "EMPTY_BUT_STAMP_PRESENT",
+          "confidence": "high",
+          "note": "death_year empty; DECEASED/DEATH/DIED substring found in cached OCR text"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 100,
+      "pensioncard_id": 8680,
+      "name_raw": "Bromley, Emma",
+      "is_widow": true,
+      "cached_death_year": "1909",
+      "cached_death_date_iso": "1909",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1909 but parser also surfaced 1954; competing candidates: [1954]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 101,
+      "pensioncard_id": 7534,
+      "name_raw": "Brannon, Thomas S.",
+      "is_widow": true,
+      "cached_death_year": "",
+      "cached_death_date_iso": "",
+      "flags": [
+        {
+          "tag": "EMPTY_BUT_STAMP_PRESENT",
+          "confidence": "high",
+          "note": "death_year empty; DECEASED/DEATH/DIED substring found in cached OCR text"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 102,
+      "pensioncard_id": 7537,
+      "name_raw": "Brewer, Cherokee",
+      "is_widow": true,
+      "cached_death_year": "1915",
+      "cached_death_date_iso": "1915-06-28",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1915 but parser also surfaced 1916; competing candidates: [1868, 1916]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 103,
+      "pensioncard_id": 7546,
+      "name_raw": "Brown, Andrew A.",
+      "is_widow": false,
+      "cached_death_year": "1902",
+      "cached_death_date_iso": "1902",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 245 with year 1915 in window; cached=1902"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 254 with year 1915 in window; cached=1902"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 105,
+      "pensioncard_id": 7513,
+      "name_raw": "Brown, Francis M.",
+      "is_widow": false,
+      "cached_death_year": "",
+      "cached_death_date_iso": "",
+      "flags": [
+        {
+          "tag": "EMPTY_BUT_STAMP_PRESENT",
+          "confidence": "high",
+          "note": "death_year empty; DECEASED/DEATH/DIED substring found in cached OCR text"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 108,
+      "pensioncard_id": 7522,
+      "name_raw": "Brown, Sarah",
+      "is_widow": true,
+      "cached_death_year": "1901",
+      "cached_death_date_iso": "1901-05-12",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1901 but parser also surfaced 1954; competing candidates: [1934, 1954]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 112,
+      "pensioncard_id": 9553,
+      "name_raw": "Bullard, Nancy E.",
+      "is_widow": true,
+      "cached_death_year": "1902",
+      "cached_death_date_iso": "1902-03-19",
+      "flags": [
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 176 with year 1915 in window; cached=1902"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 927 with year 1915 in window; cached=1902"
+        },
+        {
+          "tag": "GRANTED_PICK",
+          "confidence": "medium",
+          "note": "GRANTED stamp at pos 936 with year 1915 in window; cached=1902"
+        },
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1902 but parser also surfaced 1900; competing candidates: [1900]"
+        }
+      ]
+    },
+    {
+      "pensioner_id": 113,
+      "pensioncard_id": 9846,
+      "name_raw": "Burch, Adeline",
+      "is_widow": true,
+      "cached_death_year": "1907",
+      "cached_death_date_iso": "1907-01-24",
+      "flags": [
+        {
+          "tag": "MULTI_CANDIDATE",
+          "confidence": "low",
+          "note": "cached 1907 but parser also surfaced 1922; competing candidates: [1922]"
+        }
+      ]
+    }
+  ]
+}

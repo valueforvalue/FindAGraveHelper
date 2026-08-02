@@ -1,0 +1,9 @@
+{
+  "run_name": "smoke",
+  "enriched": "docs/research/digitalprairie/ok_pensioners.with_death_dates.json",
+  "enrichment": "data/cards/enrichment_report.json",
+  "ocr": "data/cards/red_ocr_results.json",
+  "out_json": "data/audit_death_dates_report.json",
+  "out_md": "data/audit_death_dates_report.md",
+  "strict": false
+}
