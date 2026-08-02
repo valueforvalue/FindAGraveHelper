@@ -791,3 +791,47 @@ def test_fuzzy_death_keyword_handles_mixed_case():
     fuzzy = pilot.fuzzy_death_keyword
     assert fuzzy("Peceased March 1922")
     assert fuzzy("DECEASED Mar 1922")
+
+
+# ---------------------------------------------------------------------------
+# Issue #144: "Entered Home" anti-keyword filter
+# ---------------------------------------------------------------------------
+
+def test_find_death_date_rejects_entered_home_date_issue_144():
+    """When 'Entered Home M-D-YY' appears before 'Deceased M-D-YY'
+    in the OCR text, the parser should pick the DECEASED date,
+    not the Entered Home date.
+
+    Regression for Morgan, Henry T. (pcid=4047): card says
+    'Entered Home 11-1-29 Deceased 3-17-31'. The parser
+    previously picked 11-1-29 (closer to 'Deceased' by char
+    distance) instead of 3-17-31 (the actual death date).
+    """
+    text = "Entered Home 11-1-29 Deceased 3-17-31 NAME MORGAN HENRY T."
+    parsed, window = pilot.find_death_date(text, "Morgan")
+    assert parsed is not None, "parser should find the DECEASED date"
+    assert parsed["year"] == 1931, (
+        f"expected 1931 (Deceased 3-17-31), got {parsed['year']}"
+    )
+
+
+def test_find_death_date_rejects_entered_home_when_no_death_keyword():
+    """When 'Entered Home' is the only keyword near a date, the
+    date should be rejected (it's the home-entry date, not death)."""
+    text = "Entered Home 11-1-29 NAME MORGAN HENRY T."
+    parsed, _ = pilot.find_death_date(text, "Morgan")
+    assert parsed is None, (
+        f"Entered Home date should be rejected; got {parsed}"
+    )
+
+
+def test_find_death_date_keeps_deceased_after_entered_home():
+    """When both 'Entered Home' and 'Deceased' dates are present,
+    the Deceased date wins even if the Entered Home date is
+    closer to the keyword by char distance."""
+    text = "Entd Home 4-15-28 Deceased 6-20-1935 Name Smith John"
+    parsed, _ = pilot.find_death_date(text, "Smith")
+    assert parsed is not None
+    assert parsed["year"] == 1935, (
+        f"expected 1935 (Deceased date), got {parsed['year']}"
+    )

@@ -77,6 +77,14 @@ MARRIED_RE = re.compile(
     r"(?i)\b(married|wedded|wed\b|marriage|"
     r"date of birth|d/o/b)\b"
 )
+# Issue #144 (2026-08-01): "Entered Home" anti-keyword. The
+# Confederate Home admission date is NOT a death date. OCR reads
+# "Entered Home 11-1-29" next to "Deceased 3-17-31" on the
+# same card; the parser previously picked the home-entry date
+# because it was closer to "Deceased" by char distance.
+ENTERED_HOME_RE = re.compile(
+    r"(?i)\b(entered\s+(?:the\s+)?home|ent(?:d|ered)\s+home)\b"
+)
 # L3 follow-up (2026-07-29): address-change anti-keywords. A
 # date within ±60 chars of any of these phrases is an
 # address-change date, not a death. The inline filters in
@@ -630,6 +638,23 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
         if info["year"] < 1870 and WAR_END_RE.search(window) \
                 and not has_kw_in_window:
             continue
+        # Issue #144 (2026-08-01): "Entered Home" anti-keyword.
+        # Position-ordered check: when "Entered Home" appears
+        # BEFORE the candidate and a death keyword appears AFTER,
+        # the candidate is the home-entry date, not the death
+        # date. Also reject when "Entered Home" is near the
+        # candidate and no death keyword is in the window.
+        if ENTERED_HOME_RE.search(window):
+            eh_before = any(
+                eh.end() <= info["span"][0]
+                for eh in ENTERED_HOME_RE.finditer(text)
+            )
+            kw_after = any(
+                ks >= info["span"][1]
+                for ks, _ in keyword_spans
+            ) if keyword_spans else False
+            if eh_before and (kw_after or not has_kw_in_window):
+                continue
         # L2 (2026-07-29) additional filters. When NO death
         # keyword is anywhere in the text, the year 1915 is
         # overwhelmingly the GRANTED stamp year (every card has
