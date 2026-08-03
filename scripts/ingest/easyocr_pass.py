@@ -88,6 +88,7 @@ def easyocr_one(reader, img_path: Path) -> str:
 # ---- multiprocessing workers (added 2026-07-29 for --workers N) ----
 
 _WORKER_READER = None  # per-process EasyOCR reader, set in _worker_init
+_WORKER_USE_GPU = False  # mirrored from CLI --gpu at process spawn
 
 
 def _worker_init():
@@ -95,7 +96,7 @@ def _worker_init():
     EasyOCR model once per worker process. Sets up logging so
     worker logs (WARNING level) get flushed to stderr.
     """
-    global _WORKER_READER
+    global _WORKER_READER, _WORKER_USE_GPU
     import logging
     import easyocr  # lazy import keeps torch out of the main process
     # basicConfig is per-process; the parent already set it but
@@ -104,7 +105,9 @@ def _worker_init():
         level=logging.INFO,
         format="%(asctime)s %(levelname)s %(message)s",
     )
-    _WORKER_READER = easyocr.Reader(["en"], gpu=False, verbose=False)
+    _WORKER_READER = easyocr.Reader(
+        ["en"], gpu=_WORKER_USE_GPU, verbose=False,
+    )
 
 
 def _worker_process_one(work_item: dict) -> dict:
@@ -194,21 +197,46 @@ def main(argv=None) -> int:
                     help="re-OCR even if easy_text is already present")
     ap.add_argument("--throttle", type=float, default=THROTTLE_SECONDS,
                     help="seconds between images (default 0.25)")
+    ap.add_argument(
+        "--gpu", dest="use_gpu", action="store_true", default=None,
+        help="use CUDA GPU for EasyOCR (auto-detected by default; "
+             "set --no-gpu to force CPU). Runbook 2026-08-02: GPU "
+             "mode is ~10-30x faster than CPU on the RTX 3050.",
+    )
+    ap.add_argument(
+        "--no-gpu", dest="use_gpu", action="store_false", default=None,
+        help="force CPU mode (overrides auto-detect).",
+    )
     args = ap.parse_args(argv)
+
+    # Resolve gpu flag: CLI > auto-detect.
+    if args.use_gpu is None:
+        try:
+            import torch  # noqa: F401
+            args.use_gpu = bool(torch.cuda.is_available())
+        except ImportError:
+            args.use_gpu = False
 
     logging.basicConfig(level=logging.INFO,
                         format="%(asctime)s %(levelname)s %(message)s")
     log = logging.getLogger("easyocr")
+    log.info("gpu mode: %s", args.use_gpu)
 
     # Lazy import — only load torch + easyocr if we actually run.
     log.info("loading easyocr reader (first run downloads the model)...")
     import easyocr  # noqa: E402
     t0 = time.time()
-    reader = easyocr.Reader(["en"], gpu=False, verbose=False)
-    log.info("easyocr loaded in %.1fs", time.time() - t0)
+    reader = easyocr.Reader(["en"], gpu=args.use_gpu, verbose=False)
+    log.info("easyocr loaded in %.1fs (gpu=%s)", time.time() - t0,
+             args.use_gpu)
+    # Mirror the resolved flag to worker init so each spawned
+    # ProcessPoolExecutor worker instantiates its EasyOCR reader
+    # with the same gpu mode.
+    global _WORKER_USE_GPU
+    _WORKER_USE_GPU = args.use_gpu
 
     log.info("loading %s...", args.input)
-    results = json.loads(args.input.read_text(encoding="utf-8"))
+    results = json.loads(args.input.read_text(encoding="utf-8", errors="replace"))
     log.info("loaded %d image records", len(results))
 
     # Output resolution + safety guard.
@@ -244,7 +272,7 @@ def main(argv=None) -> int:
     # widow-aware parser).
     enriched_path = _ROOT / "docs" / "research" / "digitalprairie" / "ok_pensioners.with_death_dates.json"
     log.info("loading %s for widow detection...", enriched_path.name)
-    enriched = json.loads(enriched_path.read_text(encoding="utf-8"))
+    enriched = json.loads(enriched_path.read_text(encoding="utf-8", errors="replace"))
     enriched_by_pcid = {r.get("pensioncard_id"): r
                         for r in enriched if r.get("pensioncard_id") is not None}
 

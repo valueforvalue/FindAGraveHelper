@@ -59,7 +59,12 @@ DEFAULT_OUT_JSON = Path(
 DEFAULT_REPORT = Path("data/cards/enrichment_report.json")
 
 MIN_YEAR = 1860  # Issue #144: lowered from 1865 to catch Civil War deaths
-MAX_YEAR = 1940
+# Issue #144 follow-up (2026-08-02): raised MAX_YEAR 1940 → 1965
+# to match the parser's cap. Earlier 1940 cap silently dropped
+# valid 1941-1965 death dates (per the parser's own
+# documentation that widow cards legitimately have death dates
+# in 1941-1955 — the enrich script was rejecting them).
+MAX_YEAR = 1965
 
 
 def pick_best_per_card(sides: list[dict]) -> dict | None:

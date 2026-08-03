@@ -204,42 +204,78 @@ def audit_one(row: dict, ocr_by_pcid: dict) -> list[dict]:
 
     # H3: numeric substitution. For the cached year, see if any ±1
     # digit variant has a death keyword nearby.
+    #
+    # Issue #144 follow-up (2026-08-02): the original H3 was
+    # noisy — it flagged any record where a ±1 digit variant of
+    # the cached year appeared within 60 chars of the FIRST
+    # death keyword in the entire text, even when that variant
+    # was an unrelated date (e.g. widow marriage stamp) and the
+    # cached year was a legitimate death. The refactored rule:
+    # only flag when the cached year has NO death keyword within
+    # 60 chars AND a ±1 digit variant of the cached year DOES have
+    # a death keyword in 60 chars AND the variant is closer to its
+    # keyword than the cached year is to any death keyword.
     if cached_year_int:
-        for variant in _numeric_variants(cached_year_int):
-            if variant == cached_year_int:
-                continue
-            v_s = f"{variant:04d}"
-            for m in re.finditer(re.escape(v_s), all_text):
-                kw_m = DEATH_KEYWORDS.search(all_text)
-                if kw_m and abs(kw_m.start() - m.start()) <= 60:
-                    flags.append({
-                        "tag": "NUMERIC_SUBSTITUTION",
-                        "confidence": "high" if variant != cached_year_int else "low",
-                        "note": f"cached {cached_year} has ±1 variant {v_s} "
-                                f"with death keyword nearby; OCR likely misread digit",
-                    })
-                    break
+        cached_year_str = f"{cached_year_int:04d}"
+        # Find nearest death keyword to the cached year
+        cached_year_kw_dist = 9999
+        for m in re.finditer(re.escape(cached_year_str), all_text):
+            for kw_m in DEATH_KEYWORDS.finditer(all_text):
+                d = min(abs(m.start() - kw_m.start()),
+                        abs(m.end() - kw_m.start()),
+                        abs(m.start() - kw_m.end()))
+                if d < cached_year_kw_dist:
+                    cached_year_kw_dist = d
+        if cached_year_kw_dist > 60:
+            # Cached year not near a death keyword — flag any
+            # variant that IS near one.
+            for variant in _numeric_variants(cached_year_int):
+                if variant == cached_year_int:
+                    continue
+                v_s = f"{variant:04d}"
+                for m in re.finditer(re.escape(v_s), all_text):
+                    kw_m = DEATH_KEYWORDS.search(all_text)
+                    if kw_m and abs(kw_m.start() - m.start()) <= 60:
+                        flags.append({
+                            "tag": "NUMERIC_SUBSTITUTION",
+                            "confidence": "medium",
+                            "note": f"cached {cached_year} has no death keyword "
+                                    f"nearby but ±1 variant {v_s} does; OCR "
+                                    f"may have misread the year",
+                        })
+                        break
 
     # H2: GRANTED stamp year is the cached year (parser picked the
     # GRANTED year instead of the DECEASED year). Compare cached
     # year against GRANTED-stamp-window years.
+    #
+    # Issue #144 follow-up (2026-08-02): the original H2 was
+    # too aggressive — it flagged any record where the cached
+    # year appeared in some GRANTED stamp window somewhere on
+    # the card, even when the same year ALSO appeared in a
+    # legitimate death prose ("He died June 17, 1915"). The
+    # refactored rule: run the parser on the text, look at the
+    # parser's CHOSEN window. If the chosen window contains a
+    # GRANT/REJECT/FILED stamp AND no death keyword, the parser
+    # picked the wrong stamp. If the chosen window contains a
+    # death keyword, the parser correctly picked a death and the
+    # GRANTED stamp with the same year elsewhere on the card is
+    # a coincidence (skip — false positive).
     if cached_year_int is not None:
-        for m in GRANT_RE.finditer(all_text):
-            win_start = max(0, m.start() - 30)
-            win_end = min(len(all_text), m.end() + 30)
-            window = all_text[win_start:win_end]
-            for y_m in re.finditer(r"\b(18[6-9]\d|19[0-4]\d)\b", window):
-                y = int(y_m.group(1))
-                if y == cached_year_int and not fuzzy_death_keyword(window):
-                    flags.append({
-                        "tag": "GRANTED_PICK",
-                        "confidence": "high",
-                        "note": f"cached year {cached_year} appears in a "
-                                f"GRANTED/REJECTED/FILED stamp window with "
-                                f"no death keyword; parser likely picked the "
-                                f"wrong stamp",
-                    })
-                    break
+        from scripts.ingest.red_ink_ocr_pilot import find_death_date as _fdd
+        parsed, parser_window = _fdd(all_text, soldier_name)
+        if parsed and parsed.get("year") == cached_year_int and parser_window:
+            pw_has_grant = bool(GRANT_RE.search(parser_window)) or bool(FILED_RE.search(parser_window))
+            pw_has_kw = fuzzy_death_keyword(parser_window)
+            if pw_has_grant and not pw_has_kw:
+                flags.append({
+                    "tag": "GRANTED_PICK",
+                    "confidence": "high",
+                    "note": f"parser picked cached year {cached_year} "
+                            f"from a GRANTED/REJECTED/FILED stamp "
+                            f"window with no death keyword; likely "
+                            f"wrong stamp",
+                })
 
     # H1 (multi-candidate): DISABLED. Was generating 500+ false
     # positives because the parser's window filter is already strict;

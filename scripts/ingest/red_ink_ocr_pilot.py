@@ -534,7 +534,58 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
             ))
 
     if not candidates:
-        return None, ""
+        # Issue #144 follow-up (2026-08-02): fallback for OCR-garbled
+        # DECEASED stamps where DATE_PATTERNS didn't match but a
+        # 4-digit year IS in the same ±60-char window as a death
+        # keyword. The common failure mode is "DECEASED LecerlvoO"
+        # where the date token is fully mangled; the year digit
+        # survives but the date regex can't parse it. Without this
+        # fallback the parser returns None and the audit's H6
+        # EMPTY_BUT_STAMP_PRESENT fires. With it we recover ~212/591
+        # EMPTY records.
+        #
+        # Restricted: only fires when the text already had a death
+        # keyword match AND at least one bare 4-digit year
+        # (1860-1949) in the keyword's window. Returns a year-only
+        # candidate (no month/day) — less precise than a full date
+        # but better than None.
+        kw_iter = 0
+        while kw_iter < len(text):
+            m = _fuzzy_keyword_match(text[kw_iter:])
+            if m is None:
+                break
+            s, e = m
+            abs_s, abs_e = kw_iter + s, kw_iter + e
+            win_s = max(0, abs_s - 60)
+            win_e = min(len(text), abs_e + 60)
+            window = text[win_s:win_e]
+            best = None
+            best_dist = 999
+            for ym in re.finditer(r"\b(18[6-9]\d|19[0-4]\d)\b", window):
+                y = int(ym.group(1))
+                dist = min(abs(ym.start() + win_s - abs_s),
+                           abs(ym.start() + win_s - abs_e))
+                if dist < best_dist:
+                    best_dist = dist
+                    best = (y, win_s + ym.start(), win_s + ym.end())
+            if best is not None:
+                y, ms, me = best
+                candidates.append((
+                    f"{y}",
+                    {
+                        "kind": "year",
+                        "year": y,
+                        "month": None,
+                        "day": None,
+                        "iso": f"{y:04d}",
+                        "match": f"{y}",
+                        "span": [ms, me],
+                    },
+                ))
+                break
+            kw_iter = kw_iter + e
+        if not candidates:
+            return None, ""
 
     # Prefer dates that appear within ~40 chars of a death keyword.
     # Use the fuzzy matcher (strict regex + known OCR misreads +
@@ -619,6 +670,46 @@ def find_death_date(text: str, soldier_name: str = "") -> tuple[dict | None, str
             return None, ""
         if only_year == 1865 and war_dropped:
             return None, ""
+    # Issue #144 follow-up (2026-08-02): the existing 1915/1865
+    # gate above only fires when len(candidates) == 1 AND no
+    # keyword spans exist. When strip_form_lines dropped a
+    # GRANTED stamp (so the GRANTED word is gone from cleaned
+    # text) but 1915 also survived as a date candidate — and
+    # there are 2+ candidates and/or DECEASED keywords somewhere
+    # on the card — the soft gate is bypassed and the parser
+    # happily picks 1915 as the death year (issue #144 audit
+    # surfaced 1,350 GRANTED_PICK findings, mostly via this
+    # path). Fix: pre-emptively drop 1915/1865 candidates from
+    # the sort when their WINDOW (after the existing ±60-char
+    # window is computed) has no death keyword AND a stamp was
+    # stripped. If a death keyword IS in the window — e.g.
+    # "DECEASED 7 Nov 1915" plus a stripped "GRANTED OCT 7
+    # 1915" line — keep the candidate (the 1915 IS the real
+    # death year, not a stamp fragment).
+    if _dropped_text:
+        stamp_dropped = (
+            GRANT_RE.search(_dropped_text)
+            or FILED_RE.search(_dropped_text)
+        )
+        war_dropped = WAR_END_RE.search(_dropped_text)
+        if stamp_dropped or war_dropped:
+            survivors = []
+            for m, info in candidates:
+                # Compute the same window the filter loop below uses
+                s = max(0, info["span"][0] - 60)
+                e = min(len(text), info["span"][1] + 60)
+                win = text[s:e].replace("\n", " ").strip()
+                win_has_kw = fuzzy_death_keyword(win)
+                drop = False
+                if stamp_dropped and info["year"] == 1915 and not win_has_kw:
+                    drop = True
+                if war_dropped and info["year"] == 1865 and not win_has_kw:
+                    drop = True
+                if not drop:
+                    survivors.append((m, info))
+            candidates = survivors
+            if not candidates:
+                return None, ""
     # 2026-07-29 widened filter window from ±30 to ±60 chars
     # (issue #139). Phrases like "came to Oklahoma Territory 1912"
     # span ~40 chars; ±30 truncated "came to" off the window so
