@@ -302,6 +302,10 @@ def search_one_pensioner(page: Page, pensioner: dict,
     )
 
     # Build the full FaG ladder: 10 generic + 2 FAG-specific.
+    # Issue #137: B10-pre1851-tight slots between B5 and C1 via
+    # the canonical STRATEGIES list (scripts/search/strategies.py).
+    # F2/F3 stay at the tail — they read extras (regiment, nickname)
+    # and fire only for non-widow / known-nickname cases.
     full_ladder = list(STRATEGIES) + [F2_REGIMENT_BIO, F3_NICKNAME]
     if strategy_name is not None:
         full_ladder = [s for s in full_ladder if s.name == strategy_name]

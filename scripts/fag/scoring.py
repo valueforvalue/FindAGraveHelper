@@ -155,6 +155,16 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
     if any(term in cemetery for term in _CEMETERY_BONUS_TERMS):
         ok_burial_score = max(ok_burial_score, 0.2)
 
+    # Issue #137: unknown-state bias. When the pensioner has no
+    # known state AND the candidate's burial state is also missing,
+    # both blanks together become a weak positive signal — neither
+    # side has evidence contradicting an unknown-state match.
+    # Sized small (0.05) to break ties among same-name candidates
+    # without overpowering name/death evidence.
+    state_bias = 0.0
+    if not local_state and not cand_state:
+        state_bias = 0.05
+
     # State match — tiebreaker when local regiment state's abbreviation
     # matches the candidate's burial state (rare, but useful).
     state_score = 0.0
@@ -309,6 +319,13 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         0.22 * death_score +
         0.12 * maiden_name_score
     )
+    # Issue #137: unknown-state bias added after the weighted sum
+    # so the value is constant (0.05) regardless of how other
+    # features scale. Same effect as an additive term in the
+    # weighted sum, but kept separate so the breakdown surfaces
+    # it explicitly for downstream observability.
+    if state_bias:
+        score += state_bias
 
     # Issue #104: soft date gate. When candidate dates are outside
     # the ACW window, multiply the score by a heavy penalty instead
@@ -328,6 +345,8 @@ def score_candidate(local: dict, candidate: dict) -> tuple[float, dict]:
         "veteran": round(veteran_score, 2),
         "death": round(death_score, 2),
     }
+    if state_bias:
+        breakdown["state_bias"] = round(state_bias, 2)
     if is_widow:
         breakdown["widow_pension"] = round(widow_pension_score, 2)
     if maiden_name_score:

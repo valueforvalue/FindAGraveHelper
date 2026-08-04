@@ -46,6 +46,7 @@ __all__ = [
     "b3_first_initial_fuzzy",
     "b4_fuzzy_last",
     "b5_apostrophe_variants",
+    "b10_pre1851_tight",
     "c1_cw_context",
     "with_birth_year",
     "with_death_year",
@@ -57,6 +58,7 @@ __all__ = [
     "strategy_b3_first_initial_fuzzy",
     "strategy_b4_fuzzy_last",
     "strategy_b5_apostrophe_variants",
+    "strategy_b10_pre1851_tight",
     "strategy_c1_cw_context",
     "strategy_with_birth_year",
     "strategy_with_death_year",
@@ -152,6 +154,50 @@ def c1_cw_context(ctx):
         "lastname": ctx.last,
         "isVeteran": "true",
     }
+
+
+# Issue #137: pre-1851 birth-year refinement. ~15% of the
+# 7,758-pensioner cohort has birth_year < 1851, where the year
+# is approximate (CW-era records). The default ±5y window
+# (B1-exact) over-accepts on rough source years, so for this
+# cohort we run a tighter ±3y pass after the snipers miss.
+# Placed after B5 in the ladder (last Tier B before C1 catch-
+# alls) per issue #137 acceptance criteria. Returns None when
+# birth_year is missing, not an integer, or >= 1851.
+PRE_1851_BIRTH_YEAR_WINDOW = 3  # FaG birthyearfilter value
+
+
+def b10_pre1851_tight(ctx):
+    """B10: pre-1851 birth-year refinement. Tighter ±3y window
+    for the pre-1851 cohort (rough source years).
+
+    Issue #137: ~15% of pensioners have birth_year < 1851.
+    Default B1/B3/B4 use ±5y, which over-accepts when the
+    source year is approximate. B10 fires only when
+    ``ctx.birth_year`` is a parseable int < 1851. Uses
+    ``birthyearfilter=3`` (FaG accepts 1/3/5/10/25) so the
+    ladder stays inside the throttle budget (L1) — same
+    request count as B1.
+    """
+    by = _year_str(ctx.birth_year)
+    if not by or not ctx.first or not ctx.last:
+        return None
+    try:
+        by_int = int(by)
+    except ValueError:
+        return None
+    if by_int >= 1851:
+        return None
+    params: dict = {
+        "firstname": ctx.first,
+        "lastname": ctx.last,
+        "exactspelling": "true",
+        "birthyear": by,
+        "birthyearfilter": str(PRE_1851_BIRTH_YEAR_WINDOW),
+    }
+    if ctx.middle:
+        params["middlename"] = ctx.middle
+    return params
 
 
 # ============================================================
@@ -314,6 +360,10 @@ def strategy_c1_cw_context(first, middle, last, birth_year, death_year=None):
     return c1_cw_context(_ctx_from_pos(first, middle, last, birth_year, death_year))
 
 
+def strategy_b10_pre1851_tight(first, middle, last, birth_year, death_year=None):
+    return b10_pre1851_tight(_ctx_from_pos(first, middle, last, birth_year, death_year))
+
+
 def strategy_with_birth_year(first, middle, last, birth_year, death_year=None, exact=False):
     # The `exact` kwarg is accepted for legacy callers; we pass
     # it through to the canonical form via the context extras.
@@ -349,6 +399,7 @@ STRATEGIES = [
     FunctionStrategy("B3-first-initial-fuzzy", b3_first_initial_fuzzy, alias="Fuzzy first name"),
     FunctionStrategy("B4-fuzzy-last",          b4_fuzzy_last,          alias="Fuzzy last name"),
     FunctionStrategy("B5-apostrophe",          b5_apostrophe_variants, alias="Apostrophe variant"),
+    FunctionStrategy("B10-pre1851-tight",      b10_pre1851_tight,      alias="Pre-1851 tight year"),
     FunctionStrategy("C1-cw-context",          c1_cw_context,          alias="Veteran filter"),
     FunctionStrategy("F1a-birthyear-exact",    with_birth_year,        alias="Birth year filter"),
     FunctionStrategy("F1b-deathyear",          with_death_year,        alias="Death year filter"),

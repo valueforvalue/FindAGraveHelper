@@ -46,18 +46,19 @@ class TestFaGEngineAttributes:
         e = FaGEngine()
         assert e.base_url == "https://www.findagrave.com/memorial/search"
 
-    def test_ladder_has_13_strategies(self):
-        # 10 generic + F2 (regiment-bio) + F3 (nickname) + F4 (follow-up)
+    def test_ladder_has_14_strategies(self):
+        # 11 generic (issue #137 added B10) + F2 (regiment-bio)
+        # + F3 (nickname) + F4 (follow-up)
         e = FaGEngine()
-        assert len(e.ladder) == 13
+        assert len(e.ladder) == 14
 
     def test_ladder_contains_fag_specific(self):
         e = FaGEngine()
         names = [s.name for s in e.ladder]
         assert "F2-regiment-bio" in names
         assert "F3-nickname" in names
-        # And the generic 10
-        for n in ("B1-exact", "B5-apostrophe", "F1c-year-sniper"):
+        # And the generic 10 + B10
+        for n in ("B1-exact", "B5-apostrophe", "B10-pre1851-tight", "F1c-year-sniper"):
             assert n in names
 
     def test_conforms_to_protocol(self):

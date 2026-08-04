@@ -19,6 +19,7 @@ from scripts.search.strategies import (
     strategy_b3_first_initial_fuzzy,
     strategy_b4_fuzzy_last,
     strategy_b5_apostrophe_variants,
+    strategy_b10_pre1851_tight,
     strategy_c1_cw_context,
     strategy_with_birth_year,
     strategy_with_death_year,
@@ -136,14 +137,77 @@ def test_year_window():
 
 
 # ============================================================
+# B10: pre-1851 birth-year refinement (issue #137)
+# ============================================================
+def test_b10_fires_for_pre1851_birth_year():
+    p = strategy_b10_pre1851_tight("John", "", "Smith", "1840", None)
+    assert p is not None
+    assert p["firstname"] == "John"
+    assert p["lastname"] == "Smith"
+    assert p["exactspelling"] == "true"
+    assert p["birthyear"] == "1840"
+    assert p["birthyearfilter"] == "3"  # tighter than B1's 1-window / B3-B4's 5-window
+    assert "deathyear" not in p
+
+
+def test_b10_boundary_1850_fires():
+    """1850 is still pre-1851."""
+    p = strategy_b10_pre1851_tight("John", "", "Smith", "1850", None)
+    assert p is not None
+    assert p["birthyear"] == "1850"
+
+
+def test_b10_boundary_1851_skips():
+    """1851 is NOT pre-1851; B10 returns None."""
+    p = strategy_b10_pre1851_tight("John", "", "Smith", "1851", None)
+    assert p is None
+
+
+def test_b10_post1851_skips():
+    """Modern birth years (1900) must skip B10."""
+    p = strategy_b10_pre1851_tight("John", "", "Smith", "1900", None)
+    assert p is None
+
+
+def test_b10_missing_birth_year_skips():
+    p = strategy_b10_pre1851_tight("John", "", "Smith", None, None)
+    assert p is None
+
+
+def test_b10_missing_first_skips():
+    p = strategy_b10_pre1851_tight("", "", "Smith", "1840", None)
+    assert p is None
+
+
+def test_b10_missing_last_skips():
+    p = strategy_b10_pre1851_tight("John", "", "", "1840", None)
+    assert p is None
+
+
+def test_b10_includes_middle_when_present():
+    p = strategy_b10_pre1851_tight("John", "Q", "Smith", "1840", None)
+    assert p is not None
+    assert p["middlename"] == "Q"
+
+
+def test_b10_ladder_position():
+    """B10 must sit after B5 and before C1 per issue #137 acceptance."""
+    from scripts.search.strategies import STRATEGIES
+    names = [s.name for s in STRATEGIES]
+    assert "B10-pre1851-tight" in names
+    # Order check
+    assert names.index("B5-apostrophe") < names.index("B10-pre1851-tight")
+    assert names.index("B10-pre1851-tight") < names.index("C1-cw-context")
+
+
+# ============================================================
 # Regression: counts match the original search_fag.py
 # ============================================================
-def test_strategies_module_has_10_public_strategies():
-    """The audit counted 10 strategy_* functions. If this drops,
-    something was lost in the move."""
+def test_strategies_module_has_11_public_strategies():
+    """Issue #137 added B10-pre1851-tight; count is now 11."""
     import scripts.search.strategies as s
     names = [
         n for n in dir(s)
         if n.startswith("strategy_") and callable(getattr(s, n))
     ]
-    assert len(names) == 10, f"expected 10 strategies, got {len(names)}: {names}"
+    assert len(names) == 11, f"expected 11 strategies, got {len(names)}: {names}"
