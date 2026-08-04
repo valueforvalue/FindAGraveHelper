@@ -1,0 +1,372 @@
+[
+  {
+    "soldier_id": 43,
+    "name": "John Pate",
+    "truth": "285269207",
+    "bucket": "pre1851",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=John&lastname=Pate&exactspelling=true&middlename=D.&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 18,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=John&lastname=Pate&exactspelling=true&middlename=D.",
+        "cands": 20,
+        "total": 0,
+        "hit": true,
+        "rank": 9
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=John&lastname=Pate&exactspelling=true&middlename=D.&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=John&lastname=Pate&exactspelling=true&middlename=D.",
+        "cands": 20,
+        "total": 0,
+        "hit": true,
+        "rank": 10
+      }
+    }
+  },
+  {
+    "soldier_id": 50,
+    "name": "Peter Rozell",
+    "truth": "38979849",
+    "bucket": "pre1851",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Peter&lastname=Rozell&exactspelling=true&middlename=Wildman&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Peter&lastname=Rozell&exactspelling=true&middlename=Wildman",
+        "cands": 2,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Peter&lastname=Rozell&exactspelling=true&middlename=Wildman&locationId=country_4",
+        "cands": 2,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Peter&lastname=Rozell&exactspelling=true&middlename=Wildman",
+        "cands": 2,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 80,
+    "name": "William Hawkins",
+    "truth": "57866354",
+    "bucket": "pre1851",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Hawkins&exactspelling=true&middlename=Henry&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Hawkins&exactspelling=true&middlename=Henry",
+        "cands": 20,
+        "total": 0,
+        "hit": true,
+        "rank": 17
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Hawkins&exactspelling=true&middlename=Henry&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Hawkins&exactspelling=true&middlename=Henry",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 99,
+    "name": "William Ritter",
+    "truth": "24140875",
+    "bucket": "pre1851",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Ritter&exactspelling=true&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Ritter&exactspelling=true",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Ritter&exactspelling=true&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Ritter&exactspelling=true",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 42,
+    "name": "James Moore",
+    "truth": "134094041",
+    "bucket": "pre1851",
+    "state": "US",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=James&lastname=Moore&exactspelling=true&middlename=A.&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=James&lastname=Moore&exactspelling=true&middlename=A.",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=James&lastname=Moore&exactspelling=true&middlename=A.&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=James&lastname=Moore&exactspelling=true&middlename=A.",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 62,
+    "name": "Benjamin Carter",
+    "truth": "285988975",
+    "bucket": "other",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Benjamin&lastname=Carter&exactspelling=true&middlename=Franklin&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Benjamin&lastname=Carter&exactspelling=true&middlename=Franklin",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Benjamin&lastname=Carter&exactspelling=true&middlename=Franklin&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Benjamin&lastname=Carter&exactspelling=true&middlename=Franklin",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 77,
+    "name": "William Harris Sr.",
+    "truth": "21635214",
+    "bucket": "other",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Harris+Sr.&exactspelling=true&middlename=Robertson&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Harris+Sr.&exactspelling=true&middlename=Robertson",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Harris+Sr.&exactspelling=true&middlename=Robertson&locationId=country_4",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Harris+Sr.&exactspelling=true&middlename=Robertson",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 94,
+    "name": "William Price",
+    "truth": "18336557",
+    "bucket": "other",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Price&exactspelling=true&middlename=M.+&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Price&exactspelling=true&middlename=M.+",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Price&exactspelling=true&middlename=M.+&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=William&lastname=Price&exactspelling=true&middlename=M.+",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 61,
+    "name": "Mary Carter",
+    "truth": "285988777",
+    "bucket": "other",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Mary&lastname=Carter&exactspelling=true&middlename=Jane&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Mary&lastname=Carter&exactspelling=true&middlename=Jane",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Mary&lastname=Carter&exactspelling=true&middlename=Jane&locationId=country_4",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Mary&lastname=Carter&exactspelling=true&middlename=Jane",
+        "cands": 20,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  },
+  {
+    "soldier_id": 82,
+    "name": "Francis Kemp",
+    "truth": "135910725",
+    "bucket": "other",
+    "state": "",
+    "variants": {
+      "A.orig": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Francis&lastname=Kemp&exactspelling=true&middlename=Clementine&locationId=country_4&birthyear=1810&birthyearfilter=after&deathyear=1955&deathyearfilter=before",
+        "cands": 1,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "B.no_loc": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Francis&lastname=Kemp&exactspelling=true&middlename=Clementine",
+        "cands": 7,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "C.no_date": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Francis&lastname=Kemp&exactspelling=true&middlename=Clementine&locationId=country_4",
+        "cands": 5,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      },
+      "D.bare": {
+        "url": "https://www.findagrave.com/memorial/search?firstname=Francis&lastname=Kemp&exactspelling=true&middlename=Clementine",
+        "cands": 7,
+        "total": 0,
+        "hit": false,
+        "rank": null
+      }
+    }
+  }
+]
