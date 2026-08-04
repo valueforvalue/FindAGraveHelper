@@ -120,6 +120,10 @@ this file stays short; for full guidance follow the links below.
   end-to-end before any schema-touching or copy-writing work.
 - [`CHANGELOG.md`](CHANGELOG.md) `[Unreleased]` block — update
   in the same commit as the change.
+- **Session handoffs:** [`HANDOFF.md`](HANDOFF.md) — read at
+  the start of any session that picks up after a prior
+  investigation. Captures open issues, validation infrastructure,
+  and per-fix impact estimates from the most recent deep-dive.
 
 ## Agent skills
 
