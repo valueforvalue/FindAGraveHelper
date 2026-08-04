@@ -1,0 +1,5752 @@
+[
+  {
+    "first": "William",
+    "middle": "Pickney",
+    "last": "Looney",
+    "death_year": "1909",
+    "memorial_id": "50923719",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 1
+  },
+  {
+    "first": "James",
+    "middle": "Hillard",
+    "last": "Newby",
+    "death_year": "1913",
+    "memorial_id": "15131195",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 13
+  },
+  {
+    "first": "Elbert",
+    "middle": "Dixon",
+    "last": "Anderson",
+    "death_year": "1896",
+    "memorial_id": "11523031",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 21
+  },
+  {
+    "first": "James",
+    "middle": "Milligan",
+    "last": "Anderson",
+    "death_year": "1922",
+    "memorial_id": "30700125",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 22
+  },
+  {
+    "first": "Newton",
+    "middle": "Rufus",
+    "last": "Anderson",
+    "death_year": "1901",
+    "memorial_id": "78439699",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 23
+  },
+  {
+    "first": "D.",
+    "middle": "Henry",
+    "last": "Feely",
+    "death_year": "1911",
+    "memorial_id": "63040341",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 27
+  },
+  {
+    "first": "Anderson",
+    "middle": "Lewers",
+    "last": "Gaston",
+    "death_year": "1909",
+    "memorial_id": "11299347",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 28
+  },
+  {
+    "first": "James",
+    "middle": "Osborn",
+    "last": "Goad",
+    "death_year": "1901",
+    "memorial_id": "285266561",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 36
+  },
+  {
+    "first": "Robert",
+    "middle": "W.",
+    "last": "Goad",
+    "death_year": "1913",
+    "memorial_id": "41999287",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 37
+  },
+  {
+    "first": "Thomas",
+    "middle": "Crayton",
+    "last": "Howell",
+    "death_year": "1916",
+    "memorial_id": "61465872",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 41
+  },
+  {
+    "first": "John",
+    "middle": "D.",
+    "last": "Pate",
+    "death_year": "1871",
+    "memorial_id": "285269207",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 43
+  },
+  {
+    "first": "Greenberry",
+    "middle": "",
+    "last": "Rozell",
+    "death_year": "1896",
+    "memorial_id": "24093195",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 44
+  },
+  {
+    "first": "James",
+    "middle": "Marion",
+    "last": "Rozell",
+    "death_year": "1903",
+    "memorial_id": "7361695",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 46
+  },
+  {
+    "first": "James",
+    "middle": "Nathaniel",
+    "last": "Rozell",
+    "death_year": "1892",
+    "memorial_id": "242671793",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 47
+  },
+  {
+    "first": "John",
+    "middle": "Wesley",
+    "last": "Rozell",
+    "death_year": "1913",
+    "memorial_id": "30907759",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 48
+  },
+  {
+    "first": "William",
+    "middle": "Jasper",
+    "last": "Rozell",
+    "death_year": "1915",
+    "memorial_id": "41748986",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 49
+  },
+  {
+    "first": "Peter",
+    "middle": "Wildman",
+    "last": "Rozell",
+    "death_year": "1906",
+    "memorial_id": "38979849",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 50
+  },
+  {
+    "first": "James",
+    "middle": "Knox",
+    "last": "Walston",
+    "death_year": "1921",
+    "memorial_id": "20628523",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 51
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Ables",
+    "death_year": "1926",
+    "memorial_id": "23126976",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 54
+  },
+  {
+    "first": "James",
+    "middle": "A.",
+    "last": "Myers",
+    "death_year": "1934",
+    "memorial_id": "11558933",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 56
+  },
+  {
+    "first": "John",
+    "middle": "N.",
+    "last": "Welter",
+    "death_year": "1918",
+    "memorial_id": "107895119",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 57
+  },
+  {
+    "first": "Samuel",
+    "middle": "Westbrook",
+    "last": "Beckham",
+    "death_year": "1926",
+    "memorial_id": "42550949",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 58
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Franklin",
+    "last": "Carter",
+    "death_year": "1918",
+    "memorial_id": "285988975",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 62
+  },
+  {
+    "first": "William",
+    "middle": "Jasper",
+    "last": "Shelton",
+    "death_year": "1904",
+    "memorial_id": "34717308",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 63
+  },
+  {
+    "first": "Thomas",
+    "middle": "Jefferson",
+    "last": "Shelton",
+    "death_year": "1909",
+    "memorial_id": "15399535",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 4
+  },
+  {
+    "first": "Robert",
+    "middle": "Kyle",
+    "last": "Briscoe",
+    "death_year": "1900",
+    "memorial_id": "20870276",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 67
+  },
+  {
+    "first": "Evan",
+    "middle": "Aaron",
+    "last": "Brown",
+    "death_year": "1914",
+    "memorial_id": "83650522",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 68
+  },
+  {
+    "first": "Alexander ",
+    "middle": "C.",
+    "last": "Carpenter",
+    "death_year": "1917",
+    "memorial_id": "285712894",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 69
+  },
+  {
+    "first": "William",
+    "middle": "Nathan",
+    "last": "Choate",
+    "death_year": "1932",
+    "memorial_id": "14223505",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 70
+  },
+  {
+    "first": "George",
+    "middle": "T.",
+    "last": "Fowler",
+    "death_year": "1932",
+    "memorial_id": "20870847",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 74
+  },
+  {
+    "first": "Henry",
+    "middle": "Martin",
+    "last": "McCann",
+    "death_year": "1915",
+    "memorial_id": "150476582",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 59
+  },
+  {
+    "first": "William",
+    "middle": "Robertson",
+    "last": "Harris Sr.",
+    "death_year": "1931",
+    "memorial_id": "21635214",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 77
+  },
+  {
+    "first": "William",
+    "middle": "Ambrose",
+    "last": "Harwell",
+    "death_year": "1922",
+    "memorial_id": "31584940",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 78
+  },
+  {
+    "first": "William",
+    "middle": "Henry",
+    "last": "Hawkins",
+    "death_year": "1909",
+    "memorial_id": "57866354",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 80
+  },
+  {
+    "first": "Silas",
+    "middle": "",
+    "last": "Hudson",
+    "death_year": "1906",
+    "memorial_id": "138585373",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 81
+  },
+  {
+    "first": "James",
+    "middle": "H. ",
+    "last": "Magness",
+    "death_year": "1922",
+    "memorial_id": "206900924",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 84
+  },
+  {
+    "first": "Thaddeus",
+    "middle": "Sobieski",
+    "last": "McKasson",
+    "death_year": "1924",
+    "memorial_id": "24101423",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 88
+  },
+  {
+    "first": "Remeus",
+    "middle": "Uberto",
+    "last": "Mundell",
+    "death_year": "1917",
+    "memorial_id": "24138806",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 89
+  },
+  {
+    "first": "Martin",
+    "middle": "L.",
+    "last": "Newman",
+    "death_year": "1927",
+    "memorial_id": "15441053",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 90
+  },
+  {
+    "first": "Aaron",
+    "middle": "",
+    "last": "Odom",
+    "death_year": "1913",
+    "memorial_id": "20597553",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 91
+  },
+  {
+    "first": "William",
+    "middle": "M. ",
+    "last": "Price",
+    "death_year": "1917",
+    "memorial_id": "18336557",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 94
+  },
+  {
+    "first": "Jesse",
+    "middle": "Carter Farrar",
+    "last": "Pruitt",
+    "death_year": "1922",
+    "memorial_id": "11841130",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 96
+  },
+  {
+    "first": "James",
+    "middle": "Oliver",
+    "last": "Dobbs",
+    "death_year": "1921",
+    "memorial_id": "14843466",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 55
+  },
+  {
+    "first": "Louisa",
+    "middle": "Tobb",
+    "last": "May",
+    "death_year": "1949",
+    "memorial_id": "23546349",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 87
+  },
+  {
+    "first": "Augustus",
+    "middle": "F.",
+    "last": "Samples",
+    "death_year": "1926",
+    "memorial_id": "10159888",
+    "bucket": "other",
+    "state": "US",
+    "soldier_id": 103
+  },
+  {
+    "first": "Clark",
+    "middle": "",
+    "last": "Smith",
+    "death_year": "1912",
+    "memorial_id": "24141121",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 106
+  },
+  {
+    "first": "Mary",
+    "middle": "Jane",
+    "last": "Carter",
+    "death_year": "1932",
+    "memorial_id": "285988777",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 61
+  },
+  {
+    "first": "E.",
+    "middle": "B.",
+    "last": "Gaston",
+    "death_year": "1915",
+    "memorial_id": "50691054",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 33
+  },
+  {
+    "first": "William",
+    "middle": "Thomas",
+    "last": "Kemp",
+    "death_year": "1898",
+    "memorial_id": "21077952",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 109
+  },
+  {
+    "first": "G.",
+    "middle": "W.",
+    "last": "Thompson",
+    "death_year": "1917",
+    "memorial_id": "20362546",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 112
+  },
+  {
+    "first": "Jane",
+    "middle": "G.",
+    "last": "Traywick",
+    "death_year": "1937",
+    "memorial_id": "285782171",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 113
+  },
+  {
+    "first": "John",
+    "middle": "Richie",
+    "last": "Thatcher",
+    "death_year": "1912",
+    "memorial_id": "24161265",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 114
+  },
+  {
+    "first": "William",
+    "middle": "Baxter",
+    "last": "Underwood",
+    "death_year": "1909",
+    "memorial_id": "212606701",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 116
+  },
+  {
+    "first": "Syon",
+    "middle": "Perry",
+    "last": "Traywick",
+    "death_year": "1923",
+    "memorial_id": "18294495",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 115
+  },
+  {
+    "first": "William",
+    "middle": "",
+    "last": "Ritter",
+    "death_year": "1902",
+    "memorial_id": "24140875",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 99
+  },
+  {
+    "first": "Francis",
+    "middle": "Marion",
+    "last": "Walker",
+    "death_year": "1906",
+    "memorial_id": "14059527",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 117
+  },
+  {
+    "first": "Ellen",
+    "middle": "E",
+    "last": "Walker",
+    "death_year": "1929",
+    "memorial_id": "14059521",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 118
+  },
+  {
+    "first": "William",
+    "middle": "Henderson",
+    "last": "Adamson",
+    "death_year": "1919",
+    "memorial_id": "125049223",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 119
+  },
+  {
+    "first": "Andrew",
+    "middle": "J",
+    "last": "Couch",
+    "death_year": "1918",
+    "memorial_id": "16547972",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 122
+  },
+  {
+    "first": "Jesse",
+    "middle": "M.",
+    "last": "Bull",
+    "death_year": "1915",
+    "memorial_id": "290658111",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 121
+  },
+  {
+    "first": "Robert",
+    "middle": "Hutchings",
+    "last": "Carter",
+    "death_year": "1922",
+    "memorial_id": "11411566",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 60
+  },
+  {
+    "first": "William",
+    "middle": "Columbus",
+    "last": "Driver",
+    "death_year": "1931",
+    "memorial_id": "286047555",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 64
+  },
+  {
+    "first": "Samuel",
+    "middle": "Houston",
+    "last": "Hargis",
+    "death_year": "1934",
+    "memorial_id": "16302801",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 76
+  },
+  {
+    "first": "Francis",
+    "middle": "Clementine",
+    "last": "Kemp",
+    "death_year": "1940",
+    "memorial_id": "135910725",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 82
+  },
+  {
+    "first": "Lucian",
+    "middle": "Mixon",
+    "last": "King",
+    "death_year": "1917",
+    "memorial_id": "24101253",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 83
+  },
+  {
+    "first": "Julia",
+    "middle": "Bell",
+    "last": "Hawkins",
+    "death_year": "1935",
+    "memorial_id": "7848799",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 79
+  },
+  {
+    "first": "James",
+    "middle": "A.",
+    "last": "Moore",
+    "death_year": "1879",
+    "memorial_id": "134094041",
+    "bucket": "pre1851",
+    "state": "US",
+    "soldier_id": 42
+  },
+  {
+    "first": "Sarah",
+    "middle": "Jane",
+    "last": "Price",
+    "death_year": "1941",
+    "memorial_id": "18336572",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 95
+  },
+  {
+    "first": "William",
+    "middle": "G",
+    "last": "Ridge",
+    "death_year": "1914",
+    "memorial_id": "24798554",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 123
+  },
+  {
+    "first": "James",
+    "middle": "Martin",
+    "last": "Foy",
+    "death_year": "1927",
+    "memorial_id": "19248235",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 124
+  },
+  {
+    "first": "Nicholas",
+    "middle": "Bishop",
+    "last": "Gray",
+    "death_year": "1916",
+    "memorial_id": "14574519",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 125
+  },
+  {
+    "first": "James",
+    "middle": "F.",
+    "last": "Greenwood",
+    "death_year": "1918",
+    "memorial_id": "14574550",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 126
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Hanson",
+    "death_year": "1917",
+    "memorial_id": "41518649",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 127
+  },
+  {
+    "first": "William",
+    "middle": "M.",
+    "last": "Harper",
+    "death_year": "1921",
+    "memorial_id": "90780998",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 128
+  },
+  {
+    "first": "Charles",
+    "middle": "Hobart",
+    "last": "Heald",
+    "death_year": "1922",
+    "memorial_id": "114466503",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 129
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Holt",
+    "death_year": "1919",
+    "memorial_id": "150643889",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 130
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Franklin",
+    "last": "Hudgins",
+    "death_year": "1911",
+    "memorial_id": "34620403",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 131
+  },
+  {
+    "first": "William",
+    "middle": "",
+    "last": "Jones",
+    "death_year": "1925",
+    "memorial_id": "18255926",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 132
+  },
+  {
+    "first": "Thomas",
+    "middle": "M",
+    "last": "Lowery",
+    "death_year": "1911",
+    "memorial_id": "66634915",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 133
+  },
+  {
+    "first": "James",
+    "middle": "R.",
+    "last": "Murray",
+    "death_year": "1925",
+    "memorial_id": "291412187",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 134
+  },
+  {
+    "first": "Amos",
+    "middle": "N.",
+    "last": "Powell",
+    "death_year": "1925",
+    "memorial_id": "71952629",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 135
+  },
+  {
+    "first": "James",
+    "middle": "H.",
+    "last": "Rector",
+    "death_year": "1924",
+    "memorial_id": "292342598",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 137
+  },
+  {
+    "first": "Frankie",
+    "middle": "Gracie",
+    "last": "Robison",
+    "death_year": "1926",
+    "memorial_id": "19299227",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 138
+  },
+  {
+    "first": "Barbara",
+    "middle": "Ann",
+    "last": "Robison",
+    "death_year": "1940",
+    "memorial_id": "19295463",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 139
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Shrader",
+    "death_year": "1921",
+    "memorial_id": "16308134",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 140
+  },
+  {
+    "first": "Daniel",
+    "middle": "Boone",
+    "last": "Tipps",
+    "death_year": "1923",
+    "memorial_id": "14612657",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 141
+  },
+  {
+    "first": "T.",
+    "middle": "R.",
+    "last": "Todd",
+    "death_year": "1913",
+    "memorial_id": "127735603",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 142
+  },
+  {
+    "first": "John",
+    "middle": "Wesley",
+    "last": "Walters",
+    "death_year": "1929",
+    "memorial_id": "19300645",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 143
+  },
+  {
+    "first": "William",
+    "middle": "McDonald",
+    "last": "Wheeler",
+    "death_year": "1918",
+    "memorial_id": "67071825",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 144
+  },
+  {
+    "first": "William",
+    "middle": "Lewis",
+    "last": "Edwards",
+    "death_year": "1920",
+    "memorial_id": "18920780",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 151
+  },
+  {
+    "first": "Lewis",
+    "middle": "Levi",
+    "last": "Goins",
+    "death_year": "1928",
+    "memorial_id": "14053249",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 155
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Hanks",
+    "death_year": "1922",
+    "memorial_id": "19248659",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 157
+  },
+  {
+    "first": "James",
+    "middle": "Washington",
+    "last": "Hays",
+    "death_year": "1929",
+    "memorial_id": "14058792",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 158
+  },
+  {
+    "first": "William",
+    "middle": "Harrison",
+    "last": "Hodges",
+    "death_year": "1937",
+    "memorial_id": "14058827",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 159
+  },
+  {
+    "first": "Dudley",
+    "middle": "Simmons",
+    "last": "Hopkins",
+    "death_year": "1913",
+    "memorial_id": "31813964",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 160
+  },
+  {
+    "first": "R.",
+    "middle": "R.",
+    "last": "Jones",
+    "death_year": "1926",
+    "memorial_id": "32238550",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 161
+  },
+  {
+    "first": "Anthony",
+    "middle": "Washington",
+    "last": "Lawson",
+    "death_year": "1906",
+    "memorial_id": "221691995",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 163
+  },
+  {
+    "first": "Ephriam",
+    "middle": "P.",
+    "last": "Lowery",
+    "death_year": "1929",
+    "memorial_id": "14582889",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 165
+  },
+  {
+    "first": "David",
+    "middle": "P.",
+    "last": "Mabry",
+    "death_year": "1925",
+    "memorial_id": "10159548",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 166
+  },
+  {
+    "first": "Andrew",
+    "middle": "Job",
+    "last": "Means",
+    "death_year": "1916",
+    "memorial_id": "159719750",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 167
+  },
+  {
+    "first": "Elmore",
+    "middle": "C",
+    "last": "Moody",
+    "death_year": "1925",
+    "memorial_id": "22199306",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 169
+  },
+  {
+    "first": "Abner",
+    "middle": "",
+    "last": "Pipes",
+    "death_year": "1905",
+    "memorial_id": "111797984",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 170
+  },
+  {
+    "first": "James",
+    "middle": "L.",
+    "last": "Renshaw",
+    "death_year": "1905",
+    "memorial_id": "70162784",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 172
+  },
+  {
+    "first": "Levi",
+    "middle": "G",
+    "last": "Richardson",
+    "death_year": "1903",
+    "memorial_id": "14607875",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 173
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Roberts",
+    "death_year": "1933",
+    "memorial_id": "20893982",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 174
+  },
+  {
+    "first": "Lillia",
+    "middle": "Elizabeth",
+    "last": "Rogers",
+    "death_year": "1933",
+    "memorial_id": "32239919",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 175
+  },
+  {
+    "first": "Elisha",
+    "middle": "Dykes",
+    "last": "Shaw",
+    "death_year": "1926",
+    "memorial_id": "14608416",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 177
+  },
+  {
+    "first": "James",
+    "middle": "Columbus",
+    "last": "Singleton",
+    "death_year": "1926",
+    "memorial_id": "207558486",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 178
+  },
+  {
+    "first": "William",
+    "middle": "J.",
+    "last": "St. John",
+    "death_year": "1928",
+    "memorial_id": "134329627",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 179
+  },
+  {
+    "first": "Margaret",
+    "middle": "Jane",
+    "last": "St. John",
+    "death_year": "1930",
+    "memorial_id": "134329929",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 180
+  },
+  {
+    "first": "Matthew",
+    "middle": "Michigo",
+    "last": "Webb",
+    "death_year": "1916",
+    "memorial_id": "32005215",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 183
+  },
+  {
+    "first": "Mary",
+    "middle": "",
+    "last": "Webb",
+    "death_year": "1919",
+    "memorial_id": "47290948",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 184
+  },
+  {
+    "first": "Isaac",
+    "middle": "Hillman",
+    "last": "Willingham",
+    "death_year": "1898",
+    "memorial_id": "19819820",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 187
+  },
+  {
+    "first": "W.",
+    "middle": "W.",
+    "last": "Williams",
+    "death_year": "1903",
+    "memorial_id": "14270237",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 186
+  },
+  {
+    "first": "Henry",
+    "middle": "Elliott",
+    "last": "Williams",
+    "death_year": "1930",
+    "memorial_id": "19819755",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 185
+  },
+  {
+    "first": "James",
+    "middle": "L.",
+    "last": "Watson",
+    "death_year": "1930",
+    "memorial_id": "111671692",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 182
+  },
+  {
+    "first": "Frank",
+    "middle": "C. A.",
+    "last": "Troop",
+    "death_year": "1911",
+    "memorial_id": "37997921",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 181
+  },
+  {
+    "first": "John",
+    "middle": "Hays",
+    "last": "Chatham",
+    "death_year": "1900",
+    "memorial_id": "108601172",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 148
+  },
+  {
+    "first": "Riddle",
+    "middle": "Daniel",
+    "last": "Baker",
+    "death_year": "1921",
+    "memorial_id": "11187195",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 145
+  },
+  {
+    "first": "William",
+    "middle": "Denny",
+    "last": "Gaston",
+    "death_year": "1902",
+    "memorial_id": "10196879",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 35
+  },
+  {
+    "first": "William",
+    "middle": "Luther",
+    "last": "Gilliam",
+    "death_year": "1927",
+    "memorial_id": "14574434",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 154
+  },
+  {
+    "first": "Samuel",
+    "middle": "Newton",
+    "last": "Ellis",
+    "death_year": "1923",
+    "memorial_id": "18921193",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 152
+  },
+  {
+    "first": "Thomas",
+    "middle": "",
+    "last": "Edwards",
+    "death_year": "1939",
+    "memorial_id": "23745055",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 150
+  },
+  {
+    "first": "William",
+    "middle": "Henry",
+    "last": "Coaly",
+    "death_year": "1912",
+    "memorial_id": "69342195",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 71
+  },
+  {
+    "first": "Oscar",
+    "middle": "Fitzaland",
+    "last": "Adair",
+    "death_year": "1923",
+    "memorial_id": "6253135",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 226
+  },
+  {
+    "first": "James",
+    "middle": "A. J.",
+    "last": "Williams",
+    "death_year": "1925",
+    "memorial_id": "26722151",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 225
+  },
+  {
+    "first": "James",
+    "middle": "",
+    "last": "Driscol",
+    "death_year": "1925",
+    "memorial_id": "29792810",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 224
+  },
+  {
+    "first": "William",
+    "middle": "Monroe",
+    "last": "Pritchard",
+    "death_year": "1914",
+    "memorial_id": "61173600",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 227
+  },
+  {
+    "first": "Mary",
+    "middle": "Jane",
+    "last": "Pritchard",
+    "death_year": "1933",
+    "memorial_id": "61173584",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 207
+  },
+  {
+    "first": "Henry",
+    "middle": "Harrison",
+    "last": "Allen",
+    "death_year": "1923",
+    "memorial_id": "31818222",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 228
+  },
+  {
+    "first": "John",
+    "middle": "William",
+    "last": "Blanton",
+    "death_year": "1926",
+    "memorial_id": "52826708",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 229
+  },
+  {
+    "first": "George",
+    "middle": "Halsey",
+    "last": "Bruce",
+    "death_year": "1919",
+    "memorial_id": "14605508",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 230
+  },
+  {
+    "first": "Ruth",
+    "middle": "D.",
+    "last": "Clement",
+    "death_year": "1953",
+    "memorial_id": "42687036",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 231
+  },
+  {
+    "first": "Richard",
+    "middle": "Benjamin",
+    "last": "Coleman",
+    "death_year": "1933",
+    "memorial_id": "13993979",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 232
+  },
+  {
+    "first": "John",
+    "middle": "Lafayette",
+    "last": "Galt",
+    "death_year": "1923",
+    "memorial_id": "20051291",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 233
+  },
+  {
+    "first": "William",
+    "middle": "Trousdale",
+    "last": "Armstrong",
+    "death_year": "1923",
+    "memorial_id": "240362745",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 234
+  },
+  {
+    "first": "J.",
+    "middle": "W.",
+    "last": "Brown",
+    "death_year": "1913",
+    "memorial_id": "43405398",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 235
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Campbell",
+    "death_year": "1918",
+    "memorial_id": "23728390",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 236
+  },
+  {
+    "first": "John",
+    "middle": "M.",
+    "last": "Conley",
+    "death_year": "1926",
+    "memorial_id": "276804525",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 237
+  },
+  {
+    "first": "John",
+    "middle": "Paul",
+    "last": "Garretson",
+    "death_year": "1915",
+    "memorial_id": "23745725",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 238
+  },
+  {
+    "first": "Isabella",
+    "middle": "",
+    "last": "Garretson",
+    "death_year": "1932",
+    "memorial_id": "23745709",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 239
+  },
+  {
+    "first": "William",
+    "middle": "R",
+    "last": "Golden",
+    "death_year": "1914",
+    "memorial_id": "23746398",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 240
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Franklin",
+    "last": "Lee",
+    "death_year": "1929",
+    "memorial_id": "58379506",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 241
+  },
+  {
+    "first": "John",
+    "middle": "Blackburn",
+    "last": "Pace",
+    "death_year": "1930",
+    "memorial_id": "23890668",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 242
+  },
+  {
+    "first": "John",
+    "middle": "W.",
+    "last": "Riley",
+    "death_year": "1925",
+    "memorial_id": "23892108",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 243
+  },
+  {
+    "first": "Jefferson",
+    "middle": "Columbus",
+    "last": "Starkey",
+    "death_year": "1907",
+    "memorial_id": "23904800",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 244
+  },
+  {
+    "first": "David",
+    "middle": "P.",
+    "last": "Smith",
+    "death_year": "1913",
+    "memorial_id": "20604449",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 210
+  },
+  {
+    "first": "John",
+    "middle": "",
+    "last": "Casmos",
+    "death_year": "1905",
+    "memorial_id": "20287123",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 246
+  },
+  {
+    "first": "Valda",
+    "middle": "",
+    "last": "Barnett",
+    "death_year": "1900",
+    "memorial_id": "35708923",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 247
+  },
+  {
+    "first": "J.",
+    "middle": "L.",
+    "last": "Bartee",
+    "death_year": "1906",
+    "memorial_id": "35708947",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 248
+  },
+  {
+    "first": "W.",
+    "middle": "H.",
+    "last": "Bennet",
+    "death_year": "1900",
+    "memorial_id": "35709064",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 251
+  },
+  {
+    "first": "J.",
+    "middle": "B.",
+    "last": "Bell",
+    "death_year": "1920",
+    "memorial_id": "35709049",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 250
+  },
+  {
+    "first": "James",
+    "middle": "",
+    "last": "Barter",
+    "death_year": "1892",
+    "memorial_id": "35708968",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 249
+  },
+  {
+    "first": "J.",
+    "middle": "M.",
+    "last": "Black",
+    "death_year": "1900",
+    "memorial_id": "137309083",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 252
+  },
+  {
+    "first": "George",
+    "middle": "",
+    "last": "Byrd",
+    "death_year": "1899",
+    "memorial_id": "137304544",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 253
+  },
+  {
+    "first": "James",
+    "middle": "Monroe",
+    "last": "Calley",
+    "death_year": "1918",
+    "memorial_id": "63281135",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 254
+  },
+  {
+    "first": "John",
+    "middle": "",
+    "last": "Calley",
+    "death_year": "1924",
+    "memorial_id": "95099819",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 256
+  },
+  {
+    "first": "Aaron",
+    "middle": "Richard",
+    "last": "Clubb",
+    "death_year": "1911",
+    "memorial_id": "108666497",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 257
+  },
+  {
+    "first": "L.",
+    "middle": "",
+    "last": "Coleman",
+    "death_year": "1899",
+    "memorial_id": "137313518",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 258
+  },
+  {
+    "first": "Lafayette",
+    "middle": "Washington",
+    "last": "Coleman",
+    "death_year": "1915",
+    "memorial_id": "53777728",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 259
+  },
+  {
+    "first": "George",
+    "middle": "W.",
+    "last": "Conway",
+    "death_year": "1892",
+    "memorial_id": "137305291",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 260
+  },
+  {
+    "first": "A.",
+    "middle": "",
+    "last": "Daniel",
+    "death_year": "1901",
+    "memorial_id": "14623283",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 261
+  },
+  {
+    "first": "Albert",
+    "middle": "W.",
+    "last": "Daniels",
+    "death_year": "1899",
+    "memorial_id": "14625219",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 262
+  },
+  {
+    "first": "William",
+    "middle": "Riley",
+    "last": "Eaves",
+    "death_year": "1911",
+    "memorial_id": "45282545",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 263
+  },
+  {
+    "first": "Zede",
+    "middle": "Kirk",
+    "last": "Elmore",
+    "death_year": "1921",
+    "memorial_id": "14623105",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 264
+  },
+  {
+    "first": "Jacob",
+    "middle": "C",
+    "last": "Gardner",
+    "death_year": "1899",
+    "memorial_id": "108677824",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 265
+  },
+  {
+    "first": "Stephen",
+    "middle": "B.",
+    "last": "Allen",
+    "death_year": "1926",
+    "memorial_id": "7948254",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 266
+  },
+  {
+    "first": "Isaac",
+    "middle": "",
+    "last": "Garrison",
+    "death_year": "1910",
+    "memorial_id": "137313738",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 267
+  },
+  {
+    "first": "James",
+    "middle": "",
+    "last": "Griffith",
+    "death_year": "1901",
+    "memorial_id": "104657951",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 268
+  },
+  {
+    "first": "William",
+    "middle": "",
+    "last": "Griffith",
+    "death_year": "1907",
+    "memorial_id": "68055996",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 269
+  },
+  {
+    "first": "William",
+    "middle": "Houston",
+    "last": "Harris",
+    "death_year": "1933",
+    "memorial_id": "28927310",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 270
+  },
+  {
+    "first": "Hamilton",
+    "middle": "Charles",
+    "last": "Higginbotham",
+    "death_year": "1894",
+    "memorial_id": "108680766",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 271
+  },
+  {
+    "first": "Jane",
+    "middle": "",
+    "last": "Higginbotham",
+    "death_year": "1926",
+    "memorial_id": "94922615",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 272
+  },
+  {
+    "first": "Elisha",
+    "middle": "L.",
+    "last": "Higgins",
+    "death_year": "1909",
+    "memorial_id": "5044094",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 273
+  },
+  {
+    "first": "David",
+    "middle": "Maltravers",
+    "last": "Rumph",
+    "death_year": "1932",
+    "memorial_id": "8016958",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 213
+  },
+  {
+    "first": "William",
+    "middle": "Pierce Butler",
+    "last": "Suggs",
+    "death_year": "1926",
+    "memorial_id": "36328772",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 211
+  },
+  {
+    "first": "John",
+    "middle": "T.",
+    "last": "Holeman",
+    "death_year": "1903",
+    "memorial_id": "14624223",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 274
+  },
+  {
+    "first": "David",
+    "middle": "H.",
+    "last": "Holliday",
+    "death_year": "1906",
+    "memorial_id": "14624281",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 275
+  },
+  {
+    "first": "Mark",
+    "middle": "",
+    "last": "Jackson",
+    "death_year": "1899",
+    "memorial_id": "24887239",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 276
+  },
+  {
+    "first": "George",
+    "middle": "",
+    "last": "Jarvis",
+    "death_year": "1908",
+    "memorial_id": "108681441",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 277
+  },
+  {
+    "first": "Amanda",
+    "middle": "Effie Elizabeth",
+    "last": "Jarvis",
+    "death_year": "1927",
+    "memorial_id": "108681484",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 278
+  },
+  {
+    "first": "Ezekiel",
+    "middle": "Eli",
+    "last": "Lamkin",
+    "death_year": "1923",
+    "memorial_id": "137304440",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 280
+  },
+  {
+    "first": "Lucinda",
+    "middle": "Silk",
+    "last": "Lamkin",
+    "death_year": "1933",
+    "memorial_id": "57653950",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 281
+  },
+  {
+    "first": "W.",
+    "middle": "C.",
+    "last": "Layton",
+    "death_year": "1903",
+    "memorial_id": "108686805",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 282
+  },
+  {
+    "first": "Jonas",
+    "middle": "Brown",
+    "last": "McCurley",
+    "death_year": "1899",
+    "memorial_id": "32415308",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 283
+  },
+  {
+    "first": "William",
+    "middle": "Arthur",
+    "last": "Measels",
+    "death_year": "1920",
+    "memorial_id": "14624082",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 284
+  },
+  {
+    "first": "J.",
+    "middle": "A.",
+    "last": "Morgan",
+    "death_year": "1906",
+    "memorial_id": "108690696",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 285
+  },
+  {
+    "first": "John",
+    "middle": "M",
+    "last": "Needham",
+    "death_year": "1900",
+    "memorial_id": "191610126",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 286
+  },
+  {
+    "first": "Robert",
+    "middle": "Franklin",
+    "last": "Overstreet",
+    "death_year": "1901",
+    "memorial_id": "56835074",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 287
+  },
+  {
+    "first": "William",
+    "middle": "",
+    "last": "Pickens",
+    "death_year": "1896",
+    "memorial_id": "137308840",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 288
+  },
+  {
+    "first": "James",
+    "middle": "",
+    "last": "Pierce",
+    "death_year": "1919",
+    "memorial_id": "14623191",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 289
+  },
+  {
+    "first": "L.",
+    "middle": "Y.",
+    "last": "Pierce",
+    "death_year": "1919",
+    "memorial_id": "14623362",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 290
+  },
+  {
+    "first": "L.",
+    "middle": "B.",
+    "last": "Roberson",
+    "death_year": "1900",
+    "memorial_id": "39326537",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 291
+  },
+  {
+    "first": "Leroy",
+    "middle": "",
+    "last": "Roberson",
+    "death_year": "1905",
+    "memorial_id": "39326189",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 292
+  },
+  {
+    "first": "T",
+    "middle": "A",
+    "last": "Scott",
+    "death_year": "1920",
+    "memorial_id": "137300926",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 293
+  },
+  {
+    "first": "Robert",
+    "middle": "",
+    "last": "Thompson",
+    "death_year": "1897",
+    "memorial_id": "108712038",
+    "bucket": "pre1851",
+    "state": "OK",
+    "soldier_id": 3
+  },
+  {
+    "first": "Joe",
+    "middle": "",
+    "last": "Taylor",
+    "death_year": "1902",
+    "memorial_id": "137313622",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 294
+  },
+  {
+    "first": "Robert",
+    "middle": "Wiley",
+    "last": "Trout",
+    "death_year": "1897",
+    "memorial_id": "14623879",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 295
+  },
+  {
+    "first": "J.",
+    "middle": "A.",
+    "last": "Watkins",
+    "death_year": "1892",
+    "memorial_id": "108712212",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 296
+  },
+  {
+    "first": "Jim",
+    "middle": "",
+    "last": "Wells",
+    "death_year": "1899",
+    "memorial_id": "137313858",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 297
+  },
+  {
+    "first": "W.",
+    "middle": "",
+    "last": "Williams",
+    "death_year": "1900",
+    "memorial_id": "14623639",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 298
+  },
+  {
+    "first": "Amos",
+    "middle": "E.",
+    "last": "Womack",
+    "death_year": "1897",
+    "memorial_id": "14623942",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 299
+  },
+  {
+    "first": "Creed",
+    "middle": "Fulton",
+    "last": "Fraley",
+    "death_year": "1911",
+    "memorial_id": "19542855",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 300
+  },
+  {
+    "first": "Ora",
+    "middle": "",
+    "last": "Galt",
+    "death_year": "1936",
+    "memorial_id": "20051325",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 301
+  },
+  {
+    "first": "William",
+    "middle": "Esom",
+    "last": "Dooley",
+    "death_year": "1915",
+    "memorial_id": "46653782",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 214
+  },
+  {
+    "first": "Henry",
+    "middle": "Clay",
+    "last": "Brown",
+    "death_year": "1912",
+    "memorial_id": "16242121",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 302
+  },
+  {
+    "first": "Louisa",
+    "middle": "Jane",
+    "last": "Brown",
+    "death_year": "1938",
+    "memorial_id": "16252545",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 303
+  },
+  {
+    "first": "Fannie",
+    "middle": "May",
+    "last": "Cameron",
+    "death_year": "1932",
+    "memorial_id": "105198359",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 305
+  },
+  {
+    "first": "Thomas",
+    "middle": "A.",
+    "last": "Cameron",
+    "death_year": "1921",
+    "memorial_id": "10487330",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 304
+  },
+  {
+    "first": "William",
+    "middle": "Rhodes",
+    "last": "Campbell",
+    "death_year": "1904",
+    "memorial_id": "16436095",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 306
+  },
+  {
+    "first": "William",
+    "middle": "Allen",
+    "last": "Daniel",
+    "death_year": "1919",
+    "memorial_id": "18936707",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 307
+  },
+  {
+    "first": "Robert",
+    "middle": "R.",
+    "last": "Davis",
+    "death_year": "1916",
+    "memorial_id": "19343316",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 308
+  },
+  {
+    "first": "Thomas",
+    "middle": "Franklin",
+    "last": "Berry",
+    "death_year": "1917",
+    "memorial_id": "19687950",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 309
+  },
+  {
+    "first": "John",
+    "middle": "E",
+    "last": "Eslick",
+    "death_year": "1928",
+    "memorial_id": "100951089",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 310
+  },
+  {
+    "first": "James",
+    "middle": "Harvey",
+    "last": "Finlay",
+    "death_year": "1923",
+    "memorial_id": "90336011",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 153
+  },
+  {
+    "first": "Harrison",
+    "middle": "Montgomery",
+    "last": "Frensley",
+    "death_year": "1926",
+    "memorial_id": "19591721",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 311
+  },
+  {
+    "first": "Thomas",
+    "middle": "Lacy",
+    "last": "Gladney",
+    "death_year": "1919",
+    "memorial_id": "20154301",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 312
+  },
+  {
+    "first": "James",
+    "middle": "W.",
+    "last": "Golledge",
+    "death_year": "1916",
+    "memorial_id": "20164320",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 313
+  },
+  {
+    "first": "Ellen",
+    "middle": "A",
+    "last": "Golledge",
+    "death_year": "1928",
+    "memorial_id": "20164305",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 314
+  },
+  {
+    "first": "John",
+    "middle": "Campbell",
+    "last": "Boucher",
+    "death_year": "1923",
+    "memorial_id": "16166094",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 215
+  },
+  {
+    "first": "Annie",
+    "middle": "M.",
+    "last": "Sharrock",
+    "death_year": "1923",
+    "memorial_id": "214147257",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 315
+  },
+  {
+    "first": "James",
+    "middle": "Foster",
+    "last": "Hardeman",
+    "death_year": "1927",
+    "memorial_id": "20599056",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 316
+  },
+  {
+    "first": "Thomas",
+    "middle": "Elezar",
+    "last": "Hardeman",
+    "death_year": "1928",
+    "memorial_id": "20599084",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 317
+  },
+  {
+    "first": "Elijah",
+    "middle": "Pedigo",
+    "last": "Hardy",
+    "death_year": "1903",
+    "memorial_id": "17479095",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 32
+  },
+  {
+    "first": "Sarah",
+    "middle": "Oviline",
+    "last": "Hardy",
+    "death_year": "1928",
+    "memorial_id": "12130687",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 318
+  },
+  {
+    "first": "Reuben",
+    "middle": "",
+    "last": "Hardy",
+    "death_year": "1926",
+    "memorial_id": "61959628",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 319
+  },
+  {
+    "first": "George",
+    "middle": "William",
+    "last": "Harper",
+    "death_year": "1921",
+    "memorial_id": "20702208",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 320
+  },
+  {
+    "first": "Elijah",
+    "middle": "R.",
+    "last": "Hendricks",
+    "death_year": "1906",
+    "memorial_id": "162470802",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 321
+  },
+  {
+    "first": "Harriett",
+    "middle": "E.",
+    "last": "Hendricks",
+    "death_year": "1920",
+    "memorial_id": "20770033",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 322
+  },
+  {
+    "first": "Benjamin",
+    "middle": "M.",
+    "last": "Jackson",
+    "death_year": "1903",
+    "memorial_id": "82150633",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 323
+  },
+  {
+    "first": "James",
+    "middle": "Madison",
+    "last": "Jameson",
+    "death_year": "1926",
+    "memorial_id": "19772196",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 324
+  },
+  {
+    "first": "Zachary",
+    "middle": "Taylor",
+    "last": "Jones",
+    "death_year": "1915",
+    "memorial_id": "19845867",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 325
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Kerbo",
+    "death_year": "1915",
+    "memorial_id": "13524553",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 326
+  },
+  {
+    "first": "Hinton",
+    "middle": "H.",
+    "last": "Atkinson",
+    "death_year": "1907",
+    "memorial_id": "16049843",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 216
+  },
+  {
+    "first": "David",
+    "middle": "Gideon",
+    "last": "Layman",
+    "death_year": "1933",
+    "memorial_id": "20472501",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 327
+  },
+  {
+    "first": "John",
+    "middle": "",
+    "last": "Little",
+    "death_year": "1918",
+    "memorial_id": "24209095",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 164
+  },
+  {
+    "first": "Lucy",
+    "middle": "Elmira",
+    "last": "Little",
+    "death_year": "1944",
+    "memorial_id": "19865424",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 328
+  },
+  {
+    "first": "John",
+    "middle": "Wesley",
+    "last": "Layton",
+    "death_year": "1921",
+    "memorial_id": "55867337",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 329
+  },
+  {
+    "first": "Spencer",
+    "middle": "D.",
+    "last": "Mitchell",
+    "death_year": "1913",
+    "memorial_id": "11411601",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 331
+  },
+  {
+    "first": "Lafayette",
+    "middle": "Brownfield",
+    "last": "Musgrave",
+    "death_year": "1917",
+    "memorial_id": "22343091",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 332
+  },
+  {
+    "first": "Joe",
+    "middle": "J.",
+    "last": "Nelms",
+    "death_year": "1915",
+    "memorial_id": "22463935",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 333
+  },
+  {
+    "first": "Jacob",
+    "middle": "W.",
+    "last": "Palmer",
+    "death_year": "1903",
+    "memorial_id": "22828740",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 334
+  },
+  {
+    "first": "George",
+    "middle": "David",
+    "last": "Pettitt",
+    "death_year": "1910",
+    "memorial_id": "23923827",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 335
+  },
+  {
+    "first": "Fielding",
+    "middle": "Scott",
+    "last": "Presley",
+    "death_year": "1915",
+    "memorial_id": "10740801",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 336
+  },
+  {
+    "first": "John",
+    "middle": "R.",
+    "last": "Pulliam",
+    "death_year": "1918",
+    "memorial_id": "24285778",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 337
+  },
+  {
+    "first": "Alvin",
+    "middle": "Finley",
+    "last": "Pyeatt",
+    "death_year": "1908",
+    "memorial_id": "175993990",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 338
+  },
+  {
+    "first": "William",
+    "middle": "Henry",
+    "last": "Pyeatt",
+    "death_year": "1914",
+    "memorial_id": "24285970",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 339
+  },
+  {
+    "first": "John",
+    "middle": "J.",
+    "last": "Read",
+    "death_year": "1921",
+    "memorial_id": "48919851",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 340
+  },
+  {
+    "first": "Richard",
+    "middle": "Lafayette",
+    "last": "Rogers",
+    "death_year": "1924",
+    "memorial_id": "25085169",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 341
+  },
+  {
+    "first": "Robert",
+    "middle": "",
+    "last": "Scales",
+    "death_year": "1910",
+    "memorial_id": "26537727",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 342
+  },
+  {
+    "first": "John",
+    "middle": "Willis",
+    "last": "Smith",
+    "death_year": "1905",
+    "memorial_id": "28288316",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 343
+  },
+  {
+    "first": "Johnathan",
+    "middle": "M",
+    "last": "Smith",
+    "death_year": "1902",
+    "memorial_id": "68646378",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 344
+  },
+  {
+    "first": "Charles",
+    "middle": "A",
+    "last": "Wall",
+    "death_year": "1914",
+    "memorial_id": "68647071",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 345
+  },
+  {
+    "first": "William",
+    "middle": "Miles",
+    "last": "Wells",
+    "death_year": "1916",
+    "memorial_id": "32005529",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 346
+  },
+  {
+    "first": "James",
+    "middle": "Monroe",
+    "last": "West",
+    "death_year": "1924",
+    "memorial_id": "216924376",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 347
+  },
+  {
+    "first": "Wiley",
+    "middle": "R.",
+    "last": "Wood",
+    "death_year": "1922",
+    "memorial_id": "42576472",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 349
+  },
+  {
+    "first": "Thomas",
+    "middle": "Calhoun",
+    "last": "Youree",
+    "death_year": "1921",
+    "memorial_id": "253019798",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 350
+  },
+  {
+    "first": "Henderson",
+    "middle": "B",
+    "last": "Alverson",
+    "death_year": "1910",
+    "memorial_id": "15935692",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 351
+  },
+  {
+    "first": "Anderson",
+    "middle": "A.",
+    "last": "Arnold",
+    "death_year": "1904",
+    "memorial_id": "28515408",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 352
+  },
+  {
+    "first": "Thomas",
+    "middle": "David",
+    "last": "Arnold",
+    "death_year": "1917",
+    "memorial_id": "18978522",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 353
+  },
+  {
+    "first": "Samuel",
+    "middle": "Jackson",
+    "last": "Ashton",
+    "death_year": "1898",
+    "memorial_id": "21239085",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 354
+  },
+  {
+    "first": "Francis",
+    "middle": "Marion",
+    "last": "Askew",
+    "death_year": "1912",
+    "memorial_id": "14296479",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 355
+  },
+  {
+    "first": "Jasper",
+    "middle": "Newton",
+    "last": "Askew",
+    "death_year": "1925",
+    "memorial_id": "15942875",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 356
+  },
+  {
+    "first": "James",
+    "middle": "Tomme",
+    "last": "Avery",
+    "death_year": "1922",
+    "memorial_id": "228737161",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 357
+  },
+  {
+    "first": "James",
+    "middle": "Tomme",
+    "last": "Avery",
+    "death_year": "1922",
+    "memorial_id": "228737161",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 358
+  },
+  {
+    "first": "Samuel",
+    "middle": "Sampson",
+    "last": "Blankenship",
+    "death_year": "1913",
+    "memorial_id": "16315486",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 360
+  },
+  {
+    "first": "Rice",
+    "middle": "",
+    "last": "Eason",
+    "death_year": "1925",
+    "memorial_id": "43304281",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 73
+  },
+  {
+    "first": "Thomas",
+    "middle": "Butler",
+    "last": "King",
+    "death_year": "1927",
+    "memorial_id": "26561401",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 361
+  },
+  {
+    "first": "Dewitt",
+    "middle": "C.",
+    "last": "Lee",
+    "death_year": "1912",
+    "memorial_id": "43909545",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 330
+  },
+  {
+    "first": "Green",
+    "middle": "Washington",
+    "last": "Bradshaw",
+    "death_year": "1921",
+    "memorial_id": "10158360",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 362
+  },
+  {
+    "first": "Francis",
+    "middle": "Ann",
+    "last": "Bradshaw",
+    "death_year": "1923",
+    "memorial_id": "7729961",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 363
+  },
+  {
+    "first": "Asher",
+    "middle": "E.",
+    "last": "Robertson",
+    "death_year": "1903",
+    "memorial_id": "24140921",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 100
+  },
+  {
+    "first": "John",
+    "middle": "Greer",
+    "last": "Cummins",
+    "death_year": "1910",
+    "memorial_id": "23995999",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 72
+  },
+  {
+    "first": "William",
+    "middle": "Alexander",
+    "last": "Walston",
+    "death_year": "1925",
+    "memorial_id": "20607576",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 52
+  },
+  {
+    "first": "Amon",
+    "middle": "Hale",
+    "last": "Bacon",
+    "death_year": "1933",
+    "memorial_id": "54600971",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 364
+  },
+  {
+    "first": "Frances",
+    "middle": "Victoria",
+    "last": "Bacon",
+    "death_year": "1939",
+    "memorial_id": "54601056",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 365
+  },
+  {
+    "first": "John",
+    "middle": "F",
+    "last": "Bacon",
+    "death_year": "1926",
+    "memorial_id": "30205452",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 366
+  },
+  {
+    "first": "William",
+    "middle": "Henderson",
+    "last": "Bacon",
+    "death_year": "1924",
+    "memorial_id": "38871899",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 367
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Bailey",
+    "death_year": "1921",
+    "memorial_id": "12130685",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 368
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Hawley",
+    "last": "Bailey",
+    "death_year": "1930",
+    "memorial_id": "15312951",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 369
+  },
+  {
+    "first": "Orrin",
+    "middle": "Micajah",
+    "last": "Sansom",
+    "death_year": "1883",
+    "memorial_id": "96974418",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 371
+  },
+  {
+    "first": "Emma",
+    "middle": "",
+    "last": "Sansom-Johnson",
+    "death_year": "1900",
+    "memorial_id": "10788038",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 372
+  },
+  {
+    "first": "John",
+    "middle": "Robert",
+    "last": "Bateman",
+    "death_year": "1909",
+    "memorial_id": "29206463",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 373
+  },
+  {
+    "first": "James",
+    "middle": "Reuben",
+    "last": "Bondurant",
+    "death_year": "1917",
+    "memorial_id": "41644015",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 374
+  },
+  {
+    "first": "Butler",
+    "middle": "",
+    "last": "Boyd",
+    "death_year": "1914",
+    "memorial_id": "111710641",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 375
+  },
+  {
+    "first": "Adam",
+    "middle": "Henry",
+    "last": "Bradley",
+    "death_year": "1911",
+    "memorial_id": "33766498",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 376
+  },
+  {
+    "first": "Robert",
+    "middle": "Kyle",
+    "last": "Briscoe",
+    "death_year": "1900",
+    "memorial_id": "20870276",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 377
+  },
+  {
+    "first": "Robert",
+    "middle": "B.",
+    "last": "Brown",
+    "death_year": "1906",
+    "memorial_id": "29908872",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 378
+  },
+  {
+    "first": "Henry",
+    "middle": "K.",
+    "last": "Campbell",
+    "death_year": "1931",
+    "memorial_id": "14048240",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 379
+  },
+  {
+    "first": "Sampson",
+    "middle": "Robinson",
+    "last": "Carmichael",
+    "death_year": "1916",
+    "memorial_id": "27472324",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 380
+  },
+  {
+    "first": "Alfred",
+    "middle": "Miles",
+    "last": "Carroll",
+    "death_year": "1917",
+    "memorial_id": "25359081",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 381
+  },
+  {
+    "first": "Francis",
+    "middle": "Marion",
+    "last": "Cash",
+    "death_year": "1923",
+    "memorial_id": "17017442",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 382
+  },
+  {
+    "first": "Lucinda",
+    "middle": "A.",
+    "last": "Choate",
+    "death_year": "1951",
+    "memorial_id": "81761935",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 383
+  },
+  {
+    "first": "James",
+    "middle": "Madison",
+    "last": "Chronister",
+    "death_year": "1908",
+    "memorial_id": "40540761",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 384
+  },
+  {
+    "first": "Joe",
+    "middle": "R.",
+    "last": "Lawrence",
+    "death_year": "1908",
+    "memorial_id": "40539787",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 385
+  },
+  {
+    "first": "William",
+    "middle": "Anderson",
+    "last": "Golden",
+    "death_year": "1908",
+    "memorial_id": "40539449",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 386
+  },
+  {
+    "first": "William",
+    "middle": "Pinkney",
+    "last": "Cochran",
+    "death_year": "1925",
+    "memorial_id": "14048818",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 387
+  },
+  {
+    "first": "Michael",
+    "middle": "C.",
+    "last": "Whittle",
+    "death_year": "1918",
+    "memorial_id": "73840655",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 389
+  },
+  {
+    "first": "Daniel",
+    "middle": "H.",
+    "last": "Collins",
+    "death_year": "1921",
+    "memorial_id": "7980106",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 392
+  },
+  {
+    "first": "James",
+    "middle": "Pinkney",
+    "last": "Collins",
+    "death_year": "1913",
+    "memorial_id": "16234132",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 393
+  },
+  {
+    "first": "Seaborn",
+    "middle": "L.",
+    "last": "Davenport",
+    "death_year": "1910",
+    "memorial_id": "21278461",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 394
+  },
+  {
+    "first": "Elijah",
+    "middle": "Onesimus",
+    "last": "Dill",
+    "death_year": "1923",
+    "memorial_id": "10158805",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 396
+  },
+  {
+    "first": "William",
+    "middle": "Carroll",
+    "last": "Downey",
+    "death_year": "1900",
+    "memorial_id": "30453514",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 397
+  },
+  {
+    "first": "Martin",
+    "middle": "Hayes",
+    "last": "Duke",
+    "death_year": "1913",
+    "memorial_id": "134474260",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 398
+  },
+  {
+    "first": "Samuel",
+    "middle": "Wood",
+    "last": "Dunagan",
+    "death_year": "1921",
+    "memorial_id": "17916100",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 399
+  },
+  {
+    "first": "Ephraim",
+    "middle": "Jones",
+    "last": "Elliott",
+    "death_year": "1923",
+    "memorial_id": "10157137",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 400
+  },
+  {
+    "first": "William",
+    "middle": "Rufus",
+    "last": "Ellis",
+    "death_year": "1912",
+    "memorial_id": "90775752",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 401
+  },
+  {
+    "first": "William",
+    "middle": "H.",
+    "last": "Eskew",
+    "death_year": "1908",
+    "memorial_id": "16541202",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 402
+  },
+  {
+    "first": "Jahue",
+    "middle": "Ballard",
+    "last": "Everett",
+    "death_year": "1930",
+    "memorial_id": "22397759",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 403
+  },
+  {
+    "first": "James",
+    "middle": "R.",
+    "last": "Farlow",
+    "death_year": "1915",
+    "memorial_id": "41681693",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 404
+  },
+  {
+    "first": "Julia",
+    "middle": "",
+    "last": "Farlow",
+    "death_year": "1938",
+    "memorial_id": "216127761",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 405
+  },
+  {
+    "first": "Allison",
+    "middle": "Carr",
+    "last": "Bennett",
+    "death_year": "1929",
+    "memorial_id": "7850333",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 406
+  },
+  {
+    "first": "Napoleon",
+    "middle": "Bonapart",
+    "last": "Fisher",
+    "death_year": "1925",
+    "memorial_id": "40231837",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 407
+  },
+  {
+    "first": "Levi",
+    "middle": "O",
+    "last": "Franklin",
+    "death_year": "1916",
+    "memorial_id": "49464792",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 409
+  },
+  {
+    "first": "William",
+    "middle": "Allen",
+    "last": "Gann",
+    "death_year": "1925",
+    "memorial_id": "6603889",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 75
+  },
+  {
+    "first": "William",
+    "middle": "H.",
+    "last": "Frier",
+    "death_year": "1920",
+    "memorial_id": "16203478",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 410
+  },
+  {
+    "first": "William",
+    "middle": "Joshua",
+    "last": "Ginn",
+    "death_year": "1905",
+    "memorial_id": "197518448",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 412
+  },
+  {
+    "first": "Robert",
+    "middle": "Garrett",
+    "last": "Goodloe",
+    "death_year": "1917",
+    "memorial_id": "11396463",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 413
+  },
+  {
+    "first": "Samuel",
+    "middle": "T.",
+    "last": "Grant",
+    "death_year": "1925",
+    "memorial_id": "39561934",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 414
+  },
+  {
+    "first": "John",
+    "middle": "T",
+    "last": "Green",
+    "death_year": "1929",
+    "memorial_id": "45565656",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 415
+  },
+  {
+    "first": "Henry",
+    "middle": "Marshall",
+    "last": "Gresham",
+    "death_year": "1923",
+    "memorial_id": "30260907",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 416
+  },
+  {
+    "first": "William",
+    "middle": "Martin",
+    "last": "Groves",
+    "death_year": "1929",
+    "memorial_id": "14219260",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 417
+  },
+  {
+    "first": "William",
+    "middle": "Malcolm",
+    "last": "Guy",
+    "death_year": "1918",
+    "memorial_id": "69829577",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 418
+  },
+  {
+    "first": "Robert",
+    "middle": "H J",
+    "last": "Hacker",
+    "death_year": "1908",
+    "memorial_id": "41539818",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 419
+  },
+  {
+    "first": "William",
+    "middle": "M.",
+    "last": "Haney",
+    "death_year": "1912",
+    "memorial_id": "20888462",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 422
+  },
+  {
+    "first": "Sarah",
+    "middle": "Elizabeth",
+    "last": "Haney",
+    "death_year": "1941",
+    "memorial_id": "30000313",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 423
+  },
+  {
+    "first": "John",
+    "middle": "Pearl",
+    "last": "Holder",
+    "death_year": "1912",
+    "memorial_id": "35354166",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 428
+  },
+  {
+    "first": "Thomas",
+    "middle": "D.",
+    "last": "Holley",
+    "death_year": "1917",
+    "memorial_id": "21807726",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 429
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Herrell",
+    "death_year": "1902",
+    "memorial_id": "36764084",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 424
+  },
+  {
+    "first": "James",
+    "middle": "Goldsmith Whitehouse",
+    "last": "Hewitt",
+    "death_year": "1906",
+    "memorial_id": "17050135",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 425
+  },
+  {
+    "first": "Rufus",
+    "middle": "Morgan",
+    "last": "High",
+    "death_year": "1916",
+    "memorial_id": "74196572",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 426
+  },
+  {
+    "first": "John",
+    "middle": "William",
+    "last": "Hill",
+    "death_year": "1922",
+    "memorial_id": "42235584",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 427
+  },
+  {
+    "first": "William",
+    "middle": "Henderson",
+    "last": "Blanton",
+    "death_year": "1927",
+    "memorial_id": "17684840",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 219
+  },
+  {
+    "first": "James",
+    "middle": "Marion",
+    "last": "Richardson",
+    "death_year": "1922",
+    "memorial_id": "63158053",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 97
+  },
+  {
+    "first": "David",
+    "middle": "Avery",
+    "last": "Hood",
+    "death_year": "1918",
+    "memorial_id": "62121889",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 430
+  },
+  {
+    "first": "Joseph",
+    "middle": "Shores",
+    "last": "Hunter",
+    "death_year": "1902",
+    "memorial_id": "28562296",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 432
+  },
+  {
+    "first": "David",
+    "middle": "Monroe",
+    "last": "Jackson",
+    "death_year": "1922",
+    "memorial_id": "44981404",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 433
+  },
+  {
+    "first": "James",
+    "middle": "Leonidas",
+    "last": "Kennedy",
+    "death_year": "1913",
+    "memorial_id": "9791900",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 31
+  },
+  {
+    "first": "Robert",
+    "middle": "Martin",
+    "last": "Key",
+    "death_year": "1922",
+    "memorial_id": "47827632",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 442
+  },
+  {
+    "first": "James",
+    "middle": "T.",
+    "last": "Johnson",
+    "death_year": "1910",
+    "memorial_id": "36306055",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 434
+  },
+  {
+    "first": "Thomas",
+    "middle": "Jefferson",
+    "last": "Jolley",
+    "death_year": "1919",
+    "memorial_id": "17704013",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 435
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Allen",
+    "last": "Jones",
+    "death_year": "1921",
+    "memorial_id": "80906433",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 436
+  },
+  {
+    "first": "John",
+    "middle": "C.",
+    "last": "Jordan",
+    "death_year": "1908",
+    "memorial_id": "42178228",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 437
+  },
+  {
+    "first": "William",
+    "middle": "I.",
+    "last": "Kelley",
+    "death_year": "1926",
+    "memorial_id": "297869793",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 438
+  },
+  {
+    "first": "Samuel",
+    "middle": "W.",
+    "last": "Kinder",
+    "death_year": "1911",
+    "memorial_id": "21808975",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 443
+  },
+  {
+    "first": "Samuel",
+    "middle": "John",
+    "last": "Kendall",
+    "death_year": "1905",
+    "memorial_id": "10157148",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 440
+  },
+  {
+    "first": "James",
+    "middle": "Daniel",
+    "last": "Kennedy",
+    "death_year": "1915",
+    "memorial_id": "44986607",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 441
+  },
+  {
+    "first": "William",
+    "middle": "Simpson",
+    "last": "Thomas",
+    "death_year": "1896",
+    "memorial_id": "33678154",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 220
+  },
+  {
+    "first": "Hiram",
+    "middle": "Lawrence",
+    "last": "May",
+    "death_year": "1920",
+    "memorial_id": "14797642",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 86
+  },
+  {
+    "first": "George",
+    "middle": "M.",
+    "last": "Roberts",
+    "death_year": "1926",
+    "memorial_id": "68646007",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 222
+  },
+  {
+    "first": "Georgia",
+    "middle": "Casue",
+    "last": "Calley",
+    "death_year": "1953",
+    "memorial_id": "137314221",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 255
+  },
+  {
+    "first": "Josie",
+    "middle": "",
+    "last": "Wiggs",
+    "death_year": "1937",
+    "memorial_id": "124136483",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 445
+  },
+  {
+    "first": "William",
+    "middle": "Seth",
+    "last": "Kitchens",
+    "death_year": "1918",
+    "memorial_id": "29366387",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 449
+  },
+  {
+    "first": "Martin",
+    "middle": "Van Buren",
+    "last": "King",
+    "death_year": "1930",
+    "memorial_id": "19986668",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 446
+  },
+  {
+    "first": "William",
+    "middle": "Cushenberry",
+    "last": "Kirkwood",
+    "death_year": "2026",
+    "memorial_id": "292113111",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 447
+  },
+  {
+    "first": "Samuel",
+    "middle": "Asberry",
+    "last": "Kitchens",
+    "death_year": "1916",
+    "memorial_id": "29366557",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 448
+  },
+  {
+    "first": "Richard",
+    "middle": "Catesby",
+    "last": "Wiggs",
+    "death_year": "1904",
+    "memorial_id": "286547591",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 370
+  },
+  {
+    "first": "John",
+    "middle": "L.",
+    "last": "Ladd",
+    "death_year": "1915",
+    "memorial_id": "197093186",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 450
+  },
+  {
+    "first": "Matthew",
+    "middle": "Drake",
+    "last": "Langford",
+    "death_year": "1923",
+    "memorial_id": "71773172",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 451
+  },
+  {
+    "first": "William",
+    "middle": "A.",
+    "last": "Lankford",
+    "death_year": "1925",
+    "memorial_id": "25699968",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 452
+  },
+  {
+    "first": "Adolphus",
+    "middle": "Henry",
+    "last": "Law",
+    "death_year": "1927",
+    "memorial_id": "127775532",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 453
+  },
+  {
+    "first": "David",
+    "middle": "McGill",
+    "last": "Lawrence",
+    "death_year": "1895",
+    "memorial_id": "86191733",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 454
+  },
+  {
+    "first": "Edward",
+    "middle": "Ruthwin",
+    "last": "Lucas",
+    "death_year": "1914",
+    "memorial_id": "130422107",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 455
+  },
+  {
+    "first": "James",
+    "middle": "M.",
+    "last": "Driscol",
+    "death_year": "1925",
+    "memorial_id": "29792810",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 348
+  },
+  {
+    "first": "William",
+    "middle": "Josiah",
+    "last": "Malone",
+    "death_year": "1902",
+    "memorial_id": "114271286",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 456
+  },
+  {
+    "first": "J",
+    "middle": "M",
+    "last": "Martin",
+    "death_year": "1922",
+    "memorial_id": "65153153",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 457
+  },
+  {
+    "first": "Matthew",
+    "middle": "Lilburn",
+    "last": "Maxwell",
+    "death_year": "1910",
+    "memorial_id": "37419633",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 458
+  },
+  {
+    "first": "Robert",
+    "middle": "Donnell",
+    "last": "Maxwell",
+    "death_year": "1908",
+    "memorial_id": "28231597",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 189
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "McClendon",
+    "death_year": "1920",
+    "memorial_id": "10157161",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 459
+  },
+  {
+    "first": "Perkins",
+    "middle": "W",
+    "last": "McCoy",
+    "death_year": "1918",
+    "memorial_id": "5005500",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 460
+  },
+  {
+    "first": "Daniel",
+    "middle": "",
+    "last": "McDuffie",
+    "death_year": "1916",
+    "memorial_id": "15526573",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 461
+  },
+  {
+    "first": "Michael",
+    "middle": "",
+    "last": "McMenamin",
+    "death_year": "1924",
+    "memorial_id": "16306382",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 462
+  },
+  {
+    "first": "Jacob",
+    "middle": "F. W.",
+    "last": "Rozell",
+    "death_year": "1862",
+    "memorial_id": "56909198",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 45
+  },
+  {
+    "first": "William",
+    "middle": "Christian",
+    "last": "Gentry",
+    "death_year": "1917",
+    "memorial_id": "68644218",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 223
+  },
+  {
+    "first": "James",
+    "middle": "Monroe",
+    "last": "Wardlow",
+    "death_year": "1891",
+    "memorial_id": "21709293",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 196
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Davis",
+    "death_year": "1911",
+    "memorial_id": "36289602",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 395
+  },
+  {
+    "first": "Martha",
+    "middle": "Matilda",
+    "last": "Magness",
+    "death_year": "1934",
+    "memorial_id": "177152718",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 85
+  },
+  {
+    "first": "Alfred",
+    "middle": "Columbus",
+    "last": "Meeks",
+    "death_year": "1909",
+    "memorial_id": "23350657",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 463
+  },
+  {
+    "first": "Robert",
+    "middle": "M.",
+    "last": "Michael",
+    "death_year": "1936",
+    "memorial_id": "17739601",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 168
+  },
+  {
+    "first": "James",
+    "middle": "Calvin",
+    "last": "Minnix",
+    "death_year": "1917",
+    "memorial_id": "137413435",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 464
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Hardy",
+    "last": "Mitchell",
+    "death_year": "1927",
+    "memorial_id": "23524719",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 465
+  },
+  {
+    "first": "Thomas",
+    "middle": "Jackson",
+    "last": "Morris",
+    "death_year": "1902",
+    "memorial_id": "19034273",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 469
+  },
+  {
+    "first": "James",
+    "middle": "Cleyborn",
+    "last": "Parrish",
+    "death_year": "1903",
+    "memorial_id": "72066427",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 471
+  },
+  {
+    "first": "James",
+    "middle": "Edward",
+    "last": "Peters",
+    "death_year": "1916",
+    "memorial_id": "44751860",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 472
+  },
+  {
+    "first": "Henry",
+    "middle": "Douglas",
+    "last": "Moore",
+    "death_year": "1916",
+    "memorial_id": "49903389",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 466
+  },
+  {
+    "first": "William",
+    "middle": "Jordan",
+    "last": "Moore",
+    "death_year": "1934",
+    "memorial_id": "34620049",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 467
+  },
+  {
+    "first": "John",
+    "middle": "Richard",
+    "last": "Deering",
+    "death_year": "1917",
+    "memorial_id": "51896657",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 476
+  },
+  {
+    "first": "James",
+    "middle": "Thomas",
+    "last": "Kimbrell",
+    "death_year": "1917",
+    "memorial_id": "45342704",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 162
+  },
+  {
+    "first": "David",
+    "middle": "William",
+    "last": "Petty",
+    "death_year": "1923",
+    "memorial_id": "83500853",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 473
+  },
+  {
+    "first": "Elbert",
+    "middle": "Augustus",
+    "last": "Parker",
+    "death_year": "1910",
+    "memorial_id": "14408903",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 470
+  },
+  {
+    "first": "Andrew",
+    "middle": "Pickens",
+    "last": "Pitts",
+    "death_year": "1915",
+    "memorial_id": "46970061",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 474
+  },
+  {
+    "first": "Robert",
+    "middle": "Henry",
+    "last": "Pitts",
+    "death_year": "1926",
+    "memorial_id": "52166696",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 475
+  },
+  {
+    "first": "Ransom",
+    "middle": "Thompson",
+    "last": "Reeves",
+    "death_year": "1930",
+    "memorial_id": "16680787",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 478
+  },
+  {
+    "first": "John",
+    "middle": "Joel",
+    "last": "Rutledge",
+    "death_year": "1907",
+    "memorial_id": "24133586",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 484
+  },
+  {
+    "first": "John",
+    "middle": "Morgan",
+    "last": "Richardson",
+    "death_year": "1917",
+    "memorial_id": "61444453",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 480
+  },
+  {
+    "first": "George",
+    "middle": "Washington",
+    "last": "Reaves",
+    "death_year": "1904",
+    "memorial_id": "9723719",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 477
+  },
+  {
+    "first": "Frank",
+    "middle": "Allison",
+    "last": "Robison",
+    "death_year": "1936",
+    "memorial_id": "21911733",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 482
+  },
+  {
+    "first": "Eliza",
+    "middle": "Jane",
+    "last": "Robison",
+    "death_year": "1942",
+    "memorial_id": "21911725",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 481
+  },
+  {
+    "first": "James",
+    "middle": "J.",
+    "last": "Rotenberry",
+    "death_year": "1919",
+    "memorial_id": "22826099",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 483
+  },
+  {
+    "first": "James",
+    "middle": "Marion",
+    "last": "Reynolds",
+    "death_year": "1909",
+    "memorial_id": "70345016",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 479
+  },
+  {
+    "first": "Sarah",
+    "middle": "L.",
+    "last": "Scott",
+    "death_year": "1918",
+    "memorial_id": "21689363",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 485
+  },
+  {
+    "first": "Thomas",
+    "middle": "",
+    "last": "Scott",
+    "death_year": "1926",
+    "memorial_id": "83698506",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 486
+  },
+  {
+    "first": "Thomas",
+    "middle": "Pinkney",
+    "last": "Gaston",
+    "death_year": "1897",
+    "memorial_id": "34907774",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 34
+  },
+  {
+    "first": "Edward",
+    "middle": "Lloyd",
+    "last": "Thomas",
+    "death_year": "1898",
+    "memorial_id": "4508",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 496
+  },
+  {
+    "first": "William",
+    "middle": "Bennett",
+    "last": "Sullivan",
+    "death_year": "1938",
+    "memorial_id": "28170935",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 495
+  },
+  {
+    "first": "Thomas",
+    "middle": "Henry",
+    "last": "Skidmore",
+    "death_year": "1909",
+    "memorial_id": "75721282",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 489
+  },
+  {
+    "first": "Allen",
+    "middle": "McClain",
+    "last": "Speake",
+    "death_year": "1903",
+    "memorial_id": "62190813",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 492
+  },
+  {
+    "first": "Jacob",
+    "middle": "Smith",
+    "last": "Skaggs",
+    "death_year": "1914",
+    "memorial_id": "42837979",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 488
+  },
+  {
+    "first": "William",
+    "middle": "Pouncey",
+    "last": "Stapleton",
+    "death_year": "1921",
+    "memorial_id": "24512150",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 493
+  },
+  {
+    "first": "William",
+    "middle": "Wheeler",
+    "last": "Stradley",
+    "death_year": "1923",
+    "memorial_id": "48115964",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 494
+  },
+  {
+    "first": "James",
+    "middle": "Williamson",
+    "last": "Vaden",
+    "death_year": "1918",
+    "memorial_id": "28382248",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 498
+  },
+  {
+    "first": "Frances",
+    "middle": "Marion",
+    "last": "White",
+    "death_year": "1914",
+    "memorial_id": "10811521",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 504
+  },
+  {
+    "first": "Mattie",
+    "middle": "May",
+    "last": "Welch",
+    "death_year": "1936",
+    "memorial_id": "22710010",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 501
+  },
+  {
+    "first": "Monroe",
+    "middle": "",
+    "last": "Wheeler",
+    "death_year": "1931",
+    "memorial_id": "8317789",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 503
+  },
+  {
+    "first": "Robert",
+    "middle": "H.",
+    "last": "West",
+    "death_year": "1905",
+    "memorial_id": "27566416",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 502
+  },
+  {
+    "first": "Thomas",
+    "middle": "F.",
+    "last": "Thrasher",
+    "death_year": "1913",
+    "memorial_id": "10794628",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 497
+  },
+  {
+    "first": "William",
+    "middle": "H.",
+    "last": "Walker",
+    "death_year": "1906",
+    "memorial_id": "17051127",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 499
+  },
+  {
+    "first": "Nathaniel",
+    "middle": "G.",
+    "last": "Walker",
+    "death_year": "1931",
+    "memorial_id": "91932458",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 508
+  },
+  {
+    "first": "William",
+    "middle": "R.",
+    "last": "Wallace",
+    "death_year": "1904",
+    "memorial_id": "62191656",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 500
+  },
+  {
+    "first": "William",
+    "middle": "Samuel",
+    "last": "White",
+    "death_year": "1911",
+    "memorial_id": "40964754",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 506
+  },
+  {
+    "first": "Henry",
+    "middle": "Fox",
+    "last": "White",
+    "death_year": "1931",
+    "memorial_id": "21663280",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 505
+  },
+  {
+    "first": "Anderson",
+    "middle": "Felix",
+    "last": "Ormsby",
+    "death_year": "1922",
+    "memorial_id": "182076813",
+    "bucket": "other",
+    "state": "OK",
+    "soldier_id": 92
+  },
+  {
+    "first": "Benjamin",
+    "middle": "Morris",
+    "last": "Horsman",
+    "death_year": "1918",
+    "memorial_id": "10157147",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 431
+  },
+  {
+    "first": "George",
+    "middle": "W.",
+    "last": "Allen",
+    "death_year": "1913",
+    "memorial_id": "19608779",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 120
+  },
+  {
+    "first": "Andrew",
+    "middle": "Jackson",
+    "last": "Abercrombie",
+    "death_year": "1920",
+    "memorial_id": "23699842",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 517
+  },
+  {
+    "first": "William",
+    "middle": "Thomas Jackson",
+    "last": "Abercrombie",
+    "death_year": "1930",
+    "memorial_id": "16811212",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 518
+  },
+  {
+    "first": "Adam",
+    "middle": "Mitchell",
+    "last": "Wright",
+    "death_year": "1919",
+    "memorial_id": "9579675",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 516
+  },
+  {
+    "first": "Henry",
+    "middle": "Washington",
+    "last": "Williford",
+    "death_year": "1941",
+    "memorial_id": "87365571",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 510
+  },
+  {
+    "first": "James",
+    "middle": "Riley",
+    "last": "Williams",
+    "death_year": "1918",
+    "memorial_id": "263563684",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 509
+  },
+  {
+    "first": "Joseph",
+    "middle": "Johnson",
+    "last": "Wilson",
+    "death_year": "1918",
+    "memorial_id": "5079251",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 512
+  },
+  {
+    "first": "James",
+    "middle": "Jackson",
+    "last": "Howell",
+    "death_year": "1919",
+    "memorial_id": "124781361",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 38
+  },
+  {
+    "first": "Joseph",
+    "middle": "Monroe",
+    "last": "Howell",
+    "death_year": "1899",
+    "memorial_id": "41589251",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 40
+  },
+  {
+    "first": "Martha",
+    "middle": "Jane",
+    "last": "Allen",
+    "death_year": "1929",
+    "memorial_id": "32835666",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 521
+  },
+  {
+    "first": "Harriet",
+    "middle": "Lousinda",
+    "last": "Starkey",
+    "death_year": "1940",
+    "memorial_id": "23904793",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 245
+  },
+  {
+    "first": "Leonidas",
+    "middle": "H.",
+    "last": "Wood",
+    "death_year": "1916",
+    "memorial_id": "39829392",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 514
+  },
+  {
+    "first": "Thomas",
+    "middle": "Newton",
+    "last": "Wilson",
+    "death_year": "1910",
+    "memorial_id": "10812103",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 513
+  },
+  {
+    "first": "Benjamin",
+    "middle": "F.",
+    "last": "Willis",
+    "death_year": "1925",
+    "memorial_id": "22993070",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 522
+  },
+  {
+    "first": "Carrie",
+    "middle": "",
+    "last": "Willis",
+    "death_year": "1938",
+    "memorial_id": "22993129",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 511
+  },
+  {
+    "first": "Oscar",
+    "middle": "William Blacknall",
+    "last": "Sr.",
+    "death_year": "1918",
+    "memorial_id": "54583464",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 532
+  },
+  {
+    "first": "Monroe",
+    "middle": "F.",
+    "last": "Burch",
+    "death_year": "1930",
+    "memorial_id": "300101017",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 388
+  },
+  {
+    "first": "Richard",
+    "middle": "Thomas",
+    "last": "Rickets",
+    "death_year": "1921",
+    "memorial_id": "114546179",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 533
+  },
+  {
+    "first": "Charles",
+    "middle": "Lewis",
+    "last": "Brown",
+    "death_year": "1901",
+    "memorial_id": "14546232",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 146
+  },
+  {
+    "first": "Sarah",
+    "middle": "",
+    "last": "Brown",
+    "death_year": "1934",
+    "memorial_id": "14552743",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 147
+  },
+  {
+    "first": "Dallas",
+    "middle": "Butler",
+    "last": "Berry",
+    "death_year": "1938",
+    "memorial_id": "117874625",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 531
+  },
+  {
+    "first": "Samuel",
+    "middle": "T.",
+    "last": "Carlile",
+    "death_year": "1901",
+    "memorial_id": "30624923",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 523
+  },
+  {
+    "first": "Susan",
+    "middle": "",
+    "last": "Carlile",
+    "death_year": "1935",
+    "memorial_id": "286245376",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 534
+  },
+  {
+    "first": "James",
+    "middle": "F.",
+    "last": "Pendleton",
+    "death_year": "1918",
+    "memorial_id": "28454494",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 524
+  },
+  {
+    "first": "Laura",
+    "middle": "F.",
+    "last": "Allen",
+    "death_year": "1934",
+    "memorial_id": "68642864",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 527
+  },
+  {
+    "first": "Daniel",
+    "middle": "Parker",
+    "last": "Allen",
+    "death_year": "1890",
+    "memorial_id": "286273248",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 526
+  },
+  {
+    "first": "George",
+    "middle": "McKindree",
+    "last": "Barnett",
+    "death_year": "1932",
+    "memorial_id": "7046998",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 528
+  },
+  {
+    "first": "Missouri",
+    "middle": "Emaline",
+    "last": "Barnett",
+    "death_year": "1932",
+    "memorial_id": "7047001",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 529
+  },
+  {
+    "first": "Armstred",
+    "middle": "Washington",
+    "last": "Baugh",
+    "death_year": "1924",
+    "memorial_id": "7692061",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 359
+  },
+  {
+    "first": "James",
+    "middle": "T.",
+    "last": "Baugh",
+    "death_year": "1916",
+    "memorial_id": "68643054",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 530
+  },
+  {
+    "first": "Moses",
+    "middle": "LaFayette",
+    "last": "Baugh",
+    "death_year": "1924",
+    "memorial_id": "29678445",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 535
+  },
+  {
+    "first": "William",
+    "middle": "Alexander",
+    "last": "Walker",
+    "death_year": "1928",
+    "memorial_id": "22657187",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 525
+  },
+  {
+    "first": "Willoughby",
+    "middle": "Randolph",
+    "last": "Fletcher",
+    "death_year": "1926",
+    "memorial_id": "40541436",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 2
+  },
+  {
+    "first": "James",
+    "middle": "S.",
+    "last": "Gillespie",
+    "death_year": "1917",
+    "memorial_id": "30265400",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 411
+  },
+  {
+    "first": "David",
+    "middle": "Washington",
+    "last": "Adams",
+    "death_year": "1927",
+    "memorial_id": "30099078",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 538
+  },
+  {
+    "first": "George",
+    "middle": "G.",
+    "last": "Buchanan",
+    "death_year": "1916",
+    "memorial_id": "30607277",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 544
+  },
+  {
+    "first": "James",
+    "middle": "C.",
+    "last": "Bilbo",
+    "death_year": "1902",
+    "memorial_id": "30679319",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 541
+  },
+  {
+    "first": "John",
+    "middle": "Wright",
+    "last": "Briggs",
+    "death_year": "1916",
+    "memorial_id": "9041445",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 543
+  },
+  {
+    "first": "Theodore",
+    "middle": "Frelinghuysen",
+    "last": "Brewer",
+    "death_year": "1928",
+    "memorial_id": "46553500",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 542
+  },
+  {
+    "first": "Robert",
+    "middle": "William",
+    "last": "Adair",
+    "death_year": "1927",
+    "memorial_id": "9056724",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 537
+  },
+  {
+    "first": "Robert",
+    "middle": "",
+    "last": "Barr",
+    "death_year": "1919",
+    "memorial_id": "208559030",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 540
+  },
+  {
+    "first": "Sterling",
+    "middle": "Masterson",
+    "last": "Abernathy",
+    "death_year": "1923",
+    "memorial_id": "43185056",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 536
+  },
+  {
+    "first": "Wesley",
+    "middle": "Samuel",
+    "last": "Adams",
+    "death_year": "1919",
+    "memorial_id": "71449612",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 539
+  },
+  {
+    "first": "William",
+    "middle": "Leander",
+    "last": "Byrd",
+    "death_year": "1915",
+    "memorial_id": "34275078",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 545
+  },
+  {
+    "first": "Lewis",
+    "middle": "Myers \u201cDock\u201d",
+    "last": "Doyle",
+    "death_year": "1921",
+    "memorial_id": "57050119",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 553
+  },
+  {
+    "first": "Levi",
+    "middle": "Samuel",
+    "last": "Easley",
+    "death_year": "1924",
+    "memorial_id": "16251139",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 554
+  },
+  {
+    "first": "Capt",
+    "middle": "Burton",
+    "last": "Doyle",
+    "death_year": "1874",
+    "memorial_id": "54663068",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 551
+  },
+  {
+    "first": "Dydamus",
+    "middle": "Fletcher",
+    "last": "Crowell",
+    "death_year": "1913",
+    "memorial_id": "59702892",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 549
+  },
+  {
+    "first": "Henry",
+    "middle": "Clay",
+    "last": "Crawford",
+    "death_year": "1927",
+    "memorial_id": "29792633",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 548
+  },
+  {
+    "first": "John",
+    "middle": "Edward",
+    "last": "Doyle",
+    "death_year": "1929",
+    "memorial_id": "16142758",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 552
+  },
+  {
+    "first": "Frances",
+    "middle": "Elizabeth \u201cBetty\u201d",
+    "last": "Doyle",
+    "death_year": "1942",
+    "memorial_id": "33496127",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 557
+  },
+  {
+    "first": "John",
+    "middle": "Henry",
+    "last": "Eiffert",
+    "death_year": "1915",
+    "memorial_id": "5867288",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 555
+  },
+  {
+    "first": "William",
+    "middle": "Matthew \u201cMatt\u201d",
+    "last": "Davis",
+    "death_year": "1905",
+    "memorial_id": "15888507",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 550
+  },
+  {
+    "first": "Charles",
+    "middle": "Henry",
+    "last": "Featherston",
+    "death_year": "1894",
+    "memorial_id": "15967426",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 556
+  },
+  {
+    "first": "William",
+    "middle": "Lewis",
+    "last": "Cabell",
+    "death_year": "1911",
+    "memorial_id": "9781",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 547
+  },
+  {
+    "first": "Rayborn",
+    "middle": "A. \u201cIke\u201d",
+    "last": "Goins",
+    "death_year": "1906",
+    "memorial_id": "38315559",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 561
+  },
+  {
+    "first": "Henry",
+    "middle": "Marshall",
+    "last": "Furman",
+    "death_year": "1916",
+    "memorial_id": "38886696",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 559
+  },
+  {
+    "first": "Erastus",
+    "middle": "Poe \u201cEdgar\u201d",
+    "last": "Harris",
+    "death_year": "1898",
+    "memorial_id": "15704877",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 567
+  },
+  {
+    "first": "Ida",
+    "middle": "H.",
+    "last": "Culbertson",
+    "death_year": "1946",
+    "memorial_id": "290550670",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 568
+  },
+  {
+    "first": "Nancy",
+    "middle": "Ann",
+    "last": "Powers",
+    "death_year": "1928",
+    "memorial_id": "46970066",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 546
+  },
+  {
+    "first": "William",
+    "middle": "H.",
+    "last": "Powers",
+    "death_year": "1924",
+    "memorial_id": "46970065",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 136
+  },
+  {
+    "first": "John",
+    "middle": "Warren",
+    "last": "Hall",
+    "death_year": "1931",
+    "memorial_id": "210061269",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 565
+  },
+  {
+    "first": "Joseph",
+    "middle": "Henry",
+    "last": "Grogan",
+    "death_year": "1918",
+    "memorial_id": "30749341",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 563
+  },
+  {
+    "first": "Daniel",
+    "middle": "Morris",
+    "last": "Hailey",
+    "death_year": "1919",
+    "memorial_id": "9322046",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 564
+  },
+  {
+    "first": "William",
+    "middle": "Pearl",
+    "last": "Francis",
+    "death_year": "1923",
+    "memorial_id": "30097390",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 558
+  },
+  {
+    "first": "William",
+    "middle": "Washington",
+    "last": "Godwin",
+    "death_year": "1920",
+    "memorial_id": "62751398",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 560
+  },
+  {
+    "first": "Lorenzo",
+    "middle": "Dow",
+    "last": "Grace",
+    "death_year": "1928",
+    "memorial_id": "23980594",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 562
+  },
+  {
+    "first": "Winfield",
+    "middle": "Scott",
+    "last": "Hamilton",
+    "death_year": "1905",
+    "memorial_id": "46421768",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 566
+  },
+  {
+    "first": "Fleet",
+    "middle": "Cooper",
+    "last": "Stevens",
+    "death_year": "1934",
+    "memorial_id": "15816861",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 107
+  },
+  {
+    "first": "William",
+    "middle": "Morris",
+    "last": "Wood",
+    "death_year": "1905",
+    "memorial_id": "41898683",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 515
+  },
+  {
+    "first": "Alfred",
+    "middle": "Newton",
+    "last": "Sharrock",
+    "death_year": "1917",
+    "memorial_id": "214147208",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 176
+  },
+  {
+    "first": "Cassius",
+    "middle": "Buchanan \u201cBuck\u201d",
+    "last": "Gardenhire",
+    "death_year": "1931",
+    "memorial_id": "17406485",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 581
+  },
+  {
+    "first": "John",
+    "middle": "Wesley",
+    "last": "Sharrock",
+    "death_year": "1921",
+    "memorial_id": "10564208",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 580
+  },
+  {
+    "first": "Jack",
+    "middle": "Shakleford",
+    "last": "Hewitt",
+    "death_year": "1904",
+    "memorial_id": "36743223",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 570
+  },
+  {
+    "first": "William",
+    "middle": "S.",
+    "last": "Jarrett",
+    "death_year": "1914",
+    "memorial_id": "18617177",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 578
+  },
+  {
+    "first": "Ebenezer",
+    "middle": "R. \u201cEben\u201d",
+    "last": "Johnson",
+    "death_year": "1907",
+    "memorial_id": "86519648",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 579
+  },
+  {
+    "first": "Elijah",
+    "middle": "",
+    "last": "Jackson",
+    "death_year": "1912",
+    "memorial_id": "16136577",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 574
+  },
+  {
+    "first": "James",
+    "middle": "Knox",
+    "last": "Jackson",
+    "death_year": "1904",
+    "memorial_id": "70963433",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 575
+  },
+  {
+    "first": "James",
+    "middle": "H.",
+    "last": "Jaggers",
+    "death_year": "1931",
+    "memorial_id": "60843018",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 577
+  },
+  {
+    "first": "John",
+    "middle": "C.",
+    "last": "Hoffman",
+    "death_year": "1910",
+    "memorial_id": "165066790",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 571
+  },
+  {
+    "first": "Susannah \"Susan\"",
+    "middle": "",
+    "last": "Whittle",
+    "death_year": "1918",
+    "memorial_id": "73840563",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 390
+  },
+  {
+    "first": "Larkin",
+    "middle": "",
+    "last": "Hoffman",
+    "death_year": "1911",
+    "memorial_id": "16302897",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 572
+  },
+  {
+    "first": "Whitten",
+    "middle": "Wilson \u201cWhit\u201d",
+    "last": "Hyden",
+    "death_year": "1917",
+    "memorial_id": "11016031",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 573
+  },
+  {
+    "first": "Wyatt",
+    "middle": "C.",
+    "last": "Harvey",
+    "death_year": "1915",
+    "memorial_id": "34794742",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 569
+  },
+  {
+    "first": "Thomas",
+    "middle": "Jonathan \"Stonewall\"",
+    "last": "Jackson",
+    "death_year": "1863",
+    "memorial_id": "536",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 576
+  },
+  {
+    "first": "Thomas",
+    "middle": "S.",
+    "last": "Jones",
+    "death_year": "1918",
+    "memorial_id": "86834515",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 585
+  },
+  {
+    "first": "Henry",
+    "middle": "C.",
+    "last": "LeFlore",
+    "death_year": "1923",
+    "memorial_id": "243822910",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 591
+  },
+  {
+    "first": "Abraham",
+    "middle": "Benjamin \u201cAB\u201d",
+    "last": "Jones",
+    "death_year": "1912",
+    "memorial_id": "90343954",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 584
+  },
+  {
+    "first": "John",
+    "middle": "W.",
+    "last": "Jordan",
+    "death_year": "1923",
+    "memorial_id": "31137893",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 586
+  },
+  {
+    "first": "Joseph",
+    "middle": "Wilson",
+    "last": "Kerr",
+    "death_year": "1928",
+    "memorial_id": "30310255",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 587
+  },
+  {
+    "first": "Riley",
+    "middle": "Wise",
+    "last": "Lindsey",
+    "death_year": "1927",
+    "memorial_id": "10446430",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 592
+  },
+  {
+    "first": "William",
+    "middle": "Marvin",
+    "last": "Johnson",
+    "death_year": "1929",
+    "memorial_id": "51911315",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 582
+  },
+  {
+    "first": "Daniel",
+    "middle": "Jesse",
+    "last": "Kendall",
+    "death_year": "1923",
+    "memorial_id": "63230624",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 439
+  },
+  {
+    "first": "Albert",
+    "middle": "Sidney",
+    "last": "Johnston",
+    "death_year": "1862",
+    "memorial_id": "4334",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 583
+  },
+  {
+    "first": "William",
+    "middle": "Edward",
+    "last": "Kimbrell",
+    "death_year": "1927",
+    "memorial_id": "45270444",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 588
+  },
+  {
+    "first": "Robert",
+    "middle": "Edward",
+    "last": "Lee",
+    "death_year": "1870",
+    "memorial_id": "615",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 589
+  },
+  {
+    "first": "Stephen",
+    "middle": "Dill",
+    "last": "Lee",
+    "death_year": "1908",
+    "memorial_id": "11010",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 590
+  },
+  {
+    "first": "John",
+    "middle": "William \u201cJW\u201d",
+    "last": "Lokey",
+    "death_year": "1935",
+    "memorial_id": "65826843",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 597
+  },
+  {
+    "first": "Henry",
+    "middle": "Clay",
+    "last": "Littlefield",
+    "death_year": "1929",
+    "memorial_id": "49046140",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 593
+  },
+  {
+    "first": "James",
+    "middle": "Madison Fay",
+    "last": "Loyd",
+    "death_year": "1927",
+    "memorial_id": "20504966",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 600
+  },
+  {
+    "first": "John",
+    "middle": "Elijah",
+    "last": "Logsdon",
+    "death_year": "1912",
+    "memorial_id": "82773845",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 596
+  },
+  {
+    "first": "William",
+    "middle": "Davenport",
+    "last": "Matthews",
+    "death_year": "1930",
+    "memorial_id": "86029832",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 601
+  },
+  {
+    "first": "Victor",
+    "middle": "Murat \u201cUncle Dick\u201d",
+    "last": "Locke",
+    "death_year": "1929",
+    "memorial_id": "11974713",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 594
+  },
+  {
+    "first": "William",
+    "middle": "Pollard",
+    "last": "Loden",
+    "death_year": "1910",
+    "memorial_id": "45732040",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 595
+  },
+  {
+    "first": "William",
+    "middle": "Pickney",
+    "last": "Looney",
+    "death_year": "1909",
+    "memorial_id": "50923719",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 599
+  },
+  {
+    "first": "Fayette",
+    "middle": "J. \u201cFannie\u201d",
+    "last": "Looney",
+    "death_year": "1931",
+    "memorial_id": "32605599",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 603
+  },
+  {
+    "first": "Dabney",
+    "middle": "Herndon",
+    "last": "Maury",
+    "death_year": "1900",
+    "memorial_id": "11027",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 602
+  },
+  {
+    "first": "Lunsford",
+    "middle": "Lindsay",
+    "last": "Lomax",
+    "death_year": "1913",
+    "memorial_id": "11016",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 598
+  },
+  {
+    "first": "Chief",
+    "middle": "Samuel Houston",
+    "last": "Mayes",
+    "death_year": "1927",
+    "memorial_id": "11237574",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 604
+  },
+  {
+    "first": "Capt",
+    "middle": "James Jackson McAlester V",
+    "last": "VETERAN",
+    "death_year": "1920",
+    "memorial_id": "13398592",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 605
+  },
+  {
+    "first": "J.",
+    "middle": "A. McDonald V",
+    "last": "VETERAN",
+    "death_year": "1925",
+    "memorial_id": "125670650",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 606
+  },
+  {
+    "first": "Obediah",
+    "middle": "Meador Melton V",
+    "last": "VETERAN",
+    "death_year": "1922",
+    "memorial_id": "30842151",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 607
+  },
+  {
+    "first": "Elbert",
+    "middle": "Daniel Milton V",
+    "last": "VETERAN",
+    "death_year": "1918",
+    "memorial_id": "43813922",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 608
+  },
+  {
+    "first": "Robert",
+    "middle": "Henry Mitchell V",
+    "last": "VETERAN",
+    "death_year": "1922",
+    "memorial_id": "6287116",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 609
+  },
+  {
+    "first": "Alexander",
+    "middle": "Moore V",
+    "last": "VETERAN",
+    "death_year": "1907",
+    "memorial_id": "90061816",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 610
+  },
+  {
+    "first": "James",
+    "middle": "Thomas Morris V",
+    "last": "VETERAN",
+    "death_year": "1920",
+    "memorial_id": "22212241",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 611
+  },
+  {
+    "first": "Samuel",
+    "middle": "Nunn V",
+    "last": "VETERAN",
+    "death_year": "1931",
+    "memorial_id": "18098246",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 612
+  },
+  {
+    "first": "Patrick",
+    "middle": "Henry O'Connor V",
+    "last": "VETERAN",
+    "death_year": "1906",
+    "memorial_id": "42795434",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 613
+  },
+  {
+    "first": "John",
+    "middle": "",
+    "last": "Calhoun",
+    "death_year": "1903",
+    "memorial_id": "84250581",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 617
+  },
+  {
+    "first": "Elijah",
+    "middle": "S.",
+    "last": "Cannan",
+    "death_year": "1926",
+    "memorial_id": "19259225",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 620
+  },
+  {
+    "first": "Robert",
+    "middle": "Simeon",
+    "last": "Carothers",
+    "death_year": "1933",
+    "memorial_id": "301288628",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 626
+  },
+  {
+    "first": "Robert",
+    "middle": "Simeon",
+    "last": "Carothers",
+    "death_year": "1933",
+    "memorial_id": "65141606",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 626
+  },
+  {
+    "first": "John",
+    "middle": "Napoleon",
+    "last": "Hallum",
+    "death_year": "1863",
+    "memorial_id": "74362580",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 420
+  },
+  {
+    "first": "Ellen",
+    "middle": "M.",
+    "last": "Hallum",
+    "death_year": "1939",
+    "memorial_id": "30000401",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 421
+  },
+  {
+    "first": "James",
+    "middle": "L.",
+    "last": "Clark",
+    "death_year": "1932",
+    "memorial_id": "139711651",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 640
+  },
+  {
+    "first": "John",
+    "middle": "A.",
+    "last": "Howell",
+    "death_year": "1878",
+    "memorial_id": "205386791",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 39
+  },
+  {
+    "first": "Maurice",
+    "middle": "",
+    "last": "Cass",
+    "death_year": "1926",
+    "memorial_id": "119263128",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 642
+  },
+  {
+    "first": "Newton",
+    "middle": "Alexander",
+    "last": "Money",
+    "death_year": "1933",
+    "memorial_id": "5227775",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 643
+  },
+  {
+    "first": "Martin",
+    "middle": "Jackson",
+    "last": "Welch",
+    "death_year": "1897",
+    "memorial_id": "301384983",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 507
+  },
+  {
+    "first": "David",
+    "middle": "L",
+    "last": "Cabe",
+    "death_year": "1893",
+    "memorial_id": "26402663",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 644
+  },
+  {
+    "first": "Thomas",
+    "middle": "Jefferson \u201cTom\u201d Cabe V",
+    "last": "VETERAN",
+    "death_year": "1926",
+    "memorial_id": "44478249",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 645
+  },
+  {
+    "first": "Gaston",
+    "middle": "Davidson",
+    "last": "Cabler",
+    "death_year": "1929",
+    "memorial_id": "48178955",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 646
+  },
+  {
+    "first": "William",
+    "middle": "Wilson Hurtamus",
+    "last": "Cobb",
+    "death_year": "1908",
+    "memorial_id": "282089961",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 648
+  },
+  {
+    "first": "John",
+    "middle": "Turner",
+    "last": "Dunford",
+    "death_year": "1898",
+    "memorial_id": "21744169",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 192
+  },
+  {
+    "first": "Margaret",
+    "middle": "Caroline",
+    "last": "Dunford",
+    "death_year": "1931",
+    "memorial_id": "286197388",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 193
+  },
+  {
+    "first": "Phillip",
+    "middle": "Parker",
+    "last": "Dunford",
+    "death_year": "1913",
+    "memorial_id": "7127091",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 649
+  },
+  {
+    "first": "Bettie",
+    "middle": "Elizabeth",
+    "last": "Coffman",
+    "death_year": "1930",
+    "memorial_id": "16467746",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 661
+  },
+  {
+    "first": "Holbert",
+    "middle": "",
+    "last": "Cole",
+    "death_year": "1930",
+    "memorial_id": "48227119",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 149
+  },
+  {
+    "first": "James",
+    "middle": "Howard",
+    "last": "Pinchback",
+    "death_year": "1919",
+    "memorial_id": "10159215",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 217
+  },
+  {
+    "first": "Lewis",
+    "middle": "N.",
+    "last": "Gammell",
+    "death_year": "1942",
+    "memorial_id": "16302654",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 664
+  },
+  {
+    "first": "Spencer",
+    "middle": "Clifton",
+    "last": "Cherry",
+    "death_year": "1911",
+    "memorial_id": "18649374",
+    "bucket": "pre1851",
+    "state": "",
+    "soldier_id": 26
+  },
+  {
+    "first": "Elizabeth",
+    "middle": "Catherine",
+    "last": "Thomas",
+    "death_year": "1929",
+    "memorial_id": "33678699",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 444
+  },
+  {
+    "first": "Alva",
+    "middle": "B.",
+    "last": "Harper",
+    "death_year": "1919",
+    "memorial_id": "20702188",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 669
+  },
+  {
+    "first": "Sarah",
+    "middle": "Frances",
+    "last": "Skidmore",
+    "death_year": "1918",
+    "memorial_id": "90276512",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 490
+  },
+  {
+    "first": "William",
+    "middle": "E",
+    "last": "Morgan",
+    "death_year": "1918",
+    "memorial_id": "39696801",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 468
+  },
+  {
+    "first": "William",
+    "middle": "Calloway \u201cBill\u201d",
+    "last": "Collum",
+    "death_year": "1935",
+    "memorial_id": "51116390",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 674
+  },
+  {
+    "first": "William",
+    "middle": "Alexander",
+    "last": "Coe",
+    "death_year": "1931",
+    "memorial_id": "59155850",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 391
+  },
+  {
+    "first": "Allen",
+    "middle": "",
+    "last": "White",
+    "death_year": "1926",
+    "memorial_id": "68647252",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 678
+  },
+  {
+    "first": "Donie",
+    "middle": "Ann",
+    "last": "Scott",
+    "death_year": "1938",
+    "memorial_id": "83698665",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 487
+  },
+  {
+    "first": "William",
+    "middle": "B.",
+    "last": "Wilson",
+    "death_year": "1920",
+    "memorial_id": "90271066",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 188
+  },
+  {
+    "first": "William",
+    "middle": "Artice",
+    "last": "Cook",
+    "death_year": "1918",
+    "memorial_id": "5056359",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 684
+  },
+  {
+    "first": "Robert",
+    "middle": "E.",
+    "last": "Pauley",
+    "death_year": "1930",
+    "memorial_id": "144529112",
+    "bucket": "other",
+    "state": "",
+    "soldier_id": 682
+  }
+]
