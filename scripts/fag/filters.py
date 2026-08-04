@@ -147,6 +147,18 @@ def _apply_filters(
 ) -> dict:
     """Internal: shared location + (optional) date + (optional)
     spouse injection.
+
+    Location filter policy:
+    - state_abbr known + in FAG_STATE_IDS: inject locationId=state_NN
+    - state_abbr known but unrecognized: inject locationId=country_4
+    - state_abbr empty: inject locationId=country_4 (US-wide) as a
+      precision pre-filter. The state filter is a precision tool
+      (cuts noise from foreign same-name candidates); we accept
+      some recall loss for the precision gain. The full 575-record
+      probe (docs/learnings/2026-08-03-miss-diagnosis.md) shows
+      that lifting the country_4 filter for the empty-state edge
+      case recovers 0.2% of records (negligible) while losing
+      precision in the common case.
     """
     p = dict(params)
     if state_abbr:

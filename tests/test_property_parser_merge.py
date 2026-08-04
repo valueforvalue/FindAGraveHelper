@@ -124,10 +124,15 @@ def test_boilerplate_phrase_stripped(boilerplate: str, real_name: str):
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 def test_apply_location_filter_always_has_location(state: str, extra_keys: dict):
     """After applying location filter, the result always has a locationId
-    or country_4 fallback. Empty state → country_4 (US)."""
+    or country_4 fallback. Empty state → country_4 (US).
+
+    The state filter is a precision tool; we accept some recall loss
+    for the precision gain. The full 575-record probe (issue #137
+    follow-up) showed that lifting the country_4 fallback for the
+    empty-state edge case recovers only 0.2% of records.
+    """
     params = {"firstname": "John", "lastname": "Smith", **extra_keys}
     result = apply_location_filter(params, state)
-    # Must have either a state locationId or country_4
     has_location = "locationId" in result
     assert has_location, (
         f"No locationId in result for state={state!r}: {result}"

@@ -69,11 +69,16 @@ def build_input() -> list[dict]:
         if key in seen:
             continue
         seen.add(key)
-        state = ""
-        if buried and "," in buried:
-            tail = buried.rsplit(",", 1)[-1].strip().upper()
-            if len(tail) == 2 and tail.isalpha():
-                state = tail
+        # The real pipeline (scripts/knowledge/fag_scraper.py) maps plan
+        # scope to a state filter via _scope_to_state(). The OK scope
+        # returns "OK" by default. The 575-record set is the OK pension
+        # index, so all records are scoped to OK in production. The
+        # 137-followup diagnosis showed that locationId=state_38
+        # (OK) excludes veterans buried outside OK (most OK pensioners
+        # fought/died elsewhere). For the 137 follow-up probe we use
+        # the production state=OK; the wider question of whether to
+        # ever apply locationId is being investigated separately.
+        state = "OK"
         dy_str = str(dy or "").strip()
         by_proxy = ""
         if dy_str.isdigit():

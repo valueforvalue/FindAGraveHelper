@@ -9,6 +9,11 @@ empirically:
   data/probe/filter_v8.json  -> locationId=state_38   verified
 
 Cuts ~35% of results for common names to US-only; ~99% when state is known.
+The state filter is a precision tool: we accept some recall loss for big
+precision gains. The full 575-record probe (issue #137 follow-up) showed
+that lifting the country_4 fallback for the empty-state edge case recovers
+only 0.2% of records (negligible) while losing precision in the common
+case. See docs/learnings/2026-08-03-miss-diagnosis.md.
 """
 from scripts.fag.filters import (
     apply_location_filter,
